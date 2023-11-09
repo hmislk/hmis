@@ -46,6 +46,7 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.SysMex;
+import com.divudi.data.lab.SysMexOld;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.data.lab.SysMexTypeA;
@@ -68,6 +69,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +115,145 @@ public class LimsMiddlewareController {
      * Creates a new instance of LIMS
      */
     public LimsMiddlewareController() {
+    }
+
+    @POST
+    @Path("/sysmex")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response receiveSysmexMessage(String message, @HeaderParam("Authorization") String authHeader) {
+        // Decode the Authorization header to get the username and password
+        if (authHeader != null && authHeader.startsWith("Basic ")) {
+            // Extract the encoded username and password
+            String base64Credentials = authHeader.substring("Basic".length()).trim();
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+            // credentials = username:password
+            final StringTokenizer tokenizer = new StringTokenizer(credentials, ":");
+            String username = tokenizer.nextToken();
+            String password = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : "";
+
+            // Authenticate the user using the extracted username and password
+            if (authenticate(username, password)) {
+                // Process the message here
+                // Assuming 'processMessage' is a method that handles your message
+                String response = processSysmexRestMessage(message);
+                return Response.ok().entity(response).build();
+            }
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
+    }
+
+    private String processSysmexRestMessage(String message) {
+        System.out.println("processSysmexRestMessage");
+        SysMex sysmex = parseSysMexMessage(message);
+        Long sampleId = sysmex.getSampleIdLong();
+        System.out.println("sampleId = " + sampleId);
+        PatientSample ps = patientSampleFromId(sampleId);
+        System.out.println("ps = " + ps);
+        String temMsgs = "";
+        if (ps == null) {
+            return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
+        }
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
+                PatientReport tpr = createNewPatientReport(pi, pi.getInvestigation());
+                prs.add(tpr);
+            }
+            List<Item> temItems = getItemsForParentItem(pi.getInvestigation());
+            for (Item ti : temItems) {
+                if (ti instanceof Investigation) {
+                    Investigation tix = (Investigation) ti;
+                    if (tix.getMachine() != null && tix.getMachine().getName().toLowerCase().contains("sysmex")) {
+                        PatientReport tpr = createNewPatientReport(pi, tix);
+                        prs.add(tpr);
+                    }
+                }
+            }
+            for (PatientReport tpr : prs) {
+
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        switch (test) {
+                            case "WBC":
+                                priv.setStrValue(sysmex.getWbc());
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getWbc()));
+                                break;
+                            case "NEUT%":
+                                priv.setStrValue(sysmex.getNeutPercentage() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getNeutPercentage()));
+                                break;
+                            case "LYMPH%":
+                                priv.setStrValue(sysmex.getLymphPercentage() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getLymphPercentage()));
+                                break;
+                            case "BASO%":
+                                priv.setStrValue(sysmex.getBasoPercentage() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getBasoPercentage()));
+                                break;
+                            case "MONO%":
+                                priv.setStrValue(sysmex.getMonoPercentage() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getMonoPercentage()));
+                                break;
+                            case "EO%":
+                                priv.setStrValue(sysmex.getEoPercentage() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getEoPercentage()));
+                                break;
+                            case "RBC":
+                                priv.setStrValue(sysmex.getRbc() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getRbc()));
+                                break;
+                            case "HGB":
+                                priv.setStrValue(sysmex.getHgb() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getHgb()));
+                                break;
+                            case "HCT":
+                                priv.setStrValue(sysmex.getHct() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getHct()));
+                                break;
+                            case "MCV":
+                                priv.setStrValue(sysmex.getMcv() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getMcv()));
+                                break;
+                            case "MCH":
+                                priv.setStrValue(sysmex.getMch() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getMch()));
+                                break;
+                            case "MCHC":
+                                priv.setStrValue(sysmex.getMchc() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getMchc()));
+                                break;
+                            case "PLT":
+                                priv.setStrValue(sysmex.getPlt() + "");
+                                priv.setDoubleValue(Double.parseDouble(sysmex.getPlt()));
+                                break;
+                        }
+                    }
+                }
+                tpr.setDataEntered(true);
+                tpr.setDataEntryAt(new Date());
+                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
+                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
+                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
+                prFacade.edit(tpr);
+            }
+        }
+        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
+
+    }
+
+    private boolean authenticate(String username, String password) {
+        return isValidCredentials(username, password);
     }
 
     @Path("/limsProcessAnalyzerMessage")
@@ -187,10 +328,144 @@ public class LimsMiddlewareController {
         }
     }
 
+    @Deprecated
     private String msgFromSysmex(String msg) {
         return extractDataFromSysMexTypeA(msg);
     }
 
+    public static SysMex parseSysMexMessage(String message) {
+//        Correcte Method
+        System.out.println("parseSysMexMessage");
+        SysMex sysMex = new SysMex();
+        // Normalize line endings to \n
+        message = message.replaceAll("\r\n|\r|\n", "\n");
+        // Then split
+        String[] lines = message.split("\n(?=\\w\\|)");
+        System.out.println("lines.length = " + lines.length);
+        for (String line : lines) {
+            if (line.startsWith("O|")) {
+                String[] parts = line.split("\\|");
+                if (parts.length > 3) {
+                    // The sample ID part is in parts[3], we need to trim it and split by caret
+                    String sampleIdPart = parts[3].trim();
+                    System.out.println("sampleIdPart = " + sampleIdPart);
+                    String[] sampleIdParts = sampleIdPart.split("\\^");
+                    System.out.println("sampleIdParts = " + sampleIdParts);
+                    // The actual sample ID is in the third position after splitting by "^"
+                    if (sampleIdParts.length > 2) {
+                        String sampleIdStr = sampleIdParts[2].trim();
+                        System.out.println("sampleIdStr = " + sampleIdStr);
+                        try {
+                            long sampleId = Long.parseLong(sampleIdStr);
+                            sysMex.setSampleId(sampleIdStr);
+                            sysMex.setSampleIdLong(sampleId);
+                        } catch (NumberFormatException e) {
+                        }
+                    }
+                }
+            } else if (line.startsWith("R|")) {
+                System.out.println("line = " + line);
+                String[] parts = line.split("\\|");
+                System.out.println("parts = " + parts);
+                // Use a regex to match one or more '^' characters
+                String[] codeParts = parts[2].split("\\^+");
+                System.out.println("codeParts = " + codeParts);
+                // The test code should be the second element after splitting, if it exists
+                String testCode = codeParts.length > 1 ? codeParts[1].trim() : "";
+                System.out.println("testCode = " + testCode);
+                String value = parts[3].trim();
+                Double dblValue = 0.0;
+                System.out.println("value = " + value);
+                try {
+                    dblValue = Double.parseDouble(value);
+                } catch (Exception e) {
+                    dblValue = 0.0;
+
+                }
+
+                switch (testCode) {
+                    case "WBC":
+                        Double wbc = dblValue * 1000;
+                        sysMex.setWbc(wbc + "");
+                        break;
+                    case "RBC":
+                        sysMex.setRbc(value);
+                        break;
+                    case "HGB":
+                        sysMex.setHgb(value);
+                        break;
+                    case "HCT":
+                        sysMex.setHct(value);
+                        break;
+                    case "MCV":
+                        sysMex.setMcv(value);
+                        break;
+                    case "MCH":
+                        sysMex.setMch(value);
+                        break;
+                    case "MCHC":
+                        sysMex.setMchc(value);
+                        break;
+                    case "PLT":
+                        Double plt = dblValue * 1000;
+                        sysMex.setPlt(plt + "");
+                        break;
+                    case "NEUT%":
+                        sysMex.setNeutPercentage(value);
+                        break;
+                    case "LYMPH%":
+                        sysMex.setLymphPercentage(value);
+                        break;
+                    case "MONO%":
+                        sysMex.setMonoPercentage(value);
+                        break;
+                    case "EO%":
+                        sysMex.setEoPercentage(value);
+                        break;
+                    case "BASO%":
+                        sysMex.setBasoPercentage(value);
+                        break;
+                    case "NEUT#":
+                        sysMex.setNeutAbsolute(testCode);
+                        break;
+                    case "LYMPH#":
+                        sysMex.setLymphAbsolute(value);
+                        break;
+                    case "MONO#":
+                        sysMex.setMonoAbsolute(value);
+                        break;
+                    case "EO#":
+                        sysMex.setEoAbsolute(value);
+                        break;
+                    case "BASO#":
+                        sysMex.setBasoAbsolute(value);
+                        break;
+                    case "RDW-SD":
+                        sysMex.setRdwSd(value);
+                        break;
+                    case "RDW-CV":
+                        sysMex.setRdwCv(value);
+                        break;
+                    case "PDW":
+                        sysMex.setPdw(value);
+                        break;
+                    case "MPV":
+                        sysMex.setMpv(value);
+                        break;
+                    case "P-LCR":
+                        sysMex.setpLcr(value);
+                        break;
+                    case "PCT":
+                        sysMex.setPct(value);
+                        break;
+                }
+            }
+        }
+
+        return sysMex;
+    }
+
+    @Deprecated
     public String extractDataFromSysMexTypeA(String msg) {
         SysMexTypeA a = new SysMexTypeA();
         a.setInputString(msg);

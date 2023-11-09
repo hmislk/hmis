@@ -170,7 +170,11 @@ public class UserPreference implements Serializable {
     private String shortDateTimeFormat;
     private String longTimeFormat;
     private String shortTimeFormat;
+    private String encrptionKey;
 
+    
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -978,6 +982,14 @@ public class UserPreference implements Serializable {
 
     public void setShortTimeFormat(String shortTimeFormat) {
         this.shortTimeFormat = shortTimeFormat;
+    }
+
+    public String getEncrptionKey() {
+        return encrptionKey;
+    }
+
+    public void setEncrptionKey(String encrptionKey) {
+        this.encrptionKey = encrptionKey;
     }
 
 }

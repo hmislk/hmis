@@ -101,7 +101,7 @@ public class PharmacySaleController implements Serializable {
     SessionController sessionController;
     @Inject
     SearchController searchController;
-    
+
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -182,13 +182,13 @@ public class PharmacySaleController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-    
-    public String navigateToPharmacySaleWithoutStocks(){
+
+    public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
         return "/pharmacy/pharmacy_sale_without_stock";
     }
-    
-    private void prepareForPharmacySaleWithoutStock(){
+
+    private void prepareForPharmacySaleWithoutStock() {
         clearBill();
         clearBillItem();
         searchController.createPreBillsNotPaid();
@@ -211,10 +211,10 @@ public class PharmacySaleController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    public void prepareNewPharmacyBillForMembers(){
+    public void prepareNewPharmacyBillForMembers() {
         clearNewBillForMembers();
     }
-    
+
     public void clearForNewBill() {
         selectedAlternative = null;
         preBill = null;
@@ -243,7 +243,7 @@ public class PharmacySaleController implements Serializable {
         editingQty = null;
         cashPaidStr = null;
     }
-    
+
     public void clearNewBillForMembers() {
         selectedAlternative = null;
         preBill = null;
@@ -261,7 +261,7 @@ public class PharmacySaleController implements Serializable {
         searchedPatient = null;
         yearMonthDay = null;
         patientTabId = "tabSearchPt";
-        patientSearchTab =1;
+        patientSearchTab = 1;
         strTenderedValue = "";
         billPreview = false;
         replaceableStocks = null;
@@ -549,7 +549,7 @@ public class PharmacySaleController implements Serializable {
         searchController.createPreBillsNotPaid();
         billPreview = false;
     }
-    
+
     public void prepareForNewPharmacyRetailBill() {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
@@ -566,7 +566,6 @@ public class PharmacySaleController implements Serializable {
         return "/pharmacy/pharmacy_bill_retail_sale";
     }
 
-    
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;
@@ -1043,7 +1042,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setToInstitution(toInstitution);
 
         getPreBill().setComments(comment);
-        
+
         getPreBill().setCashPaid(cashPaid);
         getPreBill().setBalance(balance);
 
@@ -1056,8 +1055,6 @@ public class PharmacySaleController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        
-        
         String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
@@ -1092,7 +1089,7 @@ public class PharmacySaleController implements Serializable {
         getSaleBill().setDeptId(getPreBill().getDeptId());
         getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
-        
+
         getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBalance(balance);
 
@@ -1346,7 +1343,7 @@ public class PharmacySaleController implements Serializable {
                 }
             }
         }
-
+        Patient pt = savePatient();
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -1362,6 +1359,39 @@ public class PharmacySaleController implements Serializable {
                     return;
                 }
             }
+        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            if (pt == null) {
+                UtilityController.addErrorMessage("Need a Peation");
+                return;
+            }
+
+            if (pt.getHasAnAccount() == false) {
+                UtilityController.addErrorMessage("Peation have not account");
+                return;
+            }
+
+            double runningBalance;
+            double creditLimit;
+            double availableValue;
+
+            if (pt.getRunningBalance() != null) {
+                runningBalance = pt.getRunningBalance();
+            } else {
+                runningBalance = 0;
+            }
+
+            if (pt.getCreditLimit() != null) {
+                creditLimit = pt.getCreditLimit();
+            } else {
+                creditLimit = 0;
+            }
+
+            availableValue = runningBalance + creditLimit;
+
+            if (availableValue < netTotal) {
+                UtilityController.addErrorMessage("No sufficient balance");
+                return;
+            }
         }
 
 //        if (checkAllBillItem()) {
@@ -1373,7 +1403,6 @@ public class PharmacySaleController implements Serializable {
 
         calculateAllRates();
 
-        Patient pt = savePatient();
         getPreBill().setPaidAmount(getPreBill().getTotal());
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
@@ -1396,11 +1425,23 @@ public class PharmacySaleController implements Serializable {
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             UtilityController.addSuccessMessage("User Credit Updated");
+        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            double runningBalance;
+            if (pt != null) {
+                if(pt.getRunningBalance()!=null){
+                 runningBalance=pt.getRunningBalance();
+                }else{
+                    runningBalance=0.0;
+                }
+                runningBalance+=netTotal;
+                pt.setRunningBalance(runningBalance);
+            }
+
         }
 
         resetAll();
-        billPreview = true;
         
+        billPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
 
     }
@@ -1664,11 +1705,10 @@ public class PharmacySaleController implements Serializable {
 
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
-        
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
             PaymentMethod tpm = getPaymentMethod();
-            if(tpm==null){
+            if (tpm == null) {
                 tpm = PaymentMethod.Cash;
             }
             PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
@@ -1813,7 +1853,7 @@ public class PharmacySaleController implements Serializable {
         editingQty = null;
         errorMessage = "";
     }
-    
+
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
@@ -2203,6 +2243,5 @@ public class PharmacySaleController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }

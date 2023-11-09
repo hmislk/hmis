@@ -263,6 +263,10 @@ public class Patient implements Serializable {
         calAgeFromDob();
         return ageMonths;
     }
+    public String getIdStr() {
+        String formatted = String.format("%07d", id);
+        return formatted;
+    }
 
     public int getAgeDays() {
         calAgeFromDob();

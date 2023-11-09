@@ -487,6 +487,16 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         }
     }
+    
+    public void savePreferences(UserPreference uf) {
+        if (uf != null) {
+            if (uf.getId() == null || uf.getId() == 0) {
+                userPreferenceFacade.create(uf);
+            } else {
+                userPreferenceFacade.edit(uf);
+            }
+        }
+    }
 
     public void removeInstitutionUserPreferences() {
         if (currentPreference != null) {
@@ -1446,7 +1456,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String getPrimeTheme() {
         if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "cerulean";
+            primeTheme = "material-light-outlined";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
