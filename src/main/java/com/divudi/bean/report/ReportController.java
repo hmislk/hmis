@@ -709,6 +709,11 @@ public class ReportController implements Serializable {
 
         return "/reports/financialReports/discount";
     }
+     
+     public String navigateToOutsidePayment() {
+
+        return "/reports/financialReports/outside_payment";
+    }
 
 
     public Department getFromDepartment() {
