@@ -87,23 +87,23 @@
                                                         <div class="row">
                                                             <div class="col-md-2">
                                                                 <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                                                             value="#{collectingCentreBillController.yearMonthDay.year}"
+                                                                             value="#{collectingCentreBillController.searchedPatient.person.ageYearsComponent}"
                                                                              class="form-control">
-                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"  />
+                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"/>
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                                                             value="#{collectingCentreBillController.yearMonthDay.month}"
+                                                                             value="#{collectingCentreBillController.searchedPatient.person.ageMonthsComponent}"
                                                                              class="form-control">
-                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"/>
+                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" />
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                                                             value="#{collectingCentreBillController.yearMonthDay.day}"
+                                                                             value="#{collectingCentreBillController.searchedPatient.person.ageDaysComponent}"
                                                                              class="form-control">
-                                                                    <f:ajax event="keypress" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"/>
+                                                                    <f:ajax event="keypress" execute="@this" render="calNewPtDob"/>
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-6">
