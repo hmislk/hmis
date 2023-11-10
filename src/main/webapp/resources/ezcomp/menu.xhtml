@@ -64,7 +64,7 @@
                             <p:menuitem 
                                 ajax="false" 
                                 action="/collecting_centre/bill"  
-                                actionListener="#{billController.prepareNewBill}" 
+                                actionListener="#{collectingCentreBillController.prepareNewBill()}" 
                                 value="Collecting Centre Billing"
                                 icon="fa fa-fw fa-hospital-alt" 
                                 rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
