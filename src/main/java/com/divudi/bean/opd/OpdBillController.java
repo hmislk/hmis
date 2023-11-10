@@ -134,6 +134,10 @@ public class OpdBillController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
     private CommonController commonController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
@@ -242,11 +246,11 @@ public class OpdBillController implements Serializable {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search";
     }
-    
+
     public String navigateToOpdAnalyticsIndex() {
         return "/opd/analytics/index";
     }
-    
+
     public String navigateToOpdBatchBillList() {
         return "/opd/analytics/batch_bill_list";
     }
@@ -255,6 +259,32 @@ public class OpdBillController implements Serializable {
         batchBill = null;
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
+    }
+
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, department);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, institution);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, department);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, institution);
+            default:
+                throw new AssertionError();
+        }
     }
 
     public void searchDepartmentOpdBillLights() {
@@ -1397,14 +1427,14 @@ public class OpdBillController implements Serializable {
         tmp.setPatient(patient);
         tmp.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
-                        getSessionController().getInstitution(), 
+                        getSessionController().getInstitution(),
                         BillType.OpdBathcBill,
-                        BillClassType.BilledBill, 
+                        BillClassType.BilledBill,
                         BillNumberSuffix.NONE));
         tmp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
-                getSessionController().getInstitution(), 
-                getSessionController().getDepartment(), 
-                BillType.OpdBathcBill, 
+                getSessionController().getInstitution(),
+                getSessionController().getDepartment(),
+                BillType.OpdBathcBill,
                 BillClassType.BilledBill));
         tmp.setGrantTotal(total);
         tmp.setDiscount(discount);
@@ -2817,8 +2847,6 @@ public class OpdBillController implements Serializable {
     public String navigateToBillContactNumbers() {
         return "/admin/bill_contact_numbers.xhtml";
     }
-    
-    
 
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
