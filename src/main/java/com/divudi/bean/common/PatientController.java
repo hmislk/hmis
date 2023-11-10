@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
@@ -152,6 +153,8 @@ public class PatientController implements Serializable {
     BillBeanController billBeanController;
     @Inject
     BillPackageMedicalController billPackageMedicalController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
     
     /**
      *
@@ -547,6 +550,17 @@ public class PatientController implements Serializable {
         billItems = new ArrayList<>();
         printPreview = false;
         return "/payments/patient/receive";
+    }
+    
+    public String navigateToCollectingCenterBillingFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        
+        collectingCentreBillController.prepareNewBill();
+        collectingCentreBillController.setSearchedPatient(getCurrent());
+        return "/collecting_centre/bill";
     }
 
     public String navigateToOpdPatientEdit() {

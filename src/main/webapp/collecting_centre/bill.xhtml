@@ -32,7 +32,7 @@
                             <div class="col-md-3">
                                 <p:commandButton  value="Settle" action="#{collectingCentreBillController.settleBill}" ajax="false" class="m-1">
                                 </p:commandButton>
-                                <p:commandButton value="New Bill" ajax="false" actionListener="#{collectingCentreBillController.prepareNewBill()}" action="/collecting_centre/bill" class="m-1">
+                                <p:commandButton value="New Bill" ajax="false" actionListener="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" action="/collecting_centre/bill" class="m-1">
                                 </p:commandButton>
                                 <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" class="m-1">
                                 </p:commandButton>
@@ -48,18 +48,18 @@
                                 <div class="col-md-6 text-center p-1" >
                                     <h:panelGroup id="panelPatient" >
 
-                                        <p:tabView id="tvPt" activeIndex="#{collectingCentreBillController.patientSearchTab}"  >
+<!--                                        <p:tabView id="tvPt" activeIndex="#{collectingCentreBillController.patientSearchTab}"  >
                                             <p:ajax event="tabChange"   process="@this"  
                                                     update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} "
                                                     listener="#{collectingCentreBillController.onTabChange}" />
 
-                                            <p:tab id="tabNewPt" title="New Patient">
+                                            <p:tab id="tabNewPt" title="New Patient">-->
 
 
                                                 <div class="row">
                                                     <div class="col-md-3 p-1">
                                                         <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                                                         value="#{collectingCentreBillController.newPatient.person.title}">
+                                                                         value="#{collectingCentreBillController.searchedPatient.person.title}">
                                                             <f:selectItem itemLabel="Select Title" />
                                                             <f:selectItems value="#{collectingCentreBillController.title}" var="i"
                                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
@@ -70,14 +70,14 @@
                                                     <div class="col-md-9 p-1">
                                                         <p:inputText 
                                                             autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
-                                                            value="#{collectingCentreBillController.newPatient.person.name}"
+                                                            value="#{collectingCentreBillController.searchedPatient.person.name}"
                                                             class="form-control" />
                                                     </div>
                                                 </div>
 
                                                 <div class="row">
                                                     <div class="col-md-3 p-1">
-                                                        <p:selectOneMenu id="txtNewSex" value="#{collectingCentreBillController.newPatient.person.sex}"
+                                                        <p:selectOneMenu id="txtNewSex" value="#{collectingCentreBillController.searchedPatient.person.sex}"
                                                                          class="form-control w-100">
                                                             <f:selectItem itemLabel="Select Gender"/>
                                                             <f:selectItems value="#{collectingCentreBillController.sex}"/>
@@ -89,27 +89,25 @@
                                                                 <p:inputText autocomplete="off" id="year" placeholder="Years"
                                                                              value="#{collectingCentreBillController.yearMonthDay.year}"
                                                                              class="form-control">
-                                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
-
-                                                                            listener="#{collectingCentreBillController.dateChangeListen()}"  />
+                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"  />
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <p:inputText autocomplete="off" id="month" placeholder="Months"
                                                                              value="#{collectingCentreBillController.yearMonthDay.month}"
                                                                              class="form-control">
-                                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"  />
+                                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"/>
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <p:inputText autocomplete="off" id="day" placeholder="Days"
                                                                              value="#{collectingCentreBillController.yearMonthDay.day}"
                                                                              class="form-control">
-                                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}" />
+                                                                    <f:ajax event="keypress" execute="@this" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"/>
                                                                 </p:inputText>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <p:datePicker value="#{collectingCentreBillController.newPatient.person.dob}"
+                                                                <p:datePicker value="#{collectingCentreBillController.searchedPatient.person.dob}"
                                                                               id="calNewPtDob" 
                                                                               class="w-100"
                                                                               inputStyleClass="form-control"
@@ -126,18 +124,18 @@
                                                 <div class="row">
                                                     <div class="col-md-4 p-1">
                                                         <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                                                     value="#{collectingCentreBillController.newPatient.person.phone}"
+                                                                     value="#{collectingCentreBillController.searchedPatient.person.phone}"
                                                                      class="form-control" />
                                                     </div>
                                                     <div class="col-md-4 p-1">
                                                         <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                                                     value="#{collectingCentreBillController.newPatient.person.email}"
+                                                                     value="#{collectingCentreBillController.searchedPatient.person.email}"
                                                                      class="form-control">
                                                         </p:inputText>
                                                     </div>
                                                     <div class="col-md-4 p-1">
                                                         <p:inputText placeholder="National ID No."
-                                                                     value="#{collectingCentreBillController.newPatient.person.nic}"
+                                                                     value="#{collectingCentreBillController.searchedPatient.person.nic}"
                                                                      class="form-control"/>
                                                     </div>
                                                 </div>
@@ -145,7 +143,7 @@
                                                 <div class="row">
                                                     <div class="col-md-8 p-1">
                                                         <p:inputText placeholder="Address"
-                                                                     value="#{collectingCentreBillController.newPatient.person.address}"
+                                                                     value="#{collectingCentreBillController.searchedPatient.person.address}"
                                                                      class="form-control"/>
                                                     </div>
                                                     <div class="col-md-4 p-1">
@@ -154,120 +152,17 @@
                                                                         completeMethod="#{areaController.completeArea}"
                                                                         var="pta" itemLabel="#{pta.name}"
                                                                         itemValue="#{pta}" forceSelection="true"
-                                                                        value="#{collectingCentreBillController.newPatient.person.area}"
+                                                                        value="#{collectingCentreBillController.searchedPatient.person.area}"
                                                                         inputStyleClass="form-control"
                                                                         class="w-100"/>
                                                     </div>
                                                 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-                                                <!--                                                <table >
-                                                                                                    <tr >
-                                                                                                        <td >
-                                                                                                            <p:outputLabel value="Title &amp; Name" ></p:outputLabel>
-                                                                                                        </td>
-                                                                                                        <td> : </td>
-                                                                                                        <td >
-                                                                                                            <p:selectOneMenu  id="cmbTitle"  
-                                                                                                                              value="#{collectingCentreBillController.newPatient.person.title}"  >
-                                                                                                                <f:selectItem itemLabel="Select Title" />
-                                                                                                                <f:selectItems value="#{collectingCentreBillController.title}" var="i" 
-                                                                                                                               itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                                                                            </p:selectOneMenu>
                                                 
-                                                                                                        </td>
-                                                                                                        <td  >
-                                                                                                            <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Name"
-                                                                                                                         value="#{collectingCentreBillController.newPatient.person.name}" 
-                                                                                                                         style="width: 350px;text-transform:capitalize;">
-                                                                                                            </p:inputText>
-                                                                                                        </td>
-                                                                                                    </tr>
-                                                
-                                                                                                    <tr>
-                                                                                                        <td>
-                                                                                                            <p:outputLabel value="Sex &amp; Age" ></p:outputLabel>
-                                                                                                        </td>
-                                                                                                        <td> : </td>
-                                                                                                        <td>
-                                                                                                            <p:selectOneMenu id="txtNewSex"  value="#{collectingCentreBillController.newPatient.person.sex}" >
-                                                                                                                <f:selectItem itemLabel="Select Sex"/>
-                                                                                                                <f:selectItems value="#{collectingCentreBillController.sex}"/>
-                                                                                                            </p:selectOneMenu>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <h:panelGrid columns="4">
-                                                                                                                <p:inputText autocomplete="off"  id="year"  
-                                                                                                                             value="#{collectingCentreBillController.yearMonthDay.year}" 
-                                                                                                                             style="width: 50px; ">
-                                                                                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
-                                                
-                                                                                                                            listener="#{collectingCentreBillController.dateChangeListen()}"  />
-                                                                                                                </p:inputText>
-                                                                                                                <p:inputText autocomplete="off" id="month"
-                                                                                                                             style="width: 50px; " value="#{collectingCentreBillController.yearMonthDay.month}">
-                                                                                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}"  />
-                                                                                                                </p:inputText>
-                                                                                                                <p:inputText autocomplete="off" id="day" 
-                                                                                                                             style="width: 50px;" value="#{collectingCentreBillController.yearMonthDay.day}">
-                                                                                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}" />
-                                                                                                                </p:inputText>
-                                                                                                                <p:calendar  value="#{collectingCentreBillController.newPatient.person.dob}" 
-                                                                                                                             id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
-                                                                                                                             style="width: 100px!important;"
-                                                                                                                             styleClass="shortinput">
-                                                                                                                    <f:ajax event="dateSelect" />
-                                                                                                                </p:calendar>
-                                                                                                            </h:panelGrid>
-                                                                                                        </td>
-                                                                                                    </tr>
-                                                
-                                                                                                    <tr>
-                                                                                                        <td>
-                                                                                                            <h:outputLabel value="Phone,Area &amp; Nic"/>
-                                                                                                        </td>
-                                                                                                        <td> : </td>
-                                                                                                        <td>
-                                                                                                            <p:inputText  id="txtNewPtPhone" placeholder="Phone Number"
-                                                                                                                          autocomplete="off" maxlength="11" 
-                                                                                                                          value="#{collectingCentreBillController.newPatient.person.phone}"
-                                                                                                                          style="width: 100px;">
-                                                                                                            </p:inputText>
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <p:autoComplete id="acNewPtArea" placeholder="Select Area"
-                                                                                                                            completeMethod="#{areaController.completeArea}" 
-                                                                                                                            var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
-                                                                                                                            itemValue="#{pta}" forceSelection="true" 
-                                                                                                                            value="#{collectingCentreBillController.newPatient.person.area}" ></p:autoComplete>
-                                                                                                            <p:inputText placeholder="NIC"  value="#{collectingCentreBillController.newPatient.person.nic}" />
-                                                                                                            <p:inputText placeholder="NIC" maxlength="12" value="#{collectingCentreBillController.newPatient.person.nic}"/>
-                                                
-                                                
-                                                                                                        </td>
-                                                
-                                                                                                    </tr>
-                                                                                                </table>
-                                                
-                                                                                                <p:watermark value="YEAR" for="year" />
-                                                                                                <p:watermark value="MONTH" for="month" />
-                                                                                                <p:watermark value="DAYS" for="day" />
-                                                                                                <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>-->
 
-                                            </p:tab>
+<!--                                            </p:tab>-->
 
-                                            <p:tab id="tabSearchPt" title="Search Patient">
+<!--                                            <p:tab id="tabSearchPt" title="Search Patient">
 
                                                 <h:panelGrid columns="1" >
 
@@ -319,9 +214,9 @@
                                                 </h:panelGrid>
 
 
-                                            </p:tab>
+                                            </p:tab>-->
 
-                                        </p:tabView>
+<!--                                        </p:tabView>-->
 
                                     </h:panelGroup>
 
