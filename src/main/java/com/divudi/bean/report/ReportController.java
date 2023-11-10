@@ -679,6 +679,42 @@ public class ReportController implements Serializable {
 
         return "/reports/inpatientReports/ip_unsettled_invoices";
     }
+     
+     public String navigateToconsumption() {
+
+        return "/reports/inventoryReports/consumption";
+    }
+     
+     public String navigateToClosingStockReport() {
+
+        return "/reports/inventoryReports/closing_stock_report";
+    }
+     
+     public String navigateToAdmissionCategoryWiseAdmission() {
+
+        return "/reports/inpatientReports/admission_category_wise_admission";
+    }
+     
+     public String navigateToStockTransferReport() {
+
+        return "/reports/inventoryReports/stock_transfer_report";
+    }
+     
+     public String navigateToCostOfGoodsSold() {
+
+        return "/reports/inventoryReports/cost_of_goods_sold";
+    }
+
+     public String navigateToDiscount() {
+
+        return "/reports/financialReports/discount";
+    }
+     
+     public String navigateToOutsidePayment() {
+
+        return "/reports/financialReports/outside_payment";
+    }
+
 
     public Department getFromDepartment() {
         return fromDepartment;

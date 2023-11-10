@@ -89,8 +89,8 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" action="#{reportController.navigateToOutsidePayment()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" />
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Invoice and Receipt Report (Serial Wise)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Pharmacy Sale (OP/IP)" />
@@ -217,16 +217,16 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="1. Admission and Discharge" action="#{reportController.navigateToAdmissionDischargeReport()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="2. IP Unsettled Invoices" action="#{reportController.navigateToIpUnsettledInvoices()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. Room Change" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission"  action="#{reportController.navigateToAdmissionCategoryWiseAdmission()}" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Inventory Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Closing Stock" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Consumtion" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Closing Stock" action="#{reportController.navigateToClosingStockReport()}"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Consumtion" action="#{reportController.navigateToconsumption()}"  />
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers"  action="#{reportController.navigateToStockTransferReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" action="#{reportController.navigateToCostOfGoodsSold()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" action="#{reportController.navigateToGoodInTransit()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="6. GRN Report" action="#{reportController.navigateToGrnReport()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Batch Wise Stock" />
