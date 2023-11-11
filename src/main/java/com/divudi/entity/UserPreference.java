@@ -6,6 +6,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.RestAuthenticationType;
@@ -85,9 +86,12 @@ public class UserPreference implements Serializable {
     @Lob
     private String smsTemplateForOpdBillSetting;
 
+    @Deprecated
     boolean institutionSpecificItems = false;
+    
     @Lob
     private String opdBillTemplate;
+    @Deprecated
     private boolean institutionRestrictedBilling = false;
     private boolean opdSettleWithoutReferralDetails;
     private boolean partialPaymentOfOpdBillsAllowed;
@@ -172,9 +176,9 @@ public class UserPreference implements Serializable {
     private String shortTimeFormat;
     private String encrptionKey;
 
-    
-    
-    
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy opdItemListingStrategy;
+
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -990,6 +994,17 @@ public class UserPreference implements Serializable {
 
     public void setEncrptionKey(String encrptionKey) {
         this.encrptionKey = encrptionKey;
+    }
+
+    public ItemListingStrategy getOpdItemListingStrategy() {
+        if (opdItemListingStrategy == null) {
+            opdItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return opdItemListingStrategy;
+    }
+
+    public void setOpdItemListingStrategy(ItemListingStrategy opdItemListingStrategy) {
+        this.opdItemListingStrategy = opdItemListingStrategy;
     }
 
 }

@@ -11,6 +11,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.Icon;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
