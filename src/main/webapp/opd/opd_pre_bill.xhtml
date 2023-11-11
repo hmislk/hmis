@@ -191,7 +191,7 @@
                                                             navigator="true"
                                                             class="w-100"></p:calendar>
                                             </div>
-<!--                                            <div class="col-md-2" >
+                                            <div class="col-md-2" >
                                                 <p:outputLabel value="&nbsp;" class="form-label" ></p:outputLabel>
                                                 <p:commandButton 
                                                     value="View Sessions" 
@@ -200,7 +200,7 @@
                                                     onclick="PF('dlgSessions').show();"
                                                     >
                                                 </p:commandButton>
-                                            </div>-->
+                                            </div>
                                         </div>
                                     </p:panel>
                                     <p:panel header="Added Services / Items ">
@@ -326,8 +326,7 @@
                                                 itemValue="#{pm}"/>
                                             <p:ajax process="@this cmbPs" 
                                                     update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem paymentDetails"
-                                                    event="change"
-                                                    listener="#{opdPreBillController.listnerForPaymentMethodChange()}"/>
+                                                    event="change"/>
                                         </p:selectOneMenu>
                                     </div>
                                     <div class="col-4" >
@@ -404,15 +403,16 @@
                                                 value="Mark as Foreigner" 
                                                 action="#{opdPreBillController.markAsForeigner}" 
                                                 rendered="#{!opdPreBillController.foreigner}" 
-                                                ajax="false" 
+                                                process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
                                                 class="mx-1" ></p:commandButton>
                                             <p:commandButton 
                                                 value="Mark as Local" 
                                                 action="#{opdPreBillController.markAsLocal}" 
                                                 rendered="#{opdPreBillController.foreigner}" 
-                                                ajax="false" 
+                                                process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
                                                 class="mx-1" ></p:commandButton>
-
                                         </div>
 
 
@@ -644,10 +644,10 @@
 
                 </h:panelGroup>
 
-<!--                <p:dialog 
+                <p:dialog 
                     id="dlgSessions1" 
                     widgetVar="dlgSessions" 
-                    
+
                     header="Session" >
                     <p:panel id="sessions" header="Session"  >
                         <p:calendar 
@@ -680,7 +680,7 @@
                             </p:column>
                         </p:dataTable>
                     </p:panel>
-                </p:dialog>-->
+                </p:dialog>
             </h:form>
 
         </h:panelGroup>
