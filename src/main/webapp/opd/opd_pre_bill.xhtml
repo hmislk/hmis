@@ -155,7 +155,7 @@
                                                     <p:column>
                                                         #{ix.total}
                                                     </p:column>
-                                                    <p:ajax event="itemSelect"  listener="#{opdPreBillController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
+                                                    <p:ajax event="itemSelect"  listener="#{opdPreBillController.fillBillSessions}" process="acIx"  ></p:ajax>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-2">
@@ -191,51 +191,16 @@
                                                             navigator="true"
                                                             class="w-100"></p:calendar>
                                             </div>
-                                            <div class="col-md-2" >
+<!--                                            <div class="col-md-2" >
                                                 <p:outputLabel value="&nbsp;" class="form-label" ></p:outputLabel>
                                                 <p:commandButton 
                                                     value="View Sessions" 
                                                     class="form-control btn-secondary"
                                                     process="@this"
-                                                    onclick="function () {
-                                                                PF('dlgSessions').show();
-                                                            }">
+                                                    onclick="PF('dlgSessions').show();"
+                                                    >
                                                 </p:commandButton>
-
-
-                                                <p:dialog id="dlgSessions" widgetVar="dlgSessions" modal="true" header="Session" closeOnEscape="true">
-
-                                                    <p:panel id="sessions" header="Session"  >
-                                                        <p:calendar id="calS" mode="inline" value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
-                                                            <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdPreBillController.fillBillSessionsLstner}" />
-                                                        </p:calendar>
-                                                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                                            <f:selectItem itemLabel="Select Department"/>
-                                                            <f:selectItems value="#{departmentController.labs}" 
-                                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                            <p:ajax process="@this" update="acIx" event="change"/>
-                                                        </p:selectOneMenu><br></br>
-                                                        <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
-                                                            <f:facet name="header">
-                                                                <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
-
-                                                                <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" >
-                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                                                </h:outputText>
-
-
-
-                                                            </f:facet>
-                                                            <p:column headerText="No.">
-                                                                <h:outputText value="#{bs.serialNo}" />
-                                                            </p:column>
-                                                            <p:column headerText="Client">
-                                                                <h:outputText value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
-                                                            </p:column>
-                                                        </p:dataTable>
-                                                    </p:panel>
-                                                </p:dialog>
-                                            </div>
+                                            </div>-->
                                         </div>
                                     </p:panel>
                                     <p:panel header="Added Services / Items ">
@@ -435,8 +400,18 @@
                                     <div class="row my-1" >
                                         <div class="col-md-12" >
                                             <p:inputText value="#{opdPreBillController.comment}" placeholder="Comments" id="comment"/>
-                                            <p:commandButton value="Mark as Foreigner" action="#{opdPreBillController.markAsForeigner}" rendered="#{!opdPreBillController.foreigner}" ajax="false" class="mx-1" ></p:commandButton>
-                                            <p:commandButton value="Mark as Local" action="#{opdPreBillController.markAsLocal}" rendered="#{opdPreBillController.foreigner}" ajax="false" class="mx-1" ></p:commandButton>
+                                            <p:commandButton 
+                                                value="Mark as Foreigner" 
+                                                action="#{opdPreBillController.markAsForeigner}" 
+                                                rendered="#{!opdPreBillController.foreigner}" 
+                                                ajax="false" 
+                                                class="mx-1" ></p:commandButton>
+                                            <p:commandButton 
+                                                value="Mark as Local" 
+                                                action="#{opdPreBillController.markAsLocal}" 
+                                                rendered="#{opdPreBillController.foreigner}" 
+                                                ajax="false" 
+                                                class="mx-1" ></p:commandButton>
 
                                         </div>
 
@@ -669,6 +644,43 @@
 
                 </h:panelGroup>
 
+<!--                <p:dialog 
+                    id="dlgSessions1" 
+                    widgetVar="dlgSessions" 
+                    
+                    header="Session" >
+                    <p:panel id="sessions" header="Session"  >
+                        <p:calendar 
+                            id="calS" 
+                            value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
+                            <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdPreBillController.fillBillSessionsLstner}" />
+                        </p:calendar>
+                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                            <f:selectItem itemLabel="Select Department"/>
+                            <f:selectItems value="#{departmentController.labs}" 
+                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                            <p:ajax process="@this" update="acIx" event="change"/>
+                        </p:selectOneMenu><br></br>
+                        <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
+                            <f:facet name="header">
+                                <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
+
+                                <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </h:outputText>
+
+
+
+                            </f:facet>
+                            <p:column headerText="No.">
+                                <h:outputText value="#{bs.serialNo}" />
+                            </p:column>
+                            <p:column headerText="Client">
+                                <h:outputText value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:dialog>-->
             </h:form>
 
         </h:panelGroup>
