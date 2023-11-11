@@ -6,12 +6,16 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemMapping;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemMappingFacade;
+import com.divudi.facade.util.JsfUtil;
+import com.google.common.collect.HashBiMap;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -42,6 +46,7 @@ public class ItemMappingController implements Serializable {
 
     private ItemMapping current;
     private List<ItemMapping> items = null;
+    private List<ItemMapping> selectedItemMappings = null;
     private Institution institution;
     private Department department;
     private Item item;
@@ -49,45 +54,202 @@ public class ItemMappingController implements Serializable {
     private List<Item> selectedItems;
 
     public void addAllSelectedItemsToInstitution() {
-        String jpql;
-        HashMap<String, Object> parameters = new HashMap<>();
-        jpql = "SELECT im FROM ItemMapping im "
-                + "WHERE im.institution = :institution "
-                + "AND im.retired = false "
-                + "ORDER BY im.item.name";
-        parameters.put("institution", institution);
-        items = getFacade().findByJpql(jpql, parameters);
-
+        if (selectedItems == null) {
+            JsfUtil.addErrorMessage("No Items Selected");
+            return;
+        }
+        if (selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No Items Selected");
+            return;
+        }
+        if (institution == null) {
+            JsfUtil.addErrorMessage("No Institution Selected");
+            return;
+        }
         if (items == null) {
             items = new ArrayList<>();
         }
-
+        for (Item i : selectedItems) {
+            ItemMapping im1 = findItemMapping(i, institution);
+            if (im1 == null) {
+                im1 = new ItemMapping();
+                im1.setItem(i);
+                im1.setInstitution(institution);
+                im1.setCreater(sessionController.getLoggedUser());
+                im1.setCreatedAt(new Date());
+                getFacade().create(im1);
+            } else if (im1.isRetired()) {
+                im1.setRetired(false);
+                getFacade().edit(im1);
+                items.add(im1);
+            }
+        }
+        selectedItems = new ArrayList<>();
+        fillItemMappingsForSelectedInstitution();
+        JsfUtil.addSuccessMessage("All Added");
     }
 
     public void addAllSelectedItemsToDepartment() {
-        // Logic to add all selected items to the department if not already added
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No Items Selected");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No Department Selected");
+            return;
+        }
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+        for (Item i : selectedItems) {
+            ItemMapping im = findItemMapping(i, department);
+            if (im == null) {
+                im = new ItemMapping();
+                im.setItem(i);
+                im.setDepartment(department);
+                im.setCreater(sessionController.getLoggedUser());
+                im.setCreatedAt(new Date());
+                getFacade().create(im);
+            } else if (im.isRetired()) {
+                im.setRetired(false);
+                getFacade().edit(im);
+                items.add(im);
+            }
+        }
+        JsfUtil.addSuccessMessage("All Added");
     }
 
-    public boolean checkItemAddedToInstitution(Item item, Institution institution) {
-        // Logic to check if an item is already added to the institution
-        return false; // Placeholder return
+    public boolean mappingExists(Item i, Institution ins) {
+        String jpql = "select pavan "
+                + " from ItemMapping pavan "
+                + " where pavan.institution=:ins "
+                + " and pavan.item=:item ";
+        Map m = new HashMap<>();
+        m.put("ins", ins);
+        m.put("item", i);
+        List<ItemMapping> ims = getFacade().findByJpql(jpql, m);
+        if (ims == null) {
+            return false;
+        }
+        if (ims.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
-    public boolean checkItemAddedToDepartment(Item item, Department department) {
-        // Logic to check if an item is already added to the department
-        return false; // Placeholder return
+    public ItemMapping findItemMapping(Item i, Institution ins) {
+        String jpql = "select pavan "
+                + " from ItemMapping pavan "
+                + " where pavan.institution=:ins "
+                + " and pavan.item=:item ";
+        Map m = new HashMap<>();
+        m.put("ins", ins);
+        m.put("item", i);
+        List<ItemMapping> ims = getFacade().findByJpql(jpql, m);
+        if (ims == null) {
+            return null;
+        }
+        if (ims.isEmpty()) {
+            return null;
+        }
+        return ims.get(0);
     }
 
-    public void removeSelectedItemMapping() {
-        // Logic to remove the selected item mapping
+    public ItemMapping findItemMapping(Item i, Department dep) {
+        String jpql = "select pavan "
+                + " from ItemMapping pavan "
+                + " where pavan.department=:dep "
+                + " and pavan.item=:item ";
+        Map m = new HashMap<>();
+        m.put("dep", dep);
+        m.put("item", i);
+        List<ItemMapping> ims = getFacade().findByJpql(jpql, m);
+        if (ims == null) {
+            return null;
+        }
+        if (ims.isEmpty()) {
+            return null;
+        }
+        return ims.get(0);
+    }
+
+    public boolean mappingExists(Item i, Department dep) {
+        String jpql = "select pavan "
+                + " from ItemMapping pavan "
+                + " where pavan.department=:dep "
+                + " and pavan.item=:item ";
+        Map m = new HashMap<>();
+        m.put("dep", dep);
+        m.put("item", i);
+        List<ItemMapping> ims = getFacade().findByJpql(jpql, m);
+        if (ims == null) {
+            return false;
+        }
+        if (ims.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    private void removeSelectedItemMapping() {
+        for(ItemMapping im: selectedItemMappings){
+            im.setRetired(true);
+            getFacade().edit(im);
+        }
+        items.removeAll(selectedItemMappings);
+        selectedItemMappings = new ArrayList<>();
+    }
+    
+    public void removeSelectedItemMappingForInstitutions() {
+        if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        removeSelectedItemMapping();
+        fillItemMappingsForSelectedInstitution();
+    }
+    
+    public void removeSelectedItemMappingForDepartment() {
+        if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        for(ItemMapping im: selectedItemMappings){
+            im.setRetired(true);
+            getFacade().edit(im);
+        }
+        removeSelectedItemMapping();
+        fillItemMappingsForSelectedDepartment();
     }
 
     public void fillItemMappingsForSelectedDepartment() {
-        // Logic to fill item mappings for the selected department
+        if (department == null) {
+            JsfUtil.addErrorMessage("Department ?");
+            return;
+        }
+        String jpql = "SELECT im "
+                + "FROM ItemMapping im "
+                + "and i.retired=false "
+                + "WHERE im.department = :dep";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("dep", department);
+        List<ItemMapping> itemMappings = getFacade().findByJpql(jpql, parameters);
+        items = itemMappings;
     }
 
     public void fillItemMappingsForSelectedInstitution() {
-        // Logic to fill item mappings for the selected institution
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Institution");
+            return;
+        }
+        String jpql = "SELECT im "
+                + "FROM ItemMapping im "
+                + "WHERE im.retired=false "
+                + "and im.institution = :inst";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("inst", institution);
+        List<ItemMapping> itemMappings = getFacade().findByJpql(jpql, parameters);
+        items = itemMappings;
     }
 
     // Navigation method for managing Department Item Mappings
@@ -172,7 +334,6 @@ public class ItemMappingController implements Serializable {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("department", department);
         list = getFacade().findByJpql(jpql, parameters);
-
         return list != null ? list : new ArrayList<>();
     }
 
@@ -210,11 +371,66 @@ public class ItemMappingController implements Serializable {
     }
 
     public List<ItemMapping> getItems() {
-        if (items == null) {
-            items = getFacade().findAll();
-        }
         return items;
     }
+
+    public ItemMapping getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(ItemMapping current) {
+        this.current = current;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public ItemMapping getSelectedItemMapping() {
+        return selectedItemMapping;
+    }
+
+    public void setSelectedItemMapping(ItemMapping selectedItemMapping) {
+        this.selectedItemMapping = selectedItemMapping;
+    }
+
+    public List<Item> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public void setSelectedItems(List<Item> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public List<ItemMapping> getSelectedItemMappings() {
+        return selectedItemMappings;
+    }
+
+    public void setSelectedItemMappings(List<ItemMapping> selectedItemMappings) {
+        this.selectedItemMappings = selectedItemMappings;
+    }
+    
+    
 
     // No getters and setters as per request
     @FacesConverter(forClass = ItemMapping.class)
