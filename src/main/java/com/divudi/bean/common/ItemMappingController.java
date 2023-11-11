@@ -200,7 +200,7 @@ public class ItemMappingController implements Serializable {
         selectedItemMappings = new ArrayList<>();
     }
     
-    public void removeSelectedItemMappingForInstitutions() {
+    public void removeSelectedItemMappingForInstitution() {
         if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
             JsfUtil.addErrorMessage("Nothing selected");
             return;
@@ -213,10 +213,6 @@ public class ItemMappingController implements Serializable {
         if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
             JsfUtil.addErrorMessage("Nothing selected");
             return;
-        }
-        for(ItemMapping im: selectedItemMappings){
-            im.setRetired(true);
-            getFacade().edit(im);
         }
         removeSelectedItemMapping();
         fillItemMappingsForSelectedDepartment();

@@ -11,180 +11,125 @@
         <h:panelGroup >
             <h:form id="form"  >
                 <p:growl />
-                <p:panel header="Manage OPD Services" >
-                    <div class="row">
-                        <div class="col-md-4">
-                            <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                <h:commandButton 
-                                    id="btnAdd" 
-                                    value="Add" 
-                                    class="btn-success"
-                                    action="#{serviceController.prepareAdd()}" >
-                                    <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail " execute="" >
-                                    </f:ajax>
-                                </h:commandButton>
-                                <h:commandButton 
-                                    id="btnDelete" 
-                                    class="btn-danger"
-                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{serviceController.delete()}"  
-                                    value="Delete" >
-                                </h:commandButton>
-                            </h:panelGrid>
-                            <h:panelGrid id="gpSelectText" class="w-100">
-                                <p:inputText autocomplete="off" id="txtSearch" value="#{serviceController.selectText}"  style="width: 320px;">
-                                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
-                                </p:inputText>
-                                <p:selectOneListbox  scrollHeight="500" class="w-100"  id="lstSelect"   value="#{serviceController.current}" style="min-width: 320px; ">
-                                    <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
-                                    </f:selectItems>
-                                    <p:ajax event="change"   update="gpDetail btnDelete" process="lstSelect" >
-                                    </p:ajax>
-                                </p:selectOneListbox>
-                            </h:panelGrid>
+                <p:panel header="Manage Department Item Mapping" >
+
+                    <div class="row" >
+                        <div class="col-6" >
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Department" >
+                                </p:outputLabel>
+
+                                <p:autoComplete 
+                                    value="#{itemMappingController.department}" 
+                                    completeMethod="#{departmentController.completeDept}"
+                                    var="pasindu"
+                                    itemLabel="#{pasindu.name}"
+                                    itemValue="#{pasindu}"
+                                    >
+                                </p:autoComplete>
+                                <p:commandButton 
+                                    value="Fill Items Added For Department" 
+                                    ajax="false"
+                                    action="#{itemMappingController.fillItemMappingsForSelectedDepartment()}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Add Items to Department" 
+                                    ajax="false"
+                                    action="#{itemMappingController.addAllSelectedItemsToDepartment()}">
+                                </p:commandButton>
+                            </p:panelGrid>
 
 
 
-                        </div>
-
-                        <div class="col-md-8">
-                            <p:panel header="Edit Details" class="w-100">
+                            <p:dataTable 
+                                value="#{itemController.items}" 
+                                var="item" 
+                                rowKey="#{item.id}"
+                                selection="#{itemMappingController.selectedItems}"
+                                paginator="true" 
+                                paginatorPosition="bottom"
+                                rows="10"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Active" rendered="#{!serviceController.current.inactive}" style="color: green;"></h:outputLabel>
-                                    <h:outputLabel value="Inactive" rendered="#{serviceController.current.inactive}" style="color: red;"></h:outputLabel>
-                                    <p:commandButton style="float:right;" id="btnSave" value="Save" 
-                                                     action="#{serviceController.saveSelected()}" 
-                                                     ajax="false" >
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
+                                    <p:outputLabel value="All Items" ></p:outputLabel>
                                 </f:facet>
-                                <h:panelGrid id="gpDetail" columns="1" class="w-100">
-                                    <p:tabView >
-                                        <p:tab id="gpDetails" title="Basic Details" >
-                                            <h:panelGrid columns="2" class="w-100">
 
-                                                <h:outputText id="lblName" value="Name" ></h:outputText>
-                                                <p:inputText 
-                                                    autocomplete="off" 
-                                                    id="txtName" 
-                                                    value="#{serviceController.current.name}" 
-                                                    required="true" 
-                                                    requiredMessage="Please enter a name to register"
-                                                    class="w-100"></p:inputText>
-                                                <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                                <p:inputText autocomplete="off" id="txtAddress"   
-                                                             value="#{serviceController.current.printName}" 
-                                                             class="w-100" ></p:inputText>
-                                                <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                                <p:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}" class="w-100" ></p:inputText>
-                                                <p:outputLabel value="Item Code"/>
-                                                <p:inputText autocomplete="off" value="#{serviceController.current.code}" class="form-control"/>
+                                <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column headerText="Name"  sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Institution" 
+                                    sortBy="#{item.institution.name}" 
+                                    filterBy="#{item.institution.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.institution.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Department"  
+                                    sortBy="#{item.department.name}" 
+                                    filterBy="#{item.department.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.department.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Base Value"  
+                                    sortBy="#{item.total}" 
+                                    filterBy="#{item.total}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                        <div class="col-6" >
 
-                                                <h:outputText value="Service Category/Sub Category" ></h:outputText>
-                                                <p:autoComplete 
-                                                    completeMethod="#{categoryController.completeServiceCategory}" 
-                                                    var="pta" 
-                                                    itemLabel="#{pta.name}"
-                                                    itemValue="#{pta}" 
-                                                    forceSelection="true" 
-                                                    value="#{serviceController.current.category}"
-                                                    >                                    
-                                                    <p:column>#{pta.name}</p:column>
-                                                    <p:column>#{pta.parentCategory}</p:column>                                        
-                                                </p:autoComplete>
+                            <p:dataTable value="#{itemMappingController.items}" 
+                                         rowKey="#{im.id}"
+                                         selection="#{itemMappingController.selectedItemMappings}"
+                                         var="im"
+                                         paginator="true" paginatorPosition="both"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                         rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                         >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Items Mapped" ></p:outputLabel>
+                                    <p:commandButton 
+                                        style="float: right;"
+                                        value="Remove Selected" 
+                                        ajax="false"
+                                        action="#{itemMappingController.removeSelectedItemMappingForDepartment()}"></p:commandButton>
+                                </f:facet>
+                                <p:column selectionMode="multiple" width="15"></p:column>
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.name}" ></h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Institution" 
+                                    sortBy="#{im.institution.name}" 
+                                    filterBy="#{im.institution.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Department"  
+                                    sortBy="#{pasindu.department.name}" 
+                                    filterBy="#{pasindu.department.name}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{im.department.name}" ></h:outputText>
+                                </p:column>
+                                <p:column
+                                    headerText="Base Value"  
+                                    sortBy="#{im.item.total}" 
+                                    filterBy="#{im.item.total}" 
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{im.item.total}" ></h:outputText>
+                                </p:column>
 
-
-
-                                                <h:outputText value="Institution" ></h:outputText>
-                                                <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" class="form-control">
-                                                    <f:selectItem itemLabel="Please select a Institution"/>
-                                                    <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                    <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                                </p:selectOneMenu>
-                                                <h:outputText value="Department" ></h:outputText>
-                                                <p:selectOneMenu id="cmbDep" value="#{serviceController.current.department}" class="form-control">
-                                                    <f:selectItem itemLabel="Please select a Department"/>
-                                                    <f:selectItems value="#{serviceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </p:selectOneMenu>
-                                                <h:outputText value="Inward Charge Category" ></h:outputText>
-                                                <p:selectOneMenu
-                                                    filter="true"
-                                                    filterMatchMode="contains"
-                                                    id="cmbInward" 
-                                                    value="#{serviceController.current.inwardChargeType}" 
-                                                    class="form-control">
-                                                    <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                </p:selectOneMenu>
-
-                                            </h:panelGrid>
-                                        </p:tab>
-                                        <p:tab title="Additional Details" >
-                                            <h:panelGrid columns="2" >
-                                                <h:outputText id="lblid" value="ID" ></h:outputText>
-                                                <h:outputText id="lblId" value="#{serviceController.current.id}" ></h:outputText>
-                                                <h:outputText value="Session Numbering" ></h:outputText>
-                                                <p:selectOneMenu  value="#{serviceController.current.sessionNumberType}" class="form-control">
-                                                    <f:selectItem itemLabel="Please select Session Numbering"/>
-                                                    <f:selectItems value="#{serviceController.sessionNumberType}"/>
-                                                </p:selectOneMenu>
-
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.inactive}" itemLabel="Service Inactive"/>
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.userChangable}" itemLabel="Can change Rate"/>
-
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.chargesVisibleForInward}" itemLabel="Charges Visible for inward billing"/>
-
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.marginNotAllowed}" itemLabel="Margin Not Allowed"/>
-
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
-
-
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.discountAllowed}" itemLabel="Discount Allowed"/>
-                                                <h:outputText value="" ></h:outputText>
-                                                <p:selectBooleanCheckbox value="#{serviceController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
-                                                <h:outputText value="Created Person"/>
-                                                <h:outputText value="#{serviceController.current.creater.webUserPerson.nameWithTitle}"/>
-                                                <h:outputText value="Item Id"/>
-                                                <h:outputText value="#{serviceController.current.id}"/>
-
-                                            </h:panelGrid>
-                                        </p:tab>
-                                        <p:tab rendered="false" title="Depricated" >
-                                            <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>
-                                            <p:inputText styleClass="longText pdInputText" autocomplete="off"   
-                                                         value="#{serviceController.current.vatPercentage}"  class="form-control"></p:inputText>
-
-
-                                            <h:outputText value="VATable" ></h:outputText>
-                                            <p:selectBooleanCheckbox  value="#{serviceController.current.vatable}" >
-                                            </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox   id="chkBilledAs" value="#{serviceController.billedAs}" itemLabel="Billed as a seperate investigation"  >
-                                                <p:ajax event="change" process="@this" update="billedAsIx" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:autoComplete   disabled="#{!serviceController.billedAs}" 
-                                                              widgetVar="aIx1" id="billedAsIx" forceSelection="true"
-                                                              value="#{serviceController.current.billedAs}" completeMethod="#{serviceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  >
-                                            </p:autoComplete>
-
-                                            <p:selectBooleanCheckbox  id="chkReportedAs" value="#{serviceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
-                                                <p:ajax event="change" process="@this" update="reportedAsIx" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:autoComplete  disabled="#{!serviceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{serviceController.current.reportedAs}" completeMethod="#{serviceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
-                                            </p:autoComplete>
-                                        </p:tab>
-
-                                    </p:tabView>
-
-
-
-                                </h:panelGrid>
-                            </p:panel>
+                            </p:dataTable>
                         </div>
                     </div>
 
@@ -192,12 +137,10 @@
 
 
 
-                </p:panel>
 
-                <!--                <p:panel >
-                                    <p:media value="http://www.youtube.com/v/KZnUr8lcqjo" width="420" height="315" player="flash"/>
-                
-                                </p:panel>-->
+
+
+                </p:panel>
 
             </h:form>
 
