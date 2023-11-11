@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -109,6 +110,7 @@ public class OpdPreBillController implements Serializable {
     private EnumController enumController;
     @Inject
     private OpdPreBillController opdPreBillController;
+    
     @EJB
     BillEjb billEjb;
     private boolean printPreview;
@@ -1021,6 +1023,7 @@ public class OpdPreBillController implements Serializable {
         return "/opd_pre_bill";
         
     }
+    
 
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
