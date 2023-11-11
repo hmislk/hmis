@@ -225,8 +225,8 @@ public class ItemMappingController implements Serializable {
         }
         String jpql = "SELECT im "
                 + "FROM ItemMapping im "
-                + "and i.retired=false "
-                + "WHERE im.department = :dep";
+                + "WHERE i.retired=false "
+                + "AND im.department = :dep";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("dep", department);
         List<ItemMapping> itemMappings = getFacade().findByJpql(jpql, parameters);
