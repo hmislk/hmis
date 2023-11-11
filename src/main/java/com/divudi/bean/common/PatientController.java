@@ -535,8 +535,8 @@ public class PatientController implements Serializable {
             return "";
         }
         opdPreBillController.prepareNewBill();
-        opdPreBillController.setSearchedPatient(getCurrent());
-        return "/opd_pre_bill";
+        opdPreBillController.setPatient(getCurrent());
+        return "/opd/opd_pre_bill";
     }
 
     public String navigateToReceiveDepositsFromPatientProfile() {
