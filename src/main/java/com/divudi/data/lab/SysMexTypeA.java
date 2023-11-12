@@ -69,7 +69,6 @@ public class SysMexTypeA {
         try {
             String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
             sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
-            System.out.println("sampleIdString = " + sampleIdString);
             
             
             String webStr = inputString.substring(wbcStart, wbcEnd);

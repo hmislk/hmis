@@ -288,7 +288,6 @@ public class OpdBillController implements Serializable {
     }
 
     public void searchDepartmentOpdBillLights() {
-        System.out.println("searchDepartmentOpdBillLights");
         Date startTime = new Date();
         billLights = searchController.listBillsLights(
                 BillType.OpdBill,
@@ -297,7 +296,6 @@ public class OpdBillController implements Serializable {
                 searchKeyword,
                 getFromDate(),
                 getToDate());
-        System.out.println("billLights = " + billLights.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
@@ -336,13 +334,11 @@ public class OpdBillController implements Serializable {
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
         }
-        System.out.println("batchBillId = " + batchBillId);
         if (batchBillId == null) {
             JsfUtil.addErrorMessage("No Batch Bill");
             return null;
         }
         batchBill = billFacade.find(batchBillId);
-        System.out.println("batchBill = " + batchBill);
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
@@ -350,7 +346,6 @@ public class OpdBillController implements Serializable {
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        System.out.println("bills = " + bills);
         return "/opd/opd_bill_print";
     }
 
@@ -1738,11 +1733,9 @@ public class OpdBillController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            System.out.println("After abs differenceOfBillTotalAndPaymentValue = " + differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;

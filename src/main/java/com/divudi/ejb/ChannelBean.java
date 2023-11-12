@@ -535,9 +535,6 @@ public class ChannelBean {
     
     
     public List<ServiceSessionInstance> generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(Staff s, Date d) {
-        System.out.println("generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew");
-        System.out.println("d = " + d);
-        System.out.println("s = " + s);
         List<ServiceSessionInstance> createdSessions = new ArrayList<>();
         Date start = new Date();
         Date nowDate;
@@ -787,9 +784,6 @@ public class ChannelBean {
     public List<ServiceSessionInstance> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
         System.out.println("fetchCreatedServiceSessions");
         String sql;
-        System.out.println("s = " + s);
-        System.out.println("fd = " + fd);
-        System.out.println("td = " + td);
         Map m = new HashMap();
         List<ServiceSessionInstance> tmp = new ArrayList<>();
         sql = "Select s "

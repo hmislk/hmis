@@ -241,15 +241,12 @@ public class SmsController implements Serializable {
     }
 
     public void fillAllSms() {
-        System.out.println("fillAllSms");
         String j = "select s "
                 + " from Sms s "
                 + " where s.createdAt between :fd and :td ";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
@@ -263,8 +260,6 @@ public class SmsController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("suc", true);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         faildsms = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 

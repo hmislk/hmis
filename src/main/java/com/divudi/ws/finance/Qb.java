@@ -2868,7 +2868,6 @@ public class Qb {
             String json = jSONObjectOut.toString();
             return json;
         }
-        System.out.println("cInvList 2" + new Date());
         Long lastIdInRequest;
         try {
             lastIdInRequest = Long.valueOf(strLastIdInRequest);
@@ -2882,7 +2881,6 @@ public class Qb {
             String json = jSONObjectOut.toString();
             return json;
         }
-        System.out.println("cInvList 3" + new Date());
         Institution ins = findInstitutionByCode(strInstitutionCode);
 
         if (ins == null) {
@@ -2895,7 +2893,6 @@ public class Qb {
             String json = jSONObjectOut.toString();
             return json;
         }
-        System.out.println("cInvList 4" + new Date());
         Date lastDate;
         try {
             lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
@@ -3165,7 +3162,6 @@ public class Qb {
             return json;
         }
 
-        System.out.println("grnList");
 
         Long lastIdInRequest;
         try {
@@ -3224,7 +3220,6 @@ public class Qb {
          */
         int maxNo = 500;
 
-        System.out.println("lastIdInRequest = " + lastIdInRequest);
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
         Long lastIdOfCurrentdata = null;
@@ -3925,7 +3920,6 @@ public class Qb {
     }
 
     private Institution findInstitutionByCode(String strInstitutionCode) {
-        System.out.println("strInstitutionCode = " + strInstitutionCode);
         String j;
         j = "select i "
                 + " from Institution i "
@@ -3934,7 +3928,6 @@ public class Qb {
         Map m = new HashMap<>();
         m.put("c", strInstitutionCode);
         m.put("ret", false);
-        System.out.println("m = " + m);
         Institution ins = institutionFacade.findFirstByJpql(j, m);
         return ins;
     }

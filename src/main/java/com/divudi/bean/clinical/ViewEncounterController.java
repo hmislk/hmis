@@ -23,7 +23,6 @@ public class ViewEncounterController implements Serializable {
     }
 
     public String navigateToNewEncounter(){
-        System.out.println("navigateToNewEncounter = " );
         if(encounter==null){
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
