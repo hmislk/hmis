@@ -599,9 +599,9 @@ public class OpdPreBillController implements Serializable {
         return p;
     }
 
-    public void settleBill() {
+    public String settleBill() {
         if (errorCheck()) {
-            return;
+            return null;
         }
 
         Patient p = savePatient(getPatient());
@@ -611,7 +611,7 @@ public class OpdPreBillController implements Serializable {
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
             if (b == null) {
-                return;
+                return null;
             }
 
             List<BillItem> list = new ArrayList<>();
@@ -641,7 +641,7 @@ public class OpdPreBillController implements Serializable {
         } else {
             boolean result = putToBills();
             if (result == false) {
-                return;
+                return null;
             }
         }
 
@@ -656,6 +656,8 @@ public class OpdPreBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public boolean checkBillValues(Bill b) {
