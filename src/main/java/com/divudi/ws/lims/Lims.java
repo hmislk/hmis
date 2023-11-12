@@ -196,9 +196,7 @@ public class Lims {
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
-        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
-        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
 
         // Check if necessary data is present
@@ -211,15 +209,12 @@ public class Lims {
         if (ptSamples == null || ptSamples.isEmpty()) {
             return constructErrorJson(2, "Error in Sample Generation. Please check investigation settings.", billId);
         }
-        System.out.println("ptSamples = " + ptSamples.size());
 
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
         for (PatientSample ps : ptSamples) {
-            System.out.println("ps = " + ps);
             if (uniqueIds.add(ps.getId())) { // Only proceed if the ID is unique
                 JSONObject j = constructPatientSampleJson(ps);
-                System.out.println("j = " + j);
                 if (j != null) {
                     array.put(j);
                 }
@@ -255,8 +250,6 @@ public class Lims {
     }
 
     private JSONObject constructPatientSampleJson(PatientSample ps) {
-        System.out.println("constructPatientSampleJson");
-        System.out.println("ps = " + ps);
         JSONObject jSONObject = new JSONObject();
         if (ps == null) {
             return null;
@@ -284,7 +277,6 @@ public class Lims {
             jSONObject.put("id", ps.getIdStr() != null ? ps.getIdStr() : "");
         }
         List<Item> tpiics = testComponantsForPatientSample(ps);
-        System.out.println("1. tpiics = " + tpiics);
 
         String tbis = "";
         String temTube = "";
@@ -292,19 +284,14 @@ public class Lims {
             return null;
         } else {
             for (Item i : tpiics) {
-                System.out.println("i = " + i);
                 tbis += i.getName() + ", ";
                 if (i instanceof Investigation) {
                     Investigation temIx = (Investigation) i;
-                    System.out.println("temIx = " + temIx);
-                    System.out.println("temIx.getInvestigationTube() = " + temIx.getInvestigationTube());
                     if (temIx.getInvestigationTube() == null) {
                         continue;
                     }
                     temTube = temIx.getInvestigationTube().getName();
-                    System.out.println("temTube = " + temTube);
                 } else {
-                    System.out.println("i no ix = " + i);
                     continue;
                 }
             }
@@ -387,7 +374,6 @@ public class Lims {
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForRequestss(List<Bill> bills, WebUser wu) {
-        System.out.println("prepareSampleCollectionByBillsForRequestss");
         String j = "";
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -396,7 +382,6 @@ public class Lims {
             return null;
         }
 
-        System.out.println("bills = " + bills.size());
 
         for (Bill b : bills) {
             m = new HashMap();
@@ -411,7 +396,6 @@ public class Lims {
                 return null;
             }
 
-            System.out.println("pis = " + pis.size());
 
             for (PatientInvestigation ptix : pis) {
 
@@ -421,7 +405,6 @@ public class Lims {
                     continue;
                 }
 
-                System.out.println("ix = " + ix.getName());
 
                 ptix.setCollected(true);
                 ptix.setSampleCollecter(wu);
@@ -436,11 +419,9 @@ public class Lims {
                     continue;
                 }
 
-                System.out.println("ixis = " + ixis.size());
 
                 for (InvestigationItem ixi : ixis) {
 
-                    System.out.println("ixi = " + ixi.getName());
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value) {
 
@@ -475,10 +456,8 @@ public class Lims {
                         System.out.println("Bill: " + b);
 //                        m.put("ca", false);
                         if (ix.isHasMoreThanOneComponant()) {
-                            System.out.println("ix.isHasMoreThanOneComponant() = " + ix.isHasMoreThanOneComponant());
                             j += " and ps.investigationComponant=:sc ";
                             m.put("sc", ixi.getSampleComponent());
-                            System.out.println("ixi.getSampleComponent() = " + ixi.getSampleComponent());
                         }
 
                         PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
@@ -531,14 +510,11 @@ public class Lims {
                         System.out.println("Patient: " + b.getPatient());
 
                         m.put("ptix", ptix);
-                        System.out.println("Ptix: " + ptix);
 
                         m.put("ixc", ixi.getSampleComponent());
-                        System.out.println("Sample Component: " + ixi.getSampleComponent());
 
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         
-                        System.out.println("ptsc = " + ptsc);
                         
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();

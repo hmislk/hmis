@@ -852,7 +852,6 @@ public class DataUploadBean {
             }
 
             Cell minimumIssueUnitCell = row.getCell(10);
-            System.out.println("minimumIssueUnitCell = " + minimumIssueUnitCell);
             if (minimumIssueUnitCell != null && minimumIssueUnitCell.getCellType() == CellType.STRING) {
                 minimumIssueUnitName = minimumIssueUnitCell.getStringCellValue();
                 minimumIssueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(minimumIssueUnitName);
@@ -861,13 +860,11 @@ public class DataUploadBean {
             }
 
             Cell issueMultipliesQuentityCell = row.getCell(11);
-            System.out.println("issueMultipliesQuentityCell = " + issueMultipliesQuentityCell);
             if (issueMultipliesQuentityCell != null && issueMultipliesQuentityCell.getCellType() == CellType.NUMERIC) {
                 issueMultipliesQuantity = issueMultipliesQuentityCell.getNumericCellValue();
             }
 
             Cell issueMultipliesUnitNameCell = row.getCell(12);
-            System.out.println("issueMultipliesUnitNameCell = " + issueMultipliesUnitNameCell);
             if (issueMultipliesUnitNameCell != null && issueMultipliesUnitNameCell.getCellType() == CellType.STRING) {
                 issueMultipliesUnitName = issueMultipliesUnitNameCell.getStringCellValue();
                 issueMultipliesUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueMultipliesUnitName);

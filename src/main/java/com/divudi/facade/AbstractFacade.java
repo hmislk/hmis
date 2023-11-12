@@ -37,7 +37,6 @@ public abstract class AbstractFacade<T> {
             getEntityManager().getTransaction().commit();
             return result;
         } catch (Exception e) {
-            System.out.println("e = " + e);
             return 0;
         }
     }
