@@ -1,131 +1,68 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:pat="http://java.sun.com/jsf/composite/patient">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+
+
+                <p:panel rendered="#{!opdPreBillController.printPreview}" >
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-circle-plus" />
+                        <p:outputLabel value="Billing for Cashier" class="mx-4" ></p:outputLabel>
+                    </f:facet>
+
+                    <h:form id="form">
+                        <p:focus id="focusIx" for="acIx" />
+                        <p:dialog 
+                            id="dlgSessions1" 
+                            widgetVar="dlgSessions" 
+
+                            header="Session" >
+                            <p:panel id="sessions" header="Session"  >
+                                <p:calendar 
+                                    id="calS" 
+                                    value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
+                                    <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdPreBillController.fillBillSessionsLstner}" />
+                                </p:calendar>
+                                <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                    <f:selectItem itemLabel="Select Department"/>
+                                    <f:selectItems value="#{departmentController.labs}" 
+                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                    <p:ajax process="@this" update="acIx" event="change"/>
+                                </p:selectOneMenu><br></br>
+                                <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
+
+                                        <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        </h:outputText>
 
 
 
-    <ui:define name="content">
-
-
-        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdPreBilling'))}" >
-            You are NOT authorized
-        </h:panelGroup>
-
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" styleClass="opdPanel" >
-            <h:form id="form">
-                <p:focus id="focusIx" for="acIx" />
-                <f:facet name="header">
-                    <h:outputLabel value="OPD"/>
-                </f:facet>
-
-                <h:panelGroup rendered="#{!opdPreBillController.printPreview}" styleClass="alignTop" >
-                    <p:panel style="min-height: 600px; position:relative;"  >
-
-
-
+                                    </f:facet>
+                                    <p:column headerText="No.">
+                                        <h:outputText value="#{bs.serialNo}" />
+                                    </p:column>
+                                    <p:column headerText="Client">
+                                        <h:outputText value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:dialog>
                         <div class="row">
                             <div class="col-md-6">
-
-                                <p:panel  style="background-color: grey;" >
-
-                                    <div class="row">
-                                        <div class="col-md-3 p-1">
-                                            <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                                             value="#{opdPreBillController.patient.person.title}">
-                                                <f:selectItem itemLabel="Select Title" />
-                                                <f:selectItems value="#{opdPreBillController.title}" var="i"
-                                                               itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
-                                                <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div class="col-md-9 p-1">
-                                            <p:inputText 
-                                                autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
-                                                value="#{opdPreBillController.patient.person.name}"
-                                                class="form-control" />
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-3 p-1">
-                                            <p:selectOneMenu id="txtNewSex" value="#{opdPreBillController.patient.person.sex}"
-                                                             class="form-control w-100">
-                                                <f:selectItem itemLabel="Select Gender"/>
-                                                <f:selectItems value="#{opdPreBillController.sex}"/>
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div class="col-md-9 p-1">
-                                            <div class="row">
-                                                <div class="col-md-2">
-                                                    <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                                                 value="#{opdPreBillController.patient.person.ageYearsComponent}"
-                                                                 class="form-control">
-                                                        <f:ajax event="blur" execute="@this" render="calDob" />
-                                                    </p:inputText>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                                                 value="#{opdPreBillController.patient.person.ageMonthsComponent}"
-                                                                 class="form-control">
-                                                        <f:ajax event="blur" execute="@this"  render="calDob"  />
-                                                    </p:inputText>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                                                 value="#{opdPreBillController.patient.person.ageDaysComponent}"
-                                                                 class="form-control">
-                                                        <f:ajax event="blur" execute="@this"  render="calDob" />
-                                                    </p:inputText>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <p:calendar value="#{opdPreBillController.patient.person.dob}"
-                                                                id="calDob" 
-                                                                class="w-100"
-                                                                inputStyleClass="form-control"
-                                                                pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                                placeholder="Data of Birth (dd/MM/yyyy)"
-                                                                navigator="true"
-                                                                >
-                                                        <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                                                    </p:calendar>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-4 p-1">
-                                            <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                                         value="#{opdPreBillController.patient.person.phone}"
-                                                         class="form-control" />
-                                        </div>
-                                        <div class="col-md-4 p-1">
-                                            <p:autoComplete id="acNewPtArea" 
-                                                            placeholder="Search &amp; Select Area"
-                                                            completeMethod="#{areaController.completeArea}"
-                                                            var="pta" itemLabel="#{pta.name}"
-                                                            itemValue="#{pta}" forceSelection="true"
-                                                            value="#{opdPreBillController.patient.person.area}"
-                                                            inputStyleClass="form-control"
-                                                            class="w-100"/>
-                                        </div>
-                                        <div class="col-md-4 p-1">
-                                            <p:inputText placeholder="National ID No."
-                                                         value="#{opdPreBillController.patient.person.nic}"
-                                                         class="form-control"/>
-                                        </div>
-                                    </div>
-                                </p:panel>
+                                <common:patient_details patient="#{opdPreBillController.patient}"/>
 
                                 <h:panelGroup id="panelIx" >
 
@@ -603,86 +540,40 @@
                                 </h:panelGroup>
                             </div>
                         </div>
+                    </h:form>
+                </p:panel>
 
-
-
-
-
-
-
-
-
-
-
-                    </p:panel>
-                </h:panelGroup>
 
                 <h:panelGroup rendered="#{opdPreBillController.printPreview}" >
+                    <h:form >
+                        <h:panelGrid>
+                            <h:panelGrid columns="2" styleClass="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBill" ></p:printer>
+                                </p:commandButton>
 
+                                <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
+                                </p:commandButton>
+                            </h:panelGrid>
 
+                            <h:panelGroup id="gpPosBill">
+                                <div>
+                                    <bi:posOpdBillPre bill="#{opdPreBillController.bills.get(0)}" duplicate="false"/>                        
+                                </div>
+                            </h:panelGroup>
 
-                    <h:panelGrid>
-
-                        <h:panelGrid columns="2" styleClass="nonPrintBlock">
-                            <p:commandButton value="Print" ajax="false" action="#"  >
-                                <p:printer target="gpPosBill" ></p:printer>
-                            </p:commandButton>
-
-                            <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
-                            </p:commandButton>
                         </h:panelGrid>
 
-                        <h:panelGroup id="gpPosBill">
-                            <div>
-                                <bi:posOpdBillPre bill="#{opdPreBillController.bills.get(0)}" duplicate="false"/>                        
-                            </div>
-                        </h:panelGroup>
-
-                    </h:panelGrid>
+                    </h:form>
 
 
 
                 </h:panelGroup>
 
-                <p:dialog 
-                    id="dlgSessions1" 
-                    widgetVar="dlgSessions" 
-
-                    header="Session" >
-                    <p:panel id="sessions" header="Session"  >
-                        <p:calendar 
-                            id="calS" 
-                            value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
-                            <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdPreBillController.fillBillSessionsLstner}" />
-                        </p:calendar>
-                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                            <f:selectItem itemLabel="Select Department"/>
-                            <f:selectItems value="#{departmentController.labs}" 
-                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                            <p:ajax process="@this" update="acIx" event="change"/>
-                        </p:selectOneMenu><br></br>
-                        <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
-                            <f:facet name="header">
-                                <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
-
-                                <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                </h:outputText>
 
 
 
-                            </f:facet>
-                            <p:column headerText="No.">
-                                <h:outputText value="#{bs.serialNo}" />
-                            </p:column>
-                            <p:column headerText="Client">
-                                <h:outputText value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                </p:dialog>
-            </h:form>
-
-        </h:panelGroup>
-    </ui:define>
-</ui:composition>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

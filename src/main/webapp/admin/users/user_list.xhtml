@@ -40,6 +40,15 @@
                                     </ui:insert>
                                 </div>
                                 <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
+                                    
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}" 
+                                        icon="fa fa-user-cog" 
+                                        value="Demo User P" 
+                                        class="m-1" 
+                                        action="tmp" ajax="false" />
+
+                                    
                                     <p:commandButton ajax="false" disabled="#{webUserController.selected == null}" icon="fa fa-trash" value="Remove" class="m-1" onclick="if (!confirm('Are you sure you want to Remove User?'))
                                                 return false;" action="#{webUserController.removeUser}" />
 

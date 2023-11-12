@@ -644,12 +644,9 @@ public class PatientController implements Serializable {
         saveBillItem();
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
-        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
         if (patient.getRunningBalance() == null) {
-            System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
             patient.setRunningBalance(getBill().getNetTotal());
         } else {
-            System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
             patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
         }
         getFacade().edit(patient);
@@ -775,7 +772,6 @@ public class PatientController implements Serializable {
     }
 
     public String searchPatientForOpd() {
-        System.out.println("searchPatientForOpd");
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
         } else if (searchSampleId != null && !searchSampleId.trim().equals("")) {
@@ -808,7 +804,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchByBill() {
-        System.out.println("searchByBill");
         String j;
         j = "select b.patient from Bill b where b.retired=false ";
         Map m = new HashMap();
@@ -840,7 +835,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchBySample() {
-        System.out.println("searchBySample");
         String j;
         j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.retired=false ";
         Map m = new HashMap();
@@ -868,7 +862,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchPatientByDetails() {
-        System.out.println("searchPatientByDetails");
         boolean atLeastOneCriteriaIsGiven = false;
         String j;
         Map m = new HashMap();
@@ -918,14 +911,11 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("Ät least one search criteria should be given");
             return;
         }
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         searchedPatients = getFacade().findByJpql(j, m);
 
     }
 
     public void searchByPatientId() {
-        System.out.println("searchByPatientId");
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.id=:id";
@@ -2323,7 +2313,6 @@ public class PatientController implements Serializable {
             } else {
                 String error = "object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + PatientController.class.getName();
-                System.out.println("error = " + error);
                 return null;
             }
         }
