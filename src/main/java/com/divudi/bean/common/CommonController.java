@@ -64,19 +64,14 @@ public class CommonController implements Serializable {
      */
     public static double formatDouble(Double number, String format) {
         System.out.println("formatDouble");
-        System.out.println("format = " + format);
-        System.out.println("number = " + number);
         if (number == null) {
             return 0.0; // Handle null input gracefully by returning 0.0
         }
 
         DecimalFormat decimalFormat = new DecimalFormat(format);
-        System.out.println("decimalFormat = " + decimalFormat);
         try {
             String formattedValue = decimalFormat.format(number);
-            System.out.println("formattedValue = " + formattedValue);
             Double returningDbl = decimalFormat.parse(formattedValue).doubleValue();
-            System.out.println("returningDbl = " + returningDbl);
             return returningDbl;
         } catch (ParseException e) {
             return 0.0; // Handle any parsing errors gracefully by returning 0.0

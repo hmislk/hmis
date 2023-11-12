@@ -189,7 +189,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                 url = url.substring(0, url.length() - 1);
             }
             landingPage = url;
-            System.out.println("1 landingPage = " + landingPage);
 
             // Get the correct FacesServletMapping from the web.xml context-param
             String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");

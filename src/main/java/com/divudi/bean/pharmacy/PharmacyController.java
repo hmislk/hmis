@@ -500,8 +500,9 @@ public class PharmacyController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("ret", Boolean.TRUE);
 //        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
-        System.out.println("itemFacade = " + itemFacade);
-        System.out.println("jpql = " + jpql);
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
         allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql);
 
     }

@@ -80,8 +80,6 @@ public class SecurityController implements Serializable {
     }
     
     public String encryptAlphanumeric(String text, String key) {
-        System.out.println("key = " + key);
-        System.out.println("text = " + text);
         if (text == null || key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Text and key cannot be null or empty");
         }
@@ -108,8 +106,6 @@ public class SecurityController implements Serializable {
     }
 
     public String decryptAlphanumeric(String text, String key) {
-        System.out.println("key = " + key);
-        System.out.println("text = " + text);
         if (text == null || key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Text and key cannot be null or empty");
         }
