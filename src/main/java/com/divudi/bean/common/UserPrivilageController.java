@@ -1062,6 +1062,7 @@ public class UserPrivilageController implements Serializable {
         m.put("dep", department);
         currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
+        unselectTreeNodes(rootTreeNode); 
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
 
@@ -1222,7 +1223,7 @@ public class UserPrivilageController implements Serializable {
         if (selectedPrivileges == null) {
             return;
         }
-        
+
         List<WebUserPrivilege> newWups = new ArrayList<>();
         List<WebUserPrivilege> oldWups = new ArrayList<>();
 
@@ -1256,6 +1257,7 @@ public class UserPrivilageController implements Serializable {
         }
         getFacade().batchCreate(newWups);
         getFacade().batchEdit(oldWups);
+        fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
 
     }
@@ -1303,6 +1305,23 @@ public class UserPrivilageController implements Serializable {
             if (childObject instanceof TreeNode) {
                 TreeNode childNode = (TreeNode) childObject;
                 checkNode(childNode, privilegesToCheck);
+            }
+        }
+    }
+
+    private static void unselectTreeNodes(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+
+        // Unselect the current node
+        ((DefaultTreeNode) root).setSelected(false);
+
+        // Recursively unselect child nodes
+        for (Object childObject : root.getChildren()) {
+            if (childObject instanceof TreeNode) {
+                TreeNode childNode = (TreeNode) childObject;
+                unselectTreeNodes(childNode);
             }
         }
     }

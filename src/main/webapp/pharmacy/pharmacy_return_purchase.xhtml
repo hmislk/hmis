@@ -89,7 +89,15 @@
                         <p:inputText autocomplete="off" value="#{ph.qty}" >
                             <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId} "  listener="#{purchaseReturnController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                    </p:column>  
+                    </p:column> 
+                    
+                     <p:column 
+                         headerText="Returning Free Qty in Unit" 
+                         style="width:25px!important;">                     
+                         <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}" >
+                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId} "  listener="#{purchaseReturnController.onEdit(ph)}" ></f:ajax>
+                        </p:inputText>
+                    </p:column> 
 
                 </p:dataTable>  
                 <p:spacer height="50"/>

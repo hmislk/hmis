@@ -42,22 +42,29 @@
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:commandButton value="Update User Privilage"  
-                                             action="#{userPrivilageController.savePrivileges()}"
-                                             class="ui-button-success"
-                                             ajax="false"  >  
-                            </p:commandButton>
+                            <p:spacer/>
+                            <h:panelGroup >
+                                <p:commandButton value="Update User Privilage"  
+                                                 action="#{userPrivilageController.savePrivileges}"
+                                                 class="ui-button-success mx-1"
+                                                 ajax="false"  >  
+                                </p:commandButton>
 
-                            <p:commandButton value="List Privileges"
-                                             process="cmbInstitution cmbDepartment"
-                                             class="ui-button-warning"
-                                             update="tree"
-                                             ajax="false"
-                                             action="#{userPrivilageController.fillUserPrivileges}"></p:commandButton>
+                                <p:commandButton value="List Privileges"
+                                                 process="cmbInstitution cmbDepartment"
+                                                 class="ui-button-warning mx-1"
+                                                 ajax="false"
+                                                 action="#{userPrivilageController.fillUserPrivileges}"></p:commandButton>
+
+                            </h:panelGroup>
 
                         </p:panelGrid>
 
-
+                        <ui:repeat id="prvs" value="#{userPrivilageController.currentWebUserPrivileges}" var="p" >
+                            <p>
+                                #{p.privilege}
+                            </p>
+                        </ui:repeat>
 
                         <p:tree
                             id="tree"
@@ -66,6 +73,8 @@
                             selection="#{userPrivilageController.selectedNodes}"
                             value="#{userPrivilageController.rootTreeNode}" 
                             var="node" 
+                            propagateSelectionDown="true"
+                            propagateSelectionUp="false"
                             >  
                             <p:ajax event="select"
                                     listener="#{userPrivilageController.onNodeSelect}" 

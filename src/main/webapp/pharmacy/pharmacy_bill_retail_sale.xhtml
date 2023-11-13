@@ -63,7 +63,7 @@
                                                     <p:autoComplete accesskey="i"    id="acStock" 
                                                                     value="#{pharmacySaleController.stock}"
                                                                     completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
-                                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="30"
+                                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
                                                                     >
                                                         <p:column headerText="Item">
                                                             <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;
