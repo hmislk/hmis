@@ -14,14 +14,18 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -46,18 +50,25 @@ public class UserPrivilageController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    
     @EJB
     private WebUserPrivilegeFacade ejbFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
 
     private static final long serialVersionUID = 1L;
 
     private List<WebUserPrivilege> selectedItems;
+
+    private List<WebUserPrivilege> currentWebUserPrivileges;
 
     private WebUser currentWebUser;
     private TreeNode[] selectedNodes;
     private TreeNode<PrivilegeHolder> rootTreeNode;
     private Institution institution;
     private Department department;
+    private List<Department> departments;
+    private List<PrivilegeHolder> currentUserPrivilegeHolders;
 
     @Deprecated
     public void onNodeSelect(AjaxBehaviorEvent event) {
@@ -135,6 +146,21 @@ public class UserPrivilageController implements Serializable {
 
             System.out.println("Selected Privilege: " + selectedPrivilege);
         }
+    }
+
+    public List<Department> fillWebUserDepartments(WebUser wu) {
+        Set<Department> departmentSet = new HashSet<>();
+        String sql = "SELECT i.department "
+                + " FROM WebUserDepartment i "
+                + " WHERE i.retired = :ret "
+                + " AND i.webUser = :wu "
+                + " ORDER BY i.department.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("wu", wu);
+        List<Department> depts = departmentFacade.findByJpql(sql, m);
+        departmentSet.addAll(depts);
+        return new ArrayList<>(departmentSet);
     }
 
     private TreeNode<PrivilegeHolder> createPrivilegeHolderTreeNodes() {
@@ -990,6 +1016,10 @@ public class UserPrivilageController implements Serializable {
             UtilityController.addErrorMessage("Please select a user");
             return;
         }
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
         saveWebUserPrivileges();
     }
 
@@ -1017,19 +1047,40 @@ public class UserPrivilageController implements Serializable {
     }
 
     public void fillUserPrivileges() {
-        List<WebUserPrivilege> wups = new ArrayList<>();
+        List<WebUserPrivilege> wups;
         if (currentWebUser == null) {
             JsfUtil.addErrorMessage("User?");
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
-                + " where i.webUser=:wu ";
+                + " where i.webUser=:wu "
+                + " and i.retired=:ret "
+                + " and i.department=:dep";
         Map m = new HashMap();
         m.put("wu", currentWebUser);
-        wups = getEjbFacade().findByJpql(j, m);
-
+        m.put("ret", false);
+        m.put("dep", department);
+        currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
+        currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
+        checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
 
+    public List<PrivilegeHolder> createPrivilegeHolders(List<WebUserPrivilege> ps) {
+        List<PrivilegeHolder> phs = new ArrayList<>();
+        if (ps == null) {
+            return phs;
+        }
+
+        for (WebUserPrivilege tmpWup : ps) {
+            PrivilegeHolder ph = new PrivilegeHolder();
+            ph.setPrivilege(tmpWup.getPrivilege());
+            ph.setName(tmpWup.getPrivilege().getLabel());
+            phs.add(ph);
+        }
+        return phs;
+    }
+
+    @Deprecated
     public void markWebUserPrivileges() {
         List<WebUserPrivilege> wups = new ArrayList<>();
         if (currentWebUser != null) {
@@ -1161,14 +1212,53 @@ public class UserPrivilageController implements Serializable {
 
     public void saveWebUserPrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
+        System.out.println("selectedPrivileges = " + selectedPrivileges);
+
+        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
+            wup.setRetired(true);
+            getFacade().edit(wup);
+        }
+        if (selectedPrivileges == null) {
+            return;
+        }
+
+        for (PrivilegeHolder ph : selectedPrivileges) {
+            System.out.println("ph = " + ph);
+            if (ph.getPrivilege() == null) {
+                continue;
+            }
+            String jpql = "select w"
+                    + " from WebUserPrivilege w "
+                    + " where w.department=:dep "
+                    + " and w.webUser=:wu "
+                    + " and w.privilege=:p";
+            Map m = new HashMap();
+            m.put("dep", department);
+            m.put("wu", currentWebUser);
+            m.put("p", ph.getPrivilege());
+            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
+            if (wup == null) {
+                wup = new WebUserPrivilege();
+                wup.setDepartment(department);
+                wup.setWebUser(currentWebUser);
+                wup.setPrivilege(ph.getPrivilege());
+                getFacade().create(wup);
+                getFacade().edit(wup);
+            } else {
+                wup.setRetired(false);
+            }
+        }
 
     }
 
     public static List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
+        System.out.println("extractPrivileges");
+        System.out.println("selectedNodes = " + selectedNodes);
         List<PrivilegeHolder> privileges = new ArrayList<>();
         if (selectedNodes != null) {
             for (TreeNode node : selectedNodes) {
                 Object data = node.getData();
+                System.out.println("data = " + data);
                 if (data instanceof PrivilegeHolder) {
                     privileges.add((PrivilegeHolder) data);
                 }
@@ -1177,7 +1267,7 @@ public class UserPrivilageController implements Serializable {
         return privileges;
     }
 
-    public static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
+    private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
         if (root == null || privilegesToCheck == null || privilegesToCheck.isEmpty()) {
             return;
         }
@@ -1287,6 +1377,7 @@ public class UserPrivilageController implements Serializable {
         this.rootTreeNode = tmp;
     }
 
+    @Deprecated
     public void createSelectedPrivilegesForUser() {
         markWebUserPrivileges();
     }
@@ -1310,6 +1401,36 @@ public class UserPrivilageController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public List<PrivilegeHolder> getCurrentUserPrivilegeHolders() {
+        if (currentUserPrivilegeHolders == null) {
+            currentUserPrivilegeHolders = new ArrayList<>();
+        }
+        return currentUserPrivilegeHolders;
+    }
+
+    public void setCurrentUserPrivilegeHolders(List<PrivilegeHolder> currentUserPrivilegeHolders) {
+        this.currentUserPrivilegeHolders = currentUserPrivilegeHolders;
+    }
+
+    public List<WebUserPrivilege> getCurrentWebUserPrivileges() {
+        if (currentWebUserPrivileges == null) {
+            currentWebUserPrivileges = new ArrayList<>();
+        }
+        return currentWebUserPrivileges;
+    }
+
+    public void setCurrentWebUserPrivileges(List<WebUserPrivilege> currentWebUserPrivileges) {
+        this.currentWebUserPrivileges = currentWebUserPrivileges;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
 
     public class PrivilegeHolder {
@@ -1343,6 +1464,33 @@ public class UserPrivilageController implements Serializable {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 73 * hash + Objects.hashCode(this.privilege);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final PrivilegeHolder other = (PrivilegeHolder) obj;
+            return this.privilege == other.privilege;
         }
 
     }

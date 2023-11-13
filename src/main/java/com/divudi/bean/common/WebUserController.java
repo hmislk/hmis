@@ -750,7 +750,7 @@ public class WebUserController implements Serializable {
         }
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().init();
-        getUserPrivilageController().createSelectedPrivilegesForUser();
+        getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_privileges";
     }
 
@@ -787,6 +787,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserDepartmentController().setSelectedUser(selected);
+        getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_department";
     }
 
