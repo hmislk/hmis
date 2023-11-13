@@ -577,8 +577,6 @@ public class UserPrivilageController implements Serializable {
                 wup.setDepartment(department);
                 wup.setWebUser(currentWebUser);
                 wup.setPrivilege(ph.getPrivilege());
-                getFacade().create(wup);
-                getFacade().edit(wup);
                 newWups.add(wup);
             } else {
                 wup.setRetired(false);
@@ -589,7 +587,6 @@ public class UserPrivilageController implements Serializable {
         getFacade().batchEdit(oldWups);
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
-
     }
 
     public static List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {

@@ -60,11 +60,7 @@
 
                         </p:panelGrid>
 
-                        <ui:repeat id="prvs" value="#{userPrivilageController.currentWebUserPrivileges}" var="p" >
-                            <p>
-                                #{p.privilege}
-                            </p>
-                        </ui:repeat>
+                       
 
                         <p:tree
                             id="tree"
@@ -74,40 +70,15 @@
                             value="#{userPrivilageController.rootTreeNode}" 
                             var="node" 
                             propagateSelectionDown="true"
-                            propagateSelectionUp="false"
+                            propagateSelectionUp="true"
                             >  
-                            <p:ajax event="select"
-                                    listener="#{userPrivilageController.onNodeSelect}" 
-                                    />
-                            <p:ajax event="unselect" 
-                                    listener="#{userPrivilageController.onNodeUnselect}" 
-                                    />
                             <p:treeNode>  
                                 <h:outputText value="#{node}" />  
                             </p:treeNode>  
                         </p:tree>
-
-
-
-                        <h:commandButton value="Refresh" ></h:commandButton>
-
-                        <h1>
-                            #{userPrivilageController.selectedNodes}
-                        </h1>
-
                     </p:panel>
-
-
-
-
                 </h:form>
-
-
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
-
 </html>
