@@ -41,7 +41,13 @@
                                 </div>
                                 <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
 
-                                    <p:commandButton ajax="false" disabled="#{webUserController.selected == null}" icon="fa fa-trash" value="Remove" class="m-1" onclick="if (!confirm('Are you sure you want to Remove User?'))
+                                    <p:commandButton ajax="false"
+                                                     
+                                                     disabled="#{webUserController.selected == null}" 
+                                                     icon="fa fa-trash" 
+                                                     value="Remove" 
+                                                     class="m-1 ui-button-danger" 
+                                                     onclick="if (!confirm('Are you sure you want to Remove User?'))
                                                 return false;" action="#{webUserController.removeUser}" />
 
                                     <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />

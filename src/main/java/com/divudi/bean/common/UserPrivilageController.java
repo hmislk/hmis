@@ -50,7 +50,7 @@ public class UserPrivilageController implements Serializable {
 
     @Inject
     SessionController sessionController;
-    
+
     @EJB
     private WebUserPrivilegeFacade ejbFacade;
     @EJB
@@ -1216,11 +1216,15 @@ public class UserPrivilageController implements Serializable {
 
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
             wup.setRetired(true);
-            getFacade().edit(wup);
+
         }
+        getFacade().batchEdit(getCurrentWebUserPrivileges());
         if (selectedPrivileges == null) {
             return;
         }
+        
+        List<WebUserPrivilege> newWups = new ArrayList<>();
+        List<WebUserPrivilege> oldWups = new ArrayList<>();
 
         for (PrivilegeHolder ph : selectedPrivileges) {
             System.out.println("ph = " + ph);
@@ -1244,10 +1248,15 @@ public class UserPrivilageController implements Serializable {
                 wup.setPrivilege(ph.getPrivilege());
                 getFacade().create(wup);
                 getFacade().edit(wup);
+                newWups.add(wup);
             } else {
                 wup.setRetired(false);
+                oldWups.add(wup);
             }
         }
+        getFacade().batchCreate(newWups);
+        getFacade().batchEdit(oldWups);
+        JsfUtil.addSuccessMessage("Updated");
 
     }
 

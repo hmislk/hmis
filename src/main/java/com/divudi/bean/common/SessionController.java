@@ -1051,14 +1051,9 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
                     setUserPreference(uf);
 
-                    if (departments.size() == 1) {
-                        department = departments.get(0);
-                        selectDepartment();
-                        UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
-                    } else {
-                        UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
-                        UtilityController.addSuccessMessage(setGreetingMsg());
-                    }
+                    UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
+                    UtilityController.addSuccessMessage(setGreetingMsg());
+
                     if (getApplicationController().isLogged(u) != null) {
                         UtilityController.addErrorMessage("This user is already logged.");
                     }
@@ -1522,7 +1517,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", false);
         m.put("wu", twu);
-        List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql,m);
+        List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
         return twups;
     }
 

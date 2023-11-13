@@ -20,41 +20,23 @@
 
 
                     <p:panel header="Manage User Privilages"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
-
-
                         <f:facet name="header" >
                             <h:outputLabel value="Manage User Privilages"/>
-
                         </f:facet>
 
                         <p:panelGrid  columns="2" class="w-100" >    
-                            <p:outputLabel class="form-label" value="Username" ></p:outputLabel>
+                            <p:outputLabel  value="Username" ></p:outputLabel>
                             <p:outputLabel class="form-control" value="#{userPrivilageController.currentWebUser.name}" ></p:outputLabel>
 
-                            <p:outputLabel class="form-label" value="Institution" ></p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmbInstitution"
-                                value="#{userPrivilageController.institution}"
-                                filter="true"
-                                placeholder="Institution"
-                                >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
-                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('cmbDepartment',view).clientId}" ></p:ajax>
-                            </p:selectOneMenu>
 
-
-                            <p:outputLabel class="form-label" value="Department" ></p:outputLabel>
+                            <p:outputLabel  value="Department" ></p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmbDepartment"
                                 placeholder="Department"
                                 value="#{userPrivilageController.department}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(userPrivilageController.institution)}"
+                                <f:selectItems value="#{userPrivilageController.departments}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
@@ -96,14 +78,14 @@
                             </p:treeNode>  
                         </p:tree>
 
-                        
-                        
+
+
                         <h:commandButton value="Refresh" ></h:commandButton>
-                        
+
                         <h1>
-                        #{userPrivilageController.selectedNodes}
+                            #{userPrivilageController.selectedNodes}
                         </h1>
-                        
+
                     </p:panel>
 
 
