@@ -9,71 +9,50 @@
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
-                <h:panelGroup >
-                    <h:form id="form"  >
-                        <p:growl />
-                        <div class="container">
-                            <div class="row">
-                                <h2>Manage Virtual Therapeutic Moiety (VTMs)</h2>
-                                <div class="col-md-6">
-                                    
-                                    <div class="card md-3">
-                                        <div class="card-header">Search Vtm</div>
-                                        <div class="card-body">
-                                            <h:inputText autocomplete="off" id="txtSearch" value="#{vtmController.selectText}" class="form-control" >
-                                                <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
-                                            </h:inputText>
-                                            <p:selectOneListbox  style="height: 100%;" converter="vtm"  id="lstSelect" value="#{vtmController.current}" >
-                                                <f:selectItems  value="#{vtmController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                                <p:ajax event="change"   update="gpDetail" process="lstSelect" >
-                                                </p:ajax>
-                                            </p:selectOneListbox>
-                                        </div>
-                                        <div class="card-footer">
-                                            <div class="d-flex justify-content-between">
-                                                <h:commandButton id="btnAdd" value="Add" action="#{vtmController.prepareAdd()}" styleClass="buttons btn btn-primary" >
-                                                    <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
-                                                    </f:ajax>
-                                                </h:commandButton>
-                                                <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                            return false;" action="#{vtmController.delete()}"  value="Delete" class="btn btn-danger" >
-                                                </h:commandButton>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-
-                                <div class="col-md-6">
-                                    <h:panelGroup id="gpDetail" >
-                                        <div class="card md-3">
-                                            
-                                                <div class="card-header d-flex justify-content-between">Edit Details
-                                                    
-                                                    <p:commandButton id="btnSave" value="Save"  action="#{vtmController.saveSelected()}" styleClass="buttons btn btn-primary" style="align-items: flex-end"
-                                                                 ajax="false" >
-                                                </p:commandButton>
-                                                <p:defaultCommand target="btnSave"/>
-                                                </div>
-                                                
-                                            
-                                            <div class="card-body">
-
-                                                
-                                                    <label for="lblName" class="form-label">Name</label>
-                                                    <h:inputText autocomplete="off" id="txtName" value="#{vtmController.current.name}" required="true" class="form-control" ></h:inputText>
-                                                
-                                            </div>
-                                        </div>
-                                    </h:panelGroup>
-                                </div>
-
-
-
+                <h:form id="form"  >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputText value="Manage VTMs" ></h:outputText>
+                        </f:facet>
+                        <div class="row" >
+                            <div class="col-6" >
+                                <p:selectOneListbox  
+                                    style="height: 100%;" 
+                                    converter="vtm"  
+                                    id="lstSelect" 
+                                    value="#{vtmController.current}"
+                                    filter="true">
+                                    <f:selectItems  value="#{vtmController.items}"
+                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <p:ajax event="change"   update="gpDetail" process="lstSelect" >
+                                    </p:ajax>
+                                </p:selectOneListbox>
+                                <h:commandButton id="btnAdd" value="Add" action="#{vtmController.prepareAdd()}" styleClass="buttons btn btn-primary" >
+                                    <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
+                                    </f:ajax>
+                                </h:commandButton>
+                                <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" action="#{vtmController.delete()}"  value="Delete" class="btn btn-danger" >
+                                </h:commandButton>
                             </div>
+                            <h:panelGroup id="gpDetail" class="col-6" layout="block" >
+                                <label for="lblName" class="form-label">Name</label>
+                                <h:inputText autocomplete="off" id="txtName" value="#{vtmController.current.name}" required="true" class="form-control" ></h:inputText>
+                                <p:commandButton id="btnSave" value="Save"  action="#{vtmController.save}" styleClass="buttons btn btn-primary" style="align-items: flex-end"
+                                                 ajax="false" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </h:panelGroup>
                         </div>
-                    </h:form>
-                </h:panelGroup>
+
+                    </p:panel>
+
+
+                    <p:growl />
+                
+                </h:form>
+
             </ui:define>
         </ui:composition>
     </h:body>
