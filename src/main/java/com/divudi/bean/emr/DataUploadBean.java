@@ -664,6 +664,9 @@ public class DataUploadBean {
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
                 vmp = vmpController.findVmpByName(vmpName);
+                if (vmp != null) {
+                    continue;
+                }
             }
 
             Cell manufacturerCell = row.getCell(5);
@@ -679,7 +682,7 @@ public class DataUploadBean {
             }
 
             manufacturer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Manufacturer);
-            importer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Importer);
+            importer = institutionController.getInstitutionByName(importerName, InstitutionType.Importer);
 
             amp = new Amp();
             amp.setName(ampName);

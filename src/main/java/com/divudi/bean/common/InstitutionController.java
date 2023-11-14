@@ -270,6 +270,12 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {
+        if (name == null) {
+            return null;
+        }
+        if (type == null) {
+            return null;
+        }
         String sql;
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
@@ -372,7 +378,7 @@ public class InstitutionController implements Serializable {
         agencies = null;
         suppliers = null;
         companies = null;
-        collectingCentresAndManagedInstitutions=null;
+        collectingCentresAndManagedInstitutions = null;
         creditCompanies = null;
         banks = null;
         suppliers = null;
