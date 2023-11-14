@@ -104,7 +104,7 @@ public class VmpController implements Serializable {
         m.put("ret", false);
         m.put("vmpName", vmpName);
         Vmp vmp = getFacade().findFirstByJpql(jpql, m);
-        if(vmp==null){
+        if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
             String vmpCode = CommonController.nameToCode("vmp_" + vmpName);
@@ -304,6 +304,33 @@ public class VmpController implements Serializable {
         v.setMinimumIssueQuantityUnit(minimumIssueQuantityUnit);
         v.setIssueMultipliesQuantity(issueMultipliesQuantity);
         v.setIssueMultipliesUnit(issueMultipliesQuantityUnit);
+        getFacade().create(v);
+        return v;
+    }
+
+    public Vmp createVmp(String vmpName,
+            Vtm vtm,
+            Category dosageForm,
+            MeasurementUnit strengthUnit,
+            MeasurementUnit issueUnit,
+            Double strengthUnitsPerIssueUnit,
+            Double minimumIssueQuantity,
+            Double issueMultipliesQuantity) {
+        Vmp v;
+        v = findVmpByName(vmpName);
+        if (v != null) {
+            return v;
+        }
+        v = new Vmp();
+        v.setName(vmpName);
+        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setVtm(vtm);
+        v.setDosageForm(dosageForm);
+        v.setStrengthUnit(strengthUnit);
+        v.setIssueUnit(issueUnit);
+        v.setStrengthOfAnIssueUnit(strengthUnitsPerIssueUnit);
+        v.setMinimumIssueQuantity(minimumIssueQuantity);
+        v.setIssueMultipliesQuantity(issueMultipliesQuantity);
         getFacade().create(v);
         return v;
     }
