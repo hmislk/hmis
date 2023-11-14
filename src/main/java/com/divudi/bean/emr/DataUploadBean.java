@@ -14,6 +14,7 @@ import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
 import com.divudi.data.EncounterType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Category;
@@ -621,11 +622,10 @@ public class DataUploadBean {
             Long id;
             String ampName = null;
             String code = null;
-            String atmName = null;
+            String barcode = null;
             String vmpName = null;
             String manufacturerName = null;
             String importerName = null;
-            String supplierName = null;
             Institution supplier;
             Institution importer;
             Institution manufacturer;
@@ -655,10 +655,9 @@ public class DataUploadBean {
                 code = codeCell.getStringCellValue();
             }
 
-            Cell atmCell = row.getCell(3);
-            if (atmCell != null && atmCell.getCellType() == CellType.STRING) {
-                atmName = atmCell.getStringCellValue();
-                atm = atmController.findAtmByName(atmName);
+            Cell barcodeCell = row.getCell(3);
+            if (barcodeCell != null && barcodeCell.getCellType() == CellType.STRING) {
+                barcode = barcodeCell.getStringCellValue();
             }
 
             Cell vmpCell = row.getCell(4);
@@ -679,11 +678,8 @@ public class DataUploadBean {
                 importer = institutionController.findAndSaveInstitutionByName(importerName);
             }
 
-            Cell supplierCell = row.getCell(7);
-            if (supplierCell != null && supplierCell.getCellType() == CellType.STRING) {
-                supplierName = supplierCell.getStringCellValue();
-                supplier = institutionController.findAndSaveInstitutionByName(supplierName);
-            }
+            manufacturer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Manufacturer);
+            importer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Importer);
 
             amp = new Amp();
             amp.setName(ampName);
@@ -691,8 +687,15 @@ public class DataUploadBean {
             if (atm != null) {
                 amp.setAtm(atm);
             }
-            amp.setVmp(vmp);
-            amp.setBarcode(code);
+            amp.setCode(code);
+            amp.setBarcode(barcode);
+            if (manufacturer != null) {
+                amp.setManufacturer(manufacturer);
+            }
+            if (importer != null) {
+                amp.setImporter(importer);
+            }
+
             amp.setCreater(sessionController.getLoggedUser());
 
             ampController.saveAmp(amp);
@@ -805,13 +808,13 @@ public class DataUploadBean {
             // Check for null values and create VMP
             if (vtm != null && dosageForm != null && strengthUnitsPerIssueUnit != null && strengthUnit != null
                     && minimumIssueQuantity != null && issueMultipliesQuantity != null) {
-                vmp = vmpController.createVmp(vmpName, 
-                        vtm, 
+                vmp = vmpController.createVmp(vmpName,
+                        vtm,
                         dosageForm,
-                        strengthUnit, 
+                        strengthUnit,
                         issueUnit,
-                        strengthUnitsPerIssueUnit, 
-                         minimumIssueQuantity, issueMultipliesQuantity);
+                        strengthUnitsPerIssueUnit,
+                        minimumIssueQuantity, issueMultipliesQuantity);
                 vmps.add(vmp);
             }
         }

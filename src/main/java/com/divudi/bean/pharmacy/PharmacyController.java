@@ -82,6 +82,8 @@ public class PharmacyController implements Serializable {
     CommonController commonController;
     @Inject
     private AmpController ampController;
+    @Inject
+    VtmController vtmController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -257,6 +259,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVtm() {
+        vtmController.fillItems();
         return "/pharmacy/admin/vtm";
     }
 
