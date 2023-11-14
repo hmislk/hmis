@@ -14,9 +14,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="3" >
+    
+        <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
             <!--            <p:outputLabel value="Title"/>-->
-            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
+            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}" class="w-100" >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{enumController.title}"/>
             </p:selectOneMenu>
@@ -25,7 +26,8 @@
                          autocomplete="off" 
                          id="txtNewPtName"
                          value="#{cc.attrs.patient.person.name}" 
-                         style="width:300px;text-transform:capitalize;">
+                         style="text-transform:capitalize;"
+                         class="w-100">
             </p:inputText>
             <!--            <p:outputLabel value="NIC"/>-->
 <!--            <p:inputText  id="nic" 
@@ -33,49 +35,50 @@
                          value="#{cc.attrs.patient.person.nic}"
                          style="width: 100px;">
             </p:inputText>-->
-            <p:inputText id="nic"  placeholder="NIC" autocomplete="off" maxlength="12" value="#{cc.attrs.patient.person.nic}" />
+            <p:inputText class="w-100" id="nic"  placeholder="NIC" autocomplete="off" maxlength="12" value="#{cc.attrs.patient.person.nic}" />
             <!--<p:outputLabel value="Sex"/>-->
-            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
+            <p:selectOneMenu class="w-100" id="txtNewSex"  value="#{cc.attrs.patient.person.sex}">
                 <f:selectItem itemLabel="Select Sex"/>
                 <f:selectItems value="#{enumController.sex}"/>
             </p:selectOneMenu>
 
             <!--<p:outputLabel value="Age"/>-->
             <h:panelGroup>
-                <p:inputText autocomplete="off"  id="year" style="width: 80px;"  value="#{admissionController.yearMonthDay.year}">
+                <p:inputText class="w-100" autocomplete="off"  id="year"  value="#{admissionController.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText autocomplete="off" id="month"  style="width: 80px; margin-left: 5px;"   value="#{admissionController.yearMonthDay.month}">
+                <p:inputText class="my-1 w-100" autocomplete="off" id="month"    value="#{admissionController.yearMonthDay.month}">
                     <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}"  />
                 </p:inputText>
 
-                <p:inputText autocomplete="off" id="day"  style="width: 80px;  margin-left: 5px;"   value="#{admissionController.yearMonthDay.day}">
+                <p:inputText class="w-100" autocomplete="off" id="day"   value="#{admissionController.yearMonthDay.day}">
                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}" />
                 </p:inputText>
                 <br/>
-                <p:outputLabel value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
+                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
             </h:panelGroup>
             <!--<p:outputLabel value="Date of Birth"/>-->
-            <p:calendar  value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
             </p:calendar>
 
             <!--<p:outputLabel value="Address"/>-->
-            <p:inputTextarea  id="address" value="#{cc.attrs.patient.person.address}"/>                                  
+            <p:inputTextarea class="w-100" id="address" value="#{cc.attrs.patient.person.address}"/>                                  
 
-            <h:panelGroup>
+            <h:panelGroup class="w-100">
                 <!--<p:outputLabel value="Mobile Phone"/>-->
-                <p:inputText id="mno"  autocomplete="off" maxlength="11" 
+                <p:inputText class="w-100" id="mno"  autocomplete="off" maxlength="11" 
                              value="#{cc.attrs.patient.person.mobile}" >
                 </p:inputText>
                 <!--<p:outputLabel value="Home Phone"/>-->
-                <p:inputText id="hno" value="#{cc.attrs.patient.person.phone}" />
+                <p:inputText class="w-100 my-1" id="hno" value="#{cc.attrs.patient.person.phone}" />
 <!--                <p:inputText id="hno"  autocomplete="off" maxlength="11" style="margin-top: 8px;"
                              value="#{cc.attrs.patient.person.phone}" >
                 </p:inputText>-->
             </h:panelGroup>
         </p:panelGrid>    
+        
         <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
         <p:tooltip for="nic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
         <p:tooltip for="calNewPtDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>

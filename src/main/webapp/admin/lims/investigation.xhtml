@@ -45,6 +45,16 @@
                                         <f:selectItem itemLabel="Please select a category"/>
                                         <f:selectItems value="#{investigationCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
+                                    
+                                    <h:outputText value="Select One Menu Demo" ></h:outputText>
+                                    <p:selectOneMenu value="#{investigationController.current.category}" >
+                                        <f:selectItems value="#{investigationCategoryController.items}"
+                                                       var="c" 
+                                                       itemLabel="#{c.code}"
+                                                       itemValue="#{c}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    
+                                    
                                     <h:outputText value="Sample" ></h:outputText>
                                     <p:selectOneMenu class="form-control" id="cmbSample"  value="#{investigationController.current.sample}" >
                                         <f:selectItem itemLabel="Please select a Sample"/>
@@ -188,7 +198,7 @@
 
                                     <p:outputLabel value="Created At" />
                                     <p:outputLabel value="#{investigationController.current.createdAt}" >
-                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
 
                                     <p:outputLabel value="Last Editor" />
@@ -196,7 +206,7 @@
 
                                     <p:outputLabel value="Last Edite at" />
                                     <p:outputLabel value="#{investigationController.current.editedAt}" >
-                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
                                 </p:panelGrid>
 

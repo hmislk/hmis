@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -79,8 +80,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -107,15 +108,16 @@ public class OpdPreBillController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @Inject
     private EnumController enumController;
+    @Inject
+    private OpdPreBillController opdPreBillController;
+
     @EJB
     BillEjb billEjb;
     private boolean printPreview;
-    private String patientTabId = "tabNewPt";
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
-    private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
     String referralId;
@@ -154,8 +156,8 @@ public class OpdPreBillController implements Serializable {
     private List<BillFee> lstBillFeesPrint;
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
-    
-    List<BillFeePayment>billFeePayments;
+
+    List<BillFeePayment> billFeePayments;
 
     public double getCashRemain() {
         return cashRemain;
@@ -187,26 +189,27 @@ public class OpdPreBillController implements Serializable {
     Date sessionDate;
     String strTenderedValue;
     private YearMonthDay yearMonthDay;
+    private Patient current;
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
 
     @Inject
     SearchController searchController;
-    
+
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
-        comment=null;
+        comment = null;
         searchController.createTableByKeywordToPayBills();
     }
-    
+
     public void clearPharmacy() {
         opdBill = new BilledBill();
         printPreview = false;
         opdPaymentCredit = 0.0;
-        comment=null;
+        comment = null;
         searchController.createTablePharmacyCreditToPayBills();
     }
 
@@ -259,7 +262,6 @@ public class OpdPreBillController implements Serializable {
 //        printPreview = true;
 //
 //    }
-    
 //    public void saveBillPharmacyCredit() {
 //
 //        BilledBill temp = new BilledBill();
@@ -311,25 +313,24 @@ public class OpdPreBillController implements Serializable {
 //        printPreview = true;
 //
 //    }
-    
-    public void createBillFeePayments(){
+    public void createBillFeePayments() {
         Date startTime = new Date();
-        billFeePayments=new ArrayList<>();
+        billFeePayments = new ArrayList<>();
         String sql;
-        Map m=new HashMap();
-        
-        sql=" select bfp from BillFeePayment bfp where "
+        Map m = new HashMap();
+
+        sql = " select bfp from BillFeePayment bfp where "
                 + " bfp.retired=false "
                 + " and bfp.createdAt between :fd and :td "
                 + " order by bfp.billFee.bill.deptId ";
-        
+
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        billFeePayments=getBillFeePaymentFacade().findByJpql(sql, m);
-        
-       commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
-        
+
+        billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
+
     }
 
     public BillNumberGenerator getBillNumberGenerator() {
@@ -404,9 +405,6 @@ public class OpdPreBillController implements Serializable {
         return Sex.values();
     }
 
-  
-   
-
     public BillEjb getBillEjb() {
         return billEjb;
     }
@@ -470,8 +468,6 @@ public class OpdPreBillController implements Serializable {
     public void setMembershipSchemeController(MembershipSchemeController membershipSchemeController) {
         this.membershipSchemeController = membershipSchemeController;
     }
-    
-    
 
     public Date getSessionDate() {
         if (sessionDate == null) {
@@ -512,19 +508,17 @@ public class OpdPreBillController implements Serializable {
     }
 
     private void savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                getNewPatient().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().setCreatedAt(new Date());
-                getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().getPerson().setCreatedAt(new Date());
-                getPersonFacade().create(getNewPatient().getPerson());
-                getPatientFacade().create(getNewPatient());
-                tmpPatient = getNewPatient();
-                break;
-            case "tabSearchPt":
-                tmpPatient = getSearchedPatient();
-                break;
+        if (getPatient().getId() == null) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            getPersonFacade().create(getPatient().getPerson());
+            getPatientFacade().create(getPatient());
+            tmpPatient = getPatient();
+        } else {
+            getPatientFacade().edit(getPatient());
+            tmpPatient = getPatient();
         }
     }
 
@@ -557,7 +551,6 @@ public class OpdPreBillController implements Serializable {
 //            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                myBill.setCashPaid(cashPaid);
 //            }
-
             getBillFacade().edit(myBill);
 
             getBillBean().calculateBillItems(myBill, tmp);
@@ -578,19 +571,47 @@ public class OpdPreBillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
-    public void settleBill() {
-        if (errorCheck()) {
-            return;
+    private Patient savePatient(Patient p) {
+
+        if (p == null) {
+            return null;
+        }
+        if (p.getPerson() == null) {
+            return null;
         }
 
-        savePatient();
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreater(sessionController.getLoggedUser());
+            p.getPerson().setCreatedAt(new Date());
+            personFacade.create(p.getPerson());
+        } else {
+            personFacade.edit(p.getPerson());
+        }
+
+        if (p.getId() == null) {
+            p.setCreater(sessionController.getLoggedUser());
+            p.setCreatedAt(new Date());
+            patientFacade.create(p);
+        } else {
+            patientFacade.edit(p);
+        }
+
+        return p;
+    }
+
+    public String settleBill() {
+        if (errorCheck()) {
+            return null;
+        }
+
+        Patient p = savePatient(getPatient());
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
             if (b == null) {
-                return;
+                return null;
             }
 
             List<BillItem> list = new ArrayList<>();
@@ -620,7 +641,7 @@ public class OpdPreBillController implements Serializable {
         } else {
             boolean result = putToBills();
             if (result == false) {
-                return;
+                return null;
             }
         }
 
@@ -631,11 +652,12 @@ public class OpdPreBillController implements Serializable {
 //            staffBean.updateStaffCredit(toStaff, netTotal);
 //            UtilityController.addSuccessMessage("User Credit Updated");
 //        }
-
         UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public boolean checkBillValues(Bill b) {
@@ -726,7 +748,6 @@ public class OpdPreBillController implements Serializable {
 //                }
 //            }
 //            reminingCashPaid = reminingCashPaid - b.getNetTotal();
-
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
@@ -768,7 +789,7 @@ public class OpdPreBillController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -833,11 +854,10 @@ public class OpdPreBillController implements Serializable {
     int recurseCount = 0;
 
     private String generateBillNumberInsId(Bill bill) {
-      
+
         ////// // System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
         ////// // System.out.println("bill = " + bill);
         ////// // System.out.println("bill.getInstitution() = " + bill.getInstitution());
-        
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -853,23 +873,19 @@ public class OpdPreBillController implements Serializable {
 
     private boolean checkPatientAgeSex() {
 
-        if (getPatientTabId().equals("tabNewPt")) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+            UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            return true;
+        }
 
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
-                return true;
-            }
+        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+            UtilityController.addErrorMessage("Check Title,Age,Sex");
+            return true;
+        }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
-                return true;
-            }
-
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
-                return true;
-            }
-
+        if (getPatient().getPerson().getPhone().length() < 1) {
+            UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+            return true;
         }
 
         return false;
@@ -914,21 +930,20 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
-            if (getPatientTabId().equals("tabSearchPt")) {
-                if (getSearchedPatient() == null) {
-                    UtilityController.addErrorMessage("Plese Select Patient");
-                    return true;
-                }
+            //if (getPatientTabId().equals("tabSearchPt")) {
+            if (getPatient() == null) {
+                UtilityController.addErrorMessage("Plese Select Patient");
+                return true;
             }
+            // }
 
-            if (getPatientTabId().equals("tabNewPt")) {
-                if (getNewPatient().getPerson().getName() == null
-                        || getNewPatient().getPerson().getName().trim().equals("")) {
-                    UtilityController.addErrorMessage("Can not bill without Patient Name");
-                    return true;
-                }
-            }
-
+            //if (getPatientTabId().equals("tabNewPt")) {
+//                if (getSearchedPatient().getPerson().getName() == null
+//                        || getSearchedPatient().getPerson().getName().trim().equals("")) {
+//                    UtilityController.addErrorMessage("Can not bill without Patient Name");
+//                    return true;
+//                }
+            //}
             boolean checkAge = false;
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -974,8 +989,19 @@ public class OpdPreBillController implements Serializable {
             return true;
         }
 
-        
         return false;
+    }
+
+    public String navigateToBillingForCashierFromMenu() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            Patient p = new Patient();
+            setCurrent(p);
+        }
+        opdPreBillController.prepareNewBill();
+        opdPreBillController.setPatient(getCurrent());
+        return "/opd/opd_pre_bill";
+
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
@@ -1088,8 +1114,7 @@ public class OpdPreBillController implements Serializable {
     }
 
     private void clearBillValues() {
-        setNewPatient(null);
-        setSearchedPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
@@ -1117,8 +1142,6 @@ public class OpdPreBillController implements Serializable {
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-
-        patientTabId = "tabNewPt";
 
         fromOpdEncounter = false;
         opdEncounterComments = "";
@@ -1162,7 +1185,7 @@ public class OpdPreBillController implements Serializable {
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
@@ -1239,7 +1262,6 @@ public class OpdPreBillController implements Serializable {
 //            }
 //            cashRemain = cashPaid;
 //        }
-
         //      //////// // System.out.println("bill tot is " + billGross);
     }
 
@@ -1312,12 +1334,6 @@ public class OpdPreBillController implements Serializable {
     }
 
     public void onTabChange(TabChangeEvent event) {
-        setPatientTabId(event.getTab().getId());
-        if (!getPatientTabId().equals("tabSearchPt")) {
-            if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
-            }
-        }
         calTotals();
     }
 
@@ -1377,34 +1393,14 @@ public class OpdPreBillController implements Serializable {
         calTotals();
     }
 
-    public String getPatientTabId() {
-        return patientTabId;
+    
+
+    public Patient getPatient() {
+        return patient;
     }
 
-    public void setPatientTabId(String patientTabId) {
-        this.patientTabId = patientTabId;
-    }
-
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-
-            newPatient.setPerson(p);
-        }
-        return newPatient;
-    }
-
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
-
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -1616,7 +1612,6 @@ public class OpdPreBillController implements Serializable {
         this.billItemFacade = billItemFacade;
 
     }
-
 
     public BillSearch getBillSearch() {
         return billSearch;
@@ -1842,8 +1837,8 @@ public class OpdPreBillController implements Serializable {
     }
 
     public List<BillFeePayment> getBillFeePayments() {
-        if (billFeePayments==null) {
-            billFeePayments=new ArrayList<>();
+        if (billFeePayments == null) {
+            billFeePayments = new ArrayList<>();
         }
         return billFeePayments;
     }
@@ -1863,7 +1858,6 @@ public class OpdPreBillController implements Serializable {
 //    /**
 //     *
 //     */
-
 //    @FacesConverter(forClass = Bill.class)
 //    public static class BillConverter implements Converter {
 //
@@ -1903,13 +1897,19 @@ public class OpdPreBillController implements Serializable {
 //            }
 //        }
 //    }
-
-    
     public CommonController getCommonController() {
         return commonController;
     }
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public Patient getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(Patient current) {
+        this.current = current;
     }
 }

@@ -58,6 +58,8 @@ public enum ReportItemType {
     Person,
     Phn,
     Phone,
+    QrCodeDetails,
+    QrCodeLink,
     ReferringDoctor,
     ReferringInstitution,
     Religion,

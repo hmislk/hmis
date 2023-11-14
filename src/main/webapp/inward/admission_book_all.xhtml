@@ -19,9 +19,9 @@
                         <h:panelGrid columns="6" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -39,7 +39,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="All_Admission_Detail"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -53,11 +53,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -65,7 +65,7 @@
                                 <p:column headerText="View">
                                     <p:commandButton ajax="false" value="View Detail"
                                                     action="/inward/inward_bill_intrim_finalized"
-                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
                                         <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
                                     </p:commandButton>
                                 </p:column>
@@ -107,7 +107,7 @@
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -116,7 +116,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -189,7 +189,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

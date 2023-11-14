@@ -319,7 +319,7 @@ public class CommonReport implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("navigateToReportCashierSummaryByUser()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         Date endTime = new Date();
@@ -4348,7 +4348,7 @@ public class CommonReport implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("createGrnDetailTable()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         recreteModal();
@@ -4843,7 +4843,7 @@ public class CommonReport implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("createGrnDetailTableByDealor()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         recreateList();

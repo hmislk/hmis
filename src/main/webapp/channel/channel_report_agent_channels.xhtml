@@ -1,26 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/channel_reports.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
                 >
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:form>
 
             <p:panel header="Channel Agent Bookings">
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
                         <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
@@ -36,9 +36,11 @@
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
-                        <p:commandButton action="#{channelReportController.createAgentBookings()}" value="Fill" ajax="false" ></p:commandButton> 
-                        <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                    <p:commandButton action="#{channelReportController.createAgentBookings()}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton style="margin-right: 10px; margin-left: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
@@ -46,18 +48,18 @@
                                 <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
                             </p:commandButton>
                         </h:panelGrid>
-                    </h:panelGrid> 
+                    
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                     <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" rowIndexVar="i" rowStyleClass="#{b.billClassType eq 'CancelledBill' or b.billClassType eq 'RefundBill' ? 'crossLine':''}">
                         <f:facet name="header">
-                            <p:outputLabel value="From - " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:outputLabel value="From" />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value=" - To - " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:outputLabel class="ml-5" value="To" />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel><br></br>
                             <p:outputLabel value=" All Agents " rendered="#{channelReportController.institution eq null}"/>
                             <p:outputLabel value=" Channel Agent - " rendered="#{channelReportController.institution ne null}"/>
@@ -69,7 +71,7 @@
                             </f:facet>
                             <p:outputLabel value="#{i+1}" />
                         </p:column>
-                        <p:column rendered="#{channelReportController.institution eq null}" style="width: 500px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
+                        <p:column rendered="#{channelReportController.institution eq null}" style="width: 300px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
                             <f:facet name="header">
                                 <p:outputLabel value="Agent" />
                             </f:facet>
@@ -97,7 +99,7 @@
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.serialNo}" />
                         </p:column>
-                        <p:column style="width: 200px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
+                        <p:column style="width: 150px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
                             <f:facet name="header">
                                 <p:outputLabel value="Consultant" />
                             </f:facet>
@@ -117,7 +119,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </p:column>
                         <p:column styleClass="noPrintButton" >
@@ -125,7 +127,7 @@
                                 <p:outputLabel value="Appo. Date" />
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                                <f:convertDateTime pattern="dd MMM yyyy" />
                             </p:outputLabel>
                         </p:column>
                         <p:column style="width: 5px!important;text-align: right;">

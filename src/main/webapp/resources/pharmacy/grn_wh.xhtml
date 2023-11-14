@@ -52,22 +52,22 @@
 
                 <h:outputLabel value="P.O.Date  " />
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.referenceBill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
 
                 <h:outputLabel value="G.R.N.Date  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel >
 
                 <h:outputLabel value="P.O.Time  " />
                 <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
-                    <f:convertDateTime pattern="hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="G.R.N.Time  "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="P.O.Approve By "/>
@@ -97,7 +97,7 @@
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>                                  
                     <p:column style="text-align: right!important;">

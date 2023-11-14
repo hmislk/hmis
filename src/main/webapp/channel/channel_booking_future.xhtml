@@ -34,7 +34,7 @@
                 </p:panel>
 
                 <p:panel header="Sessions" style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;"  >
-                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <p:ajax event="dateSelect" process="@this date" 
                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}"
                                 listener="#{bookingController.generateSessionsFutureBooking}" />
@@ -66,12 +66,12 @@
                         </p:column>
                         <p:column headerText="Date" style="width: 50px!important; text-align: center;">
                             <p:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd MMM"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Time" style="width: 40px!important; text-align: center;">
                             <p:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Fee" style="width: 40px!important; text-align: center;">
@@ -231,7 +231,7 @@
                             <p:resetInput target="tabSearchPt" />                         
                         </p:commandButton>
 
-                        <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" />
                     </h:panelGrid>
                     <!--<p:defaultCommand target="btnAdd"/>-->
 
@@ -300,7 +300,7 @@
                                 <p:outputLabel value="Appointment Time">
                                 </p:outputLabel>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                 </p:outputLabel>
                             </h:panelGrid>                            
                         </p:tab>
@@ -347,13 +347,13 @@
                                              action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                             <p:commandButton ajax="false" value="Cancel Credit" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                         </p:tab>
 
 
@@ -386,14 +386,14 @@
                                              action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="onSubmitButton();"/>
+                                             />
 
                             <p:commandButton ajax="false" value="Refund Credit" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                              action="#{channelBillController.refundCreditPaidBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="onSubmitButton();"/>
+                                             />
 
 
                         </p:tab>
@@ -500,10 +500,10 @@
 
                                 <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                             or bookingController.selectedBillSession.bill.refunded==true}" />
                                 <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                             or bookingController.selectedBillSession.bill.refunded==true}" />
 
                             </h:panelGrid>
 
@@ -513,7 +513,7 @@
 
 
                         <p:tab title="Search">
-                            <p:calendar id="cal"  value="#{channelSearchController.date}" pattern="dd MMMM yyyy" >   
+                            <p:calendar id="cal"  value="#{channelSearchController.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >   
                                 <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                             </p:calendar>
                             <p:dataTable id="bSessionSearch" value="#{channelSearchController.billSessions}" var='bs'
@@ -640,24 +640,24 @@
                             <h:panelGrid columns="2">
                                 <p:panel header="Selected Session">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " action="#{bookingController.nurse}"  onclick="onSubmitButton();" >                                       
+                                        <p:commandButton value="Nurse View " action="#{bookingController.nurse}"   >                                       
                                         </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Doctor View " action="#{bookingController.doctor}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Session View " action="#{bookingController.session}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Phone View " action="#{bookingController.phone}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="User View " action="#{bookingController.user}" ajax="false" >                                        
                                         </p:commandButton>
                                     </h:panelGrid>
 
                                 </p:panel>
                                 <p:panel header="Today's">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" >                                        
                                         </p:commandButton>
                                     </h:panelGrid>                                    
                                 </p:panel>

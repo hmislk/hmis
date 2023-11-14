@@ -17,11 +17,11 @@
                         <h:panelGrid columns="2" id="panGrup1">
                             <h:outputLabel value="From Date"/>
                             <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" 
-                                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
                             <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" 
-                                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <p:outputLabel value="Bill Type" />
                             <p:selectOneRadio id="console" value="#{searchController.reportKeyWord.string}" >

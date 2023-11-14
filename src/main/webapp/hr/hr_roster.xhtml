@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
+<ui:composition template="/hr/hr_admin.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subContent">
         <h:form>    
             <p:panel header="Manage Rosters" >
                 <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
@@ -23,7 +23,7 @@
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectButtons" columns="3"  >
 
-                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{rosterController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{rosterController.prepareAdd()}" styleClass="buttons"  >
                                 </p:commandButton>
 
                                 <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -51,7 +51,7 @@
                                 <p:inputText autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
                             </h:panelGrid>
                             <h:panelGrid id="gpDetailButtons" columns="2">
-                                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{rosterController.saveSelected()}" styleClass="buttons" onclick="onSubmitButton();">
+                                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{rosterController.saveSelected()}" styleClass="buttons" >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </h:panelGrid>

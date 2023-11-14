@@ -27,9 +27,9 @@
                                             value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" />
+                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" />
+                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:panelGrid>
 
                         <h:panelGrid columns="40">

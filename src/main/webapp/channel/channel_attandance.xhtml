@@ -113,11 +113,11 @@
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
-                                <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                             <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
                             <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
@@ -142,7 +142,7 @@
                             <h:outputText value="**" rendered="#{!ses.deactivated}"/>
                             <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
                             <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
-                                <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
                             <h:outputText value=" In" rendered="#{ses.arival eq false}" style="color: green;"/>
                             <h:outputText value=" Out" rendered="#{ses.arival eq true}" style="color: red;"/>
@@ -166,12 +166,12 @@
                         </p:column>
                         <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:outputText value="#{ses.sessionDate}">
-                                <f:convertDateTime pattern="dd MMM"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:outputText value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
@@ -197,7 +197,7 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved eq false}" >
                         <h:outputText value="ARRIVED AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.recordTimeStamp}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a"  >
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}"  >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
@@ -210,14 +210,14 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved ne false}" >
                         <h:outputText value="ARRIVED AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.recordTimeStamp}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a"  >
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}"  >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
                         <h:outputText value="LEFT AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.approvedAt}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a"  >
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}"  >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>

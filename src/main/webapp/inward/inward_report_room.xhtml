@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -21,9 +21,9 @@
                             
                             <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
@@ -47,8 +47,8 @@
 
                         <p:panelGrid columns="3">
                         
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}"   ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -65,11 +65,11 @@
                                           <h:outputLabel value="BHT Income"/>
                                         <h:outputLabel value=" : "/>
                                         <h:outputLabel value="#{inwardReportController1.fromDate}">
-                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                         <h:outputLabel value=" -- "/>
                                         <h:outputLabel value="#{inwardReportController1.toDate}">
-                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
 

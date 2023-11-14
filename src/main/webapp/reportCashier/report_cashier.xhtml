@@ -14,11 +14,14 @@
                 <p:panel header="OPD Summaries">
                     <div class="row">
                         <div class="col-md-3">
-                            <h:form>
-                                <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
-                                   <p:ajax process="@this" ></p:ajax>
-                                    <p:tab title="Common Reports">
+
+                            <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Common Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" />
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Department All Cashier Report" 
                                                              action="#{cashierReportController.navigateToDepartmentAllCashierReport}" 
@@ -37,8 +40,10 @@
                                             <p:commandButton class="w-100" ajax="false" value="7) Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/>
                                             <p:commandButton class="w-100" ajax="false" value="8) Bill Type Summery" action="#{cashierReportController.navigateToBillTypeSummery()}"/>
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="1) Cashier Reports">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="1) Cashier Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="1) Cashier Report" action="#{cashierReportController.navigateToReportcashierDetailedByUser()}" actionListener="#{commonReport.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="1.1) Cashier Report(Using Recipt No)" action="#{cashierReportController.navigateToCashierReport()}" actionListener="#{commonReport.recreteModal2}"/>
@@ -53,8 +58,10 @@
                                             <p:commandButton class="w-100" ajax="false" value="7) Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/>
                                             <p:commandButton class="w-100" ajax="false" value="8) Bill Type Summery" action="#{cashierReportController.navigateToBillTypeSummery()}"/>
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="2) Package Reports">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="2) Package Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Package Detail Report- By Bill Items" 
                                                              action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
@@ -62,33 +69,43 @@
                                                              action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="3) Medical Package Detail Report" action="#{billPackageMedicalController.navigateToReportOpdPackageMedical()}" actionListener="#{billPackageMedicalController.makeNull}"/>
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="3) Payment Reports">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="3) Payment Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) OPD Doctor Payments and Due" action="#{searchController.navigatToopdSearchProfessionalPaymentDue1()}" actionListener="#{searchController.makeListNull2()}"/>                                
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD Doctor Payments(By Bill Item)" action="#{searchController.navigatToReportDoctorPaymentOpd()}" actionListener="#{searchController.makeListNull2()}"/>
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="3) OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/>
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="4) Handover Reports">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="4) Handover Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Handover Report" action="#{cashierReportController.navigateToReportIncomeWithoutCreditByInstitution()}"/>                                
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2)Handover Report By Date" action="#{labReportSearchByInstitutionController.navigatToReportLabHandOverByDateSummery()}"/>                                
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="5) Category Reports">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="5) Category Reports">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Summary By Bill Type" action="#{cashierReportController.navigateToReportCashierDetailedUserByBillType()}"/>                                
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="6) Bill Lists">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="6) Bill Lists">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) List of Bills Raised" action="#{cashierReportController.navigateToOpdBillReport()}"/>   
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD payment scheme bills" action="#{cashierReportController.navigateToReportOpdBillPaymentSheame()}"/> 
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD VAT 15%" action="#{cashierReportController.navigateToReportOpdBillsForVat()}"/> 
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="7) Cashier Reports(Bill Fee Payment)">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="7) Cashier Reports(Bill Fee Payment)">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Cashier Report" action="#{commonReport.navigateToReportCashierDetailedByUser()}" actionListener="#{commonReport.recreteModal}" />
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Cashier Summary" action="#{commonReport.navigateToReportCashierSummeryByUser()}" actionListener="#{commonReport.recreteModal}" />
@@ -98,23 +115,33 @@
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml" rendered="false"/>
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="7) Department wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}" rendered="true"/>
                                         </div>
-                                    </p:tab>
-                                    <p:tab title="8) Cashier Reports(Payment)">
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="8) Cashier Reports(Payment)">
+                                    <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Cashier Report" action="#{opdPreBillReportController.navigateToReportCashierDetailedByUserPayment()}" actionListener="#{opdPreBillReportController.makeNull}" />
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Cashier Summary" action="#{opdPreBillReportController.navigateToReportCashierSummeryByUserPayment()}" actionListener="#{opdPreBillReportController.makeNull}" />
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="3) All Cashier Report" action="#{opdPreBillReportController.navigateToReportCashierSummeryAll()}" actionListener="#{opdPreBillReportController.makeNull}"/>
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="4) All Cashier Summary " action="#{opdPreBillReportController.navigateToReportCashierSummeryAllTotalOnly()}" actionListener="#{opdPreBillReportController.makeNull}"/>
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{opdPreBillReportController.makeNull}" rendered="false"/>
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="5) All Cashier Summary Without Professional" action="/reportCashier/report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{opdPreBillReportController.makeNull}" rendered="false"/>
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml" rendered="false" />
                                         </div>
-                                    </p:tab>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="9) OPD Services">
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" />
+                                        </div>
+                                    </h:form>
+                                </p:tab>
 
 
-                                    <!--                                </p:panelGrid>-->
-                                </p:accordionPanel>
+                                <!--                                </p:panelGrid>-->
+                            </p:accordionPanel>
 
-                            </h:form>
+
                         </div>
                         <div class="col-md-9">
                             <ui:insert name="subcontent" >

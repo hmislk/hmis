@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/management_index.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
@@ -9,7 +9,7 @@
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:form>
 
@@ -77,7 +77,7 @@
                             <tr>
                                 <td>
                                     <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
-                                                styleClass="dateTimePickerSmall" pattern="yyyy MMMM dd" >
+                                                styleClass="dateTimePickerSmall" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                                         <p:ajax event="dateSelect" 
                                                 process="@this date" 
                                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} a"  
@@ -104,7 +104,7 @@
                                 <th>
                                     <p:outputLabel value="Sessions From - " ></p:outputLabel>
                                     <h:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                 </th>
                             </tr>
@@ -123,11 +123,11 @@
                                             </h:outputText>
                                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                                             <h:outputText value="#{ses.sessionDate}" rendered="#{!ses.deactivated}">
-                                                <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputText>
                                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                                             <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                             </h:outputText>
                                             <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
                                             <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
@@ -152,7 +152,7 @@
                                             <h:outputText value="**" rendered="#{!ses.deactivated}"/>
                                             <h:outputText value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;***** &nbsp; " rendered="#{ses.deactivated}" style="color: red;"/>
                                             <h:outputText value="#{ses.sessionAt}" rendered="#{ses.deactivated}" style="color: red;">
-                                                <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputText>
                                             <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                                         </p:column>
@@ -187,18 +187,18 @@
                                         </p:column>
                                         <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                             <h:outputText value="#{ses.sessionDate}">
-                                                <f:convertDateTime pattern="dd MMM"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputText>
                                         </p:column>
                                         <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                                             <p:cellEditor>
                                                 <f:facet name="output" >
                                                     <h:outputText value="#{ses.startingTime}">
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                                     </h:outputText>
                                                 </f:facet>
                                                 <f:facet name="input" >
-                                                    <p:calendar  value="#{ses.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                                    <p:calendar  value="#{ses.startingTime}" navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true">                            
                                                     </p:calendar>
                                                 </f:facet>
                                             </p:cellEditor>

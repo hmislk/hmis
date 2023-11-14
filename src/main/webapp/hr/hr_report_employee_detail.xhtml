@@ -159,7 +159,7 @@
                                         <p:outputLabel value="DOB" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.dob}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DO Join" sortBy="#{s.dateJoined}" >
@@ -167,7 +167,7 @@
                                         <p:outputLabel value="DO Join" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.dateJoined}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DO Retierd" sortBy="#{s.dateRetired}" >
@@ -175,7 +175,7 @@
                                         <p:outputLabel value="DO Retierd" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.dateRetired}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DO Resign" sortBy="#{s.dateLeft}" >
@@ -183,7 +183,7 @@
                                         <p:outputLabel value="DO Resign" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.dateLeft}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DEPARTMENT" >

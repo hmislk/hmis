@@ -15,7 +15,7 @@
 
         <h:panelGroup rendered="true" >
             <h:form  >
-                <p:commandButton ajax="false" value="Process" action="#{webUserController.createWebUserDrawers()}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Process" action="#{webUserController.createWebUserDrawers()}" />
 
                 <p:dataTable id="lstSelect" value="#{webUserController.webUsers}" var="u">
                     <p:column headerText="Drawer Name">

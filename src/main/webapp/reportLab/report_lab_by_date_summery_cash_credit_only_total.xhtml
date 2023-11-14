@@ -13,10 +13,10 @@
             <p:panel >
                 <h:panelGrid columns="2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Instituion"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.institution}"  
@@ -40,11 +40,11 @@
                     <h:outputLabel value="LAB HAND OVER REPORT SUMMERY"/>                   
                     <h:outputLabel value="From Date :  "/>
                     <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel value="To Date"/>
                     <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>                       
                 </h:panelGrid>
 
@@ -55,11 +55,11 @@
                             <p:outputLabel value="#{pharmacySaleReport.institution.name} Summary Report By Date" />
                             <h:outputLabel value="From : "/>
                             <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="To :"/>
                             <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </f:facet>
 

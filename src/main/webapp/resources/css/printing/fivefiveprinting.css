@@ -1,0 +1,112 @@
+:root {
+    --font-size-body: 0.875rem;  /* 14pt/16 */
+    --font-size-bill: 2.125rem;  /* 34pt/16 */
+    --font-size-header: 4rem;    /* 64pt/16 */
+    --font-size-h1: 1.75rem;     /* 28pt/16 */
+    --font-size-h2: 1.5rem;      /* 24pt/16 */
+    --font-size-h3: 1.25rem;     /* 20pt/16 */
+    --font-size-h4: 1.125rem;    /* 18pt/16 */
+    --font-size-h5: 1rem;        /* 16pt/16 */
+    --font-size-p: 1rem;         /* 16pt/16 */
+    --font-size-strong: 1.125rem;/* 18pt/16 */
+}
+
+
+
+/* Styles for on-screen display (screening) */
+@media screen {
+    .bill {
+        margin: 0 auto;
+        max-width: 800px;
+        border: 1px solid #000;
+        padding: 20px;
+        background-color: #fafafa;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        font-size: var(--font-size-bill);
+    }
+
+    .header {
+        text-align: center;
+        font-size: var(--font-size-header);
+    }
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        border: none;
+        font-size: var(--font-size-body);
+    }
+
+    h1 {
+        font-size: var(--font-size-h1);
+    }
+
+    h2 {
+        font-size: var(--font-size-h2);
+    }
+
+    h2 {
+        font-size: var(--font-size-h3);
+    }
+
+    h4 {
+        font-size: var(--font-size-h4);
+    }
+
+    h5 {
+        font-size: var(--font-size-h5);
+    }
+
+    p {
+        font-size: var(--font-size-p);
+    }
+
+    strong {
+        font-size: var(--font-size-strong);
+    }
+}
+
+/* Styles for printing */
+@media print {
+    body, html {
+        margin: 0;
+        padding: 0;
+        border: none;
+        font-size: var(--font-size-body) !important;
+    }
+
+    .no-print {
+        display: none;
+    }
+
+    .bill {
+        width: 100%;
+        margin: 0px;
+        padding: 0;
+        border: none;
+        background-color: transparent;
+        box-shadow: none;
+        font-size: var(--font-size-bill) !important;
+    }
+
+    .header {
+        text-align: center;
+        font-size: var(--font-size-header) !important;
+    }
+
+    h1 {
+        font-size: var(--font-size-h1) !important;
+    }
+
+    h2 {
+        font-size: var(--font-size-h2) !important;
+    }
+
+    p {
+        font-size: var(--font-size-p) !important;
+    }
+
+    strong {
+        font-size: var(--font-size-strong) !important;
+    }
+}

@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head >
+
+    </h:head>
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <cc:implementation>
+
+
+
+        <style type="text/css">
+            /* Define font size and font family variables */
+            :root {
+                --base-font-size: 0.6cm;
+                --header-font-size: 0.8cm;
+                --sub-header-font-size: 0.7cm;
+                --font-family: 'Verdana', 'Arial', sans-serif;
+                line-height: 0.1em;
+            }
+
+
+        </style>
+
+
+        <h:panelGroup id="gpPrint" layout="block" class="printStyle" 
+                      style="padding:2cm; margin: 3cm; margin-right: 4cm; margin-top: 0cm; padding-top: 0cm;">
+
+            <!-- Bill Header -->
+            <!-- Bill Header -->
+            <h:panelGroup layout="block" style="text-align: center;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" 
+                               style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)" />
+                <br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.address}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <br/>
+                <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <p:spacer width="10" ></p:spacer>
+                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <p:spacer width="10" ></p:spacer>
+                <h:outputLabel value="#{cc.attrs.bill.department.fax}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>   
+                <br/>    
+                <h:outputLabel value="#{cc.attrs.bill.department.email}" style="font-size: var(--base-font-size);"/>
+                <h:outputLabel value="RECEIPT" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>    
+                <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/> 
+            </h:panelGroup>
+
+            <br/>
+
+            <!-- Bill Details -->
+            <h:panelGrid columns="7" style="width: 100%;">
+                <!-- Name -->
+                <h:outputLabel 
+                    value="Name" 
+                    style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" 
+                               style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Block Seperater -->
+                <p:spacer width="10" ></p:spacer>
+
+                <!-- Bill Date -->
+                <h:outputLabel value="Bill Date" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                </h:outputLabel>
+
+                <!-- Age -->
+                <h:outputLabel value="Age" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.patient.age}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Block Seperater -->
+                <p:spacer width="10" ></p:spacer>
+
+                <!-- Bill Time -->
+                <h:outputLabel value="Bill Time" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
+                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                </h:outputLabel>
+
+                <!-- Gender -->
+                <h:outputLabel value="Gender" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.patient.person.sex}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Block Seperater -->
+                <p:spacer width="10" ></p:spacer>
+
+                <!-- Bill No -->
+                <h:outputLabel value="Bill No" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.insId}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Phone -->
+                <h:outputLabel value="Phone" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Block Seperator -->
+                <p:spacer width="10" ></p:spacer>
+
+                <!-- Payment -->
+                <h:outputLabel value="Payment" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)" />
+
+
+
+                <!-- Patient ID -->
+                <h:outputLabel value="Patient ID" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.patient.phn}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+
+                <!-- Block Seperator -->
+                <p:spacer width="10" ></p:spacer>
+
+                <!-- Referred By -->
+                <h:outputLabel value="Referred By" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+            </h:panelGrid>
+
+            <br/>
+
+            <!-- Barcode -->
+            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" style="text-align: center; width: 100%;" layout="block">
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" style="width:30%;" />
+            </h:panelGroup>
+
+            <hr/>
+
+            <!-- Bill Items -->
+            <table style="width: 100%;">
+                <tr>
+                    <td styleClass="itemHeadingsFiveFive">
+                        <h:outputText value="Item" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)" ></h:outputText>
+                    </td>
+                    <td styleClass="itemHeadingsFiveFive" style="text-align:right; padding-right: 0.5cm;">
+                        <h:outputText value="Value" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)" ></h:outputText>
+                    </td>
+                </tr>
+                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                    <tr>
+                        <td style="text-transform: capitalize!important;">
+                            <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
+                        </td>
+                        <td style="text-align:right; padding-right: 0.5cm;">
+                            <h:outputLabel value="#{bip.grossValue}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </ui:repeat>
+            </table>
+
+
+            <br/>
+
+            <!-- Bill Totals -->
+            <h:panelGrid columns="3" columnClasses="billLabel, billSeparator, billValue" style="width: 100%;">
+                <h:outputLabel value="Gross Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.total}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+
+                <h:outputLabel value="Discount" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important; font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+
+                <h:outputLabel value="Net Total" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                <h:outputLabel value=":" />
+                <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </h:panelGrid>
+
+            <br/>
+
+            <!-- Cashier -->
+            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" 
+                           style="margin-top: 2cm; text-align: right; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+
+        </h:panelGroup>
+
+
+    </cc:implementation>
+
+</html>

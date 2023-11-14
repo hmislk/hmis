@@ -88,7 +88,7 @@
                                             <h:outputLabel value="Bill Date"/>
                                         </f:facet>    
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -139,7 +139,7 @@
                                                      action="#{staffPaymentBillController.settleBill()}" >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                         <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
                                     </p:commandButton>
                                     <p:defaultCommand target="btnPay"/>

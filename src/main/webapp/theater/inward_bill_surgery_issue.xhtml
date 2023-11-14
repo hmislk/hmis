@@ -17,7 +17,7 @@
 
                 <h:form id="bill" >
 
-                    <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" onclick="onSubmitButton();" ></p:commandButton>
+                    <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;"  ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
 
 
@@ -39,7 +39,7 @@
                                         <h:panelGrid columns="20"  >
                                             <p:commandButton ajax= "false" accesskey="s" value="Settle" 
                                                             action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}" 
-                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{pharmacySaleBhtController.calculateAllRates}" onclick="onSubmitButton();">
+                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{pharmacySaleBhtController.calculateAllRates}" >
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -47,7 +47,7 @@
                                             </p:commandButton>
                                             <p:commandButton accesskey="n" value="New Surgery Issue" ajax="false"
                                                             action="inward_bill_surgery_issue"
-                                                            actionListener="#{pharmacySaleBhtController.resetAll}" onclick="onSubmitButton();"  ></p:commandButton>
+                                                            actionListener="#{pharmacySaleBhtController.resetAll}"   ></p:commandButton>
 
 
                                         </h:panelGrid>
@@ -75,12 +75,12 @@
                                             </p:column>
                                             <p:column headerText="From Time" >
                                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="To Time" >
                                                 <h:outputLabel value="#{apt2.procedure.toTime}">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:autoComplete>  
@@ -122,7 +122,7 @@
                                                     </p:column>
                                                     <p:column headerText="Expiry">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock" ></p:ajax>
@@ -142,7 +142,7 @@
                                             </h:panelGrid>
 
                                             <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                             action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
+                                                             action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem tabI"  ></p:commandButton>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -201,12 +201,12 @@
 
                                                             <p:column headerText="Expiry">
                                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                                 </h:outputLabel>
 
                                                             </p:column>
                                                             <p:column headerText="Remove">
-                                                                <p:commandButton value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false" onclick="onSubmitButton();" >
+                                                                <p:commandButton value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false"  >
 
                                                                 </p:commandButton>
                                                             </p:column>
@@ -242,7 +242,7 @@
 
 
 
-                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" onclick="onSubmitButton();" ></p:commandButton>
+                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"  ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -251,7 +251,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false" 
                                             action="inward_bill_surgery_issue"
-                                            actionListener="#{pharmacySaleBhtController.resetAll()}" onclick="onSubmitButton();" ></p:commandButton>
+                                            actionListener="#{pharmacySaleBhtController.resetAll()}"  ></p:commandButton>
 
                         </div>
                         <div >

@@ -16,12 +16,12 @@
                     </p:column>
                     <p:column headerText="From Date">
                         <h:outputLabel value="#{i.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="To Date">
                         <h:outputLabel value="#{i.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
                 </p:dataTable>

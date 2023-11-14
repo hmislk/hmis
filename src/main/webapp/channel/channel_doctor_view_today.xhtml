@@ -47,7 +47,7 @@
                         <p:outputLabel value="Total Doctor Fees"/><br></br>
                         <p:outputLabel value="Date: "/>
                         <p:outputLabel value="#{commonController.currentDateTime}" >
-                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </p:outputLabel>     
                     </f:facet>
                     <p:column headerText="Consultant" style="width: 10px!important;">

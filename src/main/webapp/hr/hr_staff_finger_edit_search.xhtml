@@ -17,11 +17,11 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.fromDate}"
-                                            pattern="dd MM yyyy">     
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.toDate}"
-                                            pattern="dd MM yyyy">
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
                                 <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
@@ -39,7 +39,7 @@
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_finger_edit_search"  />
                             </p:commandButton>
                         </p:panel>

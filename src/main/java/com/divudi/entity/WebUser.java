@@ -153,12 +153,28 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        List<String> validThemes = Arrays.asList("cerulean", "darkly", "litera", "simplex", "solar",
-                "minty");
+        List<String> validThemes = Arrays.asList(
+                "material-light-outlined",
+                "material-light-filled",
+                "material-dark-outlined",
+                "material-dark-filled",
+                "bootstrap-light-outlined",
+                "bootstrap-light-filled",
+                "bootstrap-dark-outlined",
+                "bootstrap-dark-filled",
+                "primeone-light-outlined",
+                "primeone-light-filled",
+                "primeone-dim-outlined",
+                "primeone-dim-filled",
+                "primeone-dark-outlined",
+                "primeone-dark-filled"
+        );
+
+        
         if (validThemes.contains(primeTheme)) {
             return primeTheme;
         } else {
-            return "cerulean";
+            return "material-light-outlined"; // Default theme
         }
     }
 

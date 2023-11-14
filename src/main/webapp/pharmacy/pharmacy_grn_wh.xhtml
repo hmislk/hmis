@@ -29,7 +29,7 @@
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
                     </p:selectOneMenu>
                     <p:commandButton  value="Settle" action="#{grnController.settle}"
-                                      onclick="onSubmitButton();"
+                                      
                                       ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
@@ -165,7 +165,7 @@
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
                             <f:facet name="input">
@@ -194,7 +194,7 @@
 
                     <p:column >
                         <p:commandButton value="Remove" ajax="false"
-                                         onclick="onSubmitButton();"
+                                         
                                          action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
@@ -207,7 +207,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>                    
 
                         <p:panelGrid columns="2" id="tot">
@@ -232,7 +232,7 @@
             
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
-                                 onclick="onSubmitButton();"
+                                 
                                  actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>

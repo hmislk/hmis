@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="All Faild SMS List"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker styleClass="dateTimePicker" 
+                                          id="fromDate" 
+                                          value="#{smsController.fromDate}" 
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            </p:datePicker>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker id="toDate" value="#{smsController.toDate}" 
+                                          showTime="true"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            </p:datePicker>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                             action="#{smsController.fillAllFaildSms()}"/>
+                            <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" 
+                                     value="#{smsController.faildsms}"
+                                     reflow="true"
+                                     var="sms"  
+                                     style="min-width: 100%;"  
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+                            <p:column headerText="ID" styleClass="alignTop" width="15">
+
+                                <h:outputLabel value="#{sms.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Patient Report" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.patientReport}"/>
+                            </p:column>
+                            <p:column headerText="Sent At" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.sentAt}"/>
+                            </p:column>
+                            <p:column filterBy="#{sms.bill.patient.person.name}" 
+                                      filterMatchMode="contains"
+                                      headerText="Patient" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
+                            </p:column>
+                            <p:column headerText="Message" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.sendingMessage}"/>
+                            </p:column>
+                            <p:column headerText="Reason For Failure" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.receivedMessage}"/>
+                            </p:column>
+                            <p:column headerText="Phone Number"
+                                      filterBy="#{sms.receipientNumber}" 
+                                      filterMatchMode="contains"
+                                      styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.receipientNumber}"/>
+                            </p:column>
+                            <p:column headerText="Action" 
+                                      styleClass="alignTop" 
+                                      width="15">
+                                <p:commandButton value="Send Now" 
+                                                 actionListener="#{smsController.setSelectedSms(sms)}" 
+                                                 action="#{smsController.sentUnsentSms}">
+                                </p:commandButton>
+
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

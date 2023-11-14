@@ -24,7 +24,7 @@
                                     <h:outputLabel value="Details - " ></h:outputLabel>
                                     <p:commandButton style="float:right;" id="btnSave" value="Save" 
                                                      action="#{investigationController.saveManyIx()}" styleClass="buttons" 
-                                                     ajax="false" onclick="onSubmitButton();"  >
+                                                     ajax="false"   >
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </f:facet>
@@ -186,7 +186,7 @@
 
                                                 <p:outputLabel value="Created At" />
                                                 <p:outputLabel value="#{investigationController.current.createdAt}" >
-                                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 </p:outputLabel>
 
                                                 <p:outputLabel value="Last Editor" />
@@ -194,7 +194,7 @@
 
                                                 <p:outputLabel value="Last Edite at" />
                                                 <p:outputLabel value="#{investigationController.current.editedAt}" >
-                                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 </p:outputLabel>
                                             </p:panelGrid>
 

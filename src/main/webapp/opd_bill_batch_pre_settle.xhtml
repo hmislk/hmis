@@ -43,7 +43,7 @@
                             <p:commandButton ajax= "false"  
                                              value="Settle and Accept Payment" 
                                              id="settle"
-                                             onclick="onSubmitButton();"
+                                             
                                              action="#{opdPreSettleController.settle()}" />
 
                             <p:commandButton ajax="false" value="Back To Search"
@@ -113,7 +113,7 @@
                                     </p:column>
                                     <p:column  headerText="Bill Raised At">
                                         <h:outputLabel value="#{rb.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -147,7 +147,7 @@
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                            value="#{rb.cancelledBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <h:outputLabel style="color: red;" value=" by " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
@@ -158,7 +158,7 @@
                                             <h:outputLabel style="color: red;" value="Refunded at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.refunded}"
                                                            value="#{rb.referenceBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                     </p:column> 

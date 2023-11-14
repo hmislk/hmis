@@ -19,13 +19,13 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Discharge From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Discharge To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Paid From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDatePaid}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Paid To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDatePaid}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
@@ -47,12 +47,12 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController1.processProfessionalPayment()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Process By Discharged Date" action="#{inwardReportController1.processProfessionalPaymentByDischargedDate()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController1.processProfessionalPayment()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Discharged Date" action="#{inwardReportController1.processProfessionalPaymentByDischargedDate()}"   ></p:commandButton>
 
 
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >

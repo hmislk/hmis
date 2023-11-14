@@ -23,11 +23,11 @@
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
                         <h:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="5" styleClass="noPrintButton" >
@@ -65,12 +65,12 @@
                                 <p:spacer width="20" height="0"/>
                                 <h:outputLabel value="From" />
                                 <h:outputLabel  value="#{cashierReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <p:spacer width="10" height="0"/>
                                 <h:outputLabel value="To"/>
                                 <h:outputLabel  value="#{cashierReportController.toDate}" style="float: right" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </h:panelGrid>
                     </f:facet>
@@ -254,7 +254,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cashier"  >
@@ -408,7 +408,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -728,7 +728,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cashier"  >
@@ -882,7 +882,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1036,7 +1036,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>      
                         <p:column headerText="Cashier"  >
@@ -1102,7 +1102,7 @@
                                 <h:outputLabel value="PaymentsCancel" />
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cashier"  >
@@ -1179,7 +1179,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b4.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cashier"  >
@@ -1279,7 +1279,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b4.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
 
                         </p:column>
@@ -1341,7 +1341,7 @@
                                 <h:outputLabel value="Billed Date/Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b4.billedBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column exportable="false">
@@ -1384,7 +1384,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cashier"  >
@@ -1487,7 +1487,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1560,7 +1560,7 @@
                                 <h:outputLabel value="Billed Date/Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column exportable="false">
@@ -1610,7 +1610,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1715,7 +1715,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1788,7 +1788,7 @@
                                 <h:outputLabel value="Billed Date/Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column exportable="false">
@@ -1839,7 +1839,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>     
                         <p:column headerText="Cashier"  >
@@ -1907,7 +1907,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 

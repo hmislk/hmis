@@ -1,30 +1,27 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/channel_reports.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
                 >
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:form>
 
             <p:panel header="Cannel Agent Reperence Book">
                 <f:facet name="header" >
                     <p:outputLabel value="Cannel Agent Current Balance" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                    
                 </f:facet>
                 <h:panelGrid>
-                    <h:panelGrid columns="4" >
+                    <h:panelGrid columns="4" class="my-2">
                         <p:selectBooleanCheckbox value="#{channelReportTempController.reportKeyWord.additionalDetails}" itemLabel="Without Inactive" />
                         <p:commandButton value="Fill" action="#{channelReportTempController.createAgencyBalanceTable()}" ajax="false" ></p:commandButton> 
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
@@ -41,8 +38,8 @@
                             <p:outputLabel value="Agency Balance" />
                             <br></br>
                             <p:outputLabel value="Print Time" />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            <p:outputLabel class="ml-2" value="#{commonController.currentDateTime}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
                         <p:column>

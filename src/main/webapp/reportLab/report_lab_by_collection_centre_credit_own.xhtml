@@ -27,11 +27,11 @@
 
                     <p:panelGrid columns="5" style="min-width: 100%;" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <p:autoComplete forceSelection="true" value="#{commonReport.creditCompany}" completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
@@ -50,12 +50,12 @@
                     <f:facet name="header">
                         <h:outputLabel value="#{commonReport.creditCompany.name}"/>                    
                         <h:outputLabel value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
 
                         <h:outputLabel value="---"/>                       
                         <h:outputLabel value="#{commonReport.toDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
 
                     </f:facet>

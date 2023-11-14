@@ -137,6 +137,8 @@ public class Person implements Serializable {
     long ageInDays;
     @Transient
     int serealNumber;
+    @Transient
+    private String smsNumber;
 
     public Item getCivilStatus() {
         return civilStatus;
@@ -205,8 +207,8 @@ public class Person implements Serializable {
         period = new Period(ldDob, currentDate, PeriodType.days());
         ageInDays = (long) period.getDays();
         ageDaysComponent = days;
-        ageMonthsComponent=months;
-        ageYearsComponent=years;
+        ageMonthsComponent = months;
+        ageYearsComponent = years;
     }
 
     public void calDobFromAge() {
@@ -217,8 +219,8 @@ public class Person implements Serializable {
 
     public String getAgeAsString() {
         calAgeFromDob();
-        if(ageAsString==null||ageAsString.trim().equals("")){
-            ageAsString="Not Recorded";
+        if (ageAsString == null || ageAsString.trim().equals("")) {
+            ageAsString = "Not Recorded";
         }
         return ageAsString;
     }
@@ -253,8 +255,6 @@ public class Person implements Serializable {
         this.ageYearsComponent = ageYearsComponent;
         calDobFromAge();
     }
-    
-    
 
     public String getNameWithTitle() {
         String temT;
@@ -485,6 +485,28 @@ public class Person implements Serializable {
 
     public void setTitle(Title title) {
         this.title = title;
+        if (title == null) {
+            return;
+        }
+        switch (this.title) {
+            case Dr:
+            case Master:
+            case Mr:
+            case Prof:
+                this.sex = Sex.Male;
+                break;
+            case DrMiss:
+            case DrMrs:
+            case DrMs:
+            case Miss:
+            case Mrs:
+            case Ms:
+            case ProfMrs:
+                this.sex = Sex.Female;
+                break;
+            default:
+        }
+
     }
 
     public Date getDob() {
@@ -579,6 +601,19 @@ public class Person implements Serializable {
 
     public void setReligion(Item religion) {
         this.religion = religion;
+    }
+
+    public String getSmsNumber() {
+        if (this.getMobile() == null && this.getPhone() == null) {
+            smsNumber = "";
+        } else if (this.getMobile() != null && this.getPhone() == null) {
+            smsNumber = this.getMobile();
+        } else if (this.getPhone() != null && this.getMobile() == null) {
+            smsNumber = this.getPhone();
+        } else {
+            smsNumber = this.getMobile();
+        }
+        return smsNumber;
     }
 
 }

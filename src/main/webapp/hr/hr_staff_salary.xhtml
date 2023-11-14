@@ -11,9 +11,9 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generate Salary" action="#{staffSalaryController.generate}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
-                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
-                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Generate Salary" action="#{staffSalaryController.generate}"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Save Salary" action="#{staffSalaryController.saveSalary}"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"   rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
             </p:panel>
 
             <p:tabView style="min-height:300px;">
@@ -46,28 +46,28 @@
                     <h:panelGrid columns="2" id="cycleDetail">
                         <h:outputLabel value="Salary From Date "/>
                         <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Salary To Date "/>
                         <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked From Date "/>
                         <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked To Date "/>
                         <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </h:panelGrid>
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
+                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
+                    <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" />
+                    <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" />
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
@@ -143,7 +143,7 @@
                         </p:column>
                         <p:column style="width:6%">  
                             <f:facet name="header">
-                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Refresh"  />
                             </f:facet>
                             <p:rowEditor />  
                         </p:column>
@@ -322,7 +322,7 @@
                             <p:commandButton process="@this" 
                                              update=":#{p:resolveFirstComponentWithId('lst',view).clientId}" 
                                              value="Edit" 
-                                             actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
+                                             actionListener="#{staffSalaryController.onEditListener(i)}" >                              
                             </p:commandButton>                          
                         </p:column>
                         <p:column>

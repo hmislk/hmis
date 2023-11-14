@@ -18,12 +18,12 @@
                         </f:facet>
                         <h:panelGrid columns="18" >
                             <h:outputLabel value="From"/>
-                            <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                            <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <p:spacer width="5" height="1" ></p:spacer>
 
                             <h:outputLabel value="To"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <p:spacer width="5" height="1" ></p:spacer>
 

@@ -17,12 +17,12 @@
                     <h:outputLabel value="3) Investigation Counts"/>
                 <h:panelGrid columns="2"  styleClass="noPrintButton" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Institution"/>
                     <p:autoComplete forceSelection="true" 
@@ -40,7 +40,7 @@
                     
                     <h:panelGrid columns="5"  >
                         <p:spacer width="65" height="1"/>
-                        <p:commandButton value="Refresh" ajax="false" action="#{commonReport.displayOutsideBillFees()}"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+                        <p:commandButton value="Refresh" ajax="false" action="#{commonReport.displayOutsideBillFees()}"  styleClass="noPrintButton" style="float: right;"   />
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
@@ -59,11 +59,11 @@
                         <h:outputLabel value="Fees For Outside Institution" style="white-space: pre-line"/>
                         <h:outputLabel value=" From : " style="white-space: pre-line"/>
                         <h:outputLabel  value="#{commonReport.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                         <h:outputLabel value="&emsp;&emsp;To :"/>
                         <h:outputLabel  value="#{commonReport.toDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                     </f:facet>
 

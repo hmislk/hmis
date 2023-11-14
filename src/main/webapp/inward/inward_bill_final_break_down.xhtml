@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/inward/inward_reports.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,14 +11,14 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
 
             <p:panel id="reportPrint"  >
 
                 <f:facet name="header" >
                     <h:outputLabel value="Inward  Break Down -&nbsp;&nbsp; #{bhtSummeryFinalizedController.patientEncounter.patient.person.name}"/>
-                    <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"/>  
+                    <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" />  
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="reportPrint" />
                     </p:commandButton>  
@@ -60,11 +60,11 @@
                     <p:panel header="Pharmacy Issue" style="text-align: center;">         
                        
                         <p:panelGrid columns="2">
-                        <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
-                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                         styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="pharmacyIssue" 
                                          fileName="Pharmacy_Issue"/>
                         </p:commandButton>
@@ -133,11 +133,11 @@
                     <p:panel header="Store Issue" style="text-align: center;">
                         
                         <p:panelGrid columns="2">
-                        <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
-                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                         styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="storeIssue" 
                                          fileName="store_Issue"/>
                         </p:commandButton>
@@ -234,14 +234,14 @@
                                 </p:column>     
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{p.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                        value="#{p.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -267,7 +267,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.editedAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -282,7 +282,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.checkeAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>

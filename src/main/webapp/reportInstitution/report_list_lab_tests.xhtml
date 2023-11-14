@@ -18,12 +18,12 @@
                             <h:panelGrid columns="7" >
 
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableAll()}"  />
                                 <p:commandButton ajax="false" value="Download as Excel" >
                                     <p:dataExporter target="tblBills" type="xls" fileName="test_list" ></p:dataExporter>
                                 </p:commandButton>
@@ -91,14 +91,14 @@
                             <h:outputLabel 
                                 value="#{pi.billItem.bill.billDate}" 
                                 styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}">
-                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
                         <p:column  headerText="Bill Time" styleClass="alignTop" >
                             <h:outputLabel 
                                 value="#{pi.billItem.bill.billDate}" 
                                 styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
                         <p:column  headerText="Bill No" styleClass="alignTop" sortBy="#{pi.billItem.bill.insId}" filterBy="#{pi.billItem.bill.insId}" filterMatchMode="contains" >

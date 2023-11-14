@@ -163,7 +163,6 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToLimsAdminIndex() {
-        current = new Investigation();
         return "/admin/lims/index";
     }
 
@@ -1220,6 +1219,11 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToListInvestigation() {
+        listAllIxs();
+        return "/admin/lims/investigation_list";
+    }
+    
+    public String navigateToManageReportTemplateNames() {
         listAllIxs();
         return "/admin/lims/investigation_list";
     }

@@ -15,20 +15,40 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <h:panelGroup >
-                    <h:form  >
-                        <p:growl />
-                        <p:panel header="Membership Reports" >
+                <!--<p:panel header="Membership Reports" style="height: 100vh;" >-->
 
-                            
-                                    <p:panelGrid columns="1" >
-                                        <p:commandButton  action="/membership/report_inward" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
-                                        <p:commandButton  action="/membership/report_opd" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
-                                    </p:panelGrid>
+                    <div class="container-fluid" style="height: 100vh;" >
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p:accordionPanel>
+                                    <p:tab>
+                                        <h:form>
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton  action="/membership/report_inward" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
+                                                <p:commandButton  action="/membership/report_opd" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
 
-                        </p:panel>
-                    </h:form>
-                </h:panelGroup>
+                                            </div>
+                                        </h:form>
+
+
+                                    </p:tab>
+                                </p:accordionPanel>
+
+
+
+                            </div>
+                            <div class="col-md-9">
+                                <ui:insert name="subcontent" >
+
+                                </ui:insert>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+<!--                </p:panel>-->
             </ui:define>
         </ui:composition>
     </h:body>

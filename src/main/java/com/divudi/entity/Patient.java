@@ -98,6 +98,10 @@ public class Patient implements Serializable {
     Date toDate;
     @Size(max = 10)
     String phn;
+    
+    private Boolean hasAnAccount;
+    private Double runningBalance;
+    private Double creditLimit;
 
     private Long patientId;
 
@@ -259,6 +263,10 @@ public class Patient implements Serializable {
         calAgeFromDob();
         return ageMonths;
     }
+    public String getIdStr() {
+        String formatted = String.format("%07d", id);
+        return formatted;
+    }
 
     public int getAgeDays() {
         calAgeFromDob();
@@ -277,6 +285,8 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -510,6 +520,30 @@ public class Patient implements Serializable {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public Boolean getHasAnAccount() {
+        return hasAnAccount;
+    }
+
+    public void setHasAnAccount(Boolean hasAnAccount) {
+        this.hasAnAccount = hasAnAccount;
+    }
+
+    public Double getRunningBalance() {
+        return runningBalance;
+    }
+
+    public void setRunningBalance(Double runningBalance) {
+        this.runningBalance = runningBalance;
+    }
+
+    public Double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(Double creditLimit) {
+        this.creditLimit = creditLimit;
     }
 
 }

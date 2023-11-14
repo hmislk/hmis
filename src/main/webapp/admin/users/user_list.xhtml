@@ -40,64 +40,34 @@
                                     </ui:insert>
                                 </div>
                                 <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
-                                    <p:commandButton   
-                                        ajax="false" 
-                                        disabled="#{webUserController.selected == null}"  
-                                        value="Remove" 
-                                        class="m-1"
-                                        onclick="if (!confirm('Are you sure you want to Remove User?'))
-                                                    return false;" 
-                                        action="#{webUserController.removeUser}">
-                                    </p:commandButton>
 
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"  
-                                        value="Manage User" 
-                                        class="m-1"
-                                        action="#{webUserController.navigateToEditUser()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"  
-                                        value="Manage Password" 
-                                        class="m-1"
-                                        action="#{webUserController.navigateToEditPasswordByAdmin()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"    
-                                        value="Manage Staff" 
-                                        class="m-1"
-                                        action="#{webUserController.navigateToManageStaff()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"    
-                                        value="Manage Privileges" 
-                                        class="m-1"
-                                        action="#{webUserController.navigateToManagePrivileges()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"    
-                                        value="Manage User Departments" 
-                                        class="m-1"
-                                        action="#{webUserController.navigateToManageDepartments()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"  
-                                        class="m-1"
-                                        value="Manage User Payment Schemes" 
-                                        action="#{webUserController.navigateToManagePaymentSchemes()}"
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"    
-                                        value="Manage Signature" 
-                                        class="m-1"
-                                        action="#{webUserController.toManageSignature()}" 
-                                        ajax="false" />
-                                    <p:commandButton 
-                                        disabled="#{webUserController.selected == null}"    
-                                        value="Manage Dashboards" 
-                                        action="#{webUserController.toManageDashboards()}" 
-                                        ajax="false"
-                                        class="m-1"/>
+                                    <p:commandButton ajax="false"
+                                                     
+                                                     disabled="#{webUserController.selected == null}" 
+                                                     icon="fa fa-trash" 
+                                                     value="Remove" 
+                                                     class="m-1 ui-button-danger" 
+                                                     onclick="if (!confirm('Are you sure you want to Remove User?'))
+                                                return false;" action="#{webUserController.removeUser}" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
+
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-icons" value="Manage User Icons" class="m-1" action="#{webUserController.navigateToManageUserIcons()}" ajax="false" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-signature" value="Manage Signature" class="m-1" action="#{webUserController.toManageSignature()}" ajax="false" />
+
+                                    <p:commandButton disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
+
+
 
                                 </h:panelGroup>
                             </div>

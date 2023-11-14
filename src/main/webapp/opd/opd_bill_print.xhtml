@@ -3,60 +3,129 @@
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns="http://www.w3.org/1999/xhtml">
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:outputStylesheet>
-                    /* Styles for screen display */
-                    .page {
-                    border: 1px solid #ddd;
-                    margin: 20px;
-                    padding: 20px;
-                    background-color: whitesmoke;
-                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
-                    }
-                    .d-flex {
-                    display: flex;
-                    }
-                    .flex-grow-1 {
-                    flex: 1;
-                    }
-                    .bill-item {
-                    page-break-after: always;
-                    }
-
-                    /* Styles for print */
-                    @media print {
-                    .bill-item {
-                    page-break-after: always;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    .page {
-                    border: none;
-                    background-color: transparent;
-                    box-shadow: none;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    }
-                </h:outputStylesheet>
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
                     You are NOT authorized
                 </h:panelGroup>
                 <h:panelGroup
                     rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}">
                     <h:form>
+                        <div class="row"  >
+                            <div class="col-6 p-1" style="font-size: 2em!important;"  >
 
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
+                                    <div class="nonPrintBlock">
+                                        <p:commandButton value="Print" 
+                                                         process="@this" 
+                                                         update="@all" 
+                                                         type="button"  
+                                                         ajax="false">
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
 
-                        <div class="container-fluid" >
-                            <div class="row" >
-                                <div class="col-12">
-                                    <p:commandButton value="Print" icon="fa fa-print" style="margin-right: 10px;">
-                                        <p:printer target="gpPosBill1" />
+                                        <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                                     return false;"/>
+                                    </div>
+                                    <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
+                                    <h:panelGroup id="gpBillPreview">
+                                        <ui:repeat value="#{billController.bills}" var="bill">
+                                            <bi:opdBillPrintRmh bill="#{bill}" dup="false"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                    <p:commandButton value="PRINT!!!" ajax="false"  icon="pi pi-print" >
+                                        <p:printer target="fiveFivePaperWithHeadingsA" ></p:printer>
                                     </p:commandButton>
 
+                                    <ui:repeat id="fiveFivePaperWithHeadingsA" value="#{opdBillController.bills}" var="b">
+                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                    </ui:repeat>
+
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                                    <h:panelGrid rendered="#{sessionController.loggedPreference.opdPos eq false}">
+                                        <div class="nonPrintBlock">
+                                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                                <p:printer target="gpPosBill" ></p:printer>
+                                            </p:commandButton>
+
+
+
+                                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                            </p:commandButton>
+
+                                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                                         return false;"/>
+                                        </div>
+                                        <h:panelGroup id="gpPosBill">
+                                            <div style="page-break-after: always;">
+
+                                                <ui:repeat value="#{billController.bills}" var="b">
+                                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                                </ui:repeat>
+                                            </div>
+                                            <div></div>
+                                            <div style="page-break-after: always;">
+
+                                                <ui:repeat value="#{billController.bills}" var="b">
+                                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                                </ui:repeat>
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGrid>
+                                </h:panelGroup>
+
+
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                                    <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq true}">
+                                        <div class="nonPrintBlock">
+                                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                                <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                                            </p:commandButton>
+
+                                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                            </p:commandButton>
+
+                                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                                         return false;"/>
+                                        </div>
+                                        <h:panelGroup id="gpPosBillWithoutLogo">
+                                            <div style="page-break-after: always;">
+
+                                                <ui:repeat value="#{billController.bills}" var="b">
+                                                    <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                                </ui:repeat>
+                                            </div>     
+                                            <div style="page-break-after: always;">
+
+                                                <ui:repeat value="#{billController.bills}" var="b">
+                                                    <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                                </ui:repeat>
+                                            </div>  
+                                        </h:panelGroup>
+                                    </h:panelGrid>
+                                </h:panelGroup>
+
+                            </div>
+                            <div class="col-6" >
+
+                                <div class="d-flex center_content m-3 p-3" >
                                     <p:commandButton value="Patient Lookup &amp; Registration" 
                                                      icon="fa fa-user-check" 
                                                      ajax="false"
@@ -70,57 +139,171 @@
                                                      action="#{opdBillController.navigateToNewOpdBill()}" 
                                                      style="margin-right: 10px;">
                                     </p:commandButton>
-
-                                   
+                                    <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" style="float: right;"
+                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                                 return false;"/>
                                 </div>
 
-                            </div>
-                            <div class="row" >
-                                <div class="col-6" >
-                                    <div class="d-flex justify-content-between">
-                                        <div class="flex-grow-1">
-                                            <h:panelGroup id="gpPosBill1" >
-                                                <ui:repeat value="#{opdBillController.bills}" var="b">
-                                                    <div class="bill-item page">
-                                                        <h:outputText value="#{b.billPrint}" escape="false"></h:outputText>
-                                                        <script>
-                                                            $(document).ready(function () {
-                                                                JsBarcode("#barcode#{b.id}", "#{b.id}", {
-                                                                    format: "CODE128",
-                                                                    lineColor: "#000",
-                                                                    width: 2,
-                                                                    height: 100,
-                                                                    displayValue: true
-                                                                });
-                                                            });
-                                                        </script>
-                                                    </div>
-                                                </ui:repeat>
-                                            </h:panelGroup>
 
-                                            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.3/dist/JsBarcode.all.min.js"></script>
-                                            <h:outputScript library="primefaces" name="jquery/jquery.js" target="head"/>
+                                <p:dataTable value="#{opdBillController.bills}" var="b" class="m-3" >
+                                    <p:column headerText="Bill No" >
+                                        <h:outputText value="#{b.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Actions" >
+                                        <p:commandButton ajax="false" 
+                                                         value="To Cancel" 
+                                                         action="#{billSearch.navigateToCancelOpdBill}" 
+                                                         disabled="#{b.cancelled or b.refundedBill ne null}" >                           
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
 
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6" >
-                                    <div class="w-100">
-                                        <div class="flex-grow-1">
-                                            <p:dataTable value="#{opdBillController.bills}" var="b" >
-                                                <p:column headerText="Bill No" >
-                                                    <h:outputText value="#{b.id}" ></h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
-                                        </div>
-                                    </div>
-                                </div>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Refund" 
+                                            action="#{billSearch.navigateToRefundOpdBill()}" 
+                                            disabled="#{b.cancelled}" >  
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
                             </div>
                         </div>
 
 
+
+
+
+
                     </h:form>
                 </h:panelGroup>
+
+
+
+
+
+                <h:panelGroup rendered="false" >
+
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" 
+                                             process="@this" 
+                                             update="@all" 
+                                             type="button"  
+                                             ajax="false">
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
+                        <h:panelGroup id="gpBillPreview">
+                            <ui:repeat value="#{opdBillController.bills}" var="bill">
+                                <bi:fiveFivePrintedPaper bill="#{bill}" />
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print Five Five" ajax="false"  >
+                                <p:printer target="fiveFivePaperWithHeadingsB" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <h:panelGroup id="fiveFivePaperWithHeadingsB">
+                            <ui:repeat value="#{opdBillController.bills}" var="b">
+                                <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq false}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBill" ></p:printer>
+                                </p:commandButton>
+
+
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpPosBill">
+                                <div style="page-break-after: always;">
+
+                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                                <div></div>
+                                <div style="page-break-after: always;">
+
+                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+
+
+
+                        <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq true}">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpPosBillWithoutLogo">
+                                <div style="page-break-after: always;">
+
+                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>     
+                                <div style="page-break-after: always;">
+
+                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>  
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                    </h:panelGroup>
+
+                </h:panelGroup>
+
+
+
+
+
+
+
             </ui:define>
         </ui:composition>
     </h:body>

@@ -5,12 +5,12 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      
+
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/channel/channel_reports.xhtml">
+            <ui:define name="subContent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -18,9 +18,9 @@
                         </f:facet>
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Specialtiy : "/>
                             <hr:completeSpeciality value="#{channelReportController.reportKeyWord.speciality}"/>
                             <h:outputLabel value="Staff : "/>
@@ -28,28 +28,31 @@
                             <h:outputLabel value="Agency : "/>
                             <hr:completeAgency value="#{channelReportController.reportKeyWord.institution}"/>                            
                         </p:panelGrid>
-                        <p:commandButton ajax="false" value="Process Paid" action="#{channelReportController.createBillSession_report_1()}"/>
-                        <p:commandButton ajax="false" value="Clear" action="#{channelReportController.makeNull()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4" fileName="bill_session_report"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
+                        <h:panelGrid columns="6" class="mt-2 mb-2">
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Process Paid" action="#{channelReportController.createBillSession_report_1()}"/>
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Clear" action="#{channelReportController.makeNull()}"/>
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                                <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4" fileName="bill_session_report"  />
+                            </p:commandButton>
+                            <p:commandButton style="margin-right: 10px" value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable value="#{channelReportController.billSessionsBilled}" id="tb1" var="bs">
                                 <f:facet name="header">
                                     <h:outputLabel value="BILL SESSION"/>
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2" value="From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <h:outputLabel value="#{commonReport.department.name}"/>
-                                    
+
                                 </f:facet>
                                 <p:column headerText="Booking ID">
                                     <h:outputLabel  value="#{bs.bill.bookingId}" />
@@ -85,10 +88,10 @@
                                     <h:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled}"/>
                                     <h:outputLabel value="Refunded" rendered="#{bs.bill.refunded}"/>
                                     <f:facet name="footer">
-                                    <p:outputLabel value="#{channelReportController.netTotal}">
-                                        <f:convertNumber pattern="#,###.##" />
-                                    </p:outputLabel>
-                                </f:facet>
+                                        <p:outputLabel value="#{channelReportController.netTotal}">
+                                            <f:convertNumber pattern="#,###.##" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
 
@@ -205,10 +208,8 @@
                                         </p:outputLabel>
                                     </f:facet>
                                 </p:column>
+
                                 
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
                             </p:dataTable>
                         </p:panel>
 

@@ -18,11 +18,11 @@
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                        pattern="dd MMMM yyyy">     
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}">     
                             </p:calendar>   
                             <h:outputLabel value="To Date"/>
                             <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
-                                        pattern="dd MMMM yyyy">
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:calendar> 
                             <h:outputLabel value="Staff : "/>
                             <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
@@ -39,7 +39,7 @@
                             <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
                             <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                             <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_leave_report"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >

@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/management_index.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
                 xmlns:f="http://java.sun.com/jsf/core"
                  >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:form>
 
@@ -79,7 +79,7 @@
                                     <p:outputLabel value="Created Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </p:column>
                         </p:dataTable>

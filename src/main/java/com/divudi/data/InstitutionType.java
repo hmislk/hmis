@@ -21,17 +21,20 @@ public enum InstitutionType {
     Manufacturer,
     Company,
     branch;
-    
-    public String getLabel(){
-        switch (this){
-            case CollectingCentre: return "Collecting Centre";
-            case CreditCompany: return "Credit Company";
-            case StoreDealor: return "Store Dealor";
+   
+
+    public String getLabel() {
+        switch (this) {
+            case Company:
+                return "Managed Institution";
+            case CollectingCentre:
+                return "Collecting Centre";
+            case CreditCompany:
+                return "Credit Company";
+            case StoreDealor:
+                return "Store Dealor";
         }
         return this.toString();
     }
 
-    
-    
-    
 }

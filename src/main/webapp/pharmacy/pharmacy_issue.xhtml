@@ -70,7 +70,7 @@
                                         <p:column headerText="Expiry">
                                             <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
-                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
                                         <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
@@ -98,7 +98,7 @@
 
                                     <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                       action="#{pharmacyIssueController.addBillItem}"
-                                                      onclick="onSubmitButton();"
+                                                      
                                                       process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
                                                       update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
@@ -182,7 +182,7 @@
                                             </p:column>
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
                                             </p:column>
@@ -210,7 +210,7 @@
                                     <h:panelGrid columns="2">
                                         <p:commandButton  accesskey="s" value="Issue" 
                                                           action="#{pharmacyIssueController.settleBill()}" 
-                                                          onclick="onSubmitButton();"
+                                                          
                                                           actionListener="#{pharmacyIssueController.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -218,7 +218,7 @@
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
-                                                         onclick="onSubmitButton();"
+                                                         
                                                          ajax="false" action="/pharmacy/pharmacy_issue"
                                                          actionListener="#{pharmacyIssueController.resetAll()}"  ></p:commandButton>
                                     </h:panelGrid>
@@ -305,7 +305,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
-                                             onclick="onSubmitButton();"
+                                             
                                              ajax="false" action="/pharmacy/pharmacy_issue" 
                                              actionListener="#{pharmacyIssueController.resetAll()}" ></p:commandButton>
 

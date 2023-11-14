@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="BHT Addmission Details" >
@@ -47,18 +47,18 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}" onclick="onSubmitButton();" ></p:commandButton>
-<!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}" onclick="onSubmitButton();" ></p:commandButton>-->
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
+<!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}"  ></p:commandButton>-->
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -95,11 +95,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -107,7 +107,7 @@
                                 <!--                                <p:column headerText="View">
                                                                     <p:commandButton ajax="false" value="View Detail"
                                                                                     action="/inward/inward_bill_intrim_finalized"
-                                                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
                                                                         <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
                                                                     </p:commandButton>
                                                                 </p:column>-->
@@ -156,7 +156,7 @@
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -165,7 +165,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 
@@ -174,7 +174,7 @@
                                         <h:outputLabel value="Admission Created Time"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

@@ -62,7 +62,7 @@
                                         <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                                             <p:commandButton ajax="false" id="btnAdd" value="Add New Session" 
                                                              action="#{sheduleController.prepareAdd()}" 
-                                                             styleClass="buttons" onclick="onSubmitButton();" >
+                                                             styleClass="buttons"  >
                                                 <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                                                 </f:ajax>
                                             </p:commandButton>
@@ -87,13 +87,13 @@
                                         <h:panelGrid columns="3" >
                                             <p:commandButton ajax="false" id="btnSave" value="Save"  
                                                              action="#{sheduleController.saveSelected}"
-                                                             styleClass="buttons" onclick="onSubmitButton();">
+                                                             styleClass="buttons" >
 
                                             </p:commandButton>
                                             <p:commandButton value="Go To Channel Booking"
                                                              rendered="#{webUserController.hasPrivilege('Developers')}"
                                                              action="/channel/channel_booking" 
-                                                             ajax="false" onclick="onSubmitButton();" />
+                                                             ajax="false"  />
                                         </h:panelGrid>
 
 
@@ -153,11 +153,16 @@
                                                                        var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                                     </p:selectOneMenu>
                                                     <p:outputLabel value="Start Time"/>                        
-                                                    <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                                    <p:calendar  value="#{sheduleController.current.startingTime}" 
+                                                                 navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
+                                                                 timeZone="Asia/Colombo">                            
                                                     </p:calendar>
 
                                                     <p:outputLabel value="End Time"/>                        
-                                                    <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                                    <p:calendar  value="#{sheduleController.current.endingTime}"
+                                                                 navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
+                                                                 timeOnly="true"
+                                                                 timeZone="Asia/Colombo">                            
                                                     </p:calendar>
 
                                                     <p:outputLabel value="Starting Number"/>
@@ -215,7 +220,7 @@
                                                             </p:selectOneMenu>
                                                         </p:tab>
                                                         <p:tab title="Other Day" >
-                                                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" disabled="#{sheduleController.current.id ne null}">                              
+                                                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{sheduleController.current.id ne null}">                              
                                                             </p:calendar>
                                                         </p:tab>
                                                     </p:tabView>
@@ -263,7 +268,7 @@
                                                     <p:outputLabel value="Session Number"></p:outputLabel>
 
                                                     <p:autoComplete forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
-                                                                    completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
+                                                                    completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
                                                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                     >                            
                                                     </p:autoComplete>

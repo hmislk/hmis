@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -19,9 +19,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
@@ -68,8 +68,8 @@
                         </h:panelGrid>
 
                         <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController1.createBHTDiscountTable()}">
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}"   ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardReportController1.createBHTDiscountTable()}">
                             <p:dataExporter type="xlsx" target="tb1" fileName="bht_Discount" />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -84,11 +84,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </p:outputLabel>
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
 
                                     <h:outputLabel value=" - #{inwardReportController1.admissionType.name} Discount Report."/>

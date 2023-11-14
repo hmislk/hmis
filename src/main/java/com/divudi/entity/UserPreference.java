@@ -6,8 +6,10 @@
 package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.RestAuthenticationType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,115 +31,129 @@ public class UserPreference implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     /*
     Owner
-    */
+     */
     @ManyToOne
-    WebUser webUser;
+    private WebUser webUser;
     @ManyToOne
-    Department department;
+    private Department department;
     @ManyToOne
-    Institution institution;
-    
+    private Institution institution;
+
     /*
     EHR
-    */
-    String abbreviationForHistory;
-    String abbreviationForExamination;
-    String abbreviationForInvestigations;
-    String abbreviationForTreatments;
-    String abbreviationForManagement;
-    
-    
+     */
+    private String abbreviationForHistory;
+    private String abbreviationForExamination;
+    private String abbreviationForInvestigations;
+    private String abbreviationForTreatments;
+    private String abbreviationForManagement;
+
     /*
     Pharmacy
-    */
+     */
     @Lob
-    String pharmacyRetailBillTemplate;
+    private String pharmacyRetailBillTemplate;
     @Lob
-    String pharmacyWholesaleBillTemplate;
-    
-    
+    private String pharmacyWholesaleBillTemplate;
+
     /*
     Inpatients
-    */
+     */
     @Lob
     private String inwardDepositBillTemplate;
     @Lob
     private String inwardDepositCancelBillTemplate;
-    
+
     /*
     Channelling
-    */
-    
+     */
     @Lob
-    String channellingBillTemplate;
-    
-    
-   
-    
+    private String channellingBillTemplate;
+
     @Lob
-    String channellingCancellationBillTemplate;
+    private String channellingCancellationBillTemplate;
     @Lob
-    String channelingDoctorPaymentBillTemplate;
-    
-    
+    private String channelingDoctorPaymentBillTemplate;
+
     /*
     OPD
-    */
+     */
     @Lob
-    String opdBillForCashierTemplate;
+    private String opdBillForCashierTemplate;
+    @Lob
+    private String smsTemplateForOpdBillSetting;
 
-    
+    @Deprecated
     boolean institutionSpecificItems = false;
+    
     @Lob
     private String opdBillTemplate;
+    @Deprecated
     private boolean institutionRestrictedBilling = false;
-    boolean opdSettleWithoutReferralDetails;
-    boolean partialPaymentOfOpdBillsAllowed;
-    boolean partialPaymentOfOpdPreBillsAllowed;
-    boolean paymentMethodAllowedInInwardMatrix;
-    boolean pharmacyBillPrabodha;
-    boolean checkPaymentSchemeValidation;
-    boolean grnBillDetailed;
-    boolean bhtNumberWithYear;
-    boolean depNumGenFromToDepartment;
-    boolean tranferNetTotalbyRetailRate;
-    boolean allowtoChangePaymentMethodDuringPayment;
-    boolean opdSettleWithoutCashTendered;
-    boolean channelWithOutReferenceNumber;
-    boolean pharmayPurchaseWithLastRate;
-    boolean inwardAddServiceBillTimeCheck;
-    boolean inwardMoChargeCalculateInitialTime;
-    boolean inwardChangeAdmissionFee;
-    boolean pharmacyBillWithOutItem;
-    boolean fiveFivePaperWithHeadings;
-    boolean showOnlyMarkedDoctors = false;
-    boolean channelSettleWithoutPatientPhoneNumber = false;
-    boolean opdSettleWithoutPatientPhoneNumber = false;
-    boolean channelBillDouble = false;
+    private boolean opdSettleWithoutReferralDetails;
+    private boolean partialPaymentOfOpdBillsAllowed;
+    private boolean partialPaymentOfOpdPreBillsAllowed;
+    private boolean paymentMethodAllowedInInwardMatrix;
+    private boolean pharmacyBillPrabodha;
+    private boolean checkPaymentSchemeValidation;
+    private boolean grnBillDetailed;
+    private boolean bhtNumberWithYear;
+    private boolean depNumGenFromToDepartment;
+    private boolean tranferNetTotalbyRetailRate;
+    private boolean allowtoChangePaymentMethodDuringPayment;
+    private boolean opdSettleWithoutCashTendered;
+    private boolean channelWithOutReferenceNumber;
+    private boolean pharmayPurchaseWithLastRate;
+    private boolean inwardAddServiceBillTimeCheck;
+    private boolean inwardMoChargeCalculateInitialTime;
+    private boolean inwardChangeAdmissionFee;
+    private boolean pharmacyBillWithOutItem;
+    private boolean fiveFivePaperWithHeadings;
+    private boolean showOnlyMarkedDoctors = false;
+    private boolean channelSettleWithoutPatientPhoneNumber = false;
+    private boolean opdSettleWithoutPatientPhoneNumber = false;
+    private boolean channelBillDouble = false;
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
+    private String logoUrl;
+    private String loggingHeader;
+    @Lob
+    private String loggingText;
     private boolean channelDoctorArivalMsgSend = false;
-    String microBiologyFont;
-    String logoName;
+    private String microBiologyFont;
+    private String logoName;
     @Enumerated(EnumType.STRING)
-    PaperType opdBillPaperType;
+    private PaperType opdBillPaperType;
     @Enumerated(EnumType.STRING)
-    PaperType pharmacyBillPaperType;
+    private PaperType inwardServiceBillPaperType;
     @Enumerated(EnumType.STRING)
-    PaperType channelBillPaperType;
+    private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
-    ApplicationInstitution applicationInstitution;
+    private PaperType channelBillPaperType;
     @Enumerated(EnumType.STRING)
-    PaymentMethod channellingPaymentMethod;
+    private ApplicationInstitution applicationInstitution;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod channellingPaymentMethod;
 
     private Boolean canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     private Boolean printBarcodeInOpdBill;
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
+    private String smsUrl;
+    private String smsUsername;
+    private String smsPassword;
+    private String smsUserAlias;
+    private String smsUsernameParameterName;
+    private String smsPasswordParameterName;
+    private String smsUserAliasParameterName;
+    private String smsPhoneNumberParameterName;
+    private String smsMessageParameterName;
+    @Enumerated
+    private RestAuthenticationType smsAuthenticationType;
 
     private boolean familyMembership;
     private boolean membershipExpires;
@@ -150,6 +166,18 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
+    private String pharmacyBillFooter;
+    private String pharmacyBillHeader;
+    private String longDateFormat;
+    private String shortDateFormat;
+    private String longDateTimeFormat;
+    private String shortDateTimeFormat;
+    private String longTimeFormat;
+    private String shortTimeFormat;
+    private String encrptionKey;
+
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy opdItemListingStrategy;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -753,6 +781,230 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillTemplate(String opdBillTemplate) {
         this.opdBillTemplate = opdBillTemplate;
+    }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+
+    public String getSmsUrl() {
+        return smsUrl;
+    }
+
+    public void setSmsUrl(String smsUrl) {
+        this.smsUrl = smsUrl;
+    }
+
+    public String getSmsUsername() {
+        return smsUsername;
+    }
+
+    public void setSmsUsername(String smsUsername) {
+        this.smsUsername = smsUsername;
+    }
+
+    public String getSmsPassword() {
+        return smsPassword;
+    }
+
+    public void setSmsPassword(String smsPassword) {
+        this.smsPassword = smsPassword;
+    }
+
+    public String getSmsUsernameParameterName() {
+        return smsUsernameParameterName;
+    }
+
+    public void setSmsUsernameParameterName(String smsUsernameParameterName) {
+        this.smsUsernameParameterName = smsUsernameParameterName;
+    }
+
+    public String getSmsPasswordParameterName() {
+        return smsPasswordParameterName;
+    }
+
+    public void setSmsPasswordParameterName(String smsPasswordParameterName) {
+        this.smsPasswordParameterName = smsPasswordParameterName;
+    }
+
+    public String getSmsUserAlias() {
+        return smsUserAlias;
+    }
+
+    public void setSmsUserAlias(String smsUserAlias) {
+        this.smsUserAlias = smsUserAlias;
+    }
+
+    public String getSmsUserAliasParameterName() {
+        return smsUserAliasParameterName;
+    }
+
+    public void setSmsUserAliasParameterName(String smsUserAliasParameterName) {
+        this.smsUserAliasParameterName = smsUserAliasParameterName;
+    }
+
+    public String getSmsPhoneNumberParameterName() {
+        return smsPhoneNumberParameterName;
+    }
+
+    public void setSmsPhoneNumberParameterName(String smsPhoneNumberParameterName) {
+        this.smsPhoneNumberParameterName = smsPhoneNumberParameterName;
+    }
+
+    public String getSmsMessageParameterName() {
+        return smsMessageParameterName;
+    }
+
+    public void setSmsMessageParameterName(String smsMessageParameterName) {
+        this.smsMessageParameterName = smsMessageParameterName;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getLoggingHeader() {
+        return loggingHeader;
+    }
+
+    public void setLoggingHeader(String loggingHeader) {
+        this.loggingHeader = loggingHeader;
+    }
+
+    public String getLoggingText() {
+        return loggingText;
+    }
+
+    public void setLoggingText(String loggingText) {
+        this.loggingText = loggingText;
+    }
+
+    public RestAuthenticationType getSmsAuthenticationType() {
+        return smsAuthenticationType;
+    }
+
+    public void setSmsAuthenticationType(RestAuthenticationType smsAuthenticationType) {
+        this.smsAuthenticationType = smsAuthenticationType;
+    }
+
+    public String getSmsTemplateForOpdBillSetting() {
+        return smsTemplateForOpdBillSetting;
+    }
+
+    public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
+        this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
+    }
+
+    public PaperType getInwardServiceBillPaperType() {
+        if (inwardServiceBillPaperType == null) {
+            inwardServiceBillPaperType = PaperType.FiveFivePaper;
+        }
+        return inwardServiceBillPaperType;
+    }
+
+    public void setInwardServiceBillPaperType(PaperType inwardServiceBillPaperType) {
+        this.inwardServiceBillPaperType = inwardServiceBillPaperType;
+    }
+
+    public String getLongDateFormat() {
+        if (longDateFormat == null || longDateFormat.trim().equals("")) {
+            longDateFormat = "dd MMMM yyyy";
+        }
+        return longDateFormat;
+    }
+
+    public void setLongDateFormat(String longDateFormat) {
+        this.longDateFormat = longDateFormat;
+    }
+
+    public String getShortDateFormat() {
+        if (shortDateFormat == null || shortDateFormat.trim().equals("")) {
+            shortDateFormat = "dd MM yy";
+        }
+        return shortDateFormat;
+    }
+
+    public void setShortDateFormat(String shortDateFormat) {
+        this.shortDateFormat = shortDateFormat;
+    }
+
+    public String getLongDateTimeFormat() {
+        if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
+            longDateTimeFormat = "dd MMMM yyyy hh:mm:ss";
+        }
+        return longDateTimeFormat;
+    }
+
+    public void setLongDateTimeFormat(String longDateTimeFormat) {
+        this.longDateTimeFormat = longDateTimeFormat;
+    }
+
+    public String getShortDateTimeFormat() {
+        if (shortDateTimeFormat == null || shortDateTimeFormat.trim().equals("")) {
+            shortDateTimeFormat = "dd MM yy hh:mm a";
+        }
+        return shortDateTimeFormat;
+    }
+
+    public void setShortDateTimeFormat(String shortDateTimeFormat) {
+        this.shortDateTimeFormat = shortDateTimeFormat;
+    }
+
+    public String getLongTimeFormat() {
+        if (longTimeFormat == null || longTimeFormat.trim().equals("")) {
+            longTimeFormat = "hh:mm:ss a";
+        }
+        return longTimeFormat;
+    }
+
+    public void setLongTimeFormat(String longTimeFormat) {
+        this.longTimeFormat = longTimeFormat;
+    }
+
+    public String getShortTimeFormat() {
+        if (shortTimeFormat == null || shortTimeFormat.trim().equals("")) {
+            shortTimeFormat = "hh:mm a";
+        }
+        return shortTimeFormat;
+    }
+
+    public void setShortTimeFormat(String shortTimeFormat) {
+        this.shortTimeFormat = shortTimeFormat;
+    }
+
+    public String getEncrptionKey() {
+        return encrptionKey;
+    }
+
+    public void setEncrptionKey(String encrptionKey) {
+        this.encrptionKey = encrptionKey;
+    }
+
+    public ItemListingStrategy getOpdItemListingStrategy() {
+        if (opdItemListingStrategy == null) {
+            opdItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return opdItemListingStrategy;
+    }
+
+    public void setOpdItemListingStrategy(ItemListingStrategy opdItemListingStrategy) {
+        this.opdItemListingStrategy = opdItemListingStrategy;
     }
 
 }

@@ -19,12 +19,12 @@
                         <h:form>
                             <h:panelGrid columns="3" >
                                 <h:outputLabel value="Date" id="calSessionDate" ></h:outputLabel>
-                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="dd MMMM yyyy" >
+                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                 </p:calendar>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton   value="Process" ajax="false" style="float: right;" 
                                                   action="#{practiceBookingController.listPatientEncounters()}" 
-                                                   onclick="onSubmitButton();" >                        
+                                                    >                        
                                 </p:commandButton>
                             </h:panelGrid>
                         </h:form>
@@ -37,7 +37,7 @@
                                 <p:column headerText="No">#{bsc.billSession.serialNo}</p:column>
                                 <p:column headerText="Patient Name">#{bsc.billSession.bill.patient.person.nameWithTitle}</p:column>
                                 <p:column headerText="View/Edit">
-                                    <p:commandButton value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false" onclick="onSubmitButton();" >
+                                    <p:commandButton value="Visit" action="#{practiceBookingController.opdVisitFromQueue()}" ajax="false"  >
                                         <f:setPropertyActionListener value="#{bsc.billSession}" target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>

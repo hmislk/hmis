@@ -15,49 +15,47 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
-
                 <h:form  >
-
-                    <p:growl />
-
-
-
-
+                    <p:growl />           
+         
                     <p:panel header="Sample" >
-
-                        <h:panelGrid columns="2" styleClass="alignTop" >
-                            <h:panelGroup >
+                        <div class="row">
+                            <div class="col-3">
+                                <h:panelGroup >
                                 <h:panelGrid columns="2">
-                                    <h:outputLabel value="From"/>
+                                    
+                                    <h:outputLabel class="mx-2" value="From"/>
                                     <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yy - hh:mm a" >
                                         <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
                                     </p:calendar>
-                                    <h:outputLabel value="To"/>
+                                    
+                                    
+                                    <h:outputLabel class="mx-2" value="To"/>
                                     <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yy - hh:mm a" >
                                         <f:ajax event="dateSelect" execute="sample"  render="sample toDate fromDate"/>
                                     </p:calendar>
 
                                     <p:defaultCommand target="btnRefresh"/>
 
-                                    <p:commandButton id="btnRefresh" ajax="false" 
+                                    <p:commandButton class="w-100" id="btnRefresh" ajax="false" 
                                                      actionListener="#{patientInvestigationController.prepareToSample()}" 
-                                                     value="List to Collect" onclick="onSubmitButton();"  >
+                                                     value="List to Collect"   >
                                     </p:commandButton>
 
 
                                     <p:spacer ></p:spacer>
-                                    <p:commandButton id="btnCollected" ajax="false" 
+                                    <p:commandButton class="w-100" id="btnCollected" ajax="false" 
                                                      actionListener="#{patientInvestigationController.prepareSampled()}" 
-                                                     value="List Collected" onclick="onSubmitButton();"  >
+                                                     value="List Collected"   >
                                     </p:commandButton>
                                     <p:spacer ></p:spacer>
-                                    <p:commandButton value="Barcode Printing" ajax="false" action="sampling" ></p:commandButton>
+                                    <p:commandButton class="w-100" value="Barcode Printing" ajax="false" action="sampling" ></p:commandButton>
 
                                 </h:panelGrid>
                             </h:panelGroup>
-                            <h:panelGroup >
-
-
+                            </div>
+                            <div class="col-9">
+                                  <h:panelGroup >
                                 <table >
                                     <tr>
                                         <th>
@@ -96,7 +94,7 @@
                                             <f:ajax render="calSampledDate institution" event="change" execute="chkSampledOutside"/>
                                         </p:selectBooleanCheckbox>
 
-                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  
                                                     value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
                                         <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  />
@@ -155,18 +153,12 @@
                                 </p:dataTable>
 
                             </h:panelGroup>
-                        </h:panelGrid>
-
-
-
+                            </div>
+                            
+                        </div>
 
                     </p:panel>
-
-
-
                 </h:form>
-
-
             </h:panelGroup>
 
         </ui:define>

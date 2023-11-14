@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
+<ui:composition template="/hr/hr_admin.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
@@ -9,7 +9,7 @@
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:panelGroup >
             <h:form  >  
@@ -26,10 +26,10 @@
                                            var="i"  itemLabel="#{i.name}" itemValue="#{i}"/>
                         </p:selectOneMenu>
                         <h:outputLabel value="From"/>
-                        <p:calendar  value="#{staffLoanController.current.fromDate}"  navigator="true" pattern="dd MM yyyy">                            
+                        <p:calendar  value="#{staffLoanController.current.fromDate}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
-                        <p:calendar   value="#{staffLoanController.current.toDate}" navigator="true" pattern="dd MM yyyy">                            
+                        <p:calendar   value="#{staffLoanController.current.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
@@ -56,7 +56,7 @@
                             <f:ajax event="change" render="calComplete" execute="@this" />
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="Complete Date"/>
-                        <p:calendar id="calComplete" value="#{staffLoanController.current.completedAt}"  navigator="true" pattern="dd MM yyyy"  />
+                        <p:calendar id="calComplete" value="#{staffLoanController.current.completedAt}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                         <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" />
                         <p:commandButton value="Clear" action="#{staffLoanController.makeNull}" ajax="false" />
                         <p:commandButton value="Remove" action="#{staffLoanController.remove}" ajax="false" />
@@ -71,7 +71,7 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
 
-                        <p:calendar navigator="true" value="#{staffLoanController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                        <p:calendar navigator="true" value="#{staffLoanController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                       
                         <h:outputLabel value="Component "/>
                         <p:selectOneMenu value="#{staffLoanController.paysheetComponent}">
                             <f:selectItem itemLabel="Select Component"/>
@@ -99,7 +99,7 @@
                         <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
                         <p:commandButton ajax="false" value="Fill Deleted" action="#{staffLoanController.createLonesDeleted()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -110,7 +110,7 @@
                     <p:panel id="loaninstall" styleClass="noBorder summeryBorder" >
                         <f:facet name="header">
                             <h:outputLabel value="Loan And Advances" styleClass="noPrintButton"/>
-                            <!--<p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();" styleClass="noPrintButton"/>-->
+                            <!--<p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;"  styleClass="noPrintButton"/>-->
                         </f:facet>
                         <p:dataTable value="#{staffLoanController.paysheetComponents}" id="tb5"
                                      var="i" scrollHeight="200"
@@ -186,11 +186,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.fromDate}" pattern="dd MM yyyy" navigator="true"/>
+                                        <p:calendar value="#{i.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true"/>
                                     </f:facet>
                                 </p:cellEditor>
                             </p:column>
@@ -201,11 +201,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.toDate}" pattern="dd MM yyyy" navigator="true"/>
+                                        <p:calendar value="#{i.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true"/>
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -236,7 +236,7 @@
                                     <h:outputLabel value="Resign Date"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateLeft}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Staff" >
@@ -287,7 +287,7 @@
                                 <p:inputText autocomplete="off"  value="#{i.chequeNumber}"/>
                             </p:column>    
                             <p:column headerText="Cheque Date" rendered="#{staffLoanController.chequeDetails}">
-                                <p:calendar navigator="true" value="#{i.chequeDate}" pattern="dd MM yyyy" />  
+                                <p:calendar navigator="true" value="#{i.chequeDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />  
                             </p:column>
 
                             <p:column headerText="Compleated At" >
@@ -295,9 +295,9 @@
                                     <h:outputLabel value="Compleated At"/>
                                 </f:facet>
                                 <p:outputLabel value="#{i.completedAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
-                                <!--<p:calendar value="#{i.completedAt}" pattern="dd MM yyyy" />-->
+                                <!--<p:calendar value="#{i.completedAt}" pattern="#{sessionController.applicationPreference.shortDateFormat}" />-->
                             </p:column>
 
                             <p:column styleClass="noPrintButton">

@@ -18,9 +18,9 @@
                         <p:panel>
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="From" />
-                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{searchController.fromDate}"></p:calendar>
+                                <p:calendar id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.fromDate}"></p:calendar>
                                 <p:outputLabel value="To" />
-                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{searchController.toDate}"></p:calendar>
+                                <p:calendar id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.toDate}"></p:calendar>
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -38,7 +38,7 @@
                             <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
                         <p:panel>
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBill}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBill}"   />
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -73,7 +73,7 @@
                                             <p:outputLabel value="Date/Time" />
                                         </f:facet>
                                         <p:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </p:outputLabel>
                                     </p:column>
 

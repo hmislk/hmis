@@ -26,11 +26,11 @@
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" 
                                     value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" 
                                     value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
@@ -40,14 +40,14 @@
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
 
                             <p:commandButton value="Fill Additional Only"
                                              process="@this frmDate toDate roster"
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
 
                         </h:panelGroup>
 
@@ -56,7 +56,7 @@
                                              process="lst"
                                              update="lst"
                                              action="#{shiftFingerPrintAnalysisController.save()}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
 
                             <p:commandButton value="Back" ajax="false" 
                                              action="#{shiftFingerPrintAnalysisController.back()}" 
@@ -70,7 +70,7 @@
                                      update="lst"
                                      actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                      action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
-                                     onclick="onSubmitButton();" 
+                                      
                                      style="float: right;" ajax="false"/> 
 
                     <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" 

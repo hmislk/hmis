@@ -10,9 +10,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Reprint" styleClass="alignTop" >
                         <h:panelGrid columns="1">
@@ -51,7 +51,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                 <p:dataExporter type="xlsx" target="tbl,tbl3,tbl4" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </p:panelGrid>

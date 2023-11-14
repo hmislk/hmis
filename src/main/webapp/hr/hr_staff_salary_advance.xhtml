@@ -11,9 +11,9 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generate Salary Advance" action="#{staffSalaryAdvanceController.generate}" onclick="onSubmitButton();"/>
-                <p:commandButton ajax="false" value="Save Salary Advance" action="#{staffSalaryAdvanceController.saveSalary}" onclick="onSubmitButton();"/>
-                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryAdvanceController.clear}"  onclick="onSubmitButton();" />
+                <p:commandButton ajax="false" value="Generate Salary Advance" action="#{staffSalaryAdvanceController.generate}"  class="m-2 " />
+                <p:commandButton ajax="false" value="Save Salary Advance" action="#{staffSalaryAdvanceController.saveSalary}"  class="m-2" />
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryAdvanceController.clear}"   class="m-2" />
             </p:panel>
 
             <p:tabView style="min-height:300px;">
@@ -42,29 +42,30 @@
                         </p:column>
                         <f:ajax execute="@this" render="cycleDetail" event="change" listener="#{salaryCycleController.cycleSelectListener()}" />
                     </p:selectOneMenu>
-                    <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" ></p:commandButton>
+                    <p:commandButton value="Process Salary Cycle" ajax="false" action="#{salaryCycleController.listAllSalaryCycles()}" class="m-2 pb-1" ></p:commandButton>
                     <h:panelGrid columns="2" id="cycleDetail">
                         <h:outputLabel value="Salary From Date "/>
                         <h:outputLabel value="#{staffSalaryAdvanceController.salaryCycle.salaryFromDate}"  >                                                        
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Salary To Date "/>
                         <h:outputLabel   value="#{staffSalaryAdvanceController.salaryCycle.salaryToDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked From Date "/>
                         <h:outputLabel value="#{staffSalaryAdvanceController.salaryCycle.workedFromDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked To Date "/>
                         <h:outputLabel   value="#{staffSalaryAdvanceController.salaryCycle.workedToDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </h:panelGrid>
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}"  class="mb-2" />
+                    
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
@@ -77,7 +78,8 @@
                         <h:outputLabel value="Designation : "/>
                         <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>                      
+                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>    
+                        <br></br>
                     </h:panelGrid>
 
                     <p:dataTable  value="#{staffController.staffWithCode}" 
@@ -163,11 +165,16 @@
                             </p:inputText>
                         </p:column>   
                         <p:column>
-                            <p:commandButton process="@this" 
-                                             update=":#{p:resolveFirstComponentWithId('lst',view).clientId}" 
-                                             value="View Detail"  
-                                            actionListener="#{staffSalaryAdvanceController.onEditListener(ii)}" onclick="onSubmitButton();">                              
-                            </p:commandButton>                          
+
+                            <f:facet name="header">
+                                <p:commandButton process="@this" 
+                                                 update=":#{p:resolveFirstComponentWithId('lst',view).clientId}" 
+                                                 value="View Detail"  
+                                                 actionListener="#{staffSalaryAdvanceController.onEditListener(ii)}" >                              
+                                </p:commandButton>
+                            </f:facet>
+                            <p:rowEditor /> 
+
                         </p:column>
 
 
@@ -232,7 +239,7 @@
                         </p:column>      
                         <p:column style="width:6%">  
                             <f:facet name="header">
-                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Refresh"  />
                             </f:facet>
                             <p:rowEditor />  
                         </p:column>  

@@ -9,68 +9,70 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Inward Price Adjustment Matrix- Invesitagation" id="reportPrint">
 
                         <p:panel header="Add new adjustment" >
-                            <p:panelGrid columns="2" >
-                                <h:outputLabel value="Department :" />
-                                <p:autoComplete value="#{inwardPriceAdjustmntController.department}" 
-                                                forceSelection="true"
-                                                completeMethod="#{departmentController.completeDept}" 
-                                                var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
-                                    <p:column>
-                                        <h:outputLabel value="#{dep.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{dep.institution.name}"/>
-                                    </p:column>
-                                </p:autoComplete>
-                                <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
-                                <p:autoComplete value="#{inwardPriceAdjustmntController.category}" 
-                                                forceSelection="true"
-                                                completeMethod="#{categoryController.completeCategoryInvestigation}"
-                                                var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
-                                    <p:column headerText="Category">
-                                        <h:outputLabel value="#{cat.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Parent Category">
-                                        <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                    </p:column> 
+                            <div>
+                                <p:panelGrid columns="2" class="w-100" >
+                                    <h:outputLabel value="Department :" />
+                                    <p:autoComplete value="#{inwardPriceAdjustmntController.department}" 
+                                                    forceSelection="true"
+                                                    completeMethod="#{departmentController.completeDept}" 
+                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                        <p:column>
+                                            <h:outputLabel value="#{dep.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{dep.institution.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+                                    <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
+                                    <p:autoComplete value="#{inwardPriceAdjustmntController.category}" 
+                                                    forceSelection="true"
+                                                    completeMethod="#{categoryController.completeCategoryInvestigation}"
+                                                    var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
+                                        <p:column headerText="Category">
+                                            <h:outputLabel value="#{cat.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Parent Category">
+                                            <h:outputLabel value="#{cat.parentCategory.name}"/>
+                                        </p:column> 
 
-                                </p:autoComplete>
-                                
-                                <h:outputLabel value="BHT Type"/>
-                                <p:selectOneMenu   id="cmbPs" value="#{inwardPriceAdjustmntController.paymentMethod}"  >
-                                    <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                                    
-                                </p:selectOneMenu>
+                                    </p:autoComplete>
 
-
-                                <h:outputLabel value="From" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.fromPrice}" />
-                                <h:outputLabel value="To" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.toPrice}" />
-                                <h:outputLabel value="Margin" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
-                                <h:outputLabel value="" ></h:outputLabel>
-                                <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}" onclick="onSubmitButton();" >
-                                </p:commandButton>
-
-                                <p:defaultCommand target="btnAdd"/>
-                            </p:panelGrid>
-                            <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyInvestiagtion()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                    <h:outputLabel value="BHT Type"/>
+                                    <p:selectOneMenu   id="cmbPs" value="#{inwardPriceAdjustmntController.paymentMethod}"  >
+                                        <f:selectItem itemLabel="Select" />                           
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                                    
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="From" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.fromPrice}" />
+                                    <h:outputLabel value="To" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.toPrice}" />
+                                    <h:outputLabel value="Margin" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}"  >
+                                    </p:commandButton>
+<!--                                    <p:defaultCommand target="btnAdd"/>-->
+                                </p:panelGrid>
+                            </div>
+                            <div class="my-2" >
+                                <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyInvestiagtion()}" ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyInvestiagtion()}" onclick="onSubmitButton();"/>
+                            <p:commandButton class="mx-1" ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyInvestiagtion()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
+                            </div>
 
                         </p:panel>
+
 
                         <p:panel header="Price Matrix" >
 
@@ -96,11 +98,11 @@
                                 <p:column>
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
-                                
+
                                 <p:column headerText="Payment Method"
                                           filterBy="#{a.paymentMethod}" filterMatchMode="contains" exportable="false">
-                                    
-                                    
+
+
                                     <p:outputLabel value="#{a.paymentMethod}"/>
                                 </p:column>
 
@@ -137,10 +139,10 @@
                                     </h:inputText>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}" onclick="onSubmitButton();"/> 
+                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}" /> 
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}" onclick="onSubmitButton();">
+                                    <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}" >
                                         <f:setPropertyActionListener value="#{a}" target="#{inwardPriceAdjustmntController.current}"/>
                                     </p:commandButton>
                                 </p:column>

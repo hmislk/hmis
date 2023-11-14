@@ -7,7 +7,7 @@
                 xmlns:h="http://java.sun.com/jsf/html">
 
     <ui:define name="content">
-        <p:calendar id="cal"  value="#{channelsearch.date}" pattern="dd MMMM yyyy" >   
+        <p:calendar id="cal"  value="#{channelsearch.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >   
             <f:ajax event="dateSelect" execute="cal" render="bSessionSearch" />
         </p:calendar>
         <p:dataTable id="bSessionSearch" value="#{channelsearch.billSessions}" var='bs'

@@ -21,13 +21,13 @@
                 <p:panelGrid columns="2" >
                     <p:outputLabel value="First Registered" ></p:outputLabel>
                     <p:outputLabel value="#{patientEncounterController.current.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                     </p:outputLabel>
                     <p:outputLabel value="Last Visit" ></p:outputLabel>
                     <h:panelGroup >
                         <p:outputLabel value="#{(patientEncounterController.encounters ne null and not empty patientEncounterController.encounters) ? patientEncounterController.encounters[0].encounterDate : ''}"
                                        rendered="#{patientEncounterController.encounters ne null and not empty patientEncounterController.encounters}">
-                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </p:outputLabel>
                     </h:panelGroup>
 

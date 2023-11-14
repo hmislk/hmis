@@ -57,11 +57,11 @@
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                            rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>                      
                             <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                            rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -89,11 +89,11 @@
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                            rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </h:outputLabel>                        
                             <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                            rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </h:outputLabel>
                         </td>
                     </tr>

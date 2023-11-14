@@ -37,7 +37,7 @@
                                                     <h:outputText value="Search" ></h:outputText>
                                                     <p:commandButton id="btnAdd"  value="Add New" 
                                                                      action="#{investigationController.prepareAdd()}" 
-                                                                     styleClass="buttons" onclick="onSubmitButton();" style="float: right;"
+                                                                     styleClass="buttons"  style="float: right;"
                                                                      process="@this" update="gpDetail">
                                                     </p:commandButton>
                                                 </f:facet>
@@ -273,7 +273,7 @@
 
                                                     <p:outputLabel value="Created At" />
                                                     <p:outputLabel value="#{investigationController.current.createdAt}" >
-                                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                     </p:outputLabel>
 
                                                     <p:outputLabel value="Last Editor" />
@@ -281,7 +281,7 @@
 
                                                     <p:outputLabel value="Last Edite at" />
                                                     <p:outputLabel value="#{investigationController.current.editedAt}" >
-                                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                     </p:outputLabel>
                                                 </p:panelGrid>
 

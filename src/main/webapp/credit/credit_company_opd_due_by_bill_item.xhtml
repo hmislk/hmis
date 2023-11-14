@@ -18,11 +18,11 @@
                         </f:facet>
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
                             <h:outputLabel value="Credit Company"/>
@@ -32,7 +32,7 @@
                                             completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
                             </p:autoComplete>
-                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" />
                             <p:commandButton value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="lst" fileName="credit_company_opd_due_by_bill_item"  />
                             </p:commandButton>
@@ -43,11 +43,11 @@
                                 <h:outputLabel value="DUE SEARCH(By BILL ITEM)"/>
                                 <h:outputLabel value="&emsp;&emsp;From :  " style="white-space: pre-line"/>
                                 <h:outputLabel value="#{creditCompanyDueController.fromDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="&emsp;&emsp;To  :  "/>
                                 <h:outputLabel value="#{creditCompanyDueController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:columnGroup type="header">

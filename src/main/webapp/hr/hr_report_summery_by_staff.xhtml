@@ -48,7 +48,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
                         <p:commandButton ajax="false" value="Reset" action="#{hrReportController.reset()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_summery_by_staff"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -119,7 +119,7 @@
                                         <p:outputLabel value="Shift Date" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.shiftDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -128,7 +128,7 @@
                                         <p:outputLabel value="In Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>                           
                                 <p:column headerText="Out Time">
@@ -136,7 +136,7 @@
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>  
                                 <p:column headerText="Worked Time">
@@ -173,7 +173,7 @@
                                 </p:column>
                                 <p:column headerText="Shift Date">
                                     <h:outputLabel value="#{ss.shiftDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -182,7 +182,7 @@
                                         <p:outputLabel value="In Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>                           
                                 <p:column headerText="Out Time">
@@ -190,7 +190,7 @@
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>  
                                 <p:column headerText="Worked Time">
@@ -219,7 +219,7 @@
 
                                 <p:column headerText="Shift Date">
                                     <h:outputLabel value="#{ss.shiftDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -228,7 +228,7 @@
                                         <p:outputLabel value="In Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>                           
                                 <p:column headerText="Out Time">
@@ -236,7 +236,7 @@
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>  
                                 </p:column>  
                                 <p:column headerText="Worked Time">

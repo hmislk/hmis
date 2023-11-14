@@ -9,13 +9,13 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                
-                    <p:panel header="Reports">
-                        <div class="row" >
-                            <div class="col-md-3" >
-                                <h:form>
-                                    <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
-                                        <p:ajax process="@this"></p:ajax>
+
+                <p:panel header="Reports">
+                    <div class="row" >
+                        <div class="col-md-3" >
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
+                                    <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="All Bills" action="/analytics/all_bills"
@@ -43,16 +43,29 @@
                                             <p:commandButton ajax="false" value="Referral Test List" action="#"  styleClass="linkButton"></p:commandButton>
                                         </div>
                                     </p:tab>
+                                    <p:tab title="SMS Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="SMS faild list" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+                                    <p:tab title="Audit Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Audit Event List" 
+                                                             action="#{auditEventController.navigateToAuditEventList()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+
                                 </p:accordionPanel>
-                                </h:form>
-                            </div>
-                            <div class="col-md-9" >
-                                <ui:insert name="report">
-                                </ui:insert>
-                            </div>
+                            </h:form>
                         </div>
-                    </p:panel>
-                
+                        <div class="col-md-9" >
+                            <ui:insert name="report">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
             </ui:define>
 
 

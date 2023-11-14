@@ -14,7 +14,7 @@
                     <f:facet name="header" >
                         <h:panelGrid columns="10"  >
                             <h:outputLabel value="Inward Timed Service" />
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}"   />
                             
                         </h:panelGrid>
                     </f:facet>    
@@ -67,13 +67,13 @@
 
                                 <p:outputLabel value="StartTime:"/>
                                 <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" >                             
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                             
                                 </p:calendar>                                                                      
 
 
                                 <p:commandButton value="Add Time Service" ajax="false"
                                                 action="#{inwardTimedItemController.addTimedService()}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
 
 
 
@@ -90,25 +90,25 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />  
                             </p:column>
                             <p:column headerText="Total">
                                 #{ti.billFee.patientItem.serviceValue}
                             </p:column>
                             <p:column >
                                 <h:outputLabel value="#{ti.billFee.createdAt}">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                                   
                                 <br/>
                                 <h:panelGroup rendered="#{ti.billFee.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  value="#{ti.billFee.retiredAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
@@ -124,17 +124,17 @@
                             <p:column >
                                 <p:commandButton value="Update" ajax="false"  
                                                 action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
-                                                 disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />                                                                    
+                                                 disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />                                                                    
                             </p:column>
                             <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove"  
                                                  rendered="#{ti.billFee.id eq null}"
                                                 action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
                                 <p:commandButton ajax="false" value="Remove "  
                                                  rendered="#{ti.billFee.id ne null}"
                                                 action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
                             </p:column>
                         </p:dataTable>
                     </p:panel>

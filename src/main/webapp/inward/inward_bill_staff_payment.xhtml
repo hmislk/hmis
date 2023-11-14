@@ -84,7 +84,7 @@
                                            
                                        </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -135,10 +135,10 @@
                                     </h:panelGrid>
                                 </p:panel>
                                 <h:panelGroup >
-                                    <p:commandButton ajax="false" value="Pay" action="#{inwardStaffPaymentBillController.settleBill()}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" value="Pay" action="#{inwardStaffPaymentBillController.settleBill()}"  >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                         <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due"  />
                                     </p:commandButton>  
                                 </h:panelGroup>
@@ -149,7 +149,7 @@
 
 
                     <h:panelGroup rendered="#{inwardStaffPaymentBillController.printPreview}" styleClass="alignTop" >
-                        <p:commandButton ajax="false" value="New Bill" action="#{inwardStaffPaymentBillController.recreateModel}" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="New Bill" action="#{inwardStaffPaymentBillController.recreateModel}" />
 
                         <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
                     </h:panelGroup>

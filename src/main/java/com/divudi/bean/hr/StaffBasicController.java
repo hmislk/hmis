@@ -62,6 +62,7 @@ public class StaffBasicController implements Serializable {
     ////////
     @Inject
     private SessionController sessionController;
+    private int hrAdminMenuIndex;
     private Date fromDate;
     private Date toDate;
     private ReportKeyWord reportKeyWord;
@@ -412,7 +413,6 @@ public class StaffBasicController implements Serializable {
 //
 //        return items;
 //    }
-
     private Date date;
 
     public void resetDate() {
@@ -611,6 +611,94 @@ public class StaffBasicController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getHrAdminMenuIndex() {
+        return hrAdminMenuIndex;
+    }
+
+    public void setHrAdminMenuIndex(int hrAdminMenuIndex) {
+        this.hrAdminMenuIndex = hrAdminMenuIndex;
+    }
+
+    public String navigateToHrRoster() {
+        return "/hr/hr_roster";
+    }
+
+    public String navigateToHrShift() {
+        return "/hr/hr_shift";
+    }
+
+    public String navigateToHrPaysheetComponent() {
+        return "/hr/hr_paysheet_component";
+    }
+
+    public String navigateToHrPaysheetComponentSystem() {
+        return "/hr/hr_paysheet_component_system";
+    }
+
+    public String navigateToHrPhDate() {
+        return "/hr/hr_ph_date";
+    }
+
+    public String navigateToHrHrmVariables() {
+        return "/hr/hr_hrm_variables";
+    }
+
+    public String navigateToHrSalaryCycle() {
+        return "/hr/hr_salary_cycle";
+    }
+
+    public String navigateToHrStaffAdmin() {
+        return "/hr/hr_staff_admin";
+    }
+
+    public String navigateToHrChangeStaff() {
+        return "/hr/hr_change_staff";
+    }
+
+    public String navigateToHrStaffCategory() {
+        return "/hr/hr_staff_category";
+    }
+
+    public String navigateToHrStaffGrade() {
+        return "/hr/hr_staff_grade";
+    }
+
+    public String navigateToHrStaffDesignation() {
+        return "/hr/hr_staff_designation";
+    }
+
+    public String navigateToHrStaffTransfer() {
+        return "/hr/hr_form_staff_transfer";
+    }
+
+    public String navigateToHrStaffBasicIndividual() {
+        return "/hr/hr_staff_basic_individual";
+    }
+
+    public String navigateToHrStaffPaysheetComponentIndividual() {
+        return "/hr/hr_staff_paysheet_component_individual";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAll() {
+        return "/hr/hr_staff_paysheet_component_all";
+    }
+
+    public String navigateToHrStaffLoanInstallment() {
+        return "/hr/hr_staff_loan_installment";
+    }
+
+    public String navigateToHrStaffLeaveEntitle() {
+        return "/hr/hr_staff_leave_entitle";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAllPerformanceAllovance() {
+        return "/hr/hr_staff_paysheet_component_all_performance_allovance";
+    }
+
+    public String navigateToHrStaffPaysheetComponentAllPerformanceAllovancePercentage() {
+        return "/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge";
     }
 
 }

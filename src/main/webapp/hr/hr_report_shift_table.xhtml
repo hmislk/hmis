@@ -12,9 +12,9 @@
         <h:form id="form">  
             <h:panelGrid columns="2">
                 <h:outputLabel value="From Date"/>
-                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 <h:outputLabel value="To Date"/>
-                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 <h:outputLabel value="Roster"/>
                 <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
                     <f:selectItem itemLabel="Select Roster"/>
@@ -30,7 +30,7 @@
                 <p:commandButton ajax="false" value="Fill Roster"
                                  actionListener="#{shiftTableController.makeTableNull()}"
                                  action="#{shiftTableController.fetchShiftTableForCheck()}"
-                                 onclick="onSubmitButton();" />   
+                                  />   
                 <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="print2" ></p:printer>
                 </p:commandButton>
@@ -42,11 +42,11 @@
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <br/>
                     <h:outputLabel value="* This report consider only analized Times Only for Time" style="color: red;"/>

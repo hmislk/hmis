@@ -44,7 +44,7 @@
 
                                     <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
                                     <p:outputLabel value="#{patientController.current.person.dob}" rendered="#{not empty patientController.current.person.dob}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </p:outputLabel>
 
                                     <p:outputLabel value="Race:" rendered="#{not empty patientController.current.person.race.name}" />
@@ -81,10 +81,31 @@
                                     <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
 
 
+                                    <p:outputLabel value="Has an Account:"  />
+                                    <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
 
+
+                                    <p:outputLabel value="Account Balance:" rendered="#{patientController.current.hasAnAccount}" />
+                                    <p:outputLabel value="#{patientController.current.runningBalance}" rendered="#{patientController.current.hasAnAccount}" />
+
+                                    <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
+                                    <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
+
+                                   
+                                    
                                 </p:panelGrid>
+                                 <!-- Barcode -->
+                                    <h:panelGroup  style="text-align: center; width: 100%;" layout="block">
+                                        <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
+                                    </h:panelGroup>
                             </div>
                             <div  class="col-md-4 d-flex flex-column  gap-2" >
+                                <p:commandButton value="Admit" 
+                                                 action="#{patientController.navigateToAdmitFromPatientProfile()}" 
+                                                 ajax="false" 
+                                                 styleClass="mx-2">
+
+                                </p:commandButton>
                                 <p:commandButton value="OPD Bill" 
                                                  action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
                                                  ajax="false"
@@ -95,12 +116,30 @@
                                                  class="w-100"
                                                  action="#{patientController.navigateToOpdBillFromOpdPatient()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
+                                <p:commandButton value="OPD Packages" 
+                                                 action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                                 ajax="false"
+                                                 class="w-100"
+                                                 styleClass="mx-2">
+                                </p:commandButton>
                                 <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="Refunds" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="Lab Reports" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
+                                <p:commandButton value="Inward Appointments"
+                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                                 ajax="false"
+                                                 styleClass="mx-2">
+                                </p:commandButton>
+                                <p:commandButton value="Receive Deposits"
+                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
+                                                 ajax="false"
+                                                 styleClass="mx-2">
+
+                                </p:commandButton>
+                                <p:messages ></p:messages>
                             </div>
 
                         </div>

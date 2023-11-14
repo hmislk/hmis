@@ -36,29 +36,57 @@
                                         <div class="row" >
                                             <div class="col-md-6" >
                                                 <p:commandLink value="Weight&nbsp;:&nbsp;" action="#{patientEncounterController.createWtChart()}" ajax="false"  target="_blank"></p:commandLink>
-                                                <p:inputText  style="width: 4em;" value="#{patientEncounterController.current.weight}" ></p:inputText>
+                                                <p:inputText  
+                                                    id="txtWt"
+                                                    style="width: 4em;"
+                                                    value="#{patientEncounterController.current.weight}" >
+                                                    <p:ajax 
+                                                        event="keyup" 
+                                                        process="txtWt" 
+                                                        update="txtBmi"
+                                                            listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
+                                                </p:inputText>
                                                 <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                             </div>
                                             <div class="col-md-6" >
                                                 <p:outputLabel value="Height&nbsp;:&nbsp;" ></p:outputLabel>
-                                                <p:inputText  style="width: 5em;" value="#{patientEncounterController.current.height}" ></p:inputText>
+                                                <p:inputText  
+                                                    id="txtHt"
+                                                    style="width: 5em;"
+                                                              value="#{patientEncounterController.current.height}" >
+                                                    <p:ajax event="keyup" process="txtHt" 
+                                                            update="txtBmi"
+                                                            listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
+                                                </p:inputText>
                                                 <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>
                                             </div>
                                         </div>
                                         <div class="row my-1" ></div>
-                                        <div class="row" >
-                                            <div class="col-md-8" >
+                                        <div class="row"  >
+                                            <div class="col-md-6" >
                                                 <p:commandLink value="BP&nbsp;:&nbsp;" action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                 <h:panelGroup >
-                                                    <p:inputText style="width: 3em;" maxlength="3" value="#{patientEncounterController.current.sbp}" ></p:inputText>
+                                                    <p:inputText
+                                                        id="txtSbp"
+                                                        style="width: 3em;" maxlength="3" 
+                                                        value="#{patientEncounterController.current.sbp}"
+                                                        >
+
+                                                    </p:inputText>
                                                     <p:outputLabel value="/" ></p:outputLabel>
-                                                    <p:inputText  style="width: 3em;" maxlength="3" value="#{patientEncounterController.current.dbp}" ></p:inputText>
+                                                    <p:inputText  style="width: 3em;" maxlength="3" 
+                                                                  value="#{patientEncounterController.current.dbp}" ></p:inputText>
                                                     <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
                                                 </h:panelGroup>
                                             </div>
-                                            <div class="col-md-4" >
+                                            <div class="col-md-6" >
                                                 <p:outputLabel value="BMI&nbsp;:&nbsp;" ></p:outputLabel>
-                                                <p:outputLabel value="#{patientEncounterController.current.bmi}" ></p:outputLabel>
+                                                <p:inputText 
+                                                    id="txtBmi"
+                                                    value="#{patientEncounterController.current.bmi}" style="width:5em;" >
+                                                    <f:convertNumber pattern="#0.0" ></f:convertNumber>
+
+                                                </p:inputText>
                                                 <p:outputLabel  value="&nbsp;kg/"  ></p:outputLabel>
                                                 <p:outputLabel  value="m"  ></p:outputLabel>
                                                 <p:outputLabel  value="2"   ></p:outputLabel>
@@ -648,7 +676,7 @@
                                                     <h:outputText value="Date / Time" />
                                                 </f:facet>
                                                 <h:outputText value="#{visit.encounterDate}" >
-                                                    <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">

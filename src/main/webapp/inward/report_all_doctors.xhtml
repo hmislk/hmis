@@ -10,9 +10,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Doctor Payment" >
 
@@ -25,7 +25,7 @@
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" rowIndexVar="i">
+                                <p:dataTable id="tbl" value="#{doctorController.items}" var="dc" rowIndexVar="i">
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/channel_reports.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -9,61 +9,62 @@
                 >
 
 
-    <ui:define name="content">    
+    <ui:define name="subContent">    
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <f:facet name="header">
-
-                        <p:commandButton id="btnRefresh" ajax="false" 
+                <h:panelGrid columns="4" class="my-2 justify-content-end d-flex">
+                    <p:commandButton id="btnRefresh" ajax="false" 
                                          value="Process" 
                                          styleClass="noPrintButton" 
                                          style="float: right;" 
                                          actionListener="#{channelReportTempController.createChannelCountByUserOrDate2()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px; margin-left: 10px" >
                             <p:printer target="reportPrint" />
                         </p:commandButton>  
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
                             <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report_2" />
                         </p:commandButton>  
+                </h:panelGrid>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel id="reportPrint" >
+                    <f:facet name="header">
+
+                        
 
                         <h:outputLabel value="Cashier Vise Count Report"/><br/>
 <!--                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> -->
 
 
                         <h:outputLabel value="From :"/>
-                        <h:outputLabel value="#{channelReportTempController.fromDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        <h:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel>
-                        <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel value="#{channelReportTempController.toDate}">
-                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        <h:outputLabel class="ml-5" value="&emsp;&emsp;To :"/>
+                        <h:outputLabel class="ml-2" value="#{channelReportTempController.toDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel><br/>
                         <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/>
                     </f:facet>
-                    <f:facet name="footer">
-                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" />
-                    </f:facet>
-                    <h:panelGrid columns="2"  styleClass="noPrintButton">
+                    
+                    <p:panelGrid columns="2"  styleClass="noPrintButton">
 
                         <h:outputLabel value="From Date" />
-                        <p:calendar id="frmDate" value="#{channelReportTempController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar id="frmDate" value="#{channelReportTempController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss">
+                        <p:calendar id="toDate" value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         </p:calendar>
                         <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
                         <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
-                    </h:panelGrid>
+                    </p:panelGrid>
                     <br/>
                     <p:dataTable id="tbl" value="#{channelReportTempController.channelSummeryDateRangeOrUserRows}" var="csh" rendered="#{!channelReportTempController.byDate}">
                         

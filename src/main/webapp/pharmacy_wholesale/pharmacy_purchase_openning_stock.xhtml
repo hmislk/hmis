@@ -31,11 +31,11 @@
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <p:commandButton  value="Settle" action="#{pharmacyPurchaseController.settle}"
-                                      onclick="onSubmitButton();"
+                                      
                                     ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>
                     <p:commandButton value="New Bill" ajax="false"
-                                     onclick="onSubmitButton();"
+                                     
                                     action="#{pharmacyPurchaseController.makeNull()}" >
                     </p:commandButton>
 
@@ -105,7 +105,7 @@
                                      id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{pharmacyPurchaseController.addItem}" 
-                                         onclick="onSubmitButton();"
+                                         
                                          process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
                     </p:panelGrid>
 
@@ -159,7 +159,7 @@
 
                     <p:column headerText="DoE" >
                         <h:outputText   value="#{ph.pharmaceuticalBillItem.doe}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </h:outputText>
                     </p:column>
 
@@ -187,7 +187,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>
                         <p:panelGrid columns="2" id="tot" style="min-width: 100%">
                             <p:outputLabel value="Gross Total"/>
@@ -213,7 +213,7 @@
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
                 <p:commandButton ajax="false" 
-                                 onclick="onSubmitButton();"
+                                 
                                 action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
