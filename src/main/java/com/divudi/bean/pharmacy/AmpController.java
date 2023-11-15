@@ -482,7 +482,8 @@ public class AmpController implements Serializable {
         if (name == null || name.trim().equals("")) {
             return null;
         }
-        String jpql = "select c from Amp c "
+        String jpql = "select c "
+                + " from Amp c "
                 + " where "
                 + " c.retired=:ret"
                 + " and c.name=:n";
