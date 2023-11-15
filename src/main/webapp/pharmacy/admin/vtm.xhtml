@@ -9,49 +9,80 @@
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
-
                 <h:form id="form"  >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputText value="Manage VTMs" ></h:outputText>
-                        </f:facet>
-                        <div class="row" >
-                            <div class="col-6" >
-                                <p:selectOneListbox  
-                                    style="height: 100%;" 
-                                    converter="vtm"  
-                                    id="lstSelect" 
-                                    value="#{vtmController.current}"
-                                    filter="true">
-                                    <f:selectItems  value="#{vtmController.items}"
-                                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                    <p:ajax event="change"   update="gpDetail" process="lstSelect" >
-                                    </p:ajax>
-                                </p:selectOneListbox>
-                                <h:commandButton id="btnAdd" value="Add" action="#{vtmController.prepareAdd()}" styleClass="buttons btn btn-primary" >
-                                    <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
-                                    </f:ajax>
-                                </h:commandButton>
-                                <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{vtmController.delete()}"  value="Delete" class="btn btn-danger" >
-                                </h:commandButton>
-                            </div>
-                            <h:panelGroup id="gpDetail" class="col-6" layout="block" >
-                                <label for="lblName" class="form-label">Name</label>
-                                <h:inputText autocomplete="off" id="txtName" value="#{vtmController.current.name}" required="true" class="form-control" ></h:inputText>
-                                <p:commandButton id="btnSave" value="Save"  action="#{vtmController.save}" styleClass="buttons btn btn-primary" style="align-items: flex-end"
-                                                 ajax="false" >
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSave"/>
-                            </h:panelGroup>
-                        </div>
 
-                    </p:panel>
+                    <p:panelGrid columns="2" class="w-100" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Manage VTMs" ></p:outputLabel>
+                        </f:facet>
+
+
+
+
+                        <h:panelGroup >
+                            <p:selectOneListbox  
+                                style="height: 90%;" 
+                                converter="vtm"  
+                                id="lstSelect" 
+                                value="#{vtmController.current}"
+                                filter="true">
+                                <f:selectItems  
+                                    value="#{vtmController.items}"
+                                    var="myItem" 
+                                    itemValue="#{myItem}" 
+                                    itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax event="change"   update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                            <p:commandButton 
+                                id="btnAdd" 
+                                value="Add" 
+                                process="lstSelect btnAdd"
+                                update="gpDetail focusItem"
+                                action="#{vtmController.prepareAdd()}" 
+                                class="ui-button-warning m-1"
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                id="btnDelete" 
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                action="#{vtmController.delete()}"  
+                                value="Delete" 
+                                class="ui-button-danger m-1" >
+                            </p:commandButton>
+                            <p:focus id="focusItem" for="txtName" ></p:focus>
+                            <p:focus id="focusSelect" for="lstSelect" ></p:focus>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpDetail" >
+                            <label for="lblName" class="form-label">Name</label>
+                            <h:inputText 
+                                autocomplete="off" 
+                                id="txtName" 
+                                value="#{vtmController.current.name}" 
+                                required="true" 
+                                class="form-control" ></h:inputText>
+                            <p:commandButton 
+                                id="btnSave" 
+                                value="Save"  
+                                action="#{vtmController.save}"
+                                process="gpDetail btnSave"
+                                update="lstSelect focusSelect"
+                                class="ui-button-success m-1"
+                                >
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSave"/>
+                        </h:panelGroup>
+
+
+                    </p:panelGrid>
 
 
                     <p:growl />
-                
+
                 </h:form>
+
+
 
             </ui:define>
         </ui:composition>
