@@ -32,6 +32,7 @@ public class WebUserPrivilege implements Serializable {
     WebUser webUser;
     @Enumerated(EnumType.STRING)
     Privileges privilege;
+    private Department department;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -90,6 +91,8 @@ public class WebUserPrivilege implements Serializable {
     public WebUser getCreater() {
         return creater;
     }
+    
+    
 
     public void setCreater(WebUser creater) {
         this.creater = creater;
@@ -174,5 +177,13 @@ public class WebUserPrivilege implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.data.WebUserPrivilege[ id=" + id + " ]";
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }

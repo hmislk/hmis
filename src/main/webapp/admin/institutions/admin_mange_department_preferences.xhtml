@@ -28,17 +28,17 @@
                                             <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
                                         <h:outputLabel value="GRN Detaied" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
 
                                         <h:outputLabel value="Bill Number Generate From To Department" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.depNumGenFromToDepartment}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.depNumGenFromToDepartment}" />
 
                                         <h:outputLabel value="Transfer NetTotal by retailRate"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.tranferNetTotalbyRetailRate}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.tranferNetTotalbyRetailRate}" />
                                         <h:outputLabel value="Pharmacy Purchase With Last Rate"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmayPurchaseWithLastRate}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmayPurchaseWithLastRate}"/>
                                         <h:outputLabel value="Pharmacy Bill without Item List"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmacyBillWithOutItem}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmacyBillWithOutItem}" />
 
                                     </h:panelGrid>
 
@@ -55,7 +55,7 @@
                                     <p:selectBooleanButton 
                                         class="form-control" 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 
                                     <h:outputLabel 
@@ -63,7 +63,7 @@
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></p:selectBooleanButton>
 
@@ -73,7 +73,7 @@
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.canSettleOpdBillWithInvestigationsWithoutReferringDoctor}" ></p:selectBooleanButton>
 
@@ -83,28 +83,21 @@
                                     <p:selectBooleanButton 
                                         class="form-control"
                                         offIcon="fas fa-times"
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.opdSettleWithoutCashTendered}"/>
 
 
 
                                     <h:outputLabel 
                                         class="form-label"
-                                        value="Institution Specific Items" ></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        class="form-control" 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
-                                        value="#{sessionController.currentPreference.institutionSpecificItems}" />
+                                        value="OPD Item Listing Strategy" ></h:outputLabel>
+                                    <p:selectOneMenu 
+                                        value="#{sessionController.currentPreference.opdItemListingStrategy}"
+                                        class="form-control">
+                                        <f:selectItems value="#{enumController.itemListingStrategys}"></f:selectItems>
+                                    </p:selectOneMenu>
 
-                                    <h:outputLabel 
-                                        value="Institution Restricted Billing"
-                                        class="form-label"></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
-                                        class="form-control"
-                                        value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></p:selectBooleanButton>
+                                    
 
                                     <h:outputLabel 
                                         value="OPD Bill Paper" 
@@ -120,8 +113,8 @@
                                         value="Partial Payment of OPD Bills allowed"
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-check"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-times"
                                         class="form-control"                                              
                                         value="#{sessionController.currentPreference.partialPaymentOfOpdBillsAllowed}" />
 
@@ -130,7 +123,7 @@
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.partialPaymentOfOpdPreBillsAllowed}" />
 
@@ -140,7 +133,7 @@
                                     <p:selectBooleanButton 
                                         class="form-control"
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
 
                                     <h:outputLabel 
@@ -149,7 +142,7 @@
                                     <p:selectBooleanButton 
                                         class="form-control" 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
 
                                     <h:outputLabel
@@ -158,7 +151,7 @@
                                     <p:selectBooleanButton 
                                         class="form-control" 
                                         offIcon="fas fa-times" 
-                                        onIcon="fas fa-check"
+                                        onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.printBarcodeInOpdBill}"/>
 
 
@@ -276,19 +269,19 @@
                                     <h:panelGrid columns="2" class="w-100">
 
                                         <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
 
                                         <h:outputLabel value="Inward Add Service Bill Time With Out Check"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
 
                                         <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
 
                                         <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
 
                                         <h:outputLabel value="Change Admission Fee in Interim Bill"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
 
 
                                     </h:panelGrid>
@@ -299,13 +292,13 @@
                                     <h:panelGrid columns="2" styleClass="alignTop" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
 
                                         <h:outputLabel value="Send SMS on Cancellation"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnCancelling}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnCancelling}"/>
 
                                         <h:outputLabel value="Send SMS on Arrival"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnArrival}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channellingSendSmsOnArrival}"/>
 
 
                                         <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
@@ -315,16 +308,16 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Channel Bill Double"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelBillDouble}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelBillDouble}"/>
 
                                         <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
                                         <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
                                         <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
                                         <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
                                         <h:outputLabel value="Default Payment Method"></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
@@ -339,13 +332,13 @@
                                 <p:panel header="Lab" >
                                     <h:panelGrid columns="2" styleClass="alignTop" >
                                         <h:outputLabel value="Automatically Send an Email with each Report Approval"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentEmailWithInvestigationReportApproval}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentEmailWithInvestigationReportApproval}"/>
 
                                         <h:outputLabel value="Automatically Send a SMS with each Report Approval"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentSmsWithInvestigationRequestApproval}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentSmsWithInvestigationRequestApproval}"/>
 
                                         <h:outputLabel value="Daily Send Referral Value Details"></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentDailySmsSummeryForReferringDoctors}"/>
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.sentDailySmsSummeryForReferringDoctors}"/>
 
 
                                         <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
@@ -401,10 +394,10 @@
                                     <h:panelGrid columns="2" styleClass="alignTop" class="w-100">
 
                                         <h:outputLabel value="Family Membership"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offIcon="fas fa-check" onIcon="fas fa-times" ></p:selectBooleanButton>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offIcon="fas fa-times" onIcon="fas fa-times" ></p:selectBooleanButton>
 
                                         <h:outputLabel value="Membership Expires"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.membershipExpires}" offIcon="fas fa-check" onIcon="fas fa-times" ></p:selectBooleanButton>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.membershipExpires}" offIcon="fas fa-times" onIcon="fas fa-times" ></p:selectBooleanButton>
 
 
                                         <h:outputLabel value="Institution" ></h:outputLabel>
@@ -418,9 +411,9 @@
                                         <h:outputLabel value="Logo Name"></h:outputLabel>
                                         <p:inputText id="imgName" value="#{sessionController.currentPreference.logoName}" placeholder="Eg- /abc.jpg" class="w-100"/>
                                         <h:outputLabel value="Bill Proboda" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
                                         <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
-                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
+                                        <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-times" value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
 
 
                                     </h:panelGrid>

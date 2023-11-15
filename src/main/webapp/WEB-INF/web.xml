@@ -65,6 +65,7 @@
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
         <location>/faces/home.xhtml</location>
-    </error-page>    
+    </error-page> 
+       
 
 </web-app>

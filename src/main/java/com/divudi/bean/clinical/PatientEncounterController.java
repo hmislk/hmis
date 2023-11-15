@@ -551,17 +551,14 @@ public class PatientEncounterController implements Serializable {
 
     public void addEncounterProcedure() {
         System.out.println("addEncounterProcedure");
-        System.out.println("current = " + current);
         if (current == null) {
             UtilityController.addErrorMessage("Please select a visit");
             return;
         }
-        System.out.println("encounterProcedure = " + encounterProcedure);
         if (encounterProcedure == null) {
             UtilityController.addErrorMessage("Please select a procedure");
             return;
         }
-        System.out.println("encounterProcedure.getItemValue() = " + encounterProcedure.getItemValue());
         if (encounterProcedure.getItemValue() == null) {
             UtilityController.addErrorMessage("Please select a procedure");
             return;

@@ -4801,15 +4801,12 @@ public class SearchController implements Serializable {
 
     public void markRefundBillItem(PatientInvestigation pi) {
         if (pi == null) {
-            System.out.println("pi null");
             return;
         }
         if (pi.getBillItem() == null) {
-            System.out.println("pi bi null= " + pi);
             return;
         }
         if (pi.getBillItem().getId() == null) {
-            System.out.println("pi.getBillItem() id null = " + pi.getBillItem());
             return;
         }
         String sql;
@@ -5748,8 +5745,6 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
 
         billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -5801,8 +5796,6 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 

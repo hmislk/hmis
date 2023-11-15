@@ -82,6 +82,8 @@ public class PharmacyController implements Serializable {
     CommonController commonController;
     @Inject
     private AmpController ampController;
+    @Inject
+    VtmController vtmController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -257,6 +259,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVtm() {
+        vtmController.fillItems();
         return "/pharmacy/admin/vtm";
     }
 
@@ -500,8 +503,9 @@ public class PharmacyController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("ret", Boolean.TRUE);
 //        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
-        System.out.println("itemFacade = " + itemFacade);
-        System.out.println("jpql = " + jpql);
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
         allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql);
 
     }
