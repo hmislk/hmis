@@ -662,6 +662,7 @@ public class DataUploadBean {
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
                 vmp = vmpController.findVmpByName(vmpName);
+                System.out.println("vmp = " + vmp);
                 if (vmp == null) {
                     System.out.println("This VMP Name not found :  " + vmpName);
                     continue;
