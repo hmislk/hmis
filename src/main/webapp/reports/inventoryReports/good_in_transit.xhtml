@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Good In Transit" >
+
+                        <p:panelGrid columns="4" class="w-100">
+                            <p:outputLabel value="From Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="To Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Receive Branch" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Receive Store" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Issue Branch" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Issue Store" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:outputLabel value="Item Name/Code" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Item Category" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Show only Pending Documents" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Transit Store/Staff" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="null">
+                            </p:commandButton>
+
+                        </div>
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+
+                            <p:column headerText="Item Code">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issue Qty">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issue Doc. Type ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issuing Branch">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issuing Store	">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issue Doc. Approval Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Issue Prepared By">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Qty">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Stock Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Approval Stock Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Doc. No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Doc. Type ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receiving Branch">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receiving Store">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Doc. Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Doc. Approval Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Prepared By">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Approved By">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Receipt Approval Status">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

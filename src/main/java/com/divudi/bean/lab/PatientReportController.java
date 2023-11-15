@@ -15,6 +15,7 @@ import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.MessageType;
 import com.divudi.data.Sex;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
@@ -38,6 +39,7 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
+import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
 import java.io.File;
@@ -71,6 +73,7 @@ import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -231,6 +234,80 @@ public class PatientReportController implements Serializable {
             return;
         }
         currentPatientReport = pr;
+    }
+
+    public void preparePatientReportByIdForRequestsWithoutExpiary() {
+        currentPatientReport = null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+
+        String decodedIdStr;
+        try {
+            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        String idStr = getSecurityController().decrypt(decodedIdStr);
+        if (idStr == null || idStr.trim().isEmpty()) {
+            // Handle the situation where decryption returns null or an empty string
+            return;
+        }
+
+        Long id;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        PatientReport pr = getFacade().find(id);
+        if (pr != null) {
+            currentPatientReport = pr;
+        }
+    }
+
+    public void preparePatientReportForReportLink() {
+        currentPatientReport = null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+
+        String decodedIdStr;
+        try {
+            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if(securityKey==null||securityKey.trim().equals("")){
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId,securityKey);
+        
+        if (idStr == null || idStr.trim().isEmpty()) {
+            // Handle the situation where decryption returns null or an empty string
+            return;
+        }
+
+        Long id;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        PatientReport pr = getFacade().find(id);
+        if (pr != null) {
+            currentPatientReport = pr;
+        }
     }
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
@@ -581,24 +658,20 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
-            
+
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    System.out.println("varchar");
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
-                    System.out.println("double");
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
-                    System.out.println("numberWithLargeNumberOfDecimals = " + numberWithLargeNumberOfDecimals);
                     Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
-                    System.out.println("numberWithFormatter = " + numberWithFormatter);
                     priv.setDoubleValue(numberWithFormatter);
                     priv.setStrValue(numberWithFormatter + "");
                 }
             }
-            
+
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
                 String sql = "select i "
                         + " from IxCal i "
@@ -1081,6 +1154,40 @@ public class PatientReportController implements Serializable {
     }
 
     public String smsBody(PatientReport r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if(securityKey==null||securityKey.trim().equals("")){
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(),securityKey);
+        String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + " is ready. "
+                + url;
+        return b;
+    }
+    
+    public String smsBody(PatientReport r, String old) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = getSecurityController().encrypt(r.getId().toString());
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            // Handle the exception
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + " is ready. "
+                + url;
+        return b;
+    }
+
+    public String smsBody(PatientReport r, boolean old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
         String temId = currentPatientReport.getId() + "";
@@ -1445,9 +1552,10 @@ public class PatientReportController implements Serializable {
             e.setPending(false);
             getSmsFacade().create(e);
 
-            boolean sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
                     sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent);
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(e);
         }
 
@@ -1799,17 +1907,17 @@ public class PatientReportController implements Serializable {
     }
 
     public void createNewReport(PatientInvestigation pi) {
-        if(pi==null){
+        if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
-            return ;
+            return;
         }
-        if(pi.getInvestigation()==null){
+        if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
-            return ;
+            return;
         }
-        if(pi.getInvestigation().getReportedAs()==null){
+        if (pi.getInvestigation().getReportedAs() == null) {
             JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
-            return ;
+            return;
         }
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;

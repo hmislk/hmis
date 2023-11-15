@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="GRN Report" >
+
+                        <p:panelGrid columns="4" class="w-100">
+                            <p:outputLabel value="From Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="To Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="Branch" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Store" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Payment Mode" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Suplier" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Type" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="null">
+                            </p:commandButton>
+                            
+                        </div>
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+
+                            <p:column headerText="GRN No.">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Invoice No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Created Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Approved Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Supplier Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Branch">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Po No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Purchase Value Cash">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Purchase Value Credit">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Sale Value Cash">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Sale Value Credit">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Remark">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

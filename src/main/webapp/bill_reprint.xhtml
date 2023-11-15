@@ -24,20 +24,19 @@
                                                          return false;"/>
                         </p:panelGrid>
 
-                        <h1>#{sessionController.loggedPreference.opdBillPaperType}</h1>
+                        <h1>Bill Paper - #{sessionController.loggedPreference.opdBillPaperType}</h1>
                         
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <p:panel header="Bill" >
                                 <p:panelGrid columns="1" >
-
                                     <p:panel header="Reprint" >
                                         <h:panelGroup id="gpBillPreviewRmh" >
                                             <div class="nonPrintBlock">
-                                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                                    <p:printer target="gpBillPreviewRmh" ></p:printer>
+                                                <p:commandButton value="Print*" ajax="false" action="#"  >
+                                                    <p:printer target="billReprint" ></p:printer>
                                                 </p:commandButton>
                                             </div>
-                                            <bi:five_five_paper_with_headings  bill="#{billSearch.bill}" /> 
+                                            <bi:five_five_paper_with_headings id="billReprint"  bill="#{billSearch.bill}" /> 
                                         </h:panelGroup>
                                     </p:panel>
                                 </p:panelGrid>

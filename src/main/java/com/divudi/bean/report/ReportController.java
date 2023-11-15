@@ -14,6 +14,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
@@ -80,6 +81,7 @@ public class ReportController implements Serializable {
 
     private Investigation investigation;
     private Speciality currentSpeciality;
+    private Service service;
 
     private String priorityType;
     private String patientMrn;
@@ -581,6 +583,129 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_record_no_shift_settled";
     }
+    
+    public String navigateToEmployeeWorkedDayReport() {
+
+        return "/reports/HRReports/employee_worked_day_report";
+    }
+    
+    public String navigateToEmployeeWorkedDayReportSalaryCycle() {
+
+        return "/reports/HRReports/employee_worked_day_report_salary_cycle";
+    }
+    
+    public String navigateToMonthendEmployeeWorkingTimeAndOvertime() {
+
+        return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
+    }
+    
+    public String navigateToMonthEndEmployeeNoPayReportByMinutes() {
+
+        return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
+    }
+    
+    public String navigateToMonthEndEmployeeSummery() {
+
+        return "/reports/HRReports/month_end_employee_summery";
+    }
+    
+    public String navigateToFingerAnalysisReportBySalaryCycle() {
+
+        return "/reports/HRReports/finger_analysis_report_by_salary_cycle";
+    }
+    
+    public String navigateToFingerPrintApprove() {
+
+        return "/reports/HRReports/fingerprint_approve";
+    }
+    
+    public String navigateToLeaveForm() {
+
+        return "/reports/HRReports/leave_form";
+    }
+    
+    public String navigateToAdditionalFormReportVerification() {
+
+        return "/reports/HRReports/additional_form_report_veification";
+    }
+    
+    public String navigateToOnlineFormStatus() {
+
+        return "/reports/HRReports/online_form_status";
+    }
+    
+
+    public String navigateToAdmissionDischargeReport() {
+
+        return "/reports/inpatientReports/admission_discharge_report";
+    }
+
+    public String navigateToGoodInTransit() {
+
+        return "/reports/inventoryReports/good_in_transit";
+    }
+    
+    public String navigateToGrnReport() {
+
+        return "/reports/inventoryReports/grn_report";
+    }
+    
+    public String navigateToSlowFastNoneMovement() {
+
+        return "/reports/inventoryReports/slow_fast_none_movement";
+    }
+    
+    public String navigateToBeforeStockTaking() {
+
+        return "/reports/inventoryReports/before_stock_taking";
+    }
+    
+    public String navigateToAfterStockTaking() {
+
+        return "/reports/inventoryReports/after_stock_taking";
+    }
+    
+    public String navigateToStockLedger() {
+
+        return "/reports/inventoryReports/stock_ledger";
+    }
+    
+    public String navigateToExpiryItem() {
+
+        return "/reports/inventoryReports/expiry_item";
+    }
+    
+     public String navigateToIpUnsettledInvoices() {
+
+        return "/reports/inpatientReports/ip_unsettled_invoices";
+    }
+     
+     public String navigateToconsumption() {
+
+        return "/reports/inventoryReports/consumption";
+    }
+     
+     public String navigateToClosingStockReport() {
+
+        return "/reports/inventoryReports/closing_stock_report";
+    }
+     
+     public String navigateToAdmissionCategoryWiseAdmission() {
+
+        return "/reports/inpatientReports/admission_category_wise_admission";
+    }
+     
+     public String navigateToStockTransferReport() {
+
+        return "/reports/inventoryReports/stock_transfer_report";
+    }
+     
+     public String navigateToCostOfGoodsSold() {
+
+        return "/reports/inventoryReports/cost_of_goods_sold";
+    }
+
+
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -913,4 +1038,13 @@ public class ReportController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+    }
+
+    
 }

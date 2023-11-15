@@ -6,19 +6,11 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
-
-    <h:head >
-
-    </h:head>
-
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
-
     <cc:implementation>
-
-
 
         <style type="text/css">
             /* Define font size and font family variables */
@@ -33,10 +25,11 @@
 
         </style>
 
+        <h1>outside</h1>
 
         <h:panelGroup id="gpPrint" layout="block" class="printStyle" 
-                      style="padding:2cm; margin: 3cm; margin-right: 4cm; margin-top: 0cm; padding-top: 0cm;">
-
+                      style="border: 2px solid red; padding:2cm; margin: 3cm; margin-right: 4cm; margin-top: 0cm; padding-top: 0cm;">
+            <h1>Inside</h1>
             <!-- Bill Header -->
             <!-- Bill Header -->
             <h:panelGroup layout="block" style="text-align: center;">

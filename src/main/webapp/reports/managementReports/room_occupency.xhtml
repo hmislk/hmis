@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Room Occupency Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="Patient MRN" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                                <f:selectItem itemLabel="Select MRN"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Ward"/>
+                            <p:selectOneMenu value="">
+                                <f:selectItem itemLabel="Select Ward"/>
+                                <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Bed"/>
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                                <f:selectItem itemLabel="Select Bed"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer/>
+                            <p:outputLabel value="Doctor Speciality" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                                <f:selectItem itemLabel="Select Speciality"/>
+                                <f:selectItems value="#{specialityController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+                             
+                             
+                            <p:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Admission Type"/>
+                                <f:selectItems value="#{admissionController.items}"
+                                               var="r"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <p:outputLabel value="Room Category"/>
+                            <p:selectOneMenu value="">
+                                <f:selectItem itemLabel="Select Room Category"/>
+                                <f:selectItems value="#{roomCategoryController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Room Summary"/>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Suumary type"/>
+                                
+                            </p:selectOneMenu>
+                           
+                            <p:spacer/>
+
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                           
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+
+
+
+                            <p:spacer width="20"></p:spacer><p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="S. No" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="MRN" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Pateint Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission Date" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Discharge Date" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Room Category" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission Type" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Ward/Bed" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Occupency Days" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Room From Time" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Room To Time" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Duration Time" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

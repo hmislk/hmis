@@ -1114,6 +1114,18 @@ public class BillNumberGenerator {
 
         return result.toString();
     }
+    
+    public String departmentBillNumberGenerator(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
+        BillNumber billNumber = fetchLastBillNumber(ins, dep, billType, billClassType);
+        Long dd = billNumber.getLastBillNumber();
+        StringBuilder result = new StringBuilder();
+        result.append(dep.getDepartmentCode());
+        result.append("/");
+        result.append(++dd);
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+        return result.toString();
+    }
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);

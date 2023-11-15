@@ -5563,6 +5563,12 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+    public void listOpdBatcuBills() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBathcBill, institution, department);
+        checkLabReportsApproved(bills);
+    }
 
     public void listOpdBills() {
         Date startTime = new Date();

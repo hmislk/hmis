@@ -20,7 +20,8 @@ public enum PaymentMethod {
     Slip,
     ewallet,
     PatientDeposit,
-    OnlineSettlement;
+    OnlineSettlement,
+    MultiplePaymentMethods;
 
     public String getLabel() {
         switch (this) {
@@ -46,6 +47,8 @@ public enum PaymentMethod {
                 return "e-Wallet Payment";
             case PatientDeposit:
                 return "Patient Deposit";
+            case MultiplePaymentMethods:
+                return "Multiple Payment Methods";
             default:
                 return this.toString();
 

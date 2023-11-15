@@ -424,8 +424,32 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip,
             PaymentMethod.Credit,
             PaymentMethod.ewallet,
-            PaymentMethod.PatientDeposit};
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.MultiplePaymentMethods};
 
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsExceptMultiple() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.Credit,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsNonCreditExceptMultiple() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
         return p;
     }
 
