@@ -610,29 +610,22 @@ public class DataUploadBean {
             Row row = rowIterator.next();
             Amp amp = new Amp();
             Atm atm = null;
-            Vmp vmp = null;
+            Vmp vmp=null;
 
-            /**
-             * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
-             * strength unit issue unit pack unit StrengthUnitsPerIssueUnit
-             * IssueUnitsPerPack	ROL	ROQ	MinROQ	manu_Institution
-             * importer_Institution	supplier_Institution	SalePrice	PurchasePrice
-             * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
-             */
             Long id;
-            String ampName = null;
+            String ampName;
             String code = null;
             String barcode = null;
-            String vmpName = null;
+            String vmpName;
             String manufacturerName = null;
             String importerName = null;
-            Institution supplier;
             Institution importer;
             Institution manufacturer;
 
             Cell idCell = row.getCell(0);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
+                System.out.println("id = " + id);
                 amp.setItemId(id);
             }
 
@@ -642,9 +635,14 @@ public class DataUploadBean {
                 if (ampName == null || ampName.trim().equals("")) {
                     continue;
                 }
+                System.out.println("ampName = " + ampName);
                 amp = ampController.findAmpByName(ampName);
-                if (amp != null) {
-                    continue;
+                System.out.println("amp = " + amp);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(ampName);
+                    amp.setCreatedAt(new Date());
+                    amp.setCreater(sessionController.getLoggedUser());
                 }
             } else {
                 continue;
@@ -664,7 +662,8 @@ public class DataUploadBean {
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
                 vmp = vmpController.findVmpByName(vmpName);
-                if (vmp != null) {
+                if (vmp == null) {
+                    System.out.println("This VMP Name not found :  " + vmpName);
                     continue;
                 }
             }
@@ -684,11 +683,11 @@ public class DataUploadBean {
             manufacturer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Manufacturer);
             importer = institutionController.getInstitutionByName(importerName, InstitutionType.Importer);
 
-            amp = new Amp();
+//            amp = new Amp();
             amp.setName(ampName);
             amp.setCode("amp_" + CommonController.nameToCode(ampName));
-            if (atm != null) {
-                amp.setAtm(atm);
+            if (vmp != null) {
+                amp.setVmp(vmp);
             }
             amp.setCode(code);
             amp.setBarcode(barcode);
