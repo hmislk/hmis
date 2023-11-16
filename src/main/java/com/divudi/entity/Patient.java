@@ -70,6 +70,8 @@ public class Patient implements Serializable {
     private Long ageInDaysOnBilledDate;
     @Transient
     private Date billedDate;
+    @Transient
+    private boolean editingMode;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     @Basic(fetch = FetchType.LAZY)
@@ -98,7 +100,7 @@ public class Patient implements Serializable {
     Date toDate;
     @Size(max = 10)
     String phn;
-    
+
     private Boolean hasAnAccount;
     private Double runningBalance;
     private Double creditLimit;
@@ -113,8 +115,10 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
 
-    
-    
+    public void toggleEditMode() {
+        editingMode = !editingMode;
+    }
+
     public Institution getCreatedInstitution() {
         return createdInstitution;
     }
@@ -161,7 +165,7 @@ public class Patient implements Serializable {
     private void onLoad() {
         calAgeFromDob();
     }
-    
+
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -263,6 +267,7 @@ public class Patient implements Serializable {
         calAgeFromDob();
         return ageMonths;
     }
+
     public String getIdStr() {
         String formatted = String.format("%07d", id);
         return formatted;
@@ -285,8 +290,6 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -371,6 +374,7 @@ public class Patient implements Serializable {
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
     }
+
     public boolean isRetired() {
         return retired;
     }
@@ -544,6 +548,14 @@ public class Patient implements Serializable {
 
     public void setCreditLimit(Double creditLimit) {
         this.creditLimit = creditLimit;
+    }
+
+    public boolean isEditingMode() {
+        return editingMode;
+    }
+
+    public void setEditingMode(boolean editingMode) {
+        this.editingMode = editingMode;
     }
 
 }

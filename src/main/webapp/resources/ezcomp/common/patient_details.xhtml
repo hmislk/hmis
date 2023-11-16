@@ -13,15 +13,34 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel class="my-1" >
-            <f:facet name="header" >
+        <p:panel class="my-1" id="panelPatient" >
+            <f:facet name="header">
                 <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
                 <h:outputText value="Patient Details" class="mx-4"></h:outputText>
+
+                <!-- Toggle Edit Mode Link -->
+                <p:commandLink actionListener="#{cc.attrs.patient.toggleEditMode}" 
+                               styleClass="btn btn-link p-0 m-0">
+                    <i class="#{cc.attrs.patient.editingMode ? 'fa fa-eye' : 'fa fa-edit'}"></i>
+                    <p:ajax process="@this" update="panelPatient" />
+                </p:commandLink>
+
+                <!-- Save Link with Icon -->
+                <p:commandLink action="#{patientController.saveSelected(cc.attrs.patient)}" 
+                               rendered="#{cc.attrs.patient.editingMode}"
+                               styleClass="btn btn-link p-0 m-0">
+                    <i class="fa fa-save"></i>
+                    <p:ajax process="@this panelPatient" update="panelPatient" />
+                </p:commandLink>
             </f:facet>
+
             <div class="row">
                 <div class="col-md-3 p-1">
-                    <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                     value="#{cc.attrs.patient.person.title}">
+                    <p:selectOneMenu 
+                        id="cmbTitle"
+                        class="form-control w-100"
+                        disabled="#{!cc.attrs.patient.editingMode}"
+                        value="#{cc.attrs.patient.person.title}">
                         <f:selectItem itemLabel="Select Title" />
                         <f:selectItems value="#{opdBillController.title}" var="i"
                                        itemLabel="#{i.label}" itemValue="#{i}"/>
@@ -31,7 +50,10 @@
                 </div>
                 <div class="col-md-9 p-1">
                     <p:inputText 
-                        autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
+                        disabled="#{!cc.attrs.patient.editingMode}"
+                        autocomplete="off" 
+                        id="txtNewPtName" 
+                        placeholder="Enter the Name of the patient"
                         value="#{cc.attrs.patient.person.name}"
                         class="form-control" />
                 </div>
@@ -39,8 +61,11 @@
 
             <div class="row">
                 <div class="col-md-3 p-1">
-                    <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.patient.person.sex}"
-                                     class="form-control w-100">
+                    <p:selectOneMenu 
+                        id="txtNewSex" 
+                        disabled="#{!cc.attrs.patient.editingMode}"
+                        value="#{cc.attrs.patient.person.sex}"
+                        class="form-control w-100">
                         <f:selectItem itemLabel="Select Gender"/>
                         <f:selectItems value="#{opdBillController.sex}"/>
                     </p:selectOneMenu>
@@ -48,9 +73,13 @@
                 <div class="col-md-9 p-1">
                     <div class="row">
                         <div class="col-md-2">
-                            <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                         value="#{cc.attrs.patient.person.ageYearsComponent}"
-                                         class="form-control">
+                            <p:inputText 
+                                autocomplete="off" 
+                                id="year" 
+                                placeholder="Years"
+                                disabled="#{!cc.attrs.patient.editingMode}"
+                                value="#{cc.attrs.patient.person.ageYearsComponent}"
+                                class="form-control">
                                 <f:ajax event="blur" execute="@this" render="calDob" />
                             </p:inputText>
                         </div>
