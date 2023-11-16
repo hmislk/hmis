@@ -7,25 +7,15 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
         <h:form id="form">
 
             <div class="row" >
                 <div class="col-5" >
-                    <p:panel header="Patient Details" style="height: 20vh;" >
-                        
-                    </p:panel>
-                    <!-- Patient Details Section -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fa fa-user"></i> Patient Details
-                        </div>
-                        <div class="card-body">
-                            <!-- Insert patient details here, e.g. #{admissionController.current.patient} -->
-                        </div>
-                    </div>
+                    <common:patient_details patient="#{admissionController.current.patient}"/>
                 </div>
                 <div class="col-5" >
                     <!-- Admission & Discharge Details Section -->

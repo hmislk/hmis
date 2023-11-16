@@ -13,112 +13,174 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel class="my-1" >
+        <p:panel class="my-1" id="panelPatient" >
             <f:facet name="header" >
-                <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
-                <h:outputText value="Patient Details" class="mx-4"></h:outputText>
-            </f:facet>
-            <div class="row">
-                <div class="col-md-3 p-1">
-                    <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                     value="#{cc.attrs.patient.person.title}">
-                        <f:selectItem itemLabel="Select Title" />
-                        <f:selectItems value="#{opdBillController.title}" var="i"
-                                       itemLabel="#{i.label}" itemValue="#{i}"/>
-                        <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
-                        <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
-                    </p:selectOneMenu>
-                </div>
-                <div class="col-md-9 p-1">
-                    <p:inputText 
-                        autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
-                        value="#{cc.attrs.patient.person.name}"
-                        class="form-control" />
-                </div>
-            </div>
+                <h:panelGroup id="headerFacet">
 
-            <div class="row">
-                <div class="col-md-3 p-1">
-                    <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.patient.person.sex}"
-                                     class="form-control w-100">
-                        <f:selectItem itemLabel="Select Gender"/>
-                        <f:selectItems value="#{opdBillController.sex}"/>
-                    </p:selectOneMenu>
+
+                    <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
+                    <h:outputText value="Patient Details" class="mx-4"></h:outputText>
+
+                    <!-- Toggle Edit Mode Link -->
+                    <p:commandLink id="editLink"
+                                   process="@this" 
+                                   update="gpPatient headerFacet"
+                                   actionListener="#{cc.attrs.patient.toggleEditMode}" 
+                                   styleClass="btn btn-link p-0 m-0"
+                                   rendered="#{not cc.attrs.patient.editingMode}">
+                        <i class="fa fa-edit"></i>
+                    </p:commandLink>
+
+                    <!-- Save Link with Icon -->
+                    <p:commandLink id="saveLink"
+                                   action="#{patientController.save(cc.attrs.patient)}" 
+                                   rendered="#{cc.attrs.patient.editingMode}"
+                                   styleClass="btn btn-link p-0 m-0"
+                                   ajax="false">
+                        <i class="fa fa-save"></i>
+                        <p:ajax process="@this gpPatient" update="gpPatient" />
+                    </p:commandLink>
+                </h:panelGroup>
+            </f:facet>
+
+            <h:panelGroup id="gpPatient" >
+
+
+
+                <div class="row">
+                    <div class="col-md-3 p-1">
+                        <p:selectOneMenu 
+                            id="cmbTitle"
+                            class="form-control w-100"
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            value="#{cc.attrs.patient.person.title}">
+                            <f:selectItem itemLabel="Select Title" />
+                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                            <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
+                            <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-9 p-1">
+                        <p:inputText 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            autocomplete="off" 
+                            id="txtNewPtName" 
+                            placeholder="Enter the Name of the patient"
+                            value="#{cc.attrs.patient.person.name}"
+                            class="form-control" />
+                    </div>
                 </div>
-                <div class="col-md-9 p-1">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                         value="#{cc.attrs.patient.person.ageYearsComponent}"
-                                         class="form-control">
-                                <f:ajax event="blur" execute="@this" render="calDob" />
-                            </p:inputText>
-                        </div>
-                        <div class="col-md-2">
-                            <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                         value="#{cc.attrs.patient.person.ageMonthsComponent}"
-                                         class="form-control">
-                                <f:ajax event="blur" execute="@this"  render="calDob"  />
-                            </p:inputText>
-                        </div>
-                        <div class="col-md-2">
-                            <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                         value="#{cc.attrs.patient.person.ageDaysComponent}"
-                                         class="form-control">
-                                <f:ajax event="blur" execute="@this"  render="calDob" />
-                            </p:inputText>
-                        </div>
-                        <div class="col-md-6">
-                            <p:datePicker value="#{cc.attrs.patient.person.dob}"
-                                          id="calDob" 
-                                          class="w-100"
-                                          inputStyleClass="form-control"
-                                          pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                          placeholder="Data of Birth (dd/MM/yyyy)"
-                                          >
-                                <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                            </p:datePicker>
+
+                <div class="row">
+                    <div class="col-md-3 p-1">
+                        <p:selectOneMenu 
+                            id="txtNewSex" 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            value="#{cc.attrs.patient.person.sex}"
+                            class="form-control w-100">
+                            <f:selectItem itemLabel="Select Gender"/>
+                            <f:selectItems value="#{opdBillController.sex}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-9 p-1">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    id="year" 
+                                    placeholder="Years"
+                                    disabled="#{!cc.attrs.patient.editingMode}"
+                                    value="#{cc.attrs.patient.person.ageYearsComponent}"
+                                    class="form-control">
+                                    <f:ajax event="blur" execute="@this" render="calDob" />
+                                </p:inputText>
+                            </div>
+                            <div class="col-md-2">
+                                <p:inputText
+                                    disabled="#{!cc.attrs.patient.editingMode}"
+                                    autocomplete="off" id="month" placeholder="Months"
+                                    value="#{cc.attrs.patient.person.ageMonthsComponent}"
+                                    class="form-control">
+                                    <f:ajax event="blur" execute="@this"  render="calDob"  />
+                                </p:inputText>
+                            </div>
+                            <div class="col-md-2">
+                                <p:inputText 
+                                    disabled="#{!cc.attrs.patient.editingMode}"
+                                    autocomplete="off" id="day" placeholder="Days"
+                                    value="#{cc.attrs.patient.person.ageDaysComponent}"
+                                    class="form-control">
+                                    <f:ajax event="blur" execute="@this"  render="calDob" />
+                                </p:inputText>
+                            </div>
+                            <div class="col-md-6">
+                                <p:datePicker 
+                                    disabled="#{!cc.attrs.patient.editingMode}"
+                                    value="#{cc.attrs.patient.person.dob}"
+                                    id="calDob" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                    placeholder="Data of Birth (dd/MM/yyyy)"
+                                    >
+                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                </p:datePicker>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-4 p-1">
-                    <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                 value="#{cc.attrs.patient.person.phone}"
-                                 class="form-control" />
+                <div class="row">
+                    <div class="col-md-4 p-1">
+                        <p:inputText 
+                            id="txtNewPtPhone" 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            autocomplete="off" maxlength="11" placeholder="Phone Number"
+                            value="#{cc.attrs.patient.person.phone}"
+                            class="form-control" />
+                    </div>
+                    <div class="col-md-4 p-1">
+                        <p:inputText 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                            value="#{cc.attrs.patient.person.email}"
+                            class="form-control">
+                        </p:inputText>
+                    </div>
+                    <div class="col-md-4 p-1">
+                        <p:inputText 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            placeholder="National ID No."
+                            value="#{cc.attrs.patient.person.nic}"
+                            class="form-control"/>
+                    </div>
                 </div>
-                <div class="col-md-4 p-1">
-                    <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                 value="#{cc.attrs.patient.person.email}"
-                                 class="form-control">
-                    </p:inputText>
-                </div>
-                <div class="col-md-4 p-1">
-                    <p:inputText placeholder="National ID No."
-                                 value="#{cc.attrs.patient.person.nic}"
-                                 class="form-control"/>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-8 p-1">
-                    <p:inputText placeholder="Address"
-                                 value="#{cc.attrs.patient.person.address}"
-                                 class="form-control"/>
+                <div class="row">
+                    <div class="col-md-8 p-1">
+                        <p:inputText
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            placeholder="Address"
+                            value="#{cc.attrs.patient.person.address}"
+                            class="form-control"/>
+                    </div>
+                    <div class="col-md-4 p-1">
+                        <p:autoComplete 
+
+                            id="acNewPtArea" 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            placeholder="Search &amp; Select Area"
+                            completeMethod="#{areaController.completeArea}"
+                            var="pta" itemLabel="#{pta.name}"
+                            itemValue="#{pta}" forceSelection="true"
+                            value="#{cc.attrs.patient.person.area}"
+                            inputStyleClass="form-control"
+                            class="w-100"/>
+                    </div>
                 </div>
-                <div class="col-md-4 p-1">
-                    <p:autoComplete id="acNewPtArea" 
-                                    placeholder="Search &amp; Select Area"
-                                    completeMethod="#{areaController.completeArea}"
-                                    var="pta" itemLabel="#{pta.name}"
-                                    itemValue="#{pta}" forceSelection="true"
-                                    value="#{cc.attrs.patient.person.area}"
-                                    inputStyleClass="form-control"
-                                    class="w-100"/>
-                </div>
-            </div>
+
+            </h:panelGroup>
         </p:panel>
     </cc:implementation>
 </html>
