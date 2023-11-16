@@ -115,6 +115,12 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
 
+    public Patient() {
+        editingMode=true;
+    }
+
+    
+    
     public void toggleEditMode() {
         editingMode = !editingMode;
     }
