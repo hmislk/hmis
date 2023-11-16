@@ -73,7 +73,6 @@ public class SysMexAdf2 {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
@@ -82,7 +81,6 @@ public class SysMexAdf2 {
             return false;
         }
         Double id1 = findValue(sampleIdStart, sampleIdEnd, 0);
-        System.out.println("id1 = " + id1);
 
         Double thb = findValue(hgbStart, hgbEnd, 2);
         if (thb < 2 || thb > 20) {

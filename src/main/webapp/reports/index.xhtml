@@ -84,13 +84,13 @@
                                 </p:tab>
                                 <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Daily return" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summery (Daily Return Summery)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Daily return" action="/reports/financialReports/daily_return"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summery (Daily Return Summery)"  action="/reports/financialReports/income_category_wise_report"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" action="#{reportController.navigateToOutsidePayment()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" />
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Invoice and Receipt Report (Serial Wise)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Pharmacy Sale (OP/IP)" />
@@ -214,27 +214,27 @@
 
                                 <p:tab title="Inpatient Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Admission and Discharge" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. IP Unsettled Invoices" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Admission and Discharge" action="#{reportController.navigateToAdmissionDischargeReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. IP Unsettled Invoices" action="#{reportController.navigateToIpUnsettledInvoices()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. Room Change" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Admission Category Wise Admission"  action="#{reportController.navigateToAdmissionCategoryWiseAdmission()}" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="Inventory Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Closing Stock" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Consumtion" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. GRN Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Closing Stock" action="#{reportController.navigateToClosingStockReport()}"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Consumtion" action="#{reportController.navigateToconsumption()}"  />
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers"  action="#{reportController.navigateToStockTransferReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" action="#{reportController.navigateToCostOfGoodsSold()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" action="#{reportController.navigateToGoodInTransit()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. GRN Report" action="#{reportController.navigateToGrnReport()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Batch Wise Stock" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="8. Slow/Fast/None Movement Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="9. Before Stock Taking" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="11. After Stock Taking" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="12. Stock Leger" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="13. Expiry Item Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="8. Slow/Fast/None Movement Report" action="#{reportController.navigateToSlowFastNoneMovement()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="9. Before Stock Taking" action="#{reportController.navigateToBeforeStockTaking()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="11. After Stock Taking" action="#{reportController.navigateToAfterStockTaking()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="12. Stock Leger" action="#{reportController.navigateToStockLedger()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="13. Expiry Item Report" action="#{reportController.navigateToExpiryItem()}" />
                                     </div>
                                 </p:tab>
 
@@ -266,7 +266,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Surgery Survey" action="/reports/managementReports/surgery_survey"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. Surgery Status" action="/reports/managementReports/surgery_status"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="5. Duration Service Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="5. Duration Service Report" action="/reports/managementReports/duration_service_report"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Pharmacy Department Wise Sale Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" />
                                         <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Sergery Count" />

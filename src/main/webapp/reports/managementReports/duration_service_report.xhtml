@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Duration Service Report" >
+                        <h:panelGrid columns="5" >
+
+                            <p:outputLabel value="Service Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.service}">
+                                <f:selectItem itemLabel="Select Service"/>
+                                <f:selectItems value="#{serviceController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="40" height="1"></p:spacer>
+
+                            <p:outputLabel value="MRN" >
+                            </p:outputLabel>
+                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                 value="null"
+                                                 completeMethod="#{patientController.items}" 
+                                                 var="p" itemValue="#{p}" 
+                                                 itemLabel="#{p}" 
+                                                 size="30"  
+                                                 class="mx-2">
+                                    <p:column>
+                                        #{p.phn}
+                                    </p:column>
+                            </p:autoComplete>
+                            <p:outputLabel value="OT Room" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select OT Room"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+
+
+                        <p:dataTable value="null" var="c">
+                            
+                            <p:column headerText="BHT No" style="width: 100px" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="MRN No" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Consultant Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Service Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Service Group" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Start Time" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="End Time" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Duration" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Base Price" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sponser Net" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Amt" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Adjusted Amt" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="OT Room" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                           
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

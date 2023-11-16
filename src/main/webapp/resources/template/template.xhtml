@@ -29,9 +29,10 @@
             rel="stylesheet" 
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
 
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
-        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"/>
+        
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
@@ -45,8 +46,6 @@
                 border: none !important;
             }
         </style>
-
-
 
 
         <div class="row" >
@@ -69,6 +68,9 @@
                             <p:panel styleClass="no-padding-margin-border" 
                                      style="height: 100vh; padding: 0px ;margin: 0px; border: none;" class="w-100"  >
                                 <ui:insert name="content">
+                                    
+     
+
                                 </ui:insert>
                             </p:panel>
                         </h:panelGroup>
@@ -83,9 +85,9 @@
                 </h:panelGroup>
             </div>
         </div>
-        <div class="row" >
+        <div class="row w-100" style="bottom: 0; position: fixed;" >
             <div class="col-12" >
-                <p:messages id="publicGrowl" showDetail="true" ></p:messages>
+                <p:messages id="publicGrowl" showDetail="true" closable="true" ></p:messages>
             </div>
         </div>
 

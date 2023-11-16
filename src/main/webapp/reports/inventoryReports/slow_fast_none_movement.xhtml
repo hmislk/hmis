@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Slow/Fast/None Movement Report" >
+
+                        <p:panelGrid columns="4" class="w-100">
+                            
+
+                            
+                            <p:outputLabel value="Branch" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+
+                            <p:outputLabel value="Store" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            <p:outputLabel value="Date Slab" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            <p:outputLabel value="From Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+                            <p:outputLabel value="To Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            
+                            
+                            <p:outputLabel value="Drug Form" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Item Name" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Rreport Type" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+
+                            <p:outputLabel value="Sort Type" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Bill Type" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center my-2">
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Download"
+                                             action="null">
+                            </p:commandButton>
+                            
+                        </div>
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+
+                            <p:column headerText="Sl No.">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Item Code">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Item Name ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Drug Form">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Supplier ( Last Purchase )">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Quantity">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Cost Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Sale Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Value of QIH">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="QIH">
+                                <h:outputText value="" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

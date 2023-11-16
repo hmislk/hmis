@@ -134,6 +134,10 @@ public class OpdBillController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
     private CommonController commonController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
@@ -242,11 +246,11 @@ public class OpdBillController implements Serializable {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search";
     }
-    
+
     public String navigateToOpdAnalyticsIndex() {
         return "/opd/analytics/index";
     }
-    
+
     public String navigateToOpdBatchBillList() {
         return "/opd/analytics/batch_bill_list";
     }
@@ -257,8 +261,33 @@ public class OpdBillController implements Serializable {
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, department);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, institution);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, department);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, institution);
+            default:
+                throw new AssertionError();
+        }
+    }
+
     public void searchDepartmentOpdBillLights() {
-        System.out.println("searchDepartmentOpdBillLights");
         Date startTime = new Date();
         billLights = searchController.listBillsLights(
                 BillType.OpdBill,
@@ -267,7 +296,6 @@ public class OpdBillController implements Serializable {
                 searchKeyword,
                 getFromDate(),
                 getToDate());
-        System.out.println("billLights = " + billLights.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
@@ -306,13 +334,11 @@ public class OpdBillController implements Serializable {
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
         }
-        System.out.println("batchBillId = " + batchBillId);
         if (batchBillId == null) {
             JsfUtil.addErrorMessage("No Batch Bill");
             return null;
         }
         batchBill = billFacade.find(batchBillId);
-        System.out.println("batchBill = " + batchBill);
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
@@ -320,7 +346,6 @@ public class OpdBillController implements Serializable {
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        System.out.println("bills = " + bills);
         return "/opd/opd_bill_print";
     }
 
@@ -1397,14 +1422,14 @@ public class OpdBillController implements Serializable {
         tmp.setPatient(patient);
         tmp.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
-                        getSessionController().getInstitution(), 
+                        getSessionController().getInstitution(),
                         BillType.OpdBathcBill,
-                        BillClassType.BilledBill, 
+                        BillClassType.BilledBill,
                         BillNumberSuffix.NONE));
         tmp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
-                getSessionController().getInstitution(), 
-                getSessionController().getDepartment(), 
-                BillType.OpdBathcBill, 
+                getSessionController().getInstitution(),
+                getSessionController().getDepartment(),
+                BillType.OpdBathcBill,
                 BillClassType.BilledBill));
         tmp.setGrantTotal(total);
         tmp.setDiscount(discount);
@@ -1708,11 +1733,9 @@ public class OpdBillController implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
-            System.out.println("After abs differenceOfBillTotalAndPaymentValue = " + differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
@@ -2817,8 +2840,6 @@ public class OpdBillController implements Serializable {
     public String navigateToBillContactNumbers() {
         return "/admin/bill_contact_numbers.xhtml";
     }
-    
-    
 
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {

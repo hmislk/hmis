@@ -70,8 +70,6 @@ public class ApplicationController {
         }
     }
 
-    
-    
     public Date getStartTime() {
         return startTime;
     }
@@ -102,10 +100,15 @@ public class ApplicationController {
     }
 
     public Logins isLogged(WebUser u) {
+        if (u == null) {
+            return null;
+        }
         Logins tl = null;
         for (Logins l : getLoggins()) {
-            if (l.getWebUser().equals(u)) {
-                tl = l;
+            if (l.getWebUser() != null) {
+                if (l.getWebUser().equals(u)) {
+                    tl = l;
+                }
             }
         }
         return tl;
@@ -286,7 +289,7 @@ public class ApplicationController {
 
     public boolean isHasAwebsiteAsFrontEnd() {
         boolean w = getApplicationPreference().isHasAwebsiteAsFrontEnd();
-        hasAwebsiteAsFrontEnd=w;
+        hasAwebsiteAsFrontEnd = w;
         return hasAwebsiteAsFrontEnd;
     }
 
@@ -316,7 +319,7 @@ public class ApplicationController {
 
     public String getThemeName() {
         String w = getApplicationPreference().getThemeName();
-        themeName=w;
+        themeName = w;
         return themeName;
     }
 
@@ -357,7 +360,5 @@ public class ApplicationController {
     public void setInsPhns(List<InstitutionLastPhn> insPhns) {
         this.insPhns = insPhns;
     }
-    
-    
 
 }

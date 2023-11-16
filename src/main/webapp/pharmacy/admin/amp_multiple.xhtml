@@ -47,11 +47,32 @@
                     selectionMode="multiple" width="50" >
                 </p:column>
                 <p:column 
-                    headerText="Name" 
+                    headerText="ID" 
+                    sortBy="#{i.id}"
+                    filterBy="#{i.id}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.id}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="AMP Name" 
                     sortBy="#{i.name}"
                     filterBy="#{i.name}"
                     filterMatchMode="contains">
                     <h:outputText value="#{i.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="AMP Code" 
+                    sortBy="#{i.code}"
+                    filterBy="#{i.code}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.code}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="AMP Barcode" 
+                    sortBy="#{i.barcode}"
+                    filterBy="#{i.barcode}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.barcode}" ></h:outputText>
                 </p:column>
                 <p:column 
                     headerText="VMP" 
