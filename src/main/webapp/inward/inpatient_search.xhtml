@@ -15,6 +15,22 @@
             <div class="row" >
                 <div class="col-2">
                     <div class="mb-3">
+                        <p:outputLabel value="Date of Admission from " styleClass="form-label"></p:outputLabel>
+                        <p:datePicker 
+                            value="#{admissionController.fromDate}" 
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                        </p:datePicker>
+                        <p:outputLabel value="Date of Admission to " styleClass="form-label"></p:outputLabel>
+                        <p:datePicker 
+                            value="#{admissionController.toDate}" 
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                        </p:datePicker>
+                    </div>
+                    <div class="mb-3">
                         <p:outputLabel value="BHT Number" styleClass="form-label"></p:outputLabel>
                         <p:inputText value="#{admissionController.bhtNumberForSearch}" styleClass="form-control"></p:inputText>
                     </div>
@@ -98,8 +114,8 @@
                             <h:outputText value="#{a.patient.phn}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Status" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
-                            <h:outputText value="#{a.discharged}" ></h:outputText>
-                            <h:outputText value="#{a.paymentFinalized}" ></h:outputText>
+                            <h:outputText value="Discharged - #{a.discharged}" ></h:outputText><br/>
+                            <h:outputText value="Bill Finalized - #{a.paymentFinalized}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Current Room" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
