@@ -38,8 +38,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -85,7 +85,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         removingInvestigationItemofDynamicLabelType.setRetiredAt(new Date());
         getFacade().edit(removingInvestigationItemofDynamicLabelType);
         JsfUtil.addSuccessMessage("Removed");
-        dynamicLabels=null;
+        dynamicLabels = null;
     }
 
     public double getFromValue() {
@@ -415,28 +415,25 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         }
     }
 
-//    public List<InvestigationItemValueFlag> getDynamicLabels() {
-//        String sql;
-//        //////// // System.out.println("getting dynamic labels");
-//        if (dynamicLabels == null) {
-//            if (investigation != null && investigationItemofDynamicLabelType != null) {
-//
-//                sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
-//                        + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
-//                //////// // System.out.println("sql is " + sql);
-//                dynamicLabels = getFacade().findByJpql(sql);
-//                //////// // System.out.println("size is " + dynamicLabels.size());
-//            } else {
-//                //////// // System.out.println("no sql");
-//                dynamicLabels = null;
-//            }
-//        }
-//        if (dynamicLabels == null) {
-//            //////// // System.out.println("null");
-//            dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
-//        }
-//        return dynamicLabels;
-//    }
+    public List<InvestigationItemValueFlag> getDynamicLabels() {
+        String sql;
+        if (dynamicLabels == null) {
+            if (investigation != null && investigationItemofDynamicLabelType != null) {
+
+                sql = "select i "
+                        + " from InvestigationItemValueFlag i "
+                        + " where i.retired=false and  "
+                        + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
+                dynamicLabels = getFacade().findByJpql(sql);
+            } else {
+                dynamicLabels = null;
+            }
+        }
+        if (dynamicLabels == null) {
+            dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
+        }
+        return dynamicLabels;
+    }
 
     public List<InvestigationItemValueFlag> getDynamicLabelsByIxItId(InvestigationItem ii) {
         String sql;
