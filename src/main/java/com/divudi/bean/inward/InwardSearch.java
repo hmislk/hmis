@@ -11,6 +11,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
+import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -31,6 +32,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillComponentFacade;
@@ -48,6 +50,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -122,12 +125,13 @@ public class InwardSearch implements Serializable {
     /////////////////////
 
     PaymentMethod paymentMethod;
-    
+
     ReportKeyWord reportKeyWord;
 
     private YearMonthDay yearMonthDay;
     Patient patient;
     Sex[] sex;
+    private Admission admission;
 
     public void edit() {
         if (getBill() == null) {
@@ -226,6 +230,31 @@ public class InwardSearch implements Serializable {
 
     public void setEjbApplication(EjbApplication ejbApplication) {
         this.ejbApplication = ejbApplication;
+    }
+
+    public String navigateToFinalBillForAdmission() {
+        if(admission==null){
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        String jpql;
+        Map temMap = new HashMap();
+        jpql = "select b from BilledBill b where"
+                + " b.billType = :billType and "
+                + "and b.retired=false ";
+
+        jpql += " and  b.patientEncounter=:pe ";
+        temMap.put("pe", admission);
+
+        temMap.put("billType", BillType.InwardFinalBill);
+        jpql += " order by b.id desc ";
+     
+        bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Final Bill Created");
+            return "";
+        }
+        return "/inward/inward_reprint_bill_final";
     }
 
     public boolean calculateRefundTotal() {
@@ -789,7 +818,7 @@ public class InwardSearch implements Serializable {
         if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {
-            if (b!=null) {
+            if (b != null) {
             }
             return true;
         }
@@ -1478,8 +1507,8 @@ public class InwardSearch implements Serializable {
     }
 
     public ReportKeyWord getReportKeyWord() {
-        if (reportKeyWord==null) {
-            reportKeyWord=new ReportKeyWord();
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
         }
         return reportKeyWord;
     }
@@ -1487,5 +1516,15 @@ public class InwardSearch implements Serializable {
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
     }
+
+    public Admission getAdmission() {
+        return admission;
+    }
+
+    public void setAdmission(Admission admission) {
+        this.admission = admission;
+    }
+    
+    
 
 }
