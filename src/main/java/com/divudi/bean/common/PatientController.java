@@ -1484,6 +1484,37 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
         }
     }
+    
+    public void save(Patient p) {
+        if (p == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return;
+        }
+        if (p.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return;
+        }
+        if (p.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
+        } else {
+            getPersonFacade().edit(p.getPerson());
+        }
+        if (p.getId() == null) {
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(p);
+        } else {
+            getFacade().edit(p);
+        }
+        p.setEditingMode(false);
+    }
 
     public String saveAndNavigateToProfile() {
         if (current == null) {

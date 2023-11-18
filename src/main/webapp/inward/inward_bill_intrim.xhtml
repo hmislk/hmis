@@ -59,10 +59,10 @@
 
                             </h:panelGrid>
                         </p:panel>
-                        
-                        
+
+
                         <p:panel rendered="#{bhtSummeryController.patientEncounter ne null}">
-                            
+
                             <h:panelGrid columns="3" class="mb-2 d-flex justify-content-end">
                                 <p:commandButton ajax="false" value="Clear"  action="#{bhtSummeryController.clear}"  />                                                
                                 <p:commandButton ajax="false" value="Settle Bill"  action="#{bhtSummeryController.toSettle()}"  />
@@ -161,6 +161,13 @@
                                                         id="roomDischargeTimeStamp"
                                                         value="#{rm.dischargedAt}" 
                                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /> 
+                                        </p:column>
+                                        <p:column headerText="Remove" >
+                                            <p:selectBooleanButton onLabel="Remove"
+                                                                   offLabel="Keep"
+                                                                   value="#{rm.retired}">
+                                            </p:selectBooleanButton>
+
                                         </p:column>
                                         <p:column headerText="Room Charge" >
                                             <h:outputLabel value="#{rm.calculatedRoomCharge}" >
