@@ -226,7 +226,7 @@
                                          action="#{admissionController.navigateToAdmitFromMenu()}"
                                          value="Admit" 
                                          rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/inward/inward_edit_bht" value="Edit Admission Detail" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
+                            <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Detail" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
                             <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
                         </p:submenu>
                         <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
@@ -248,7 +248,11 @@
                                 action="#{bhtSummeryController.navigateToIntrimBill()}" 
                                 value="Interim Bill" 
                                 rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>        
-                            <p:menuitem  ajax="false"  action="/inward/inward_bill_intrim_estimate" value="Interim Bill - Estimated Professional Fees" actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>        
+                            <p:menuitem  
+                                ajax="false"  
+                                action="#{bhtSummeryController.navigateToIntrimBillEstimate}" 
+                                value="Interim Bill - Estimated Professional Fees" 
+                                actionListener="#{bhtSummeryController.clear}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBill')}" ></p:menuitem>        
                             <p:menuitem  ajax="false"  action="/inward/inward_search_intrim" value="Interim Bill Search" actionListener="#{searchController.makeNull()}" rendered="#{webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" ></p:menuitem>        
                         </p:submenu>
                         <p:submenu label="Search " rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -774,7 +778,7 @@
                             </p:submenu>
 
                             <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                                
+
                             </p:submenu>
 
                         </p:submenu>
