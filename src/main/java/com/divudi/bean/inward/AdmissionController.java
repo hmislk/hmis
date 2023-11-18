@@ -244,9 +244,42 @@ public class AdmissionController implements Serializable {
         setPatientTabId(event.getTab().getId());
 
     }
-    
-    public String navigateToEditAdmission(){
+
+    public String navigateToEditAdmission() {
         return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToRoomOccupancy() {
+        return "/inward/inward_room_occupancy?faces-redirect=true";
+    }
+
+    public String navigateToRoomVacancy() {
+        return "/inward/inward_room_vacant?faces-redirect=true";
+    }
+
+    public String navigateToRoomChange() {
+        return "/inward/inward_room_change?faces-redirect=true";
+    }
+
+    public String navigateToGuardianRoomChange() {
+        return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+
+    // Services & Items Submenu Methods
+    public String navigateToAddServices() {
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToAddOutsideCharge() {
+        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+
+    public String navigateToAddProfessionalFee() {
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFee() {
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
     }
 
     public List<Admission> completePatient(String query) {
@@ -270,10 +303,8 @@ public class AdmissionController implements Serializable {
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
-                + " where c.retired=:ret "
-                + " and c.discharged=false ";
+                + " where c.retired=:ret ";
         m.put("ret", false);
-
         j += " and c.dateOfAdmission between :fd and :td ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -340,6 +371,11 @@ public class AdmissionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
+        if (current.getPatient() == null) {
+            JsfUtil.addErrorMessage("No Patient. Program Error");
+            return "";
+        }
+        current.getPatient().setEditingMode(false);
         return "/inward/admission_profile";
     }
 
