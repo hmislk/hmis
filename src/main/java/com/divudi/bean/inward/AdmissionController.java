@@ -282,6 +282,14 @@ public class AdmissionController implements Serializable {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
     }
 
+    public String navigateToPharmacyBhtRequest() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToSearchInwardBills() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
+    }
+
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
         String sql;

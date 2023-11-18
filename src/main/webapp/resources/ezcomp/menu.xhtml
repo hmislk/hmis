@@ -258,14 +258,20 @@
                         <p:menuitem  ajax="false"  action="/inward/inward_search_final" value="Final Bill Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_final_check" value="Final Bill Search by Discharge Date" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                     </p:submenu>
-                    <p:submenu label="Pharmacy" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}" >
-                        <p:menuitem ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill"  
-                                    value="Pharmacy BHT Request" 
-                                    rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" 
-                                    actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                        <p:menuitem  ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search" 
-                                     value="Search Inward Bills" 
-                                     rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}" ></p:menuitem>                                        
+                    <p:submenu label="Pharmacy" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}">
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                            value="Pharmacy BHT Request" 
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" 
+                            actionListener="#{pharmacySaleBhtController.resetAll}">
+                        </p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{admissionController.navigateToSearchInwardBills}" 
+                            value="Search Inward Bills" 
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}">
+                        </p:menuitem>
                     </p:submenu>
 
                     <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht" value="Investigation Trace"></p:menuitem>

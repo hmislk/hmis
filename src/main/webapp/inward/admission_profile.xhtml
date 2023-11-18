@@ -64,10 +64,10 @@
 
 
 
-
                             <p:commandButton 
                                 value="Room Change" 
                                 action="#{admissionController.navigateToRoomChange}" 
+                                actionListener="#{roomChangeController.recreate}"
                                 icon="fa fa-exchange-alt">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
@@ -77,6 +77,7 @@
                             <p:commandButton 
                                 value="Guardian Room Change" 
                                 action="#{admissionController.navigateToGuardianRoomChange}" 
+                                actionListener="#{guardianRoomChangeController.recreate}"
                                 icon="fa fa-users">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
@@ -86,59 +87,66 @@
                             <p:commandButton 
                                 value="Add Services" 
                                 action="#{admissionController.navigateToAddServices}" 
+                                actionListener="#{billBhtController.makeNull}"
                                 icon="fa fa-plus-square">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
-                                    target="#{addServicesController.current}" />
+                                    target="#{billBhtController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 
                                 value="Add Outside Charge" 
                                 action="#{admissionController.navigateToAddOutsideCharge}" 
+                                actionListener="#{inwardAdditionalChargeController.makeNull}"
                                 icon="fa fa-external-link-square-alt">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
-                                    target="#{addOutsideChargeController.current}" />
+                                    target="#{inwardAdditionalChargeController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 
                                 value="Add Professional Fee" 
                                 action="#{admissionController.navigateToAddProfessionalFee}" 
+                                actionListener="#{inwardProfessionalBillController.makeNull}"
                                 icon="fa fa-user-md">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
-                                    target="#{addProfessionalFeeController.current}" />
+                                    target="#{inwardProfessionalBillController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 
                                 value="Add Estimated Professional Fee" 
                                 action="#{admissionController.navigateToAddEstimatedProfessionalFee}" 
+                                actionListener="#{inwardProfessionalBillController.makeNull}"
                                 icon="fa fa-user-md">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
-                                    target="#{addEstimatedProfessionalFeeController.current}" />
+                                    target="#{inwardProfessionalBillController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 
                                 value="Add Timed Services" 
                                 action="#{timedItemController.inwardTimedServiceConsumeInward}" 
+                                actionListener="#{inwardTimedItemController.makeNull}"
                                 icon="fa fa-clock">
                                 <f:setPropertyActionListener 
                                     value="#{timedItemController.current}" 
                                     target="#{addTimedServicesController.current}" />
                             </p:commandButton>
 
+                            <p:commandButton 
+                                value="Pharmacy BHT Request" 
+                                action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                                actionListener="#{pharmacySaleBhtController.resetAll}"
+                                icon="fa fa-prescription-bottle-alt">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{pharmacySaleBhtController.patientEncounter}" />
+                            </p:commandButton>
 
 
 
-
-
-                            <p:commandButton value="Add Services" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Medicines" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Items" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Timed Services" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Professional Charges" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Estimated Professional Charges" icon="fa fa-plus"/>
+                          
                         </p:panelGrid>
                     </div>
                 </div>
