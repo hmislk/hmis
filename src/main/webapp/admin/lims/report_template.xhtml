@@ -67,6 +67,7 @@
                                             <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
                                             <f:ajax event="change" execute="dtbItem" render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                         </h:selectOneListbox>
+                                        <p:commandButton ajax="false" value="Select"/>
                                         <p:commandButton ajax="false" action="#{commonReportItemController.duplicateItem()}" value="Duplicate"/>
                                         <p:commandButton ajax="false" action="#{commonReportItemController.removeItem()}" value="Remove"/>
 
@@ -78,7 +79,9 @@
 
                                     <f:facet name="header" >
                                         Item Details
-                                        <p:commandButton id="btnSave" value="Save" action="#{commonReportItemController.saveSelected()}" update="pPreview pDetails dtbItem">
+                                        <p:commandButton id="btnSave" value="Save" action="#{commonReportItemController.saveSelected()}" 
+                                                         ajax="false"
+                                                         update="pPreview pDetails dtbItem">
                                         </p:commandButton>
 
                                     </f:facet>

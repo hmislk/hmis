@@ -9,11 +9,12 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
+
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel class="my-1" id="panelPatient" >
+        <p:panel class="my-1" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
             <f:facet name="header" >
                 <h:panelGroup id="headerFacet">
 
@@ -57,8 +58,8 @@
                             <f:selectItem itemLabel="Select Title" />
                             <f:selectItems value="#{opdBillController.title}" var="i"
                                            itemLabel="#{i.label}" itemValue="#{i}"/>
-                            <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
-                            <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
+                            <p:ajax process="cmbTitle" update="cmbSex" ></p:ajax>
+                            <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                         </p:selectOneMenu>
                     </div>
                     <div class="col-md-9 p-1">
@@ -75,7 +76,7 @@
                 <div class="row">
                     <div class="col-md-3 p-1">
                         <p:selectOneMenu 
-                            id="txtNewSex" 
+                            id="cmbSex" 
                             disabled="#{!cc.attrs.patient.editingMode}"
                             value="#{cc.attrs.patient.person.sex}"
                             class="form-control w-100">
@@ -93,7 +94,7 @@
                                     disabled="#{!cc.attrs.patient.editingMode}"
                                     value="#{cc.attrs.patient.person.ageYearsComponent}"
                                     class="form-control">
-                                    <f:ajax event="blur" execute="@this" render="calDob" />
+                                    <f:ajax event="blur" execute="@this" render="dpDob" />
                                 </p:inputText>
                             </div>
                             <div class="col-md-2">
@@ -102,7 +103,7 @@
                                     autocomplete="off" id="month" placeholder="Months"
                                     value="#{cc.attrs.patient.person.ageMonthsComponent}"
                                     class="form-control">
-                                    <f:ajax event="blur" execute="@this"  render="calDob"  />
+                                    <f:ajax event="blur" execute="@this"  render="dpDob"  />
                                 </p:inputText>
                             </div>
                             <div class="col-md-2">
@@ -111,17 +112,17 @@
                                     autocomplete="off" id="day" placeholder="Days"
                                     value="#{cc.attrs.patient.person.ageDaysComponent}"
                                     class="form-control">
-                                    <f:ajax event="blur" execute="@this"  render="calDob" />
+                                    <f:ajax event="blur" execute="@this"  render="dpDob" />
                                 </p:inputText>
                             </div>
                             <div class="col-md-6">
                                 <p:datePicker 
                                     disabled="#{!cc.attrs.patient.editingMode}"
                                     value="#{cc.attrs.patient.person.dob}"
-                                    id="calDob" 
+                                    id="dpDob" 
                                     class="w-100"
                                     inputStyleClass="form-control"
-                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}"
                                     placeholder="Data of Birth (dd/MM/yyyy)"
                                     >
                                     <f:ajax event="dateSelect" execute="@this" render="year month day" />
@@ -132,15 +133,25 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <p:inputText 
-                            id="txtNewPtPhone" 
+                            id="txtMobile" 
                             disabled="#{!cc.attrs.patient.editingMode}"
-                            autocomplete="off" maxlength="11" placeholder="Phone Number"
+                            autocomplete="off" 
+                            placeholder="Mobile Number"
+                            value="#{cc.attrs.patient.person.mobile}"
+                            class="form-control" />
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <p:inputText 
+                            id="txtPhone" 
+                            disabled="#{!cc.attrs.patient.editingMode}"
+                            autocomplete="off" 
+                            placeholder="Phone Number"
                             value="#{cc.attrs.patient.person.phone}"
                             class="form-control" />
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <p:inputText 
                             disabled="#{!cc.attrs.patient.editingMode}"
                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
@@ -148,8 +159,9 @@
                             class="form-control">
                         </p:inputText>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <p:inputText 
+                            id="txtNic"
                             disabled="#{!cc.attrs.patient.editingMode}"
                             placeholder="National ID No."
                             value="#{cc.attrs.patient.person.nic}"
@@ -160,6 +172,7 @@
                 <div class="row">
                     <div class="col-md-8 p-1">
                         <p:inputText
+                            id="txtAddress"
                             disabled="#{!cc.attrs.patient.editingMode}"
                             placeholder="Address"
                             value="#{cc.attrs.patient.person.address}"
@@ -180,7 +193,74 @@
                     </div>
                 </div>
 
+                <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+
+
             </h:panelGroup>
         </p:panel>
+
+
+        <p:panel class="my-1" id="panelPatientDisplay" rendered="#{not cc.attrs.patient.editingMode}" >
+
+            <f:facet name="header">
+                <h:panelGroup >
+                    <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
+                    <h:outputText value="Patient Details" class="mx-4"></h:outputText>
+                </h:panelGroup>
+            </f:facet>
+
+            <h:panelGrid columns="2" >
+
+
+
+
+
+
+
+                <h:outputLabel value="Name : " />
+                <h:outputText value="#{cc.attrs.patient.person.nameWithTitle}" />
+
+                <h:outputLabel value="Gender : " />
+                <h:outputText value="#{cc.attrs.patient.person.sex}" />
+
+                <h:outputLabel value="Date of Birth : " />
+                <h:outputText value="#{cc.attrs.patient.person.dob}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                </h:outputText>
+
+                <h:outputLabel value="Age :  " />
+                <h:outputText value="#{cc.attrs.patient.person.ageAsString}" />
+
+                <h:outputLabel value="Mobile Number: " />
+                <h:outputText value="#{cc.attrs.patient.person.mobile}" />
+
+                <h:outputLabel value="Phone Number: " />
+                <h:outputText value="#{cc.attrs.patient.person.phone}" />
+
+                <h:outputLabel value="Email: " />
+                <h:outputText value="#{cc.attrs.patient.person.email}" />
+
+                <h:outputLabel value="National ID No.: " />
+                <h:outputText value="#{cc.attrs.patient.person.nic}" />
+
+                <h:outputLabel value="Address: " />
+                <h:outputText value="#{cc.attrs.patient.person.address}" />
+                <h:outputLabel value="Area: " />
+                <h:outputText value="#{cc.attrs.patient.person.area.name}" />
+
+
+
+            </h:panelGrid>
+        </p:panel>
+
+
+
     </cc:implementation>
 </html>
