@@ -10,23 +10,31 @@
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form id="form"  >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputText value="Manage ATMs" ></h:outputText>
-                        </f:facet>
-                        <div class="row" >
-                            <div class="col-6" >
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:outputText value="Manage ATMs" ></h:outputText>
+                    </f:facet>
+
+
+                    <div class="row" >
+                        <div class="col-6" >
+                            <h:form id="formSelect"  >
+
                                 <p:selectOneListbox 
                                     id="lstSelect" 
                                     value="#{atmController.current}" 
                                     class="w-100"
                                     filter="true">
-                                    <f:selectItems  value="#{atmController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems  
+                                        value="#{atmController.selectedItems}" 
+                                        var="myItem" 
+                                        itemValue="#{myItem}" 
+                                        itemLabel="#{myItem.name}" >
+                                    </f:selectItems>
                                     <p:ajax 
                                         event="change"   
-                                        update="gpDetail" 
-                                        process="lstSelect" >
+                                        update=":formDetail:gpDetail" 
+                                        process=":formSelect:lstSelect" >
                                     </p:ajax>
                                 </p:selectOneListbox>
                                 <p:commandButton 
@@ -34,35 +42,46 @@
                                     value="Add" 
                                     action="#{atmController.prepareAdd()}" 
                                     class="ui-button-success m-1 w-25" 
-                                    process="btnAdd"
-                                    update="lstSelect gpDetail focusDetail">
+                                    process=":formSelect:btnAdd"
+                                    update=":formSelect:lstSelect :formDetail:gpDetail :formDetail:focusDetail">
                                 </p:commandButton>
                                 <p:commandButton 
                                     id="btnDelete" 
                                     process="btnDelete"
-                                    update="lstSelect gpDetail focusSelect"
+                                    update=":formSelect:lstSelect :formDetail:gpDetail :formSelect:focusSelect"
                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" 
                                     action="#{atmController.delete()}"  
                                     value="Delete" 
                                     class="ui-button-danger m-1 w-25" >
                                 </p:commandButton>
-                            </div>
-                            <div class="col-6" >
+
+                                <p:focus id="focusSelect" for="lstSelect" ></p:focus>
+                            </h:form>
+                        </div>
+                        <div class="col-6" >
+                            <h:form id="formDetail"  >
+
                                 <p:commandButton
                                     id="btnSave" 
                                     value="Save"  
                                     action="#{atmController.saveSelected()}" 
-                                    process="gpDetail btnSave"
-                                    update="lstSelect focusSelect"
+                                    process=":formDetail:gpDetail :formDetail:btnSave "
+                                    update=":formSelect:lstSelect :formSelect:focusSelect :formMsg:msg"
                                     class="w-25 m-1 ui-button-warning"
                                     >
                                 </p:commandButton>
 
                                 <p:panelGrid columns="2" id="gpDetail" class="w-100" >
                                     <p:outputLabel for="txtName" class="form-label w-100">Name</p:outputLabel>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{atmController.current.name}" 
-                                                 required="true" class="form-control" ></h:inputText>
+                                    <h:inputText 
+                                        autocomplete="off" 
+                                        id="txtName" 
+                                        value="#{atmController.current.name}" 
+                                        required="true" 
+                                        class="form-control" 
+                                        requiredMessage="Name is required"
+                                        ></h:inputText>
 
                                     <p:outputLabel
                                         for="acVtm" 
@@ -72,28 +91,37 @@
                                     <p:autoComplete
                                         id="acVtm"
                                         class="w-100"
+                                        inputStyleClass="w-100"
                                         completeMethod="#{vtmController.completeVtm}" 
                                         value="#{atmController.current.vtm}" 
                                         var="v" 
                                         itemLabel="#{v.name}" 
-                                        itemValue="#{v}" ></p:autoComplete>
+                                        itemValue="#{v}"
+                                        required="true"
+                                        requiredMessage="VTM is needed"></p:autoComplete>
                                 </p:panelGrid>
-
-                            </div>
+                                <p:focus id="focusDetail" for="gpDetail" ></p:focus>
+                            </h:form>
                         </div>
-                        <p:focus id="focusSelect" for="lstSelect" ></p:focus>
-                        <p:focus id="focusDetail" for="gpDetail" ></p:focus>
-                        <f:facet name="footer" >
-                            <p:growl />
-                        </f:facet>
-                    </p:panel>
+                    </div>
 
 
 
 
 
 
-                </h:form>
+
+                    <f:facet name="footer" >
+                        <h:form id="formMsg" >
+                            <p:messages id="msg" />
+                        </h:form>
+                    </f:facet>
+                </p:panel>
+
+
+
+
+
 
             </ui:define>
         </ui:composition>
