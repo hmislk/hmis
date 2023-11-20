@@ -13,8 +13,13 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panelGrid columns="1" >
+                         <p:commandButton 
+                                value="Back" 
+                                class="my-1"
+                                action="/admin/lims/investigation" ajax="false" ></p:commandButton>
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Select Investigation" />
+                           
                             <p:autoComplete converter="ixcon" widgetVar="aIx" id="acIx" forceSelection="true" value="#{testFlagController.investigation}" completeMethod="#{investigationController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:ajax event="itemSelect" process="acIx" update="iif iiv tbl" />
                             </p:autoComplete>
