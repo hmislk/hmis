@@ -217,7 +217,7 @@ public class DocumentTeamplateController implements Serializable {
                 return null;
             }
             DocumentTeamplateController controller = (DocumentTeamplateController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "documentTeamplateController1");
+                    getValue(facesContext.getELContext(), null, "documentTeamplateController");
             if (controller == null) {
                 JsfUtil.addErrorMessage("controller null");
                 return null;
