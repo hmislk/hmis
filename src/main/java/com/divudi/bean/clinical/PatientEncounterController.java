@@ -50,6 +50,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PrescriptionFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -228,7 +229,7 @@ public class PatientEncounterController implements Serializable {
         if (current.getWeight() == null) {
             return;
         }
-        Double htInMeters = current.getHeight()/100;
+        Double htInMeters = current.getHeight() / 100;
         Double wtInKgs = current.getWeight();
         Double bmi = wtInKgs / (Math.pow(htInMeters, 2));
         current.setBmi(bmi);
@@ -1072,6 +1073,12 @@ public class PatientEncounterController implements Serializable {
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
+        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
+        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String bmi = CommonController.formatNumber(e.getBmi(), "0.0") + " kg//m<sup>2</sup>";
+        String bp = e.getSbp() + "//" + e.getDbp() + " mmHg";
+
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
             cf.getItemValue().getComments();
@@ -1125,6 +1132,39 @@ public class PatientEncounterController implements Serializable {
             ixAsString += ix.getItemValue().getName();
         }
 
+        String allergiesAsString = "";
+        for (ClinicalFindingValue cf : getPatientAllergies()) {
+            if (cf != null) {
+                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
+                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+
+        String routineMedicinesAsString = "";
+        for (ClinicalFindingValue rx : getPatientMedicines()) {
+            if (rx != null && rx.getPrescription() != null) {
+                String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
+                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
+                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
+                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
+                String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
+
+                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String diagnosesAsString = "";
+        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
+            if (dx != null) {
+                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+
+                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+
         output = input.replace("{name}", name)
                 .replace("{age}", age)
                 .replace("{sex}", sex)
@@ -1133,7 +1173,10 @@ public class PatientEncounterController implements Serializable {
                 .replace("{medicines}", medicinesAsString)
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
-                .replace("{ix}", ixAsString);
+                .replace("{ix}", ixAsString)
+                .replace("{past-dx}", diagnosesAsString)
+                .replace("{routeine-medicines}", routineMedicinesAsString)
+                .replace("{allergies}", allergiesAsString);
 
         return output;
 
