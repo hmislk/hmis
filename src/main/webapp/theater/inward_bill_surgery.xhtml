@@ -21,11 +21,10 @@
 
                     <div class="row">
                         <div class="col-12">
-                            <h:panelGrid columns="2" >
+                            <h:panelGrid columns="3" >
 
-                                <h:outputLabel value="Type Patient Name or BHT " /> 
+                                <h:outputLabel value="Type Patient Name or BHT " class="mx-2"/> 
                                 <p:autoComplete  forceSelection="true" 
-                                                 class="ml-2"
                                                  value="#{surgeryBillController.batchBill.patientEncounter}" 
                                                  completeMethod="#{admissionController.completePatient}"
                                                  var="apt2" itemLabel="#{apt2.patient.person.name}"
@@ -41,11 +40,12 @@
                                         <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>
                                 </p:autoComplete>
+                                <p:commandButton 
+                                                 value="Select"
+                                                 ajax="false"
+                                                 id="btnSelect"/>
                             </h:panelGrid>
-                            <p:commandButton class="ml-3 my-2"
-                                             value="Select"
-                                             ajax="false"
-                                             id="btnSelect"/>
+
                         </div>
 
 
