@@ -214,8 +214,18 @@
                                                     <h:outputLabel value="#{pvd.investigationItem.name}" ></h:outputLabel>
                                                 </td>
                                                 <td>
-                                                    <p:selectOneMenu  id="cmbStrDl" value="#{pvd.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                        <f:selectItems value="#{investigationItemDynamicLabelController.getDynamicLabelsByIxItId(pvd.investigationItem) }" var="iivd" itemLabel="#{iivd.flagMessage}" itemValue="#{iivd}" ></f:selectItems>
+                                                    <p:selectOneMenu  
+                                                        id="cmbStrDl" 
+                                                        value="#{pvd.strValue}" 
+                                                        editable="true" 
+                                                        style="min-width: 200px;" 
+                                                        disabled="#{patientReportController.currentPatientReport.approved}">
+                                                        <f:selectItems 
+                                                            value="#{investigationItemDynamicLabelController.getDynamicLabelsByIxItId(pvd.investigationItem)}" 
+                                                            var="iivd" 
+                                                            itemLabel="#{iivd.flagMessage}" 
+                                                            itemValue="#{iivd.flagMessage}" ></f:selectItems>
+
                                                         <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                     </p:selectOneMenu>
                                                 </td>
