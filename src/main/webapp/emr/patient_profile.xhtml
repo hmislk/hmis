@@ -44,7 +44,7 @@
                             <div class="row" >
                                 <div class="col-12 p-2" >
                                     <h:form >
-                                        <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                        <p:commandButton value="Edit" action="#{patientController.navigateToEmrEditPatient()}" ajax="false" styleClass="mx-2">
                                         </p:commandButton>
                                         <p:commandButton value="OPD Visit" 
                                                          action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
@@ -109,6 +109,8 @@
 
                                                 <div class="row m-2" >
                                                     <div class="col-md-12" >
+                                                        
+                                                        #{documentTeamplateController}
                                                         <p:dataTable
                                                             id="tblDxx"
                                                             value="#{patientEncounterController.patientDiagnoses}"
@@ -145,55 +147,87 @@
                                         <p:tab title="Medications" >
                                             <h:form>
                                                 <div class="container-fluid m-2 w-100">
-                                                    <div class="d-flex w-100">
+                                                    <div class="d-flex flex-wrap w-100">
 
-                                                        <p:autoComplete 
-                                                            id="acMedicine"
-                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                                            value="#{patientEncounterController.patientMedicine.prescription.item}"
-                                                            var="item"
-                                                            itemLabel="#{item}"
-                                                            itemValue="#{item}"
-                                                            placeholder="Select Medicine" >
-                                                            <p:ajax process="acMedicine" update="cmbDuration" ></p:ajax>
-                                                        </p:autoComplete>
-                                                            
-                                                        <p:inputText style="width: 6em;"
-                                                                     id="txtDose"
-                                                                     value="#{patientEncounterController.patientMedicine.prescription.dose}"
-                                                                     placeholder="Dose"/>
-                                                        <p:selectOneMenu id="cmbDose" value="#{patientEncounterController.patientMedicine.prescription.doseUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                        <p:selectOneMenu id="cmbFrequency"
-                                                                         filter="true"
-                                                                         value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
-                                                                           var="du" 
-                                                                           itemLabel="#{du.name}"
-                                                                           itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                        <p:inputText style="width: 6em;"
-                                                                     id="txtDuration"
-                                                                     value="#{patientEncounterController.patientMedicine.prescription.duration}"
-                                                                     placeholder="Duration"/>
-                                                        <p:selectOneMenu id="cmbDuration" 
-                                                                         value="#{patientEncounterController.patientMedicine.prescription.durationUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
+                                                        <!-- Medicine Selection -->
+                                                        <div class="mx-1">
+                                                            <label for="acMedicine" class="w-100">Medicine:</label>
+                                                            <p:autoComplete id="acMedicine"
+                                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                            value="#{patientEncounterController.patientMedicine.prescription.item}"
+                                                                            var="item"
+                                                                            class="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            itemLabel="#{item}"
+                                                                            itemValue="#{item}"
+                                                                            placeholder="Medicine">
+                                                                <p:ajax process="acMedicine" update="txtDose cmbDose" />
+                                                            </p:autoComplete>
+                                                        </div>
 
-                                                        <p:commandButton value="Add"
-                                                                         id="btnAddRx"
-                                                                         process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                         update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                         action="#{patientEncounterController.addPatientMedicine}"
-                                                                         />
+                                                        <!-- Dose Group -->
+                                                        <div class="d-flex flex-column mx-1">
+                                                            <label class="w-100">Dose:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText style="width: 6em;"
+                                                                             id="txtDose"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                                             placeholder="Dose"/>
+                                                                <p:selectOneMenu id="cmbDose" 
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
+                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Frequency Selection -->
+                                                        <div class="d-flex flex-column mx-1">
+                                                            <label for="cmbFrequency" class="w-100">Frequency:</label>
+                                                            <p:selectOneMenu id="cmbFrequency" 
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}">
+                                                                <f:selectItem itemLabel="Select" />
+                                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                               var="du" 
+                                                                               itemLabel="#{du.name}"
+                                                                               itemValue="#{du}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+
+                                                        <!-- Duration Group -->
+                                                        <div class="d-flex flex-column mx-1">
+                                                            <label class="w-100">Duration:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText style="width: 6em;"
+                                                                             id="txtDuration"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.duration}"
+                                                                             placeholder="Duration"/>
+                                                                <p:selectOneMenu id="cmbDuration" 
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.durationUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                                   var="du" 
+                                                                                   itemLabel="#{du.name}" 
+                                                                                   itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Add Prescription Button -->
+                                                        <div class="mx-1">
+                                                            <label class="w-100"></label>
+                                                            <p:commandButton value="Add"
+                                                                             id="btnAddRx"
+                                                                             process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             action="#{patientEncounterController.addPatientMedicine}" />
+                                                        </div>
 
                                                     </div>
                                                 </div>
+
+
                                                 <div class="row m-2">
                                                     <div class="row m-2" >
                                                         <div class="col-md-12" >

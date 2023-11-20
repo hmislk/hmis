@@ -616,18 +616,6 @@ public class VmpController implements Serializable {
 
     public void setCurrent(Vmp current) {
         this.current = current;
-        if (current != null) {
-            if (current.getBilledAs() == current) {
-                billedAs = false;
-            } else {
-                billedAs = true;
-            }
-            if (current.getReportedAs() == current) {
-                reportedAs = false;
-            } else {
-                reportedAs = true;
-            }
-        }
     }
 
     public void delete() {

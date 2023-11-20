@@ -89,7 +89,30 @@ public class DocumentTeamplateController implements Serializable {
     public String navigateToAddNewUserDocumentTemplate() {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
+        current.setContents(generateDefaultTemplateContents());
         return "/emr/settings/document_template";
+    }
+
+    public String generateDefaultTemplateContents() {
+        String contents = "";
+        contents = "{name}"
+                + "{age}"
+                + "{sex}"
+                + "{address}"
+                + "{phone}"
+                + "{medicines}"
+                + "{outdoor}"
+                + "{indoor}"
+                + "{ix}"
+                + "{past-dx}"
+                + "{routine-medicines}"
+                + "{allergies}"
+                + "{visit-date}"
+                + "{height}"
+                + "{weight}"
+                + "{bmi}"
+                + "{bp}";
+        return contents;
     }
 
     public String navigateToEditUserDocumentTemplates() {
@@ -194,8 +217,25 @@ public class DocumentTeamplateController implements Serializable {
                 return null;
             }
             DocumentTeamplateController controller = (DocumentTeamplateController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "documentTemplateController");
-            return controller.getEjbFacade().find(getKey(value));
+                    getValue(facesContext.getELContext(), null, "documentTeamplateController1");
+            if (controller == null) {
+                JsfUtil.addErrorMessage("controller null");
+                return null;
+            }
+            if (controller.getEjbFacade() == null) {
+                JsfUtil.addErrorMessage("facade null");
+                return null;
+            }
+            if (value == null) {
+                JsfUtil.addErrorMessage("value null");
+                return null;
+            }
+            Long lngValue = getKey(value);
+            if (lngValue == null) {
+                JsfUtil.addErrorMessage("lng value null");
+                return null;
+            }
+            return controller.getEjbFacade().find(lngValue);
         }
 
         java.lang.Long getKey(String value) {
