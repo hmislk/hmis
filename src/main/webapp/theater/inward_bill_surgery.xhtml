@@ -14,57 +14,74 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
             <h:form id="form">
-                <p:panel>
+                <p:panel rendered="#{surgeryBillController.batchBill.patientEncounter eq null}" > 
                     <f:facet name="header">
-                        <h:outputLabel value="Total Value : "/>
-                        <h:outputLabel value="#{surgeryBillController.batchBill.total}" class="m-2" />
-                        <p:commandButton value="Clear All" ajax="false" class="m-2"
-                                         action="#{surgeryBillController.makeNull}" />
-                        <p:commandButton value="Save Surgery Detail" ajax="false" class="m-2" action="#{surgeryBillController.save()}" 
-                                         disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" />
-                        <p:commandButton value="Print" ajax="false" class="m-2" action="#"  >
-                            <p:printer target="panThe" ></p:printer>
-                        </p:commandButton>
-
+                        <h:outputLabel value="Surgery &amp; BHT Details"/>
                     </f:facet>
 
+                    <div class="row">
+                        <div class="col-12">
+                            <h:panelGrid columns="2" >
+
+                                <h:outputLabel value="Type Patient Name or BHT " /> 
+                                <p:autoComplete  forceSelection="true" 
+                                                 class="ml-2"
+                                                 value="#{surgeryBillController.batchBill.patientEncounter}" 
+                                                 completeMethod="#{admissionController.completePatient}"
+                                                 var="apt2" itemLabel="#{apt2.patient.person.name}"
+                                                 itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                    <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
+                                    <p:column >
+                                        #{apt2.bhtNo} 
+                                    </p:column>
+                                    <p:column >
+                                        #{apt2.patient.person.name} 
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                </p:autoComplete>
+                            </h:panelGrid>
+                            <p:commandButton class="ml-3 my-2"
+                                             value="Select"
+                                             ajax="false"
+                                             id="btnSelect"/>
+                        </div>
 
 
-                </p:panel>  
+                    </div>
 
-                <p:panel id="panThe" >
-                    <p:panel > 
+
+
+                </p:panel>
+                <p:panel id="panThe" rendered="#{surgeryBillController.batchBill.patientEncounter ne null}">
+                    <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Surgery &amp; BHT Details"/>
+                            <h:outputLabel value="Total Value : "/>
+                            <h:outputLabel value="#{surgeryBillController.batchBill.total}" class="m-2" />
+                            <p:commandButton value="Clear All" ajax="false" class="m-2"
+                                             action="#{surgeryBillController.makeNull}" />
+                            <p:commandButton value="Save Surgery Detail" ajax="false" class="m-2" action="#{surgeryBillController.save()}" 
+                                             disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" />
+                            <p:commandButton value="Print" ajax="false" class="m-2" action="#"  >
+                                <p:printer target="panThe" ></p:printer>
+                            </p:commandButton>
+
                         </f:facet>
 
+
+
+                    </p:panel>  
+
+
+                    <p:panel>
                         <div class="row">
-                            <div class="col-6">
-                                <p:panelGrid columns="2" >
-
-                                    <h:outputLabel value="Type Patient Name or BHT "/> 
-                                    <p:autoComplete  forceSelection="true" 
-                                                     value="#{surgeryBillController.batchBill.patientEncounter}" 
-                                                     completeMethod="#{admissionController.completePatient}"
-                                                     var="apt2" itemLabel="#{apt2.patient.person.name}"
-                                                     itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                        <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
-                                        <p:column >
-                                            #{apt2.bhtNo} 
-                                        </p:column>
-                                        <p:column >
-                                            #{apt2.patient.person.name} 
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                        </p:column>
-                                    </p:autoComplete>
-
-                                </p:panelGrid>
-
+                            <div class="col-5">
+                                <h:panelGroup id="panSearch2">
+                                    <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
+                                </h:panelGroup>
                             </div>
-                            
-                            <div class="col-6">
+                            <div class="col-7">
                                 <p:panelGrid columns="2" >
                                     <h:outputLabel value="Surgery Name"  >
                                     </h:outputLabel>
@@ -77,18 +94,9 @@
 
                                 </p:panelGrid>
                             </div>
-
                         </div>
-
-
-
-
-                            <h:panelGroup id="panSearch2">
-                                <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
-                            </h:panelGroup>
-
-                       
                     </p:panel>
+
 
                     <p:panelGrid columns="1" >
                         <p:panel header="Professional">                        
