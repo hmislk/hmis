@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Annual Test Statistics" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="Financial Year"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.financialYear}">
+                                <f:selectItem itemLabel="Financial Year"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.institution}">
+                                <f:selectItem itemLabel="Branch"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        
+                        <p:outputLabel value="Financial Year : " class="my-2"></p:outputLabel>
+                        <br></br>
+                        <p:outputLabel value="Branch : "></p:outputLabel>
+                        <br></br>
+                        <p:commandButton ajax="false" value="Process" action="null" class="my-2"></p:commandButton>
+
+                        <p:dataTable value="#{reportController.reportLabTestCounts}" var="c">
+                            <p:column headerText="Description" style="width:100px" >
+                                <h:outputText value="" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="20-Apr" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-May" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Jun" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-MJul" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Aug" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Sep" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Oct" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Nov" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Dec" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Jan" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Feb" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Mar" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="YTD" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            
+
+                            
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

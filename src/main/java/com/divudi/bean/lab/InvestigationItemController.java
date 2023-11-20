@@ -223,12 +223,10 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void makeAllInvestigationsAndItemsToMachIxDetails() {
-        System.out.println("makeAllInvestigationsAndItemsToMachIxDetails");
         InvestigationTube tixt = investigationTubeController.getAnyTube();
         Sample ts = sampleController.getAnySample();
         Machine tm = machineController.getAnyMachine();
         for (Investigation tix : investigationController.getAllIxs()) {
-            System.out.println("tix = " + tix);
             boolean needToSaveIx = false;
             if (tix.getMachine() == null) {
                 needToSaveIx = true;
@@ -243,7 +241,6 @@ public class InvestigationItemController implements Serializable {
                 tix.setSample(ts);
             }
             if (needToSaveIx) {
-                System.out.println("saving");
                 investigationController.saveSelected(tix);
             }
             for (InvestigationItem tixi : getImportantItems(tix)) {

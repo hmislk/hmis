@@ -23,10 +23,10 @@
                     <h:panelGrid columns="2" styleClass="noPrintButton">
 
                         <h:outputLabel value="From" />
-                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="To" />
-                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel  value="Department" />
                         <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.department}" 
@@ -68,11 +68,11 @@
                         <h:outputLabel value="#{commonReport1.department.name}"  />
                         <h:outputLabel value="From : " style="white-space: pre-line"/>
                         <h:outputLabel value="#{commonReport1.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                         <h:outputLabel value="&emsp; &emsp;To : "  />
                         <h:outputLabel value="#{commonReport1.toDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                     </f:facet>
 
@@ -88,7 +88,7 @@
                             <h:outputLabel value="Date and Time"/>
                         </f:facet>
                         <p:outputLabel value="#{bi.bill.createdAt}" >
-                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </p:outputLabel>
                     </p:column>
 

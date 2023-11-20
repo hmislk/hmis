@@ -9,6 +9,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,9 +64,10 @@ public class InstitutionController implements Serializable {
     private List<Institution> banks = null;
     private List<Institution> suppliers = null;
     private List<Institution> agencies = null;
-    List<Institution> collectingCentre = null;
-    List<Institution> institution;
-    String selectText = "";
+    private List<Institution> collectingCentre = null;
+    private List<Institution> collectingCentresAndManagedInstitutions = null;
+    private List<Institution> institution;
+    private String selectText = "";
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex;
 
@@ -253,6 +255,13 @@ public class InstitutionController implements Serializable {
         return companies;
     }
 
+    public List<Institution> getCollectingCenter() {
+        if (collectingCentre == null) {
+            collectingCentre = completeInstitution(null, InstitutionType.CollectingCentre);
+        }
+        return collectingCentre;
+    }
+
     public List<Institution> getBanks() {
         if (banks == null) {
             banks = completeInstitution(null, InstitutionType.Bank);
@@ -260,13 +269,13 @@ public class InstitutionController implements Serializable {
         return banks;
     }
 
-//    public List<Institution> getCollectingCenter() {
-//        if (banks == null) {
-//            banks = completeInstitution(null, InstitutionType.CollectingCentre);
-//        }
-//        return banks;
-//    }
     public Institution getInstitutionByName(String name, InstitutionType type) {
+        if (name == null) {
+            return null;
+        }
+        if (type == null) {
+            return null;
+        }
         String sql;
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
@@ -286,9 +295,9 @@ public class InstitutionController implements Serializable {
         }
         return i;
     }
-    
+
     public Institution findAndSaveInstitutionByName(String name) {
-        if(name==null||name.trim().equals("")){
+        if (name == null || name.trim().equals("")) {
             return null;
         }
         String sql;
@@ -369,6 +378,7 @@ public class InstitutionController implements Serializable {
         agencies = null;
         suppliers = null;
         companies = null;
+        collectingCentresAndManagedInstitutions = null;
         creditCompanies = null;
         banks = null;
         suppliers = null;
@@ -594,8 +604,13 @@ public class InstitutionController implements Serializable {
 
     public void fillItems() {
         String j;
-        j = "select i from Institution i where i.retired=false order by i.name";
-        items = getFacade().findByJpql(j);
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(j, m);
     }
 
     public void formatAgentSerial() {
@@ -682,7 +697,19 @@ public class InstitutionController implements Serializable {
         this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
- 
+    // Newly created by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
+    public List<Institution> getCollectingCentresAndManagedInstitutions() {
+        if (collectingCentresAndManagedInstitutions == null) {
+            collectingCentresAndManagedInstitutions = new ArrayList<>();
+            collectingCentresAndManagedInstitutions.addAll(getCompanies());
+            collectingCentresAndManagedInstitutions.addAll(getCollectingCenter());
+        }
+        return collectingCentresAndManagedInstitutions;
+    }
+
+    public void setCollectingCentresAndManagedInstitutions(List<Institution> collectingCentresAndManagedInstitutions) {
+        this.collectingCentresAndManagedInstitutions = collectingCentresAndManagedInstitutions;
+    }
 
     /**
      *

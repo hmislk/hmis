@@ -88,8 +88,13 @@ public class CashierReportController implements Serializable {
     String header = "";
 
     /**
-     * Creates a new instance of CashierReportController
+     *
+     * @return
      */
+    public String navigateToOpdSummeries() {
+        return "/reportCashier/report_cashier";
+    }
+
     public void recreteModal() {
         finalCashTot = 0.0;
         finalChequeTot = 0.0;
@@ -116,7 +121,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -138,7 +143,7 @@ public class CashierReportController implements Serializable {
 
         return "/reportCashier/report_cashier_summery_all?faces-redirect=true";
     }
-    
+
     public String navigateToReportCashierSummeryAllByReciptno() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -147,7 +152,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -168,7 +173,6 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_summery_all_by_reciptno.xhtml?faces-redirect=true";
     }
-    
 
     public String navigateToReportcashierDetailedByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -178,7 +182,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -208,7 +212,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -226,7 +230,7 @@ public class CashierReportController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("navigateToCashierReport()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         Date endTime = new Date();
@@ -238,14 +242,14 @@ public class CashierReportController implements Serializable {
     }
 
     public String navigateToCashierSummary() {
-                FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -266,13 +270,86 @@ public class CashierReportController implements Serializable {
         auditEvent.setEventTrigger("navigateToCashierSummary()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-      
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_summery_by_user.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToDayEndSummary() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToCashierSummary()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/day_end_summery.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToShiftEndSummary() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToCashierSummary()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/shift_end_summery.xhtml?faces-redirect=true";
     }
 
     public String navigateToCashierSummaryUsingReciptNo() {
@@ -283,7 +360,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -324,7 +401,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -351,8 +428,7 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_summery_all_total_only.xhtml?faces-redirect=true";
     }
-    
-    
+
     public String navigateToAllCashierSummaryOnlyByReciptNo() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -361,7 +437,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -388,8 +464,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_summery_all_total_only_by_reciptno.xhtml?faces-redirect=true";
     }
-    
-     public String navigateToReportCashierSummeryAllTotalOnlyWithoutPro() {
+
+    public String navigateToReportCashierSummeryAllTotalOnlyWithoutPro() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -397,7 +473,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -424,8 +500,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_summery_all_total_only_without_pro.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToReportIncomeWithoutCreditByInstitution() {
+
+    public String navigateToReportIncomeWithoutCreditByInstitution() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -433,7 +509,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -460,8 +536,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_income_without_credit_by_institution.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToOpdSearchUserBills() {
+
+    public String navigateToOpdSearchUserBills() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -469,7 +545,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -496,8 +572,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd_search_user_bills.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToBillTypeSummery() {
+
+    public String navigateToBillTypeSummery() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -505,7 +581,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -532,8 +608,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportIncome/bill_type_summery.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToReportCashierDetailedUserByBillType() {
+
+    public String navigateToReportCashierDetailedUserByBillType() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -541,7 +617,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -568,8 +644,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_detailed_user_by_billType.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToOpdBillReport() {
+
+    public String navigateToOpdBillReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -577,7 +653,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -604,8 +680,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd_bill_report.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToReportOpdBillsForVat() {
+
+    public String navigateToReportOpdBillsForVat() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -613,7 +689,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -640,10 +716,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_opd_bills_for_vat.xhtml?faces-redirect=true";
     }
-     
-     
-     
-     public String navigateToReportOpdBillPaymentSheame() {
+
+    public String navigateToReportOpdBillPaymentSheame() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -651,7 +725,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -678,9 +752,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_opd_bill_payment_sheame.xhtml?faces-redirect=true";
     }
-     
-     
-      public String navigateToReportCashierDetailedByUser() {
+
+    public String navigateToReportCashierDetailedByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -688,7 +761,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -715,11 +788,8 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_cashier_detailed_by_user.xhtml?faces-redirect=true";
     }
-     
-     
-     
-     
-     public String navigateToReportCashierItemCountByUser() {
+
+    public String navigateToReportCashierItemCountByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -727,7 +797,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -754,8 +824,6 @@ public class CashierReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/report_cashier_item_count_by_user.xhtml?faces-redirect=true";
     }
-     
-     
 
     public CashierReportController() {
     }
@@ -879,7 +947,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1067,7 +1135,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1254,7 +1322,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1467,7 +1535,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1632,7 +1700,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1762,7 +1830,7 @@ public class CashierReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;

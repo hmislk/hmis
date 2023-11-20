@@ -21,7 +21,7 @@
 
                             <h:panelGrid columns="3" >
                                 <h:outputLabel value="Date" id="calSessionDate" ></h:outputLabel>
-                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="dd MMMM yyyy" >
+                                <p:calendar value="#{practiceBookingController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                     <f:ajax event="dateSelect"
                                             listener="#{practiceBookingController.listCompleteAndToCompleteBillSessions}"
                                             execute="calSessionDate" render=":#{p:resolveFirstComponentWithId('bSession',view).clientId}" ></f:ajax>

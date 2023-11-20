@@ -8,7 +8,7 @@
       >
 
     <h:body>
-        <ui:composition template="/credit/index_inward_due_access.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
             <ui:define name="subcontent">
                 <h:form><p:panel>
                         <f:facet name="header">
@@ -16,11 +16,11 @@
 
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="From Date &emsp;"/>
-                                <p:datePicker id="fromDate" class="w-100" value="#{creditCompanyDueController.fromDate}" showTime="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                <p:datePicker id="fromDate" class="w-100" value="#{creditCompanyDueController.fromDate}" showTime="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                     <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
                                 </p:datePicker>
                                 <h:outputLabel value="To Date &emsp;"/>
-                                <p:datePicker id="toDate" class="w-100" value="#{creditCompanyDueController.toDate}" showTime="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                <p:datePicker id="toDate" class="w-100" value="#{creditCompanyDueController.toDate}" showTime="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                     <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                                 </p:datePicker>
                                 <h:outputLabel value="With Out Due Update &emsp;"/>
@@ -41,11 +41,11 @@
                                 <h:outputLabel value="Due Search(Credit Company)"/>
                                 <h:outputLabel value=" From :&emsp;" style="white-space: pre-line"/>
                                 <h:outputLabel value="#{creditCompanyDueController.fromDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="&emsp;&emsp;To :&emsp;"/>
                                 <h:outputLabel value="#{creditCompanyDueController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:columnGroup type="header">
@@ -75,7 +75,7 @@
                                 </p:column>
                                 <p:column>                              
                                     <h:outputLabel value="#{b.dateOfDischarge}" >
-                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column>                               

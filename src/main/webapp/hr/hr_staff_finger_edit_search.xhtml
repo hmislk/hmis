@@ -17,11 +17,11 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.fromDate}"
-                                            pattern="dd MM yyyy">     
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.toDate}"
-                                            pattern="dd MM yyyy">
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
                                 <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               

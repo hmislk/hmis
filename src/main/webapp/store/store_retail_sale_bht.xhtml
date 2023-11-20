@@ -20,66 +20,51 @@
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
 
-
-
-                    <p:panel rendered="#{!storeSaleBhtController.billPreview}" style="width: fit-content;" >
-
-
-
-                        <h:panelGrid id="sale" columns="1" class="alignTop" style="width: fit-content;">
-                            <p:panel style="width: fit-content;">
+                        <h:panelGrid id="sale" columns="1" class="alignTop w-100" >
+                            <p:panel rendered="#{!storeSaleBhtController.billPreview}" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Store Issue to BHT" />
                                 </f:facet>
 
-                                <p:panel>
+                                <p:panel header="Patient Detail" rendered="#{storeSaleBhtController.patientEncounter eq null}" class="w-100">                                        
+                                    <h:outputLabel value="Type Patinet Name or BHT : "/>
+                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                                    value="#{storeSaleBhtController.patientEncounter}" 
+                                                    completeMethod="#{admissionController.completePatient}"
+                                                    var="apt2" itemLabel="#{apt2.bhtNo}"
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px; margin-left: 10px">
 
-
-                                    <f:facet name="header" >
-                                        <h:panelGrid columns="20"  >
-                                            <p:commandButton ajax= "false" accesskey="s" value="Settle" 
-                                                             action="#{storeSaleBhtController.settleStoreBhtIssue()}" 
-                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{storeSaleBhtController.calculateAllRates}">
-                                                <f:facet name="title" >
-                                                    <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
-                                                    <h:outputLabel value="ettle"  ></h:outputLabel>
-                                                </f:facet>
-                                            </p:commandButton>
-                                            <p:commandButton accesskey="n" value="New Store BHT Issue Bill" ajax="false" action="#{storeSaleBhtController.newSaleBill}"  ></p:commandButton>
-
-
-                                        </h:panelGrid>
-
-
-                                    </f:facet>
+                                        <p:column >
+                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                        <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
+                                    </p:autoComplete>  
+                                    <p:commandButton value="Select" ajax="false" id="btnSelect"></p:commandButton>
 
                                 </p:panel>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p:panel header="Patient Detail">                                        
-                                            <h:outputLabel value="Type Patinet Name or BHT : "/>
-                                            <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                            value="#{storeSaleBhtController.patientEncounter}" 
-                                                            completeMethod="#{admissionController.completePatient}"
-                                                            var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                            itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                <p:panel rendered="#{storeSaleBhtController.patientEncounter ne null}">
+                                    <p:commandButton ajax= "false" accesskey="s" value="Settle" 
+                                                     action="#{storeSaleBhtController.settleStoreBhtIssue()}" 
+                                                     update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{storeSaleBhtController.calculateAllRates}">
+                                        <f:facet name="title" >
+                                            <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
+                                            <h:outputLabel value="ettle"  ></h:outputLabel>
+                                        </f:facet>
+                                    </p:commandButton>
+                                    <p:commandButton accesskey="n" value="New Store BHT Issue Bill" ajax="false" action="#{storeSaleBhtController.newSaleBill}" style="margin-left: 10PX"  ></p:commandButton>
 
-                                                <p:column >
-                                                    <h:outputLabel value="#{apt2.bhtNo}"/> 
-                                                </p:column>
-                                                <p:column >
-                                                    <h:outputLabel value="#{apt2.patient.person.name}"/> 
-                                                </p:column>
-                                                <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
-                                            </p:autoComplete>  
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
 
-                                        </p:panel>
-
-                                        <p:panel id="gpDetail">
-
-                                            <p:panel header="Patient Detail" >
-                                                <h:panelGrid columns="2">
+                                            <p:panel id="gpDetail" header="Patient Detail" >
+                                                <p:panelGrid columns="2" class="w-100">
                                                     <p:outputLabel  value="Name" />
                                                     <p:outputLabel value="#{storeSaleBhtController.patientEncounter.patient.person.name}"/>
                                                     <p:outputLabel value="NIC" />
@@ -89,112 +74,116 @@
                                                     <p:outputLabel value="Address" />
                                                     <p:outputLabel  value="#{storeSaleBhtController.patientEncounter.patient.person.address}" />
                                                     <p:outputLabel value="Phone No" />
-                                                    <p:outputLabel  value="#{storeSaleBhtController.patientEncounter.patient.person.phone}"  />
-                                                </h:panelGrid>
+                                                    <p:outputLabel  value="#{storeSaleBhtController.patientEncounter.patient.person.mobile}"  />
+                                                </p:panelGrid>
                                             </p:panel>
-                                        </p:panel>
-                                    </div>
-                                    <div class="col-md-6">
 
-                                        <p:panel>
+                                        </div>
+                                        <div class="col-md-6">
 
-                                            <div class="row">
+                                            <p:panel>
 
-                                                <div class="col-md-5">
-                                                    <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                                    <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
-                                                                    value="#{storeSaleBhtController.stock}" 
+                                                <div class="row">
 
-                                                                    completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
-                                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
-                                                                    class="w-100">
+                                                    <div class="col-md-5">
+                                                        <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                                        <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
+                                                                        value="#{storeSaleBhtController.stock}" 
+
+                                                                        completeMethod="#{storeSaleBhtController.completeAvailableStocksStore}" 
+                                                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
+                                                                        class="w-100">
+                                                            <p:column headerText="Item">
+                                                                <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Code">
+                                                                <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Stocks">
+                                                                <h:outputLabel value="#{i.stock}" >
+                                                                    <f:convertNumber pattern="#,###.0" ></f:convertNumber>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Expiry">
+                                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:ajax event="focus" process="acStock" ></p:ajax>
+                                                            <p:ajax event="itemSelect"   listener="#{storeSaleBhtController.handleSelect}"  update="focusQty" ></p:ajax>
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <p:outputLabel value="Quantity" ></p:outputLabel>
+                                                        <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeSaleBhtController.qty}" class="w-100">
+                                                            <p:ajax event="keyup"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
+                                                            <p:ajax event="blur"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
+                                                        </p:inputText>
+                                                    </div>
+
+                                                </div>
+
+                                                <p:commandButton  accesskey="a" id="btnAdd" value="Add" class="w-25"
+                                                                  action="#{storeSaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} acStock focusItem " style="margin-top: 10px; margin-bottom:10px;"></p:commandButton>
+
+                                                <p:focus id="focusQty" for="txtQty" ></p:focus>
+                                                <p:focus id="focusItem" for="acStock" ></p:focus>
+
+
+
+
+
+                                                <p:panel header="Bill Items" id="pBis">
+                                                    <p:dataTable id="tblBillItem" value="#{storeSaleBhtController.preBill.billItems}"
+                                                                 var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+
+                                                        <p:ajax event="rowEdit" listener="#{storeSaleBhtController.onEdit}"/>  
+                                                        <p:ajax event="rowEditCancel" listener="#{storeSaleBhtController.onEdit}"/> 
+
+
                                                         <p:column headerText="Item">
-                                                            <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                                         </p:column>
-                                                        <p:column headerText="Code">
-                                                            <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                                        <p:column headerText="Quentity">
+                                                            <p:cellEditor>  
+                                                                <f:facet name="output">  
+                                                                    <h:outputText value="#{bi.qty}" >
+                                                                        <f:convertNumber integerOnly="true" />
+                                                                    </h:outputText>
+                                                                </f:facet>  
+                                                                <f:facet name="input">  
+                                                                    <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
+                                                                </f:facet>  
+                                                            </p:cellEditor> 
                                                         </p:column>
-                                                        <p:column headerText="Stocks">
-                                                            <h:outputLabel value="#{i.stock}" >
-                                                                <f:convertNumber pattern="#,###.0" ></f:convertNumber>
-                                                            </h:outputLabel>
-                                                        </p:column>
+
+                                                        <p:column style="width:6%">  
+                                                            <p:rowEditor />  
+                                                        </p:column>  
+
+
+
                                                         <p:column headerText="Expiry">
-                                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                             </h:outputLabel>
+
                                                         </p:column>
-                                                        <p:ajax event="focus" process="acStock" ></p:ajax>
-                                                        <p:ajax event="itemSelect"   listener="#{storeSaleBhtController.handleSelect}"  update="focusQty" ></p:ajax>
-                                                    </p:autoComplete>
-                                                </div>
-                                                <div class="col-md-7">
-                                                    <p:outputLabel value="Quantity" ></p:outputLabel>
-                                                    <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeSaleBhtController.qty}" class="w-100">
-                                                        <p:ajax event="keyup"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                                        <p:ajax event="blur"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
-                                                    </p:inputText>
-                                                </div>
+                                                        <p:column headerText="Remove">
+                                                            <p:commandButton value="Remove" action="#{storeSaleBhtController.removeBillItem(bi)}" ajax="false" >
 
-                                            </div>
+                                                            </p:commandButton>
+                                                        </p:column>
 
-                                            <p:commandButton  accesskey="a" id="btnAdd" value="Add" class="w-25"
-                                                              action="#{storeSaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} acStock focusItem " style="margin-top: 10px; margin-bottom:10px;"></p:commandButton>
-
-                                            <p:focus id="focusQty" for="txtQty" ></p:focus>
-                                            <p:focus id="focusItem" for="acStock" ></p:focus>
-
-
-
-
-
-                                            <p:panel header="Bill Items" id="pBis">
-                                                <p:dataTable id="tblBillItem" value="#{storeSaleBhtController.preBill.billItems}"
-                                                             var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
-
-                                                    <p:ajax event="rowEdit" listener="#{storeSaleBhtController.onEdit}"/>  
-                                                    <p:ajax event="rowEditCancel" listener="#{storeSaleBhtController.onEdit}"/> 
-
-
-                                                    <p:column headerText="Item">
-                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Quentity">
-                                                        <p:cellEditor>  
-                                                            <f:facet name="output">  
-                                                                <h:outputText value="#{bi.qty}" >
-                                                                    <f:convertNumber integerOnly="true" />
-                                                                </h:outputText>
-                                                            </f:facet>  
-                                                            <f:facet name="input">  
-                                                                <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
-                                                            </f:facet>  
-                                                        </p:cellEditor> 
-                                                    </p:column>
-
-                                                    <p:column style="width:6%">  
-                                                        <p:rowEditor />  
-                                                    </p:column>  
-
-
-
-                                                    <p:column headerText="Expiry">
-                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
-                                                        </h:outputLabel>
-
-                                                    </p:column>
-                                                    <p:column headerText="Remove">
-                                                        <p:commandButton value="Remove" action="#{storeSaleBhtController.removeBillItem(bi)}" ajax="false" >
-
-                                                        </p:commandButton>
-                                                    </p:column>
-
-                                                </p:dataTable>
+                                                    </p:dataTable>
+                                                </p:panel>
                                             </p:panel>
-                                        </p:panel>
+                                        </div>
                                     </div>
-                                </div>
+
+                                </p:panel>
+
+
 
 
 
@@ -207,7 +196,7 @@
 
 
                         </h:panelGrid>
-                    </p:panel>
+                    
 
 
                 </h:form>

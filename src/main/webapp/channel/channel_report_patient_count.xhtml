@@ -22,17 +22,14 @@
                             <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
 
                             <h:outputLabel value="Channel Patient Count"/>
-                            <p:commandButton id="btnBack" value="Back" 
-                                             action="/channel/channel_reports" style="float: right;"
-                                             ajax="false">
-                            </p:commandButton>
+                            
                         </f:facet>
                         <p:panelGrid  columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <p:outputLabel value="Paid Only" />
                             <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
@@ -60,11 +57,11 @@
                                     <h:outputLabel value="Channel Patient Count"/><br/>
                                     <h:outputLabel value=" From :"/>
                                     <h:outputLabel class="ml-2"   value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel class="ml-5"  value=" To :"/>
                                     <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column style="text-align: left;" >

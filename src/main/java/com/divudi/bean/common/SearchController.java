@@ -293,6 +293,18 @@ public class SearchController implements Serializable {
         searchKeyword = null;
     }
 
+    public String navigateToSearchOpdBillsOfLoggedDepartment() {
+        maxResult = 50;
+        bills = null;
+        aceptPaymentBills = null;
+        selectedBills = null;
+        billFees = null;
+        billItems = null;
+        patientInvestigations = null;
+        searchKeyword = null;
+        return "/opd/search_opd_billd_of_logged_department";
+    }
+
     public void makeListNull2() {
         billFeesDone = null;
         searchKeyword = null;
@@ -4788,6 +4800,15 @@ public class SearchController implements Serializable {
     }
 
     public void markRefundBillItem(PatientInvestigation pi) {
+        if (pi == null) {
+            return;
+        }
+        if (pi.getBillItem() == null) {
+            return;
+        }
+        if (pi.getBillItem().getId() == null) {
+            return;
+        }
         String sql;
         Map m = new HashMap();
         sql = "select bi from BillItem bi "
@@ -5539,6 +5560,12 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+    public void listOpdBatcuBills() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBathcBill, institution, department);
+        checkLabReportsApproved(bills);
+    }
 
     public void listOpdBills() {
         Date startTime = new Date();
@@ -5718,8 +5745,6 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
 
         billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -5771,8 +5796,6 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 

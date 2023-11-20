@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://java.sun.com/jsf/composite/patient"
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany"
-
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:bill="http://java.sun.com/jsf/composite/inward"
                 >
 
@@ -16,7 +16,7 @@
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
             <h:form  >
-                <p:panel header="Edit BHT Details" >                   
+                <p:panel header="Edit BHT Details" rendered="#{bhtEditController.current.bhtNo eq null}">                   
                     <div class="row" >                       
                         <div class="col-2 d-flex align-items-center my-1" >
                             <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
@@ -36,52 +36,67 @@
                         </div>
                         <div class="col-5">
                             <p:commandButton ajax="false" value="Display Details" action="#{bhtEditController.displayDetails}" class="m-1"/>
-                            <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}"  class="m-1">
-                            </p:commandButton>
-                            <p:commandButton  value="Clear" action="#{bhtEditController.prepereForInwardAppointPatient}" ajax="false"  class="m-1" >
-                            </p:commandButton>
+
                         </div>
                     </div>
-                    
+                </p:panel>
 
+                <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
 
+                    <h:panelGrid columns="4" class="d-flex justify-content-end">
+                        <p:commandButton
+                            ajax="false" 
+                            value="Update" 
+                            action="#{bhtEditController.save}"  
+                            class="m-1 ui-button-success">
+                        </p:commandButton>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Patient Lookup" 
+                            class="m-1 ui-button-warning"
+                            action="#{patientController.navigateToSearchPatients()}" />
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Inpatient Care Dashboard" 
+                            class="m-1 ui-button-primaryy"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" >
+                            <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Patient Profile" 
+                            class="m-1 ui-button-secondary"
+                            action="#{patientController.navigateToOpdPatientProfile()}" >
+                            <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+
+                    </h:panelGrid>
                     <div class="row">
                         <div class="col-6">
-                            <p:panel header="Admission">
 
+                            <p:panel header="Admission">
                                 <p:panelGrid columns="2" class="w-100" >
                                     <p:outputLabel  value="Date of Admission"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:outputLabel  value="BHT No(full)"  />
-                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:outputLabel  value="Local/Foreigner"  />
-                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:outputLabel  value="Claimable/Non-Claimable"  />
-                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-
-
-
                                     <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="@this" />
                                     </p:calendar>
-
-
+                                    <p:outputLabel  value="BHT No(full)"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
-
+                                    <p:outputLabel  value="Local/Foreigner"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
                                                              itemLabel="Foreigner"/>
-
+                                    <p:outputLabel  value="Claimable/Non-Claimable"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
                                                              itemLabel="Claimable"/>
                                 </p:panelGrid>
-
                             </p:panel>  
 
                             <p:panel header="Hospital">
-                                <h:panelGrid columns="2">
+                                <h:panelGrid columns="2" class="w-100">
                                     <h:outputLabel value="Speciality"/>
                                     <p:autoComplete forceSelection="true"
                                                     value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
@@ -119,11 +134,9 @@
 
                             </p:panel>
 
-                            <p:panel header="Details" >  
 
-                                <in:inputPatientDetail_1 patient="#{bhtEditController.current.patient}"/>
+                            <common:patient_details patient="#{bhtEditController.current.patient}" ></common:patient_details>
 
-                            </p:panel>
 
                             <p:panel header="Cancel Admission">
                                 <p:inputTextarea value="#{bhtEditController.comment}" id="com" class="w-100">
@@ -158,7 +171,7 @@
                             </p:panel>
 
                             <p:panel header="Guardian Details">
-                                <h:panelGrid columns="2">
+                                <h:panelGrid columns="2" class="w-100">
                                     <p:outputLabel   value="Name:" />
                                     <p:inputText class="mx-2 w-100" autocomplete="off"  value="#{bhtEditController.current.guardian.name}" />
                                     <p:outputLabel value="NIC"/>
@@ -177,7 +190,9 @@
                             </p:panel>
                         </div>
                     </div>
-                </p:panel>
+
+                </h:panelGroup>
+
 
 
 

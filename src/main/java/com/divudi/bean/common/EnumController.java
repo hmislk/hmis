@@ -16,17 +16,20 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
+import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.Times;
+import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
@@ -62,6 +65,18 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+    
+    public ItemListingStrategy[] getItemListingStrategys(){
+        return ItemListingStrategy.values();
+    }
+
+    public RestAuthenticationType[] getRestAuthenticationTypes() {
+        return RestAuthenticationType.values();
+    }
+
+    public AdmissionStatus[] getAdmissionStatuses() {
+        return AdmissionStatus.values();
     }
 
     public CssVerticalAlign[] getCssVerticalAlign() {
@@ -412,8 +427,34 @@ public class EnumController implements Serializable {
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
-            PaymentMethod.Credit,};
+            PaymentMethod.Credit,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.MultiplePaymentMethods};
 
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsExceptMultiple() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.Credit,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsNonCreditExceptMultiple() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
         return p;
     }
 

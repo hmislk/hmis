@@ -20,12 +20,12 @@
                                           id="fromDate" 
                                           value="#{smsController.fromDate}" 
                                           showTime="true"
-                                          pattern="dd MMMM yyyy hh:mm" >      
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                             </p:datePicker>
                             <h:outputLabel value="To Date"/>
                             <p:datePicker id="toDate" value="#{smsController.toDate}" 
                                           showTime="true"
-                                          pattern="dd MMMM yyyy hh:mm" >                                                                              
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
                             <p:commandButton id="btnSearch" 
                                              ajax="false" 
@@ -46,19 +46,31 @@
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      >
-                            <p:column headerText="No" styleClass="alignTop" width="15">
+                            <p:column headerText="Sent At" sortBy="#{sms.createdAt}"  >
                                 <h:outputLabel value="#{sms.createdAt}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="SMS Type" styleClass="alignTop" width="15">
+                            <p:column headerText="SMS Type" sortBy="#{sms.smsType}" filterBy="#{sms.smsType}" filterMatchMode="contains" >
                                 <h:outputLabel value="#{sms.smsType}"/>
                             </p:column>
-                            <p:column headerText="Message" styleClass="alignTop" width="15">
+                            <p:column filterBy="#{sms.bill.patient.person.name}" 
+                                      filterMatchMode="contains"
+                                      headerText="Patient"  >
+                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
+                            </p:column>
+                            <p:column headerText="Message"  >
                                 <h:outputLabel value="#{sms.sendingMessage}"/>
                             </p:column>
-                            <p:column headerText="Success" styleClass="alignTop" width="15">
-                                <h:outputLabel value="#{sms.sentSuccessfully}"/>
+                            <p:column headerText="Phone Number"
+                                      filterBy="#{sms.receipientNumber}" 
+                                      filterMatchMode="contains"
+                                      styleClass="alignTop" >
+                                <h:outputLabel value="#{sms.receipientNumber}"/>
+                            </p:column>
+                            <p:column headerText="Success"  sortBy="#{sms.sentSuccessfully}" >
+                                <h:outputLabel value="#{sms.sentSuccessfully?'Success':'failed'}"
+                                               class="#{sms.sentSuccessfully?'':'text-danger'}"/>
                             </p:column>
                         </p:dataTable>
 

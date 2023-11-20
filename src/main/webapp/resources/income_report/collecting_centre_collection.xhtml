@@ -23,7 +23,7 @@
                 <h:panelGroup rendered="#{a.cancelled}">
                     <h:outputLabel style="color: red;" value="Cancelled at "/>
                     <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="#{a.cancelledBill.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel style="color: red;" rendered="#{a.cancelled}" value="&nbsp;&nbsp;#{a.cancelledBill.insId}"/>
                 </h:panelGroup>

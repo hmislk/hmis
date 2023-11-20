@@ -95,11 +95,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -156,7 +156,7 @@
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -165,7 +165,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 
@@ -174,7 +174,7 @@
                                         <h:outputLabel value="Admission Created Time"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

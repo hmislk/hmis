@@ -49,6 +49,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -141,7 +142,7 @@ public class BillSearch implements Serializable {
     private BillBeanController billBean;
     @Inject
     private SecurityController securityController;
-    
+
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     /**
@@ -153,6 +154,7 @@ public class BillSearch implements Serializable {
     private double refundAmount;
     private String txtSearch;
     private Bill bill;
+    private BillLight billLight;
     private Bill printingBill;
     private PaymentMethod paymentMethod;
     private RefundBill billForRefund;
@@ -305,7 +307,7 @@ public class BillSearch implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -326,7 +328,6 @@ public class BillSearch implements Serializable {
         auditEvent.setEventTrigger("fillTransactionTypeSummery()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         Map m = new HashMap();
         String j;
         if (billClassType == null) {
@@ -394,14 +395,13 @@ public class BillSearch implements Serializable {
             billSummeries.add(tbs);
             i++;
         }
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
-        
+
     }
 
     public String listBillsFromBillTypeSummery() {
@@ -459,7 +459,7 @@ public class BillSearch implements Serializable {
 
         return directTo;
     }
-    
+
     public String listBillsFromBillTransactionTypeSummery() {
         if (billSummery == null) {
             JsfUtil.addErrorMessage("No Summary Selected");
@@ -484,7 +484,7 @@ public class BillSearch implements Serializable {
                     + " and b.billTime between :fd and :td ";
         }
 
-         if (institution != null) {
+        if (institution != null) {
             j += " and b.institution=:ins ";
             m.put("ins", institution);
         }
@@ -493,7 +493,7 @@ public class BillSearch implements Serializable {
             j += " and b.department=:dep ";
             m.put("dep", department);
         }
-        
+
         if (user != null) {
             j += " and b.creater=:wu ";
             m.put("wu", user);
@@ -508,7 +508,7 @@ public class BillSearch implements Serializable {
         }
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
+
         bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 
         if (tmpBillClassType == BillClassType.CancelledBill || tmpBillClassType == BillClassType.RefundBill) {
@@ -595,7 +595,7 @@ public class BillSearch implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -616,7 +616,6 @@ public class BillSearch implements Serializable {
         auditEvent.setEventTrigger("clearSearchFIelds()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-       
         auditEventApplicationController.logAuditEvent(auditEvent);
         department = null;
         fromDate = null;
@@ -625,7 +624,7 @@ public class BillSearch implements Serializable {
         user = null;
         billType = null;
         billClassType = null;
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -2164,6 +2163,32 @@ public class BillSearch implements Serializable {
 //        bill.setTransError(flag);
     }
 
+    public String navigateToCancelOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview=false;
+        return "/opd/bill_cancel";
+    }
+    
+    public String navigateToRefundOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview=false;
+        return "/opd/bill_refund";
+    }
+
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
     }
@@ -2614,8 +2639,7 @@ public class BillSearch implements Serializable {
             }
         }
     }
-    
-    
+
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
@@ -2846,6 +2870,15 @@ public class BillSearch implements Serializable {
 
     public void setBillSummery(BillSummery billSummery) {
         this.billSummery = billSummery;
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        bill = billFacade.find(billLight.getId());
+        this.billLight = billLight;
     }
 
 }

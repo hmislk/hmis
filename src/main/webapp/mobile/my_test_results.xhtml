@@ -34,7 +34,7 @@
                                 </p:column>
                                 <p:column headerText="Date">
                                     <p:outputLabel value="#{r.patientInvestigation.billItem.bill.billDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </p:outputLabel>
                                 </p:column>
 

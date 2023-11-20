@@ -8,7 +8,7 @@
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete" 
-                 >
+                >
 
     <ui:define name="subContent">
         <h:form id="form">
@@ -17,39 +17,37 @@
                     <p:outputLabel value="Consultant BTT Report" />
                 </f:facet>
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
-                        <h:outputLabel value=""/>
-                        <h:panelGrid columns="3">
-                            <p:commandButton action="#{channelReportController.createTotalDoctorAll}" value="Fill" ajax="false" ></p:commandButton> 
-                            <p:commandButton value="Print" action="#" styleClass="noPrintButton">
-                                <p:printer target="pan1" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="BTT_Report"  />
-                            </p:commandButton> 
-                        </h:panelGrid>
+                    </p:panelGrid>
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton style="margin-right: 10px" action="#{channelReportController.createTotalDoctorAll}" value="Fill" ajax="false" ></p:commandButton> 
+                        <p:commandButton style="margin-right: 10px" value="Print" action="#" styleClass="noPrintButton">
+                            <p:printer target="pan1" />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                            <p:dataExporter type="xlsx" target="tbl" fileName="BTT_Report"  />
+                        </p:commandButton> 
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="pan1" styleClass="noBorder summeryBorder">
-
                     <p:dataTable id="tbl" value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
                         <f:facet name="header" >
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                             <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                             <p:outputLabel value="Consultant BTT Report" /><br></br>
                             <p:outputLabel value="From : "/>
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>     
-                            <p:outputLabel value=" - To : "/>
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            <p:outputLabel class="ml-5" value="To : "/>
+                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </f:facet>
                         <p:column headerText="Consultant" style="width: 10px!important;">

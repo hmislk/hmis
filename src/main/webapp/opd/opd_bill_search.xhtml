@@ -10,52 +10,60 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-
-
-
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="OPD BILL SEARCH "/>                          
                         </f:facet>
 
+                        #{opdBillController}
+                        
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{opdBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">      
+                                    <p:calendar id="fromDate" 
+                                                value="#{opdBillController.fromDate}" 
+                                                navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                styleClass="dateTimePicker" 
+                                                class="w-100" 
+                                                inputStyleClass="form-control">      
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">                                                                              
+                                    <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
-                                                 value="#{opdBillController.searchKeyword.billNo}" />
+                                                 value="#{searchController.searchKeyword.billNo}" />
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <p:inputText placeholder="Name" class="form-control"
                                                  autocomplete="off" 
-                                                 value="#{opdBillController.searchKeyword.patientName}" />
+                                                 value="#{searchController.searchKeyword.patientName}" />
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <p:inputText placeholder="Phone" class="form-control"
                                                  autocomplete="off"  
-                                                 value="#{opdBillController.searchKeyword.patientPhone}" />
+                                                 value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <p:inputText placeholder="Total" class="form-control"
                                                  autocomplete="off"  
-                                                 value="#{opdBillController.searchKeyword.total}"
+                                                 value="#{searchController.searchKeyword.total}"
                                                  />
                                     <p:spacer height="10" width="5" ></p:spacer>
 
 
                                     <p:inputText placeholder="Net Total"   class="form-control"
                                                  autocomplete="off"
-                                                 value="#{opdBillController.searchKeyword.netTotal}"/>
+                                                 value="#{searchController.searchKeyword.netTotal}"/>
                                     <p:spacer height="10" width="5" ></p:spacer>
+
+
+
 
 
                                     <div class="d-grid gap-2">
@@ -63,20 +71,77 @@
                                             id="btnSearch" 
                                             ajax="false" 
                                             value="Search" 
-                                            action="#{opdBillController.searchDepartmentOpdBillLights}" class="w-100"/>
+                                            action="#{searchController.searchOpdBills()}" class="w-100"/>
                                         <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
                                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
                                     </div>
+
+
+                                    <p:selectOneMenu 
+                                        id="cmdFromInstitution"
+                                        value="#{reportController.fromInstitution}"
+                                        filter="true"
+                                        placeholder="Ordering Institution"
+                                        >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" ></f:selectItems>
+                                        <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu 
+                                        id="cmdFromDepartment"
+                                        placeholder="Ordering Department"
+                                        value="#{reportController.fromDepartment}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    
+                                    <p:selectOneMenu 
+                                        id="cmdToInstitution"
+                                        value="#{reportController.fromInstitution}"
+                                        filter="true"
+                                        placeholder="Peforming Institution"
+                                        >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" ></f:selectItems>
+                                        <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu 
+                                        id="cmdToDepartment"
+                                        placeholder="Peforming Department"
+                                        value="#{reportController.fromDepartment}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+
+
                                 </div>
                             </div>
 
                             <div class="col-md-10">
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{opdBillController.billLights}" 
+                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
                                              var="bill"  
                                              style="min-width: 100%;"  
                                              rows ="10"
+                                             rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
@@ -86,40 +151,48 @@
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" >                                
+                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
-                                                       value="#{bill.billNo}" 
-                                                       action="#{opdBillController.navigateToViewOpdBillByBillLight()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.billLight}"/>
+                                                       value="#{bill.insId}" 
+                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
                                         </p:commandLink>
+                                    </p:column>
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </h:commandLink>  
                                     </p:column>
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Billed For" sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}" filterMatchMode="contains" >                                
-                                        <h:outputLabel id="insDep" value="#{bill.departmentName}" />
+                                    <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
+                                              filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
+                                        <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
                                     </p:column>
 <!--                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
                                         <h:outputLabel value="#{bill.departmentName}" />
                                     </p:column>-->
-                                    <p:column headerText="Billed by"  sortBy="#{bill.userName}" filterBy="#{bill.userName}" >
-                                        <h:outputLabel value="#{bill.userName}" >                                      
+                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
+                                        <h:outputLabel value="#{bill.creater.name}" >                                      
                                         </h:outputLabel>
                                     </p:column>    
-                                    <p:column headerText="Client"  sortBy="#{bill.patientName}" filterBy="#{bill.patientName}" >                               
+                                    <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
+                                              filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patientName}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patientId}" target="#{patientController.patientId}"/>
+                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
                                             </h:commandLink>
-                                            <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Phone"  sortBy="#{bill.patientPhone}" filterBy="#{bill.patientPhone}" >                              
-                                        <h:outputLabel value="#{bill.patientPhone}" />
+                                    <p:column headerText="Remarks"   >                              
+                                        <h:outputLabel value="#{bill.cancelled?'Cancelled':''}" class="#{bill.cancelled?'text-danger':''}" />
+                                        <h:outputLabel value="#{bill.refunded ?'Refunded':''}" />
                                     </p:column>
 
 
@@ -128,8 +201,9 @@
                                                                             <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                                                             <h:outputLabel value="#{bill.paymentScheme.name}" />
                                                                         </p:column>-->
-                                    <p:column headerText="Gross Value" sortBy="#{bill.grossValue}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.grossValue}" >
+                                    <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                              styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -138,8 +212,9 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Value" sortBy="#{bill.netValue}" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.netValue}" >
+                                    <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                              styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>                         

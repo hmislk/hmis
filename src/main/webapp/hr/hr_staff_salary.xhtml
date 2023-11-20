@@ -46,19 +46,19 @@
                     <h:panelGrid columns="2" id="cycleDetail">
                         <h:outputLabel value="Salary From Date "/>
                         <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Salary To Date "/>
                         <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked From Date "/>
                         <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="Worked To Date "/>
                         <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </h:panelGrid>
                 </p:tab>

@@ -112,7 +112,7 @@
                                                 <h:outputText  value="#{consultantController.current.creater.webUserPerson.nameWithTitle}" />
                                                 <h:outputText  value="Created At" />
                                                 <h:outputText  value="#{consultantController.current.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                                 </h:outputText>
 
                                             </h:panelGrid>

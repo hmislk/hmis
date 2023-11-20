@@ -89,21 +89,22 @@
                                                 rendered="#{empty sessionController.applicationPreference.loggingHeader}"
                                                 value="#{bundle.hims}" class="text-white" ></h:outputText>
                                         </h4>
-                                        <p class="small mb-0 text-start"
-                                           >
-                                            <h:outputText 
-                                                rendered="#{not empty sessionController.applicationPreference.loggingText}"
-                                                value ="#{sessionController.applicationPreference.loggingText}">
-                                               
-                                            </h:outputText>
-                                            <h:outputText 
-                                                rendered="#{empty sessionController.applicationPreference.loggingText}"
-                                                value ="#{bundle.hims_tagline_contents}">
-                                               
-                                            </h:outputText>
-                                            
-                                        </p>
-                                        
+
+                                        <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                                        <h:outputText class="small mb-0 text-start"
+                                                      rendered="#{not empty sessionController.applicationPreference.loggingText}"
+                                                      value ="#{sessionController.applicationPreference.loggingText}"
+                                                      escape="false">
+                                        </h:outputText>
+                                        <h:outputText class="small mb-0 text-start"
+                                                      rendered="#{empty sessionController.applicationPreference.loggingText}"
+                                                      value ="#{bundle.hims_tagline_contents}"
+                                                      escape="false">
+                                        </h:outputText>
+
+
+
+
                                     </div>
                                 </div>
                             </div>

@@ -1,6 +1,6 @@
 /*
-* Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package com.divudi.ejb;
 
@@ -69,7 +69,7 @@ public class BillNumberGenerator {
         Long b = billNumber.getLastBillNumber();
 //        //// // System.out.println("b = " + b);
 
-        result.append(ins.getCode());
+        result.append(ins.getInstitutionCode());
         result.append(billNumberSuffix.getSuffix());
 
         result.append("/");
@@ -125,21 +125,21 @@ public class BillNumberGenerator {
         String suffix = "";
 
         if (bill instanceof BilledBill) {
-            suffix = "C";
+            suffix = "CHANN";
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CC";
+            suffix = "CHANNCAN";
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CF";
+            suffix = "CHANNREF";
         }
 
         if (i != null) {
-            result = ins.getCode() + suffix + "/" + (i + 1);
+            result = ins.getInstitutionCode() + suffix + "/" + (i + 1);
         } else {
-            result = ins.getCode() + suffix + "/" + 1;
+            result = ins.getInstitutionCode() + suffix + "/" + 1;
         }
 
         return result;
@@ -162,7 +162,7 @@ public class BillNumberGenerator {
         hm.put("type", bill.getClass());
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
-        result.append(ins.getCode());
+        result.append(ins.getInstitutionCode());
         result.append(billNumberSuffix.getSuffix());
         result.append("/");
         if (i != null) {
@@ -190,7 +190,7 @@ public class BillNumberGenerator {
         hm.put("type", bill.getClass());
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
-        result.append(ins.getCode());
+        result.append(ins.getInstitutionCode());
         result.append(billNumberSuffix.getSuffix());
         result.append("/");
 
@@ -208,7 +208,7 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
 //        //// // System.out.println("b = " + b);
-        result.append(dep.getCode());
+        result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
             result.append(billNumberSuffix);
@@ -277,16 +277,16 @@ public class BillNumberGenerator {
         String result = "";
         if (i != null) {
             if (billNumberSuffix != BillNumberSuffix.NONE) {
-                result = dep.getCode() + billNumberSuffix + "/" + (i + 1);
+                result = dep.getDepartmentCode() + billNumberSuffix + "/" + (i + 1);
             } else {
-                result = dep.getCode() + "/" + (i + 1);
+                result = dep.getDepartmentCode() + "/" + (i + 1);
             }
 
         } else {
             if (billNumberSuffix != BillNumberSuffix.NONE) {
-                result = dep.getCode() + billNumberSuffix + "/" + 1;
+                result = dep.getDepartmentCode() + billNumberSuffix + "/" + 1;
             } else {
-                result = dep.getCode() + "/" + 1;
+                result = dep.getDepartmentCode() + "/" + 1;
             }
 
         }
@@ -314,16 +314,16 @@ public class BillNumberGenerator {
 
         if (i != null) {
             if (billNumberSuffix != BillNumberSuffix.NONE) {
-                result = dep.getCode() + billNumberSuffix + "/" + (i + 1);
+                result = dep.getDepartmentCode() + billNumberSuffix + "/" + (i + 1);
             } else {
-                result = dep.getCode() + "/" + (i + 1);
+                result = dep.getDepartmentCode() + "/" + (i + 1);
             }
 
         } else {
             if (billNumberSuffix != BillNumberSuffix.NONE) {
-                result = dep.getCode() + billNumberSuffix + "/" + 1;
+                result = dep.getDepartmentCode() + billNumberSuffix + "/" + 1;
             } else {
-                result = dep.getCode() + "/" + 1;
+                result = dep.getDepartmentCode() + "/" + 1;
             }
 
         }
@@ -376,20 +376,20 @@ public class BillNumberGenerator {
         String suff = "";
 
         if (bill instanceof CancelledBill) {
-            suff = "C";
+            suff = "CAN";
         }
 
         if (bill instanceof RefundBill) {
-            suff = "R";
+            suff = "REF";
         }
 
         Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.DATE);
 
         if (b != 0) {
-            result = institution.getCode() + "C" + suff + "/" + (b + 1) + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + (b + 1) + "";
             return result;
         } else {
-            result = institution.getCode() + "C" + suff + "/" + 1 + "";
+            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + 1 + "";
             return result;
         }
 
@@ -421,16 +421,16 @@ public class BillNumberGenerator {
 //            if (b != null && b != 0) {
 //                b = b + 1;
 //                if (toDept != null) {
-//                    result = ins.getCode() + toDept.getCode() + "/" + b;
+//                    result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
 //                } else {
-//                    result = ins.getCode() + "/" + b;
+//                    result = ins.getInstitutionCode() + "/" + b;
 //                }
 //                return result;
 //            } else {
 //                if (toDept != null) {
-//                    result = ins.getCode() + toDept.getCode() + "/" + 1;
+//                    result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
 //                } else {
-//                    result = ins.getCode() + "/" + 1;
+//                    result = ins.getInstitutionCode() + "/" + 1;
 //                }
 //                return result;
 //            }
@@ -438,16 +438,16 @@ public class BillNumberGenerator {
 //            if (b != null && b != 0) {
 //                b = b + 1;
 //                if (toDept != null) {
-//                    result = ins.getCode() + toDept.getCode() + billNumberSuffix + "/" + b;
+//                    result = ins.getInstitutionCode() + toDept.getDepartmentCode() + billNumberSuffix + "/" + b;
 //                } else {
-//                    result = ins.getCode() + billNumberSuffix + "/" + b;
+//                    result = ins.getInstitutionCode() + billNumberSuffix + "/" + b;
 //                }
 //                return result;
 //            } else {
 //                if (toDept != null) {
-//                    result = ins.getCode() + toDept.getCode() + billNumberSuffix + "/" + 1;
+//                    result = ins.getInstitutionCode() + toDept.getDepartmentCode() + billNumberSuffix + "/" + 1;
 //                } else {
-//                    result = ins.getCode() + billNumberSuffix + "/" + 1;
+//                    result = ins.getInstitutionCode() + billNumberSuffix + "/" + 1;
 //                }
 //                return result;
 //            }
@@ -460,10 +460,10 @@ public class BillNumberGenerator {
         Long b = billNumber.getLastBillNumber();
         //System.err.println("fff " + b);
 
-        result.append(institution.getCode());
+        result.append(institution.getInstitutionCode());
 //        System.err.println("R1 " + result);
         if (toDepartment != null) {
-            result.append(toDepartment.getCode());
+            result.append(toDepartment.getDepartmentCode());
 //            System.err.println("R1 " + result);
         }
 
@@ -569,7 +569,7 @@ public class BillNumberGenerator {
 //        Long b = billNumber.getLastBillNumber();
 //        //System.err.println("fff " + b);
 //
-//        result += bill.getInstitution().getCode();
+//        result += bill.getInstitution().getInstitutionCode();
 //
 //        if (BillNumberSuffix.NONE != billNumberSuffix) {
 //            result += billNumberSuffix;
@@ -602,10 +602,10 @@ public class BillNumberGenerator {
 //        Long b = getBillFacade().findAggregateLong(sql, tmp, TemporalType.TIMESTAMP);
 //        String result;
 //        if (b != 0) {
-//            result = dep.getCode() + billNumberSuffix + (b + 1);
+//            result = dep.getDepartmentCode() + billNumberSuffix + (b + 1);
 //            return result;
 //        } else {
-//            result = dep.getCode() + billNumberSuffix + 1;
+//            result = dep.getDepartmentCode() + billNumberSuffix + 1;
 //            return result;
 //        }
 //
@@ -1100,10 +1100,10 @@ public class BillNumberGenerator {
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
 
-        result.append(dep.getCode());
+        result.append(dep.getDepartmentCode());
 
         if (toDept != null) {
-            result.append(toDept.getCode());
+            result.append(toDept.getDepartmentCode());
         }
 
         result.append("/");
@@ -1114,16 +1114,28 @@ public class BillNumberGenerator {
 
         return result.toString();
     }
+    
+    public String departmentBillNumberGenerator(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
+        BillNumber billNumber = fetchLastBillNumber(ins, dep, billType, billClassType);
+        Long dd = billNumber.getLastBillNumber();
+        StringBuilder result = new StringBuilder();
+        result.append(dep.getDepartmentCode());
+        result.append("/");
+        result.append(++dd);
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+        return result.toString();
+    }
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
 
-        result.append(dep.getCode());
+        result.append(dep.getDepartmentCode());
 
         if (toDept != null) {
-            result.append(toDept.getCode());
+            result.append(toDept.getDepartmentCode());
         }
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
@@ -1144,7 +1156,7 @@ public class BillNumberGenerator {
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
 
-        result.append(dep.getCode());
+        result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
             result.append(billNumberSuffix);
@@ -1164,10 +1176,10 @@ public class BillNumberGenerator {
 //        Long dd = billNumber.getLastBillNumber();
 //        String result = "";
 //
-//        result += bill.getDepartment().getCode();
+//        result += bill.getDepartment().getDepartmentCode();
 //
 //        if (toDepartment != null) {
-//            result += bill.getToDepartment().getCode();
+//            result += bill.getToDepartment().getDepartmentCode();
 //        }
 //
 //        result += "/";
@@ -1186,7 +1198,7 @@ public class BillNumberGenerator {
 //        Long dd = billNumber.getLastBillNumber();
 //        String result = "";
 //
-//        result += bill.getDepartment().getCode();
+//        result += bill.getDepartment().getDepartmentCode();
 //
 //        if (billNumberSuffix != BillNumberSuffix.NONE) {
 //            result += billNumberSuffix;
@@ -1217,10 +1229,10 @@ public class BillNumberGenerator {
 //        Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.TIMESTAMP);
 //
 //        if (b != 0) {
-//            result = dep.getCode() + billNumberSuffix + (b + 1);
+//            result = dep.getDepartmentCode() + billNumberSuffix + (b + 1);
 //            return result;
 //        } else {
-//            result = dep.getCode() + billNumberSuffix + 1;
+//            result = dep.getDepartmentCode() + billNumberSuffix + 1;
 //            return result;
 //        }
 //
@@ -1239,10 +1251,10 @@ public class BillNumberGenerator {
 //        Long b = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 //
 //        if (b != 0) {
-//            result = dep.getCode() + toDept.getCode() + billNumberSuffix + (b + 1);
+//            result = dep.getDepartmentCode() + toDept.getDepartmentCode() + billNumberSuffix + (b + 1);
 //            return result;
 //        } else {
-//            result = dep.getCode() + toDept.getCode() + billNumberSuffix + 1;
+//            result = dep.getDepartmentCode() + toDept.getDepartmentCode() + billNumberSuffix + 1;
 //            return result;
 //        }
 //
@@ -1258,10 +1270,10 @@ public class BillNumberGenerator {
 //        Long b = getBillFacade().findAggregateLong(sql, hash, TemporalType.TIMESTAMP);
 //
 //        if (b != 0) {
-//            result = dep.getCode() + billNumberSuffix + (b + 1);
+//            result = dep.getDepartmentCode() + billNumberSuffix + (b + 1);
 //            return result;
 //        } else {
-//            result = dep.getCode() + billNumberSuffix + 1;
+//            result = dep.getDepartmentCode() + billNumberSuffix + 1;
 //            return result;
 //        }
 //    }
@@ -1277,10 +1289,10 @@ public class BillNumberGenerator {
 //        Long b = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 //
 //        if (b != 0) {
-//            result = dep.getCode() + toDept.getCode() + billNumberSuffix + (b + 1);
+//            result = dep.getDepartmentCode() + toDept.getDepartmentCode() + billNumberSuffix + (b + 1);
 //            return result;
 //        } else {
-//            result = dep.getCode() + toDept.getCode() + billNumberSuffix + 1;
+//            result = dep.getDepartmentCode() + toDept.getDepartmentCode() + billNumberSuffix + 1;
 //            return result;
 //        }
 //
@@ -1365,9 +1377,9 @@ public class BillNumberGenerator {
         //System.err.println("fff " + b);
 
 //        if (toDept != null) {
-//            result = ins.getCode() + toDept.getCode() + "/" + 1;
+//            result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
 //        } else {
-//            result = ins.getCode() + "/" + 1;
+//            result = ins.getInstitutionCode() + "/" + 1;
 //        }
 //        return result;
         ////// // System.out.println("In Bill Num Gen");
@@ -1375,19 +1387,19 @@ public class BillNumberGenerator {
         if (b != null && b != 0) {
             b = b + 1;
             if (toDept != null) {
-                result = ins.getCode() + toDept.getCode() + "/" + b;
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
                 ////// // System.out.println("result = " + result);
             } else {
-                result = ins.getCode() + "/" + b;
+                result = ins.getInstitutionCode() + "/" + b;
                 ////// // System.out.println("result = " + result);
             }
             return result;
         } else {
             if (toDept != null) {
-                result = ins.getCode() + toDept.getCode() + "/" + 1;
+                result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
                 ////// // System.out.println("result = " + result);
             } else {
-                result = ins.getCode() + "/" + 1;
+                result = ins.getInstitutionCode() + "/" + 1;
                 ////// // System.out.println("result = " + result);
             }
             return result;

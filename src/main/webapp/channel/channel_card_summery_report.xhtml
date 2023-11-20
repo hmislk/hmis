@@ -13,12 +13,12 @@
                 <h:form >
 
                     <p:panel id="pan1" >
-                        <h:panelGrid columns="2">
+                        <p:panelGrid columns="4" class="w-100">
                             <h:outputLabel   value="From Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel   value="To Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>  
 
                             <p:outputLabel value="Bank Vise"/>
@@ -46,25 +46,28 @@
 
                             <h:outputLabel styleClass="noPrintButton" value=" User Name " rendered="#{!channelReportController.reportKeyWord.bool1}"/>
                             <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                            forceSelection="true" rendered="#{!channelReportController.reportKeyWord.bool1}"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{channelReportController.webUser}" ></p:autoComplete>
+                                             forceSelection="true" rendered="#{!channelReportController.reportKeyWord.bool1}"
+                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                             value="#{channelReportController.webUser}" ></p:autoComplete>
+                        </p:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportController.createCardSummery()}" rendered="#{!channelReportController.reportKeyWord.bool1}" />
+                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportController.createCardSummeryBankVise()}" rendered="#{channelReportController.reportKeyWord.bool1}" />
+                            <p:commandButton style="margin-right: 10px" id="print" value="Print">
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="card_summery" />
+                            </p:commandButton>
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}" >
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
+                            </p:commandButton>
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}" >
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" />
+                            </p:commandButton>
                         </h:panelGrid>
 
-                        <p:commandButton value="Process" ajax="false" action="#{channelReportController.createCardSummery()}" rendered="#{!channelReportController.reportKeyWord.bool1}" />
-                        <p:commandButton value="Process" ajax="false" action="#{channelReportController.createCardSummeryBankVise()}" rendered="#{channelReportController.reportKeyWord.bool1}" />
-                        <p:commandButton id="print" value="Print">
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportController.reportKeyWord.bool1}">
-                            <p:dataExporter type="xlsx" target="tbl" fileName="card_summery" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}" >
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}" >
-                            <p:dataExporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" />
-                        </p:commandButton>
+
                     </p:panel>
 
                     <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
@@ -280,7 +283,7 @@
                                 <p:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
-                                
+
                                 <p:outputLabel value="Total : " style="float: left;"/>
                             </f:facet>
                         </p:dataTable>

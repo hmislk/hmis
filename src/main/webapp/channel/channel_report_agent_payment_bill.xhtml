@@ -15,20 +15,17 @@
                         <p:panel>
                             <f:facet name="header" >
                                 <p:outputLabel value="AGENT Deposit" />
-                                <p:commandButton id="btnBack" value="Back" 
-                                                 action="/channel/channel_reports" style="float: right;"
-                                                 ajax="false">
-                                </p:commandButton>
+                                
                             </f:facet>
                             <h:panelGroup>                               
-                                <h:panelGrid columns="2" >
+                                <p:panelGrid columns="2" >
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{channelReportTempController.fromDate}"
-                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                                                navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}">      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="toDate" value="#{channelReportTempController.toDate}" 
-                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                                navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                     </p:calendar>
                                     <p:outputLabel value="Agent Name" />
                                     <p:autoComplete converter="deal" value="#{channelReportTempController.reportKeyWord.institution}" styleClass="mediuminput"
@@ -37,10 +34,10 @@
                                         <p:column>#{vt.institutionCode}</p:column>
                                         <p:column>#{vt.name}</p:column>
                                     </p:autoComplete>
-                                </h:panelGrid>
-                                <h:panelGrid columns="3" >
+                                </p:panelGrid>
+                                <h:panelGrid columns="3" class="my-2">
                                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createAgentPaymentTable()}" />
-                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px">
                                         <p:printer target="reportPrint"  />
                                     </p:commandButton>
                                     <p:commandButton actionListener="#{channelReportController.createAgentHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
@@ -55,13 +52,13 @@
                                         <br></br>
                                         <p:outputLabel value="Agent Deposit" />
                                         <br></br>
-                                        <p:outputLabel value="From - " />
-                                        <h:outputLabel value="#{channelReportTempController.fromDate}" >
-                                            <f:convertDateTime pattern="yyyy MMMM dd - hh:mm:ss a"/>
+                                        <p:outputLabel value="From :" />
+                                        <h:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                         </h:outputLabel>
-                                        <p:outputLabel value=" - To - " />
-                                        <h:outputLabel value="#{channelReportTempController.toDate}" >
-                                            <f:convertDateTime pattern="yyyy MMMM dd - hh:mm:ss a"/>
+                                        <p:outputLabel class="ml-5" value="To : " />
+                                        <h:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <p:column>
@@ -80,11 +77,11 @@
                                             <p:outputLabel value="Billed at" />
                                         </f:facet>
                                         <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value=" - " rendered="#{bill.cancelled}"/>
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>  
                                     <p:column>

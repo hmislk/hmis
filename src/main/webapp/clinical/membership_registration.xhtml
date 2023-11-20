@@ -83,7 +83,7 @@
                                             </p:column>
                                             <p:column headerText="Date of Birth">
                                                 <h:outputLabel value="#{apt.person.dob}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <f:ajax event="itemSelect" execute="acPt" render=":#{p:resolveFirstComponentWithId('panelDetails',view).clientId}" 
@@ -167,7 +167,7 @@
                                                         </p:inputText>
                                                     </h:panelGrid>
                                                     <h:outputLabel value="Date of Birth"/>
-                                                    <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+                                                    <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                         <f:ajax event="dateSelect" execute="calNewPtDob"/>
                                                     </p:calendar>
 
@@ -298,7 +298,7 @@
                                 <p:inputText value="#{patientController.familyMember.nic}"  requiredMessage="please enter NIC no"/>
 
                                 <h:outputLabel value="Date of Birth"/>
-                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="dd/MM/yyyy"  requiredMessage="please enter date of birth"/>
+                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  requiredMessage="please enter date of birth"/>
 
                                 <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:resolveFirstComponentWithId('familyDetails',view).clientId} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
                                 <p:commandButton value="Cancel" onclick="PF('dlg').hide()" actionListener="#{patientController.listnerFamilyMember()}" ajax="false"/>

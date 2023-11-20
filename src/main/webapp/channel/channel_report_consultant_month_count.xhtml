@@ -15,22 +15,18 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Consultant Wise Appoinment Totals And Count" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" id="pg1">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pg1" >
+
                         <h:outputLabel value="Count"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.count}" >
                             <p:ajax event="change" process="@this" update="pan1 pan2 :#{p:resolveFirstComponentWithId('pan3',view).clientId} pg1 " />
@@ -39,24 +35,19 @@
                         <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />
                         <h:outputLabel value="Without Doc Fee" rendered="#{!channelReportTempController.count}"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.withOutDocPayment}" rendered="#{!channelReportTempController.count}" />
-                    </h:panelGrid> 
-                    <h:panelGrid columns="3">
-                        <h:panelGroup id="pan1">
-                            <h:panelGrid columns="2" rendered="#{channelReportTempController.count}" >
-                                <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentCount}" value="Count" ajax="false" />
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <h:panelGroup id="pan2">
-                            <h:panelGrid columns="2" rendered="#{!channelReportTempController.count}" >
-                                <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentTotal}" value="Totals" ajax="false" />
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                         <p:commandButton style="margin-right: 10px" id="pan1" action="#{channelReportTempController.createStaffWiseAppoinmentCount}" value="Count" ajax="false" />
+                         <p:commandButton style="margin-right: 10px" id="pan2" action="#{channelReportTempController.createStaffWiseAppoinmentTotal}" value="Totals" ajax="false" />
+                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
                     </h:panelGrid>
+                    
+                    
                 </p:panel>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                <p:panel id="reportPrint" >
                     <p:dataTable value="#{channelReportTempController.channelSummeryDateRangeBillTotalTables}" var="s" id="tbl1" >
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
@@ -68,12 +59,12 @@
                             </h:panelGroup>
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >

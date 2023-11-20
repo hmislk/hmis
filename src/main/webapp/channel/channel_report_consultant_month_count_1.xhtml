@@ -16,22 +16,19 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Consultant Wise Appoinment Totals And Count(Can't Consider Appoinment Time)" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                    
                 </f:facet>
 
                 <p:panel id="pan1">
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" id="pg1">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  styleClass="dateTimePicker"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  styleClass="dateTimePicker" >
                         </p:calendar>
                         <h:outputLabel value="Staff" rendered="#{!channelReportTempController.paid}"/>
-                        <p:autoComplete minQueryLength="2"  style="width: 400px;"
+                        <p:autoComplete minQueryLength="2"  
                                         forceSelection="true" placeholder="Staff"
                                         value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
@@ -40,19 +37,19 @@
                         </p:autoComplete>
                         <h:outputLabel value="Specility" rendered="#{!channelReportTempController.paid}"/>
                         <au:completeSpeciality value="#{channelReportTempController.reportKeyWord.speciality}" rendered="#{!channelReportTempController.paid}" />
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pg1" >
+                    
                         <h:outputLabel value="By Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />
                         <h:outputLabel value="By Specility"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.paid}" >
                             <f:ajax event="change" execute="@this" render="pan1" />
                         </p:selectBooleanCheckbox>
-                    </h:panelGrid> 
-                    <h:panelGrid columns="3">
-                        <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentCountNew}" rendered="#{!channelReportTempController.paid}" value="Count" ajax="false" />
-                        <p:commandButton action="#{channelReportTempController.createSpecilityWiseAppoinmentCountNew()}" rendered="#{channelReportTempController.paid}" value="Count" ajax="false" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton style="margin-right: 10px" action="#{channelReportTempController.createStaffWiseAppoinmentCountNew}" rendered="#{!channelReportTempController.paid}" value="Count" ajax="false" />
+                        <p:commandButton style="margin-right: 10px" action="#{channelReportTempController.createSpecilityWiseAppoinmentCountNew()}" rendered="#{channelReportTempController.paid}" value="Count" ajax="false" />
+                        <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >

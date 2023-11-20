@@ -22,23 +22,23 @@
                 <p:panel header="Weekday Channeling Counts" >
 
 
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                    </h:panelGrid>
-                    <h:panelGrid columns="3"> 
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process" 
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                    </p:panelGrid>
+                    <h:panelGrid columns="3" class="my-2"> 
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process" 
                                          action="#{channelReportController.createDailyDoctorAnalysisDisplay()}">
                         </p:commandButton>
-                        <p:commandButton  ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton  ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <a download="analysis.xls" href="#" shape="rect"
                            onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
-                           style="padding: .3em 1em;  background: #D7D0C0; " 
+                           style="padding: .3em 1em; float: right; background: #D7D0C0; margin-right: 10px" 
                            styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Download as Excel</a>
                     </h:panelGrid>
 

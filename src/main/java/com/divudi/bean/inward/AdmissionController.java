@@ -15,10 +15,12 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
@@ -65,7 +67,7 @@ public class AdmissionController implements Serializable {
     SessionController sessionController;
 
     @Inject
-    InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    private InwardStaffPaymentBillController inwardStaffPaymentBillController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -90,7 +92,7 @@ public class AdmissionController implements Serializable {
     private List<Admission> items = null;
     private List<Patient> patientList;
     private boolean printPreview;
-    List<Admission> currentAdmissions;
+    private List<Admission> currentAdmissions;
     ///////////////////////////
     String selectText = "";
     private String ageText = "";
@@ -101,6 +103,17 @@ public class AdmissionController implements Serializable {
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
+    private Date fromDate;
+    private Date toDate;
+    private String patientNameForSearch;
+    private String patientIdentityNumberForSearch;
+    private String patientPhoneNumberForSearch;
+    private String patientCodeForSearch;
+    private String patientNumberForSearch;
+    private String bhtNumberForSearch;
+    private Doctor referringDoctorForSearch;
+    private Institution institutionForSearch;
+    private AdmissionStatus admissionStatusForSearch;
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -232,6 +245,51 @@ public class AdmissionController implements Serializable {
 
     }
 
+    public String navigateToEditAdmission() {
+        return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToRoomOccupancy() {
+        return "/inward/inward_room_occupancy?faces-redirect=true";
+    }
+
+    public String navigateToRoomVacancy() {
+        return "/inward/inward_room_vacant?faces-redirect=true";
+    }
+
+    public String navigateToRoomChange() {
+        return "/inward/inward_room_change?faces-redirect=true";
+    }
+
+    public String navigateToGuardianRoomChange() {
+        return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+
+    // Services & Items Submenu Methods
+    public String navigateToAddServices() {
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToAddOutsideCharge() {
+        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+
+    public String navigateToAddProfessionalFee() {
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFee() {
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBhtRequest() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToSearchInwardBills() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
+    }
+
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
         String sql;
@@ -247,6 +305,86 @@ public class AdmissionController implements Serializable {
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
+    }
+
+    public void searchAdmissions() {
+        String j;
+        HashMap m = new HashMap();
+        j = "select c from Admission c "
+                + " where c.retired=:ret ";
+        m.put("ret", false);
+        j += " and c.dateOfAdmission between :fd and :td ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
+            j += " and c.patient.person.name like :name ";
+            m.put("name", "%" + patientNameForSearch + "%");
+        }
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
+            j += "  and c.bhtNo like :bht ";
+            m.put("bht", "%" + bhtNumberForSearch + "%");
+        }
+
+        if (patientNumberForSearch != null && !patientNumberForSearch.trim().equals("")) {
+            j += " and (c.patient.code =:phn or c.patient.phn =:phn)";
+            m.put("phn", patientNumberForSearch);
+        }
+
+        if (patientPhoneNumberForSearch != null && !patientPhoneNumberForSearch.trim().equals("")) {
+            j += " and (c.patient.person.phone =:phone or c.patient.person.mobile =:phone)";
+            m.put("phone", patientPhoneNumberForSearch);
+        }
+
+        if (patientIdentityNumberForSearch != null && !patientIdentityNumberForSearch.trim().equals("")) {
+            j += " and c.patient.person.nic =:nic";
+            m.put("nic", patientIdentityNumberForSearch);
+        }
+
+        if (admissionStatusForSearch != null) {
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if (institutionForSearch != null) {
+            j += "  and c.institution=:ins ";
+            m.put("ins", institutionForSearch);
+        }
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    public String navigateToAdmissionProfilePage() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        if (current.getPatient() == null) {
+            JsfUtil.addErrorMessage("No Patient. Program Error");
+            return "";
+        }
+        current.getPatient().setEditingMode(false);
+        return "/inward/admission_profile";
     }
 
     public List<Admission> completeAdmission(String query) {
@@ -334,6 +472,25 @@ public class AdmissionController implements Serializable {
 
     }
 
+    public void clearSearchValues() {
+        institutionForSearch = null;
+        patientNameForSearch = null;
+        patientIdentityNumberForSearch = null;
+        patientPhoneNumberForSearch = null;
+        patientCodeForSearch = null;
+        patientNumberForSearch = null;
+        bhtNumberForSearch = null;
+        referringDoctorForSearch = null;
+        institutionForSearch = null;
+        admissionStatusForSearch = null;
+    }
+
+    public String navigateToListAdmissions() {
+        institutionForSearch = sessionController.getLoggedUser().getInstitution();
+        clearSearchValues();
+        return "/inward/inpatient_search";
+    }
+
     public void listCurrentInpatients() {
         String sql;
         HashMap h = new HashMap();
@@ -387,8 +544,8 @@ public class AdmissionController implements Serializable {
 
 //    public List<Admission> getAdmissionsWithErrors() {
 //        String sql;
-//        sql = "select p from Admission p where p.retired=false "
-//                + "and (p.patient is null or p.bhtNo is null)";
+//        sql = "select p from Admission p where c.patient.retired=false "
+//                + "and (c.patient.patient is null or c.patient.bhtNo is null)";
 //        admissionsWithErrors = getFacade().findByJpql(sql, 20);
 //        if (admissionsWithErrors == null) {
 //            admissionsWithErrors = new ArrayList<>();
@@ -405,7 +562,7 @@ public class AdmissionController implements Serializable {
         if (query == null || query.trim().equals("")) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Admission p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
+            sql = "select p from Admission p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
             ////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, 20);
         }
@@ -421,7 +578,7 @@ public class AdmissionController implements Serializable {
         if (query == null || query.trim().equals("")) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from PatientEncounter p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
+            sql = "select p from PatientEncounter p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
             ////// // System.out.println(sql);
             suggestions = patientEncounterFacade.findByJpql(sql, 20);
         }
@@ -461,8 +618,6 @@ public class AdmissionController implements Serializable {
         getCurrent().setPatient(getNewPatient());
         return "/inward/inward_admission";
     }
-    
-    
 
     public void prepereToAdmitNewPatient() {
         current = null;
@@ -812,14 +967,14 @@ public class AdmissionController implements Serializable {
     }
 
     public List<Admission> getItems() {
-        if (items == null) {
-            String temSql;
-            temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
-            items = getFacade().findByJpql(temSql);
-            if (items == null) {
-                items = new ArrayList<>();
-            }
-        }
+//        if (items == null) {
+//            String temSql;
+//            temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
+//            items = getFacade().findByJpql(temSql);
+//            if (items == null) {
+//                items = new ArrayList<>();
+//            }
+//        }
 
         return items;
     }
@@ -1019,6 +1174,116 @@ public class AdmissionController implements Serializable {
 
     public void setPatientSearchTab(int patientSearchTab) {
         this.patientSearchTab = patientSearchTab;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public String getPatientNameForSearch() {
+        return patientNameForSearch;
+    }
+
+    public void setPatientNameForSearch(String patientNameForSearch) {
+        this.patientNameForSearch = patientNameForSearch;
+    }
+
+    public String getBhtNumberForSearch() {
+        return bhtNumberForSearch;
+    }
+
+    public void setBhtNumberForSearch(String bhtNumberForSearch) {
+        this.bhtNumberForSearch = bhtNumberForSearch;
+    }
+
+    public Doctor getReferringDoctorForSearch() {
+        return referringDoctorForSearch;
+    }
+
+    public void setReferringDoctorForSearch(Doctor referringDoctorForSearch) {
+        this.referringDoctorForSearch = referringDoctorForSearch;
+    }
+
+    public InwardStaffPaymentBillController getInwardStaffPaymentBillController() {
+        return inwardStaffPaymentBillController;
+    }
+
+    public void setInwardStaffPaymentBillController(InwardStaffPaymentBillController inwardStaffPaymentBillController) {
+        this.inwardStaffPaymentBillController = inwardStaffPaymentBillController;
+    }
+
+    public List<Admission> getCurrentAdmissions() {
+        return currentAdmissions;
+    }
+
+    public void setCurrentAdmissions(List<Admission> currentAdmissions) {
+        this.currentAdmissions = currentAdmissions;
+    }
+
+    public String getPatientIdentityNumberForSearch() {
+        return patientIdentityNumberForSearch;
+    }
+
+    public void setPatientIdentityNumberForSearch(String patientIdentityNumberForSearch) {
+        this.patientIdentityNumberForSearch = patientIdentityNumberForSearch;
+    }
+
+    public String getPatientPhoneNumberForSearch() {
+        return patientPhoneNumberForSearch;
+    }
+
+    public void setPatientPhoneNumberForSearch(String patientPhoneNumberForSearch) {
+        this.patientPhoneNumberForSearch = patientPhoneNumberForSearch;
+    }
+
+    public Institution getInstitutionForSearch() {
+        return institutionForSearch;
+    }
+
+    public void setInstitutionForSearch(Institution institutionForSearch) {
+        this.institutionForSearch = institutionForSearch;
+    }
+
+    public AdmissionStatus getAdmissionStatusForSearch() {
+        return admissionStatusForSearch;
+    }
+
+    public void setAdmissionStatusForSearch(AdmissionStatus admissionStatusForSearch) {
+        this.admissionStatusForSearch = admissionStatusForSearch;
+    }
+
+    public String getPatientCodeForSearch() {
+        return patientCodeForSearch;
+    }
+
+    public void setPatientCodeForSearch(String patientCodeForSearch) {
+        this.patientCodeForSearch = patientCodeForSearch;
+    }
+
+    public String getPatientNumberForSearch() {
+        return patientNumberForSearch;
+    }
+
+    public void setPatientNumberForSearch(String patientNumberForSearch) {
+        this.patientNumberForSearch = patientNumberForSearch;
     }
 
     /**

@@ -13,18 +13,15 @@
             <p:panel header="Cannel Agent Reperence Book">
                 <f:facet name="header">
                     <p:outputLabel value="Cannel Agent Reperence Book" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+
                 </f:facet>
                 <p:panel>
-                    <h:panelGrid columns="6">
+                    <p:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
                         <p:autoComplete converter="deal" value="#{channelReportTempController.searchKeyword.ins}" 
@@ -33,15 +30,14 @@
                             <p:column>#{vt.institutionCode}</p:column>
                             <p:column>#{vt.name}</p:column>
                         </p:autoComplete>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2">
+
                         <p:outputLabel value="With Deleted Books"/>
                         <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.withRetiered}" />
                         <p:outputLabel value="Activate Advance Search"/>
                         <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.activeAdvanceOption}"  >
                             <p:ajax event="change" process="@this" update="val1 val2 val3 pgAdvan" />
                         </p:selectBooleanCheckbox>
-                    </h:panelGrid>
+                    </p:panelGrid>
                     <h:panelGrid id="pgAdvan" columns="3"  >
                         <h:panelGrid columns="3" rendered="#{channelReportTempController.searchKeyword.activeAdvanceOption}">
                             <p:outputLabel value="Book No"/>
@@ -53,14 +49,17 @@
                         </h:panelGrid>
                     </h:panelGrid>
 
-                    <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                        <p:printer target="reportPrint"  />
-                    </p:commandButton>
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-left: 10px; margin-right: 10px">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
 
-                    <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
-                        <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
-                    </p:commandButton> 
+                        <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
+                        </p:commandButton> 
+                    </h:panelGrid>
+
 
                 </p:panel>
                 <p:panel id="reportPrint">
@@ -116,7 +115,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{a.createdAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </p:column>
                         <p:column>
@@ -130,7 +129,7 @@
                                 <p:outputLabel value="Edited Date" />
                             </f:facet>
                             <p:outputLabel value="#{a.editedAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </p:column>
                         <p:column exportable="false">

@@ -14,43 +14,41 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel >
-                    <f:facet name="header" >
-                        <h:panelGrid columns="10"  >
-                            <h:outputLabel value="Inward Timed Service" />
 
+                    <p:panel class="mt-2" header="Timed Sevice" id="gpBillPreview">       
+                        <p:panel>
+                            <h:panelGrid columns="7" class="w-100">
+                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar class="mx-2" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:calendar class="mx-2" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <p:autoComplete class="mx-2" id="it" forceSelection="false" 
+                                                value="#{inwardTimedItemController.current.item}"
+                                                completeMethod="#{timedItemController.completeInvest}" var="ix" 
+                                                itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                    <p:column>
+                                        #{ix.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{ix.total}
+                                    </p:column>
 
-                        </h:panelGrid>
-                    </f:facet>
-                    <p:panel>
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                        <h:outputLabel value="From" ></h:outputLabel>
-                        <p:calendar id="td" value="#{inwardTimedItemController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                        <p:autoComplete id="it" forceSelection="false" 
-                                        value="#{inwardTimedItemController.current.item}"
-                                        completeMethod="#{timedItemController.completeInvest}" var="ix" 
-                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                            <p:column>
-                                #{ix.name}
-                            </p:column>
-                            <p:column>
-                                #{ix.total}
-                            </p:column>
+                                </p:autoComplete>
+                                <p:watermark for="it" value="Timed Item"/>
+                                <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                            </h:panelGrid>
 
-                        </p:autoComplete>
-                        <p:watermark for="it" value="Timed Item"/>
+                            <div class="my-2">
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
 
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton mx-2"  actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
+                                </p:commandButton>
+                            </div>
+                        </p:panel>
 
-                        <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardTimedItemController.createTimeServiceList}">
-                            <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
-                        </p:commandButton>
-                    </p:panel>
-                    <p:panel header="Timed Sevice" id="gpBillPreview">                          
                         <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
 
 
@@ -58,11 +56,11 @@
                                 <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
                                 <h:outputLabel value=" : "/>
                                 <h:outputLabel value="#{inwardTimedItemController.frmDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="--"/>
                                 <h:outputLabel value="#{inwardTimedItemController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
 

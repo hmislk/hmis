@@ -12,29 +12,57 @@
     padding: 0px;
 }
 
-root { 
+root {
     display: block;
 }
 
 
 @media print{
+    .fiveFiveBillWithPageBreaks{
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
+        width: 95%;
+        height: 95%;
+        padding: 1px;
+        font-size: 180%;
+    }
+}
+
+@media screen{
+    .fiveFiveBillWithPageBreaks{
+        position: relative!important;
+        padding: 5px!important;
+        height:13.9cm!important;
+        width:12.1cm!important;
+        font-family: sans-serif!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
+        border: 1px solid!important;
+        font-size: 130%;
+        background-color: whitesmoke;
+    }
+}
+
+@media print{
     .fiveinchbill{
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
-        font-size: 180%;
+        /*font-size: 180%;*/
     }
 
     .fiveinchbillBreak{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 1px;
@@ -42,11 +70,11 @@ root {
     }
 
     .fiveinchbillBreakRuhunu{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 1px;
@@ -54,12 +82,12 @@ root {
     }
 
     .fiveinchbillNoBreak{
-        page-break-after:always!important; 
+        page-break-after:always!important;
         font-family: sans-serif!important;
         page-break-inside: avoid;
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 1px;
@@ -67,14 +95,14 @@ root {
     }
 
     .stickerLabel{
-        page-break-after:always!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 100%;
         height: 100%;
         overflow: hidden;
     }
-    
+
 }
 
 
@@ -89,12 +117,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         /*border: 1px solid!important;*/
         font-size: 130%;
         text-transform: capitalize!important;
@@ -104,12 +132,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
 
@@ -119,21 +147,21 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:13.9cm!important;
-        width:12.1cm!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:12.1cm!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
 
     }
-    
-     .stickerLabel{
-        page-break-after:always!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+
+    .stickerLabel{
+        page-break-after:always!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 6cm;
         height: 2.5cm;
         overflow: hidden;
@@ -152,10 +180,10 @@ root {
 
 
     .summery{
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         padding: 0px!important;
         font-size: 100%!important;
     }
@@ -168,8 +196,8 @@ root {
 @media screen{
     .summery{
         position: relative!important;
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
         font-size: 100%!important;
     }
 
@@ -211,12 +239,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:800px!important;
-        width:1100px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:1100px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 100%;
     }
@@ -228,12 +256,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
     }
@@ -244,10 +272,10 @@ root {
 
 @media print{
     .staffFive{
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -259,11 +287,11 @@ root {
 
 @media print{
     .a4bill{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -275,21 +303,21 @@ root {
 }
 
 .headingPrinting{
-    text-align: center!important; 
-    min-width: 90%!important; 
-    /*padding: 5px!important;*/ 
+    text-align: center!important;
+    min-width: 90%!important;
+    /*padding: 5px!important;*/
     padding-top: 30%!important;
-    margin: auto!important; 
+    margin: auto!important;
     font-size: 13px!important;
     font-weight: bold;
 }
 
 .headingBhtP{
-    text-align: center!important; 
-    min-width: 90%!important; 
-    /*padding: 5px!important;*/ 
+    text-align: center!important;
+    min-width: 90%!important;
+    /*padding: 5px!important;*/
     padding-top: 20%!important;
-    margin: auto!important; 
+    margin: auto!important;
     font-size: 13px!important;
 }
 
@@ -303,10 +331,10 @@ root {
 .tbl{
     text-align: center!important;
     min-width: 90%!important;
-    padding: 5px!important; 
+    padding: 5px!important;
     padding-top: 10%!important;
-    margin: auto!important; 
-    border: 1px!important;    
+    margin: auto!important;
+    border: 1px!important;
 }
 
 .cashierPrinting{
@@ -365,10 +393,10 @@ root {
                 background-size: 100% auto!important; 
                 border: 1px solid!important;
                 font-size: 100%;*/
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -469,8 +497,8 @@ root {
     position: absolute;
     bottom: 3%;
     left: 0%;
-    text-decoration: overline; 
-    margin-left: 70%; 
+    text-decoration: overline;
+    margin-left: 70%;
     font-size: 12px;
 
 }
@@ -525,7 +553,7 @@ root {
 
 }
 
-.ratesPrinting{    
+.ratesPrinting{
     position: absolute;
     left: 80%;
     top: 37%;
@@ -776,7 +804,7 @@ root {
 
 }
 
-.receiptnoPrintingRuhunu{    
+.receiptnoPrintingRuhunu{
     position: absolute!important;
     left: 7.7cm;
     top: 3.8cm;
@@ -889,8 +917,8 @@ root {
     position: absolute;
     bottom: 3%;
     left: 0%;
-    text-decoration: overline; 
-    margin-left: 70%; 
+    text-decoration: overline;
+    margin-left: 70%;
     font-size: 12px;
 
 }
@@ -919,7 +947,7 @@ root {
 
 }
 
-.ratesPrintingRuhunu{    
+.ratesPrintingRuhunu{
     position: absolute;
     left: 80%;
     top: 37%;
@@ -927,7 +955,7 @@ root {
 
 }
 
-.ratesCollectingCenterPrintingRuhunu{    
+.ratesCollectingCenterPrintingRuhunu{
     position: absolute;
     left: 70%;
     top: 37%;
@@ -935,7 +963,7 @@ root {
 
 }
 
-.ratesWithOutCollectingCenterPrintingRuhunu{    
+.ratesWithOutCollectingCenterPrintingRuhunu{
     position: absolute;
     left: 85%;
     top: 37%;
@@ -961,12 +989,12 @@ root {
         position: relative!important;
         padding: 5px!important;
         height:550px!important;
-        width:550px!important; 
-         
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        margin: auto!important; 
-        background-size: 100% auto!important; 
+        width:550px!important;
+
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        margin: auto!important;
+        background-size: 100% auto!important;
         border: 1px solid!important;
         font-size: 130%;
     }
@@ -977,11 +1005,11 @@ root {
 @media print{
 
     .fiveinchbillPharmacy{
-        page-break-after:always!important; 
-        font-family: sans-serif!important; 
-        font-size: 11px!important; 
-        position: relative!important;  
-        margin: 0px!important; 
+        page-break-after:always!important;
+        font-family: sans-serif!important;
+        font-size: 11px!important;
+        position: relative!important;
+        margin: 0px!important;
         width: 95%;
         height: 95%;
         padding: 0px;
@@ -992,6 +1020,9 @@ root {
 }
 
 .summeryBorder{
-    width: 100%!important; margin:0px!important;padding:0px!important;border:none!important;
+    width: 100%!important;
+    margin:0px!important;
+    padding:0px!important;
+    border:none!important;
 
 }

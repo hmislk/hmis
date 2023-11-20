@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
+
+
+                <div class="container" >
+                    <h:form id="form"  >
+                        <p:growl />
+                        <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+
+                            <p:outputLabel value="Username Parameter" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsUsernameParameterName}" ></p:outputLabel>
+
+                            <p:outputLabel value="Username" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsUsername}" ></p:outputLabel>
+
+                            <p:outputLabel value="Password Parameter" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsPasswordParameterName}" ></p:outputLabel>
+
+                            <p:outputLabel value="Password" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsPassword}" ></p:outputLabel>
+
+                            <p:outputLabel value="Alias Parameter" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsUserAliasParameterName}" ></p:outputLabel>
+
+                            <p:outputLabel value="Alias" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsUserAlias}" ></p:outputLabel>
+
+                            <p:outputLabel value="Number Parameter" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsPhoneNumberParameterName}" ></p:outputLabel>
+
+                            <p:outputLabel value="Text Parameter" ></p:outputLabel>
+                            <p:outputLabel value="#{sessionController.applicationPreference.smsMessageParameterName}" ></p:outputLabel>
+
+
+
+                            <p:outputLabel value="Number" ></p:outputLabel>
+                            <p:inputText value="#{smsController.smsNumber}" ></p:inputText>
+
+                            <p:outputLabel value="Message" ></p:outputLabel>
+                            <p:inputText value="#{smsController.smsMessage}" ></p:inputText>
+
+                            <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Send Message" action="#{smsController.sentCheckSms}" />
+
+
+                            <h:outputText value="" ></h:outputText>
+
+                        </p:panelGrid>
+                    </h:form>
+                </div>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

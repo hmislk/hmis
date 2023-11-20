@@ -37,7 +37,14 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="#{navigationController.navigateToArea()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToStaffSignature()}" />
+                                        <p:commandButton class="btn btn-primary"
+                                                         action="#{routeController.toAddNewRoute}" 
+                                                         icon="bi bi-building-fill-add" value="Add New Route">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton"  
+                                                         action="#{routeController.toListRoutes()}" 
+                                                         icon="bi bi-building-fill-add" value="List Routes">
+                                        </p:commandButton>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Preferences" >
@@ -45,7 +52,7 @@
 
 
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />
+<!--                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />-->
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" />
 
 

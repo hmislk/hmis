@@ -90,7 +90,7 @@
                                                                        style="width: 100px!important;
                                                                        #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red;': 
                                                                          commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
-                                                            <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
@@ -173,7 +173,7 @@
                                                 </p:column>
                                                 <p:column headerText="Expiry" class="w-100">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                     </h:outputLabel>
 
                                                 </p:column>
@@ -251,12 +251,12 @@
                                                 <p:column headerText="Expiry">
                                                     <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                         <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
-                                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonController.currentDateTime}" >
                                                         <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
-                                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                 </p:column>
@@ -291,12 +291,10 @@
 
                                     <f:facet name="header" >
                                         <h:panelGrid columns="20"  >
-
-                                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                                             <p:selectOneMenu   id="pay" value="#{pharmacySaleController1.paymentMethod}">    
-                                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                                                <f:selectItems value="#{enumController.paymentMethods}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 <p:ajax process="@this cmbPs " 
-                                                        update="pBillDetails creditCard cheque slip tvPt" 
+                                                        update="pBillDetails pharmacypaymentDetails" 
                                                         event="change"  
                                                         listener="#{pharmacySaleController1.changeListener()}"/>
                                             </p:selectOneMenu>
@@ -309,20 +307,6 @@
                                                         event="change"  
                                                         listener="#{pharmacySaleController1.changeListener()}"/>
                                             </p:selectOneMenu>
-
-
-
-                                            <h:panelGroup id="creditCard" style="display: #{pharmacySaleController1.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{pharmacySaleController1.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{pharmacySaleController1.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
-                                            </h:panelGroup>
 
                                             <p:commandButton ajax="false" accesskey="s" value="Settle" class="w-100"
                                                              onclick="if (!confirm('Are you sure?'))
@@ -337,9 +321,32 @@
                                                              ajax="false" action="pharmacy_bill_retail_sale_1"
                                                              class="w-100"
                                                              actionListener="#{pharmacySaleController1.resetAll()}"  ></p:commandButton>
-
-
                                         </h:panelGrid>
+
+                                        <h:panelGroup id="pharmacypaymentDetails" class="row">
+                                            <div class="row">
+                                                <h:panelGroup id="creditCard" rendered="#{pharmacySaleController1.paymentMethod eq 'Card'}">
+                                                    <pa:creditCard paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="cheque" rendered="#{pharmacySaleController1.paymentMethod eq 'Cheque'}" >
+                                                    <pa:cheque paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="slip" rendered="#{pharmacySaleController1.paymentMethod eq 'Slip'}">
+                                                    <pa:slip paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="ewallet" rendered="#{pharmacySaleController1.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewallet paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="ptdeposit" rendered="#{pharmacySaleController.paymentMethod eq 'PatientDeposit'}">
+                                                    <pa:patient_deposit paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                            </div>
+                                        </h:panelGroup>
 
 
                                     </f:facet>
@@ -438,7 +445,7 @@
                                                     </p:column>
                                                     <p:column headerText="Date of Birth">
                                                         <h:outputLabel value="#{apt.person.dob}" >
-                                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
@@ -480,7 +487,7 @@
                                                                      var="mys" 
                                                                      itemLabel="#{mys.person.nameWithTitle}" 
                                                                      itemValue="#{mys}"
-                                                                      
+
                                                                      disabled="#{pharmacySaleController1.paymentMethod ne 'Credit' }">
                                                         <p:column headerText="Name" >
                                                             <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>

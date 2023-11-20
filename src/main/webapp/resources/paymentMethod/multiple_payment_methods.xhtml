@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="col-12" >
+            <p:dataTable class="w-100"
+                id="tblMultiplePayments"
+                value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
+                var="pm" >
+                <p:column headerText="Multiple Payments">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
+                        <p:commandButton value="Add Another" process="@this" update="tblMultiplePayments" action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" ></p:commandButton>
+                    </f:facet>
+                    <div class="row" >
+
+                        <div class="col-3" >
+
+                            <p:selectOneMenu   
+                                id="pay" 
+                                value="#{pm.paymentMethod}"
+                                class="w-100">  
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
+                                    var="pm1"
+                                    itemLabel="#{pm1.label}"
+                                    itemValue="#{pm1}"/>
+                                <p:ajax process="pay" 
+                                        update="paymentDetails"
+                                        event="change"/>
+                            </p:selectOneMenu>
+                        </div>
+
+                        <h:panelGroup layout="block" class="col-9"  id="paymentDetails"  >
+
+                            <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
+                                <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" layout="block" class="row" >
+                                <pa:creditCard valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}"  layout="block" class="row" >
+                                <pa:ewallet valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}"  layout="block" class="row" >
+                                <pa:cheque valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
+                                <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
+                                <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                            </h:panelGroup>
+
+
+                        </h:panelGroup>
+
+
+
+                    </div>
+
+                </p:column>
+            </p:dataTable>
+        </div>
+
+
+
+    </cc:implementation>
+</html>

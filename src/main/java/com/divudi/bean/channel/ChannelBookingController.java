@@ -43,6 +43,7 @@ public class ChannelBookingController implements Serializable {
     private boolean settleSucessFully = false;
     private String agentRefNo;
     private Staff toStaff;
+    private String errorText;
 
     public ChannelBookingController() {
     }
@@ -75,6 +76,7 @@ public class ChannelBookingController implements Serializable {
     public void changeListener() {
 
     }
+    
 
     public Speciality getSpeciality() {
         return speciality;
@@ -218,6 +220,14 @@ public class ChannelBookingController implements Serializable {
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public String getErrorText() {
+        return errorText;
+    }
+
+    public void setErrorText(String errorText) {
+        this.errorText = errorText;
     }
 
     

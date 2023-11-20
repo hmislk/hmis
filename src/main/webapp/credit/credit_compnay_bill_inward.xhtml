@@ -62,7 +62,7 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{ix.bhtNo}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>

@@ -59,7 +59,7 @@
                                   style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
                             <h:outputLabel value="#{sv.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
 

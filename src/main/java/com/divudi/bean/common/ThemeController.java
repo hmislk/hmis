@@ -47,21 +47,28 @@ public class ThemeController implements Serializable {
             theme = getSessionController().getLoggedUser().getPrimeTheme();
         }
         if (theme == null) {
-            theme = "cerulean";
+            theme = "material-light-outlined"; // Default theme
             return theme;
         }
-        //"cerulean", "darkly", "litera", "simplex", "solar",
-//                "minty");
+
         switch (theme) {
-            case "cerulean":
-            case "darkly":
-            case "litera":
-            case "simplex":
-            case "solar":
-            case "minty":
+            case "material-light-outlined":
+            case "material-light-filled":
+            case "material-dark-outlined":
+            case "material-dark-filled":
+            case "bootstrap-light-outlined":
+            case "bootstrap-light-filled":
+            case "bootstrap-dark-outlined":
+            case "bootstrap-dark-filled":
+            case "primeone-light-outlined":
+            case "primeone-light-filled":
+            case "primeone-dim-outlined":
+            case "primeone-dim-filled":
+            case "primeone-dark-outlined":
+            case "primeone-dark-filled":
                 return theme;
             default:
-                theme = "cerulean";
+                theme = "material-light-outlined"; // Default theme
         }
         return theme;
     }
@@ -93,11 +100,20 @@ public class ThemeController implements Serializable {
     @PostConstruct
     public void init() {
         themes = new TreeMap<String, String>();
-        themes.put("cerulean", "cerulean");
-        themes.put("darkly", "darkly");
-        themes.put("litera", "litera");
-        themes.put("simplex", "simplex");
-        themes.put("solar", "solar");
-        themes.put("minty", "minty");
+        themes.put("material-light-outlined", "Material Light Outlined");
+        themes.put("material-light-filled", "Material Light Filled");
+        themes.put("material-dark-outlined", "Material Dark Outlined");
+        themes.put("material-dark-filled", "Material Dark Filled");
+        themes.put("bootstrap-light-outlined", "Bootstrap Light Outlined");
+        themes.put("bootstrap-light-filled", "Bootstrap Light Filled");
+        themes.put("bootstrap-dark-outlined", "Bootstrap Dark Outlined");
+        themes.put("bootstrap-dark-filled", "Bootstrap Dark Filled");
+        themes.put("primeone-light-outlined", "PrimeOne Light Outlined");
+        themes.put("primeone-light-filled", "PrimeOne Light Filled");
+        themes.put("primeone-dim-outlined", "PrimeOne Dim Outlined");
+        themes.put("primeone-dim-filled", "PrimeOne Dim Filled");
+        themes.put("primeone-dark-outlined", "PrimeOne Dark Outlined");
+        themes.put("primeone-dark-filled", "PrimeOne Dark Filled");
     }
+
 }

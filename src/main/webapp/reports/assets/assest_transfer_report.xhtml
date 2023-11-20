@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/reports/index.xhtml" class="w-100">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Asset Transfer Report" class="w-100 p-1">
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
+
+                            <p:spacer/>
+                            <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{reportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />       
+
+                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <p:ajax event="change" process="@this" update="panalDepartment"></p:ajax>
+                            </p:selectOneMenu>
+                            <p:spacer/><p:spacer/><p:spacer/>
+                            
+                            <p:outputLabel value="Transfer Department" for="departmentTransferMenu"></p:outputLabel>
+                            <h:panelGroup id="panalDepartment">
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentTransferMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            
+                            <p:spacer/>
+
+                            <p:outputLabel value="Transfer Store" for="tansferStoreFromMenu"></p:outputLabel>
+                            <p:selectOneMenu  id="tansferStoreFromMenu" required="true" >
+                                <f:selectItem itemLabel="Select Store"/>
+                            </p:selectOneMenu>
+
+
+                            
+
+                            <p:outputLabel value="Recieving Department" for="departmentRecieveMenu"></p:outputLabel>
+                            <h:panelGroup>
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentRecieveMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <p:spacer/>
+                            
+                            <p:outputLabel value="Recieving Store" for="recievingStoreFromMenu"></p:outputLabel>
+                            <p:selectOneMenu  id="recievingStoreFromMenu" required="true" >
+                                <f:selectItem itemLabel="Select Store"/>
+                            </p:selectOneMenu>
+
+
+
+
+                        </h:panelGrid><br/>
+
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Asset Transfer Report" />                                
+                            </f:facet>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Bill No" >
+                                    </p:outputLabel>
+                                </f:facet>
+
+
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Approval Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Ref Bill No" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Ref Bill Apprved Date And Time" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item Description" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Item Code" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Quantity" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Unit" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cost-Rate" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cost Value" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Issue Approved User" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Depreciation Method" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Depreciation Rate" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Accumilated Depreciation Value" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Current Value" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

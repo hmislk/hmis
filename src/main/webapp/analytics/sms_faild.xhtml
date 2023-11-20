@@ -19,12 +19,12 @@
                                           id="fromDate" 
                                           value="#{smsController.fromDate}" 
                                           showTime="true"
-                                          pattern="dd MMMM yyyy hh:mm" >      
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                             </p:datePicker>
                             <h:outputLabel value="To Date"/>
                             <p:datePicker id="toDate" value="#{smsController.toDate}" 
                                           showTime="true"
-                                          pattern="dd MMMM yyyy hh:mm" >                                                                              
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
                             <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                              action="#{smsController.fillAllFaildSms()}"/>
@@ -46,7 +46,7 @@
                             <p:column headerText="ID" styleClass="alignTop" width="15">
 
                                 <h:outputLabel value="#{sms.createdAt}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Patient Report" styleClass="alignTop" width="15">
@@ -55,14 +55,29 @@
                             <p:column headerText="Sent At" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.sentAt}"/>
                             </p:column>
+                            <p:column filterBy="#{sms.bill.patient.person.name}" 
+                                      filterMatchMode="contains"
+                                      headerText="Patient" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
+                            </p:column>
                             <p:column headerText="Message" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.sendingMessage}"/>
                             </p:column>
-                            <p:column headerText="Phone Number" styleClass="alignTop" width="15">
+                            <p:column headerText="Reason For Failure" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.receivedMessage}"/>
+                            </p:column>
+                            <p:column headerText="Phone Number"
+                                      filterBy="#{sms.receipientNumber}" 
+                                      filterMatchMode="contains"
+                                      styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.receipientNumber}"/>
                             </p:column>
-                            <p:column headerText="Action" styleClass="alignTop" width="15">
-                                <p:commandButton value="Send Now" actionListener="#{smsController.setSelectedSms(sms)}" action="#{smsController.sentUnsentSms}">
+                            <p:column headerText="Action" 
+                                      styleClass="alignTop" 
+                                      width="15">
+                                <p:commandButton value="Send Now" 
+                                                 actionListener="#{smsController.setSelectedSms(sms)}" 
+                                                 action="#{smsController.sentUnsentSms}">
                                 </p:commandButton>
 
                             </p:column>

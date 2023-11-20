@@ -24,7 +24,7 @@
 
                 <h:outputLabel value="#{cc.attrs.bill.cc.attrs.billDate}"
                                style="position: absolute; left: 9.8cm; top:1.1cm;" >
-                    <f:convertDateTime pattern="dd/MM/yy"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="#{cc.attrs.bill.paymentScheme.name}"
@@ -33,7 +33,7 @@
 
                 <h:outputLabel value="#{cc.attrs.bill.billTime}"
                                style="position: absolute; left: 9.8cm; top:1.6cm;" >
-                    <f:convertDateTime pattern="hh mm ss a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                 </h:outputLabel>
 
                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
