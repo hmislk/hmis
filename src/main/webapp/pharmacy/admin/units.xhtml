@@ -13,31 +13,31 @@
 
                 <h:form id="measurementUnitTableForm">
                     <p:dataTable var="unit" value="#{measurementUnitController.allUnits}" paginator="true" rows="10" paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}">
-                        <p:column headerText="Name" 
-                                  sortBy="#{unit.name}" filterBy="#{unit.name}">
+                        <p:column headerText="Name" sortBy="#{unit.name}" filterBy="#{unit.name}">
                             <h:outputText value="#{unit.name}" />
                         </p:column>
-                        <p:column headerText="Strength Unit">
+                        <p:column headerText="Strength Unit" sortBy="#{unit.strengthUnit}" filterBy="#{unit.strengthUnit}">
                             <h:outputText value="#{unit.strengthUnit?'Yes':'No'}" />
                         </p:column>
-                        <p:column headerText="Pack Unit">
+                        <p:column headerText="Pack Unit" sortBy="#{unit.packUnit}" filterBy="#{unit.packUnit}">
                             <h:outputText value="#{unit.packUnit?'Yes':'No'}" />
                         </p:column>
-                        <p:column headerText="Issue Unit">
+                        <p:column headerText="Issue Unit" sortBy="#{unit.issueUnit}" filterBy="#{unit.issueUnit}">
                             <h:outputText value="#{unit.issueUnit?'Yes':'No'}" />
                         </p:column>
-                        <p:column headerText="Duration Unit">
+                        <p:column headerText="Duration Unit" sortBy="#{unit.durationUnit}" filterBy="#{unit.durationUnit}">
                             <h:outputText value="#{unit.durationUnit?'Yes':'No'}" />
                         </p:column>
-                        <p:column headerText="Frequency Unit">
+                        <p:column headerText="Frequency Unit" sortBy="#{unit.frequencyUnit}" filterBy="#{unit.frequencyUnit}">
                             <h:outputText value="#{unit.frequencyUnit?'Yes':'No'}" />
                         </p:column>
-                        <p:column headerText="Duration in Hours">
+                        <p:column headerText="Duration in Hours" sortBy="#{unit.durationInHours}" filterBy="#{unit.durationInHours}">
                             <h:outputText value="#{unit.durationInHours}" />
                         </p:column>
-                        <p:column headerText="Frequency in Hours">
+                        <p:column headerText="Frequency in Hours" sortBy="#{unit.frequencyInHours}" filterBy="#{unit.frequencyInHours}">
                             <h:outputText value="#{unit.frequencyInHours}" />
                         </p:column>
+
                         <p:column headerText="Actions">
                             <p:commandButton icon="fa fa-pencil" action="#{measurementUnitController.navigateToEditMeasurementUnit()}" ajax="false" style="margin-right: 5px;">
                                 <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" />
