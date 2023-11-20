@@ -11,15 +11,20 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Item;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.MeasurementUnit;
+import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.MeasurementUnitFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -54,26 +59,25 @@ public class MeasurementUnitController implements Serializable {
     List<MeasurementUnit> packUnits;
     List<MeasurementUnit> strengthUnits;
     List<MeasurementUnit> allUnits;
-    
-    
-    public String navigateToAddMeasurementUnit(){
+
+    public String navigateToAddMeasurementUnit() {
         current = new MeasurementUnit();
         return "/pharmacy/admin/unit";
     }
-    
-    public String navigateToListAllMeasurementUnit(){
-        
+
+    public String navigateToListAllMeasurementUnit() {
+
         return "/pharmacy/admin/units";
     }
 
-    public String navigateToEditMeasurementUnit(){
-        if(current==null){
+    public String navigateToEditMeasurementUnit() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
         return "/pharmacy/admin/unit";
     }
-    
+
     public void fillAllUnits() {
         String jpql;
         Map m = new HashMap();
@@ -248,6 +252,51 @@ public class MeasurementUnitController implements Serializable {
             fillAllUnits();
         }
         return frequencyUnits;
+    }
+
+    public List<MeasurementUnit> getDoseUnitsForMedicine(Item medicine) {
+        if(medicine==null){
+            return getDoseUnits();
+        }
+        if (medicine instanceof Vmp) {
+            return getDoseUnits();
+        } else if (medicine instanceof Amp) {
+            List<MeasurementUnit> us = new ArrayList<>();
+            Set<MeasurementUnit> uniqueUnits = new HashSet<>();
+            Amp amp = (Amp) medicine;
+
+            if (amp.getIssueUnit() != null) {
+                uniqueUnits.add(amp.getIssueUnit());
+            }
+            if (amp.getStrengthUnit() != null) {
+                uniqueUnits.add(amp.getStrengthUnit());
+            }
+            if (amp.getVmp() != null) {
+                if (amp.getVmp().getMeasurementUnit() != null) {
+                    uniqueUnits.add(amp.getVmp().getMeasurementUnit());
+                }
+                if (amp.getVmp().getStrengthUnit() != null) {
+                    uniqueUnits.add(amp.getVmp().getStrengthUnit());
+                }
+            }
+            us.addAll(uniqueUnits);
+            return us;
+        } else if (medicine instanceof Vmp) {
+            List<MeasurementUnit> us = new ArrayList<>();
+            Set<MeasurementUnit> uniqueUnits = new HashSet<>();
+            Vmp vmp = (Vmp) medicine;
+
+            if (vmp.getIssueUnit() != null) {
+                uniqueUnits.add(vmp.getIssueUnit());
+            }
+            if (vmp.getStrengthUnit() != null) {
+                uniqueUnits.add(vmp.getStrengthUnit());
+            }
+            us.addAll(uniqueUnits);
+            return us;
+        } else {
+            return getDoseUnits();
+        }
     }
 
     public List<MeasurementUnit> getIssueUnits() {
