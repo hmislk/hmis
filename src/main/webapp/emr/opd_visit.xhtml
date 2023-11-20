@@ -246,6 +246,50 @@
 
                                 </h:panelGroup>
                             </h:form>
+                            <h:form id="formDocuments">
+                                <p:panel id="panelDocuments" 
+                                         rendered="#{patientEncounterController.userDocumentTemplates ne null}">
+                                    <p:outputLabel value="Select Document Template" ></p:outputLabel>
+                                    <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{patientEncounterController.userDocumentTemplates}"
+                                            var="dt"
+                                            itemLabel="#{dt.name}"
+                                            itemValue="#{dt}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <p:commandButton 
+                                        id="btnGenerateNewDocument"
+                                        value="Generate New Document" 
+                                        process="somTemplates btnGenerateNewDocument"
+                                        update="lstEncounterDocs msgs"
+                                        action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
+                                    </p:commandButton>
+
+                                    <p:messages id="msgs" ></p:messages>
+
+                                    <p:selectOneListbox 
+                                        id="lstEncounterDocs"
+                                        value="#{patientEncounterController.encounterReferral}" var="ref" >
+                                        <f:selectItems 
+                                            value="#{patientEncounterController.encounterReferrals}" 
+                                            var="ref"
+                                            itemLabel="#{ref.stringValue}"
+                                            itemValue="#{ref}"></f:selectItems>
+                                        <p:ajax process="lstEncounterDocs" update="gpReferralDoc" ></p:ajax>
+                                    </p:selectOneListbox>
+
+                                    
+                                    
+                                    <h:panelGroup id="gpReferralDoc" >
+                                        <p:textEditor 
+                                            rendered="#{patientEncounterController.encounterReferral.stringValue ne null}" secure="false" value="#{patientEncounterController.encounterReferral.stringValue}" >
+                                        </p:textEditor>
+                                    </h:panelGroup>           
+
+
+                                </p:panel>
+                            </h:form>
                         </div>
                         <div class="col-4 p-1" >
                             <h:form >

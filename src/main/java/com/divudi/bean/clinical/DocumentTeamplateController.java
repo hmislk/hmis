@@ -105,8 +105,13 @@ public class DocumentTeamplateController implements Serializable {
                 + "{indoor}"
                 + "{ix}"
                 + "{past-dx}"
-                + "{routeine-medicines}"
-                + "{allergies}";
+                + "{routine-medicines}"
+                + "{allergies}"
+                + "{visit-date}"
+                + "{height}"
+                + "{weight}"
+                + "{bmi}"
+                + "{bp}";
         return contents;
     }
 
@@ -212,8 +217,25 @@ public class DocumentTeamplateController implements Serializable {
                 return null;
             }
             DocumentTeamplateController controller = (DocumentTeamplateController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "documentTemplateController");
-            return controller.getEjbFacade().find(getKey(value));
+                    getValue(facesContext.getELContext(), null, "documentTeamplateController1");
+            if (controller == null) {
+                JsfUtil.addErrorMessage("controller null");
+                return null;
+            }
+            if (controller.getEjbFacade() == null) {
+                JsfUtil.addErrorMessage("facade null");
+                return null;
+            }
+            if (value == null) {
+                JsfUtil.addErrorMessage("value null");
+                return null;
+            }
+            Long lngValue = getKey(value);
+            if (lngValue == null) {
+                JsfUtil.addErrorMessage("lng value null");
+                return null;
+            }
+            return controller.getEjbFacade().find(lngValue);
         }
 
         java.lang.Long getKey(String value) {
