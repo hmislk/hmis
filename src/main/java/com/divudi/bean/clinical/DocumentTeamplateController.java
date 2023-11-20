@@ -89,7 +89,25 @@ public class DocumentTeamplateController implements Serializable {
     public String navigateToAddNewUserDocumentTemplate() {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
+        current.setContents(generateDefaultTemplateContents());
         return "/emr/settings/document_template";
+    }
+
+    public String generateDefaultTemplateContents() {
+        String contents = "";
+        contents = "{name}"
+                + "{age}"
+                + "{sex}"
+                + "{address}"
+                + "{phone}"
+                + "{medicines}"
+                + "{outdoor}"
+                + "{indoor}"
+                + "{ix}"
+                + "{past-dx}"
+                + "{routeine-medicines}"
+                + "{allergies}";
+        return contents;
     }
 
     public String navigateToEditUserDocumentTemplates() {

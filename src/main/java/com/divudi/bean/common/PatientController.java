@@ -482,6 +482,14 @@ public class PatientController implements Serializable {
         patientEncounterController.fillCurrentPatientLists(current);
         return "/emr/patient_profile";
     }
+    
+    public String navigateToEmrEditPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return "/emr/patient";
+    }
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
