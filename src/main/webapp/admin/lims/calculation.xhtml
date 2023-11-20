@@ -10,17 +10,21 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Manage Investigatio Calculations" >
+                        <p:commandButton 
+                            class="my-1"
+                            value="Back" 
+                            action="/admin/lims/investigation" ajax="false" ></p:commandButton>
                         <p:panelGrid columns="1" >
                             <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
-                            <p:ajax event="change" process="@this" update="acIx" />
-                                </p:selectBooleanCheckbox>
+                                <p:ajax event="change" process="@this" update="acIx" />
+                            </p:selectBooleanCheckbox>
                             <p:panelGrid columns="2" >
-                                
+
                                 <h:outputLabel value="Investigation" ></h:outputLabel>
                                 <p:autoComplete converter="ixcon" forceSelection="true" id="acIx"  value="#{ixCalController.ix}" completeMethod="#{investigationController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                     <p:ajax event="itemSelect" process="acIx" update="tbl acIiv" />
                                 </p:autoComplete>
-                                
+
                                 <h:outputLabel value="Calculation Field" ></h:outputLabel>
                                 <p:selectOneMenu id="acIiv" value="#{ixCalController.cal }" >
                                     <f:selectItem itemLabel="Select" />
@@ -74,7 +78,7 @@
                                         <h:outputLabel  value="Constant for Females"  
                                                         rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"    />
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup id="txtFemaleCon" >
                                         <p:inputText autocomplete="off"   
                                                      value="#{ixCalController.addingIxCal.femaleConstantValue}"
