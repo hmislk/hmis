@@ -166,7 +166,9 @@
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
                                                         </p:selectOneMenu>
-                                                        <p:selectOneMenu id="cmbFrequency" value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}" >
+                                                        <p:selectOneMenu id="cmbFrequency"
+                                                                         filter="true"
+                                                                         value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}" >
                                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                                             <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
                                                                            var="du" 
