@@ -14,6 +14,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
+import com.divudi.data.ItemType;
 import com.divudi.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -28,6 +29,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -74,7 +76,7 @@ public class AmpController implements Serializable {
     private String tabId = "tabVmp";
     private VirtualProductIngredient addingVtmInVmp;
     private Vmp currentVmp;
-    
+
     @EJB
     private VmpFacade vmpFacade;
     @EJB
@@ -124,7 +126,7 @@ public class AmpController implements Serializable {
                     double numericCellValue = ampCodeCell.getNumericCellValue();
                     ampCode = BigDecimal.valueOf(numericCellValue).toPlainString();
                 }
-                String ampBarcode ="";
+                String ampBarcode = "";
                 if (ampBarCodeCell.getCellType() == CellType.STRING) {
                     ampBarcode = ampBarCodeCell.getStringCellValue();
                 } else if (ampBarCodeCell.getCellType() == CellType.NUMERIC) {
@@ -530,7 +532,6 @@ public class AmpController implements Serializable {
 //        }
 //        return ampList;
 //    }
-
 //    public List<Amp> completeAmpByBarCode(String qry) {
 //
 //        Map m = new HashMap();
@@ -557,9 +558,8 @@ public class AmpController implements Serializable {
 
     public void prepareAdd() {
         current = new Amp();
-        currentVmp = new Vmp();
-        addingVtmInVmp = new VirtualProductIngredient();
-        //(dangerous function dont touch)current.setCode(billNumberBean.pharmacyItemNumberGenerator());
+        current.setItemType(ItemType.Amp);
+        current.setDepartmentType(DepartmentType.Pharmacy);
     }
 
     public void listnerCategorySelect() {
@@ -701,6 +701,49 @@ public class AmpController implements Serializable {
 
     }
 
+    public void save() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothuing selected");
+            return;
+        }
+        if (current.getName() == null || current.getName().equals("")) {
+            JsfUtil.addErrorMessage("No Name");
+            return;
+        }
+        if (current.getDepartmentType() == null) {
+            current.setDepartmentType(DepartmentType.Pharmacy);
+        }
+        if (current.getVmp() == null) {
+            JsfUtil.addErrorMessage("No VMP selected");
+            return;
+        }
+        if (current.getCategory() == null) {
+            if (current.getVmp().getCategory() != null) {
+                current.setCategory(current.getVmp().getCategory());
+                return;
+            } else {
+                JsfUtil.addErrorMessage("No category");
+                return;
+            }
+        }
+
+        if (current.getItemType() == null) {
+            current.setItemType(ItemType.Amp);
+        }
+
+        if (getCurrent().getId() != null) {
+            getFacade().edit(current);
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(current);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        // getItems();
+    }
+
     public void saveSelected() {
         if (errorCheck()) {
             return;
@@ -812,9 +855,19 @@ public class AmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            items = findItems();
         }
         return items;
+    }
+
+    public List<Amp> findItems() {
+        String jpql = "select i "
+                + " from Amp i "
+                + " where i.retired=:ret"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
     }
 
     public List<Amp> getLongCodeItems() {
@@ -908,8 +961,6 @@ public class AmpController implements Serializable {
     /**
      *
      */
-    
-
     @FacesConverter(forClass = Amp.class)
     public static class AmpConverter implements Converter {
 
