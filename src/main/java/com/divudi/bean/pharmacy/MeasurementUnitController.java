@@ -237,6 +237,7 @@ public class MeasurementUnitController implements Serializable {
         if (doseUnits == null) {
             fillAllUnits();
         }
+        System.out.println("doseUnits = " + doseUnits);
         return doseUnits;
     }
 
@@ -255,11 +256,12 @@ public class MeasurementUnitController implements Serializable {
     }
 
     public List<MeasurementUnit> getDoseUnitsForMedicine(Item medicine) {
-
+        fillAllUnits(); //TODO - Optimize
         System.out.println("getDoseUnitsForMedicine");
         System.out.println("medicine = " + medicine);
         if (medicine == null) {
             System.out.println("returning dose units");
+
             return getDoseUnits();
         }
         if (medicine instanceof Amp) {

@@ -53,11 +53,11 @@
                 <div class="col-6" >
                     <h:form id="formDetail"  >
                         <p:commandButton 
-                            action="#{vmpController.saveSelected()}" 
+                            action="#{vmpController.save}" 
                             id="btnSave"
                             value="Save"
                             process="btnSave gpDetail"
-                            update=":formSelect:lstSelect"
+                            update=":formSelect:lstSelect :formMsg:msg"
                             class="ui-button-danger w-25 m-1"></p:commandButton>
 
 
@@ -71,6 +71,9 @@
                                 value="Name" 
                                 class="w-100"></h:outputLabel>
                             <p:inputText 
+                                
+                                required="true"
+                                requiredMessage="Name Required"
                                 autocomplete="off"
                                 value="#{vmpController.current.name}" 
                                 class="w-100"></p:inputText>
@@ -85,6 +88,9 @@
                                 completeMethod="#{vtmController.completeVtm}" 
                                 var="vt" 
                                 class="w-100"
+                                
+                                required="true"
+                                requiredMessage="Generic Unit Required"
                                 inputStyleClass="w-100"
                                 itemLabel="#{vt.name}" 
                                 itemValue="#{vt}" >
@@ -93,10 +99,14 @@
                             <h:outputLabel value="Dosage Form" ></h:outputLabel>
                             <p:selectOneMenu 
                                 filter="true"
+                                
+                                required="true"
+                                requiredMessage="Dosage Form Required"
                                 value="#{vmpController.current.category}" 
                                 class="w-100">
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{pharmaceuticalItemTypeController.items}" var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Strength" >
@@ -110,6 +120,9 @@
                             <h:outputLabel value="Strength Unit" class="w-100" >
                             </h:outputLabel>
                             <p:selectOneMenu 
+                                
+                                required="true"
+                                requiredMessage="Strength Unit Required"
                                 value="#{vmpController.current.strengthUnit}"
                                 filter="true"             
                                 class="w-100">
@@ -120,6 +133,8 @@
                             <h:outputLabel value="Dispensing Unit" class="w-100" >
                             </h:outputLabel>
                             <p:selectOneMenu 
+                                required="true"
+                                requiredMessage="Issue Unit Required"
                                 value="#{vmpController.current.issueUnit}"
                                 filter="true"             
                                 class="w-100">

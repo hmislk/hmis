@@ -583,6 +583,18 @@ public class VmpController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void save() {
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        }else{
+            getFacade().create(getCurrent());
+            UtilityController.addSuccessMessage("Saved Successfully.");
+        }
+        recreateModel();
+        getItems();
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;

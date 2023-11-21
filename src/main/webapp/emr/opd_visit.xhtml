@@ -119,6 +119,8 @@
                                                                 inputStyleClass="w-100"
                                                                 itemLabel="#{item}"
                                                                 itemValue="#{item}"
+                                                                minQueryLength="4"
+                                                                maxResults="10"
                                                                 placeholder="Select Medicine" />
                                             </div>
 
@@ -519,7 +521,8 @@
                                             <p:commandButton ajax="true" 
                                                              id="btnIx" 
                                                              action="#{patientEncounterController.addEncounterInvestigation()}"
-                                                             process="acIx txtIx btnIx" update="acIx txtIx gpIx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                             process="acIx txtIx btnIx" 
+                                                             update="acIx txtIx gpIx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                             <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
@@ -551,7 +554,7 @@
                                                 <p:commandLink id="clRemoveIx"
                                                                action="#{patientEncounterController.removeEncounterInvestigations()}" 
                                                                process="clRemoveIx"
-                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} "
                                                                >
                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                     <h:outputText value="&nbsp;(X)" />
@@ -587,7 +590,7 @@
                                                              id="btnAddDx" 
                                                              action="#{patientEncounterController.addDx}"
                                                              process="acDx txtDx btnAddDx" 
-                                                             update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                             update="acDx txtDx gpDx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                         </div>
@@ -614,7 +617,7 @@
                                                                value="(X)"
                                                                process="clRemoveDx" 
                                                                action="#{patientEncounterController.removeEncounterDiagnoses()}"
-                                                               update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}">
+                                                               update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} ">
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandLink>
                                             </p:column>
@@ -649,7 +652,7 @@
                                             <p:commandButton ajax="true" 
                                                              id="btnSx" 
                                                              action="#{patientEncounterController.addEncounterProcedure}"
-                                                             process="acSx txtSx btnSx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}" update="acSx txtSx gpSx"
+                                                             process="acSx txtSx btnSx " update="acSx txtSx gpSx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                             <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
@@ -681,7 +684,7 @@
                                                     ajax="true" 
                                                     action="#{patientEncounterController.removeCfv}" 
                                                     process="btnRemoveSx"
-                                                    update="tblSx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}">
+                                                    update="tblSx ">
                                                     <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
                                                     <h:outputText value="&nbsp;(X)" />
                                                 </p:commandLink>

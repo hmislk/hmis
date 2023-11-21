@@ -161,7 +161,7 @@
                                                                             itemLabel="#{item}"
                                                                             itemValue="#{item}"
                                                                             maxResults="10"
-                                                                            minQueryLength="4"
+                                                                            minQueryLength="3"
                                                                             placeholder="Medicine">
                                                                 <p:ajax process="acMedicine" update="cmbDose" />
                                                             </p:autoComplete>
@@ -170,7 +170,7 @@
                                                         <!-- Dose Group -->
                                                         <div class="d-flex flex-column mx-1">
                                                             <div class="d-flex">
-                                                                <p:outputLabel id="lblItem" value="#{patientEncounterController.patientMedicine.prescription.item}" ></p:outputLabel>
+                                                                <p:outputLabel id="lblItem" value="Dose" class="w-100" ></p:outputLabel>
                                                                 <p:inputText style="width: 6em;"
                                                                              id="txtDose"
                                                                              value="#{patientEncounterController.patientMedicine.prescription.dose}"

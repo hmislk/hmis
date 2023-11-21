@@ -656,7 +656,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         institution = null;
         boolean l = checkUsersWithoutDepartment();
         if (l) {
-            return "/index1.xhtml";
+            return "/index1.xhtml?faces-redirect=true";
         } else {
             UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1096,7 +1096,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String selectDepartment() {
         if (loggedUser == null) {
-            return "/login";
+            return "/login?faces-redirect=true";
         }
         if (loggedUser.getWebUserPerson() == null) {
             Person p = new Person();
@@ -1163,7 +1163,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         setLoggedPreference(departmentPreference);
         recordLogin();
-        return "/home";
+        return "/home?faces-redirect=true";
     }
 
     private void loadApplicationPreferances() {
