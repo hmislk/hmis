@@ -142,7 +142,8 @@ public class PatientEncounterController implements Serializable {
 
     private Patient patient;
 
-    List<DocumentTemplate> userDocumentTemplates;
+    private List<DocumentTemplate> userDocumentTemplates;
+    private DocumentTemplate selectedDocumentTemplate;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -495,6 +496,24 @@ public class PatientEncounterController implements Serializable {
     public String navigateToListInstitutionEncounters() {
         items = null;
         return "/emr/reports/visits";
+    }
+
+    public void generateAndAddDocumentFromTemplate() {
+        if (selectedDocumentTemplate == null) {
+            JsfUtil.addErrorMessage("Select a template");
+            return;
+        }
+        String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
+        ClinicalFindingValue ref = new ClinicalFindingValue();
+        ref.setItemValue(selectedDocumentTemplate.getItem());
+        ref.setLobValue(generatedDoc);
+        ref.setStringValue(selectedDocumentTemplate.getName());
+        ref.setDocumentTemplate(selectedDocumentTemplate);
+        ref.setEncounter(current);
+        ref.setOrderNo(getEncounterReferrals().size()+1);
+        clinicalFindingValueFacade.create(ref);
+        getEncounterReferrals().add(ref);
+        
     }
 
     public String listAllEncounters() {
@@ -1069,7 +1088,7 @@ public class PatientEncounterController implements Serializable {
 
         String name = e.getPatient().getPerson().getNameWithTitle();
         String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
-        String sex = e.getPatient().getPerson().getSex().name() != null ? e.getPatient().getPerson().getSex().name() : "";
+        String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
@@ -1176,7 +1195,12 @@ public class PatientEncounterController implements Serializable {
                 .replace("{ix}", ixAsString)
                 .replace("{past-dx}", diagnosesAsString)
                 .replace("{routeine-medicines}", routineMedicinesAsString)
-                .replace("{allergies}", allergiesAsString);
+                .replace("{allergies}", allergiesAsString)
+                .replace("{visit-date}", visitDate)
+                .replace("{height}", height)
+                .replace("{weight}", weight)
+                .replace("{bmi}", bmi)
+                .replace("{bp}", bp);
 
         return output;
 
@@ -2771,6 +2795,22 @@ public class PatientEncounterController implements Serializable {
 
     public void setUploadedFile(UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
+    }
+
+    public List<DocumentTemplate> getUserDocumentTemplates() {
+        return userDocumentTemplates;
+    }
+
+    public void setUserDocumentTemplates(List<DocumentTemplate> userDocumentTemplates) {
+        this.userDocumentTemplates = userDocumentTemplates;
+    }
+
+    public DocumentTemplate getSelectedDocumentTemplate() {
+        return selectedDocumentTemplate;
+    }
+
+    public void setSelectedDocumentTemplate(DocumentTemplate selectedDocumentTemplate) {
+        this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
 
     @FacesConverter(forClass = PatientEncounter.class)
