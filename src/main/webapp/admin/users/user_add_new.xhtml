@@ -123,10 +123,10 @@
                                                      value="#{webUserController.current.name}" style="width: 700px"></p:inputText>
 
                                         <p:outputLabel for="pw1" value="Password" ></p:outputLabel>
-                                        <p:password id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
+                                        <p:password toggleMask="true" id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
 
                                         <p:outputLabel value="Re-enter password" for="pw2"></p:outputLabel>
-                                        <p:password id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
+                                        <p:password toggleMask="true" id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
                                     </p:panelGrid>
                                 </p:tab>
                                 <p:tab title="Advance" >
