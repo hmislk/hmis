@@ -510,10 +510,10 @@ public class PatientEncounterController implements Serializable {
         ref.setStringValue(selectedDocumentTemplate.getName());
         ref.setDocumentTemplate(selectedDocumentTemplate);
         ref.setEncounter(current);
-        ref.setOrderNo(getEncounterReferrals().size()+1);
+        ref.setOrderNo(getEncounterReferrals().size() + 1);
         clinicalFindingValueFacade.create(ref);
         getEncounterReferrals().add(ref);
-        
+
     }
 
     public String listAllEncounters() {
@@ -536,11 +536,7 @@ public class PatientEncounterController implements Serializable {
             jpql = jpql + " and pe.opdDoctor=:doc ";
             m.put("doc", doctor);
         }
-        ////// // System.out.println("1. m = " + m);
-        ////// // System.out.println("2. sql = " + jpql);
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        ////// // System.out.println("3. items = " + items);
-
         commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
@@ -563,8 +559,6 @@ public class PatientEncounterController implements Serializable {
             jpql = jpql + " and pe.opdDoctor=:doc ";
             m.put("doc", doctor);
         }
-        //   ////// // System.out.println("m = " + m);
-        //   ////// // System.out.println("sql = " + jpql);
         items = getFacade().findByJpql(jpql, m);
 
     }
@@ -599,6 +593,20 @@ public class PatientEncounterController implements Serializable {
 
         UtilityController.addSuccessMessage("Procedure added");
 
+    }
+
+    public void saveEncounterReferral() {
+        if (encounterReferral == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (encounterReferral.getId() == null) {
+            clinicalFindingValueFacade.create(encounterReferral);
+            JsfUtil.addSuccessMessage("Saved");
+        } else {
+            clinicalFindingValueFacade.edit(encounterReferral);
+            JsfUtil.addSuccessMessage("Saved");
+        }
     }
 
     public void addEncounterInvestigation() {

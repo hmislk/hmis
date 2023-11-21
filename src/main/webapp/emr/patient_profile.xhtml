@@ -160,15 +160,17 @@
                                                                             inputStyleClass="w-100"
                                                                             itemLabel="#{item}"
                                                                             itemValue="#{item}"
+                                                                            maxResults="10"
+                                                                            minQueryLength="4"
                                                                             placeholder="Medicine">
-                                                                <p:ajax process="acMedicine" update="txtDose cmbDose" />
+                                                                <p:ajax process="acMedicine" update="cmbDose" />
                                                             </p:autoComplete>
                                                         </div>
 
                                                         <!-- Dose Group -->
                                                         <div class="d-flex flex-column mx-1">
-                                                            <label class="w-100">Dose:</label>
                                                             <div class="d-flex">
+                                                                <p:outputLabel id="lblItem" value="#{patientEncounterController.patientMedicine.prescription.item}" ></p:outputLabel>
                                                                 <p:inputText style="width: 6em;"
                                                                              id="txtDose"
                                                                              value="#{patientEncounterController.patientMedicine.prescription.dose}"

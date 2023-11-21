@@ -280,8 +280,21 @@
                                     </p:selectOneListbox>
 
                                     <h:panelGroup id="gpReferralDoc" >
+                                        <p:commandButton 
+                                            id="btnSaveDoc"
+                                            value="Save" 
+                                            action="#{patientEncounterController}"
+                                            process="btnSaveDoc txtDoc"
+                                            update="lstEncounterDocs">
+                                        </p:commandButton>
+                                        <p:inputText 
+                                            id="txtDocName" 
+                                            value="#{patientEncounterController.encounterReferral.stringValue}"></p:inputText>
                                         <p:textEditor 
-                                            rendered="#{patientEncounterController.encounterReferral.stringValue ne null}" secure="false" value="#{patientEncounterController.encounterReferral.stringValue}" >
+                                            id="txtDoc"
+                                            rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
+                                            secure="false" 
+                                            value="#{patientEncounterController.encounterReferral.lobValue}" >
                                         </p:textEditor>
                                     </h:panelGroup>           
 
