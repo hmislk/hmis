@@ -78,6 +78,22 @@
         <h:panelGroup rendered="#{sessionController.firstLogin}" >
             <ez:first_login/>
         </h:panelGroup>
-        <p:messages id="publicGrowl" showDetail="true" closable="true" ></p:messages>
+        <div class="d-flex justify-content-center align-items-center">
+            <p:growl id="growl"  sticky="true" />
+<!--            <p:messages class="w-75 text-center " id="publicGrowl"  closable="true" ></p:messages>-->
+        </div>
+
+
+<!--        <script>
+            setTimeout(function () {
+                var growlContainer = document.getElementById('publicGrowl');
+                growlContainer.style.display = 'none';
+            }, 20000);
+
+            // Add a timeout function to hide the messages after a certain duration (e.g., 5000 milliseconds or 5 seconds)
+            setTimeout(function () {
+                $('#publicGrowl').alert('close');
+            }, 5000);
+        </script>-->
     </h:body>
 </html>
