@@ -18,10 +18,10 @@
                     <div class="row">
                         <div class="col-4">
                             <p:outputLabel value="Name" class="form-label" ></p:outputLabel>
-                            <p:inputText id="name" value="#{documentTeamplateController1.current.name}" styleClass="form-control" />
+                            <p:inputText id="name" value="#{documentTeamplateController.current.name}" styleClass="form-control" />
                             
                             <p:outputLabel value="User" class="form-label" ></p:outputLabel>
-                            <p:autoComplete value="#{documentTeamplateController1.current.webUser}" 
+                            <p:autoComplete value="#{documentTeamplateController.current.webUser}" 
                                             inputStyleClass="w-100"
                                             class="w-100"
                                             completeMethod="#{webUserController.completeUser}"
@@ -31,14 +31,14 @@
                                             ></p:autoComplete>
 
                             <p:outputLabel value="Type" class="form-label" ></p:outputLabel>
-                            <h:selectOneMenu id="type" value="#{documentTeamplateController1.current.type}" styleClass="form-control" >
+                            <h:selectOneMenu id="type" value="#{documentTeamplateController.current.type}" styleClass="form-control" >
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{documentTeamplateController1.documentTemplateTypes}" ></f:selectItems>
+                                <f:selectItems value="#{documentTeamplateController.documentTemplateTypes}" ></f:selectItems>
                             </h:selectOneMenu>
 
                             <p:outputLabel value="Default" class="form-label" ></p:outputLabel>
                             <p:selectBooleanButton id="default"
-                                                   value="#{documentTeamplateController1.current.defaultTemplate}"
+                                                   value="#{documentTeamplateController.current.defaultTemplate}"
                                                    onLabel="Default"
                                                    offLabel="NOT default"
                                                    styleClass="form-control" />
@@ -48,15 +48,15 @@
                             <p:selectBooleanButton id="auto" 
                                                    onLabel="Yes"
                                                    offLabel="NO"
-                                                   value="#{documentTeamplateController1.current.autoGenerate}" styleClass="form-control" />
+                                                   value="#{documentTeamplateController.current.autoGenerate}" styleClass="form-control" />
 
 
                         </div>
                         <div class="col-8">
-                            <p:commandButton value="Save" ajax="false" action="#{documentTeamplateController1.saveUserDocumentTemplate}" ></p:commandButton>
+                            <p:commandButton value="Save" ajax="false" action="#{documentTeamplateController.saveUserDocumentTemplate}" ></p:commandButton>
                             <p:textEditor id="textEditor" 
                                           secure='false' 
-                                          value="#{documentTeamplateController1.current.contents}" style="width: 100%; height: 300px;" />
+                                          value="#{documentTeamplateController.current.contents}" style="width: 100%; height: 300px;" />
                         </div>
                     </div>
                 </h:form>

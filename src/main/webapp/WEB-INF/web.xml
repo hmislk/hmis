@@ -64,7 +64,7 @@
     <!-- Error Handling -->
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/home.xhtml</location>
+        <location>/faces/timeout.xhtml</location>
     </error-page> 
        
 
