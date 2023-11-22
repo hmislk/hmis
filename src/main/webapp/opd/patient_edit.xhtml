@@ -23,14 +23,30 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Edit Patient Demographic Details" />
                                     <p:spacer width="10" />
-                                    <p:commandButton value="Save" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
-                                    
-                                    <p:commandButton value="Patient Profile" disabled="#{patientController.current eq null}" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
-                                    
-                                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}"
-                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" immediate="true" />
+                                    <p:commandButton value="Save" 
+                                                     action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                     ajax="false" 
+                                                     icon="pi pi-check" 
+                                                     iconPos="right" 
+                                                     class="ui-button-warning m-1" />
+
+                                    <p:commandButton 
+                                        value="Patient Profile" 
+                                        disabled="#{patientController.current eq null}" 
+                                        action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                        ajax="false" 
+                                        icon="pi pi-check"
+                                        iconPos="right" 
+                                        class="ui-button-warning m-1" />
+
+                                    <p:commandButton
+                                        value="Patient Lookup" 
+                                        action="#{opdBillController.navigateToSearchPatients()}"
+                                        ajax="false" 
+                                        icon="pi pi-check" 
+                                        iconPos="right" 
+                                        class="ui-button-warning m-1" 
+                                        immediate="true" />
 
                                 </f:facet>
                                 <div class="container-fluid">
@@ -41,8 +57,8 @@
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                                itemValue="#{i}" />
-                                                <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
-                                                <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
+                                                <p:ajax process="cmbTitle" update="somSex" ></p:ajax>
+                                                <p:ajax event="change" process="cmbTitle" update="somSex" ></p:ajax>
                                             </p:selectOneMenu>
 
 
@@ -55,7 +71,7 @@
                                     <div class="row form-group">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Sex:"  class="form-label" />
-                                            <p:selectOneMenu id="txtNewSex" value="#{patientController.current.person.sex}" class="form-control" >
+                                            <p:selectOneMenu id="somSex" value="#{patientController.current.person.sex}" class="form-control" >
                                                 <f:selectItem itemLabel="Select Gender" />
                                                 <f:selectItems value="#{billController.sex}" />
                                             </p:selectOneMenu>
@@ -65,23 +81,20 @@
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                                                 value="#{patientController.ageYearComponant}" class="form-control" >
-                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                                listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
+                                                                 value="#{patientController.current.person.ageYearsComponent}" class="form-control" >
+                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob" />
                                                     </p:inputText>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control" 
-                                                                 value="#{patientController.ageMonthComponant}">
-                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                                listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
+                                                                 value="#{patientController.current.person.ageMonthsComponent}">
+                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob"/>
                                                     </p:inputText>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <p:inputText autocomplete="off" id="day" placeholder="days"
-                                                                 value="#{patientController.ageDateComponant}" class="form-control" >
-                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                                listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
+                                                                 value="#{patientController.current.person.ageDaysComponent}" class="form-control" >
+                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob" />
                                                     </p:inputText>
                                                 </div>
                                             </div>
@@ -91,8 +104,7 @@
                                             <p:datePicker value="#{patientController.current.person.dob}" id="calNewPtDob"
                                                           pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" yearNavigator="true"
                                                           maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
-                                                <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
-                                                        listener="#{patientController.calculateAgeComponantsFromDob(patientController.current)}" />
+                                                <p:ajax event="dateSelect" process="calNewPtDob" update="year month day" />
                                             </p:datePicker>
                                         </div>
                                     </div>
@@ -142,10 +154,11 @@
                                     </div>
                                     <div class="row form-group">
                                         <div class="col-md-6">
-                                            <p:outputLabel value="Patient Account:"  class="form-label" />
+                                            <p:outputLabel value="Patient Account:"  class="form-label w-100" />
                                             <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
-                                                                   offLabel="No Account"
-                                                                   onLabel="Has an account" ></p:selectBooleanButton>
+                                                                   offLabel="Patient has NO Account"
+                                                                   class="w-100 form-control"
+                                                                   onLabel="Patient has an account" ></p:selectBooleanButton>
                                         </div>
                                         <div class="col-md-6" >
                                             <h:outputLabel class="form-label" value="Credit Limit" rendered="#{webUserController.hasPrivilege('Admin')}" />
