@@ -28,6 +28,9 @@
                         <p:column headerText="Type">
                             <h:outputText value="#{doc.type}" />
                         </p:column>
+                        <p:column headerText="User">
+                            <h:outputText value="#{doc.webUser.name}" />
+                        </p:column>
                         <p:column headerText="Default Template">
                             <h:outputText value="#{doc.defaultTemplate ? 'Yes' : 'No'}" />
                         </p:column>

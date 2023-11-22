@@ -89,8 +89,8 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" action="#{reportController.navigateToOutsidePayment()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" />
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Invoice and Receipt Report (Serial Wise)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Pharmacy Sale (OP/IP)" />

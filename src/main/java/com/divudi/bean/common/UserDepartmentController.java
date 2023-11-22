@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
@@ -24,7 +25,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,11 +34,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class UserDepartmentController implements Serializable {
+public class UserDepartmentController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -161,18 +163,32 @@ public  class UserDepartmentController implements Serializable {
         currentDepartment = null;
     }
 
+    public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
+        List<WebUserDepartment> tis = new ArrayList<>();
+        String sql = "SELECT i "
+                + " FROM WebUserDepartment i "
+                + " where i.retired=:ret "
+                + " and i.webUser=:wu "
+                + "  order by i.department.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("wu", wu);
+        tis = getEjbFacade().findByJpql(sql, m);
+        return tis;
+    }
+
     public List<WebUserDepartment> getItems() {
         if (selectedUser == null) {
             items = new ArrayList<>();
             return items;
         }
-        String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
-        items = getEjbFacade().findByJpql(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            items = fillWebUserDepartments(selectedUser);
         }
         return items;
     }
+    
+    
 
     public WebUserDepartmentFacade getEjbFacade() {
         return ejbFacade;
@@ -271,7 +287,6 @@ public  class UserDepartmentController implements Serializable {
 //        }
 //        return currentInsDepartments;
 //    }
-
     public void setCurrentInsDepartments(List<Department> currentInsDepartments) {
         this.currentInsDepartments = currentInsDepartments;
     }
@@ -282,6 +297,10 @@ public  class UserDepartmentController implements Serializable {
 
     public void setLstDep(List<Department> lstDep) {
         this.lstDep = lstDep;
+    }
+
+    public void setItems(List<WebUserDepartment> items) {
+        this.items = items;
     }
 
     /**

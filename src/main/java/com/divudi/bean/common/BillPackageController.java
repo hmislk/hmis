@@ -96,6 +96,7 @@ public class BillPackageController implements Serializable {
     private double cashBalance;
     private Institution chequeBank;
     private BillItem currentBillItem;
+    private Institution collectingCentre;
     //Bill Items
     private List<BillComponent> lstBillComponents;
     private List<BillFee> lstBillFees;
@@ -926,6 +927,14 @@ public class BillPackageController implements Serializable {
 
     public void setNewPatient(Patient newPatient) {
         this.newPatient = newPatient;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
     /**

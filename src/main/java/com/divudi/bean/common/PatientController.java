@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
@@ -152,6 +153,8 @@ public class PatientController implements Serializable {
     BillBeanController billBeanController;
     @Inject
     BillPackageMedicalController billPackageMedicalController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
     
     /**
      *
@@ -479,6 +482,14 @@ public class PatientController implements Serializable {
         patientEncounterController.fillCurrentPatientLists(current);
         return "/emr/patient_profile";
     }
+    
+    public String navigateToEmrEditPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return "/emr/patient";
+    }
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
@@ -532,8 +543,8 @@ public class PatientController implements Serializable {
             return "";
         }
         opdPreBillController.prepareNewBill();
-        opdPreBillController.setSearchedPatient(getCurrent());
-        return "/opd_pre_bill";
+        opdPreBillController.setPatient(getCurrent());
+        return "/opd/opd_pre_bill";
     }
 
     public String navigateToReceiveDepositsFromPatientProfile() {
@@ -547,6 +558,17 @@ public class PatientController implements Serializable {
         billItems = new ArrayList<>();
         printPreview = false;
         return "/payments/patient/receive";
+    }
+    
+    public String navigateToCollectingCenterBillingFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        
+        collectingCentreBillController.prepareNewBill();
+        collectingCentreBillController.setSearchedPatient(getCurrent());
+        return "/collecting_centre/bill";
     }
 
     public String navigateToOpdPatientEdit() {
@@ -630,12 +652,9 @@ public class PatientController implements Serializable {
         saveBillItem();
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
-        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
         if (patient.getRunningBalance() == null) {
-            System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
             patient.setRunningBalance(getBill().getNetTotal());
         } else {
-            System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
             patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
         }
         getFacade().edit(patient);
@@ -761,7 +780,6 @@ public class PatientController implements Serializable {
     }
 
     public String searchPatientForOpd() {
-        System.out.println("searchPatientForOpd");
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
         } else if (searchSampleId != null && !searchSampleId.trim().equals("")) {
@@ -794,7 +812,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchByBill() {
-        System.out.println("searchByBill");
         String j;
         j = "select b.patient from Bill b where b.retired=false ";
         Map m = new HashMap();
@@ -826,7 +843,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchBySample() {
-        System.out.println("searchBySample");
         String j;
         j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.retired=false ";
         Map m = new HashMap();
@@ -854,7 +870,6 @@ public class PatientController implements Serializable {
     }
 
     public void searchPatientByDetails() {
-        System.out.println("searchPatientByDetails");
         boolean atLeastOneCriteriaIsGiven = false;
         String j;
         Map m = new HashMap();
@@ -904,14 +919,11 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("Ät least one search criteria should be given");
             return;
         }
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         searchedPatients = getFacade().findByJpql(j, m);
 
     }
 
     public void searchByPatientId() {
-        System.out.println("searchByPatientId");
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.id=:id";
@@ -1479,6 +1491,37 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
+    }
+    
+    public void save(Patient p) {
+        if (p == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return;
+        }
+        if (p.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return;
+        }
+        if (p.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
+        } else {
+            getPersonFacade().edit(p.getPerson());
+        }
+        if (p.getId() == null) {
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(p);
+        } else {
+            getFacade().edit(p);
+        }
+        p.setEditingMode(false);
     }
 
     public String saveAndNavigateToProfile() {
@@ -2309,7 +2352,6 @@ public class PatientController implements Serializable {
             } else {
                 String error = "object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + PatientController.class.getName();
-                System.out.println("error = " + error);
                 return null;
             }
         }

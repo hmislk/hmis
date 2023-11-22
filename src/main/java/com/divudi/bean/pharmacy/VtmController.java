@@ -15,6 +15,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VtmFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -230,7 +231,6 @@ public class VtmController implements Serializable {
     }
 
     public List<Vtm> getSelectedItems() {
-
         if (selectText == null || selectText.trim().equals("")) {
             selectedItems = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
         } else {
@@ -239,6 +239,10 @@ public class VtmController implements Serializable {
 
         }
         return selectedItems;
+    }
+
+    public void fillItems() {
+        items = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
     }
 
     public void prepareAdd() {
@@ -306,6 +310,23 @@ public class VtmController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void save() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (getCurrent().getId() != null) {
+            getFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(getCurrent());
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        fillItems();
     }
 
     public void setSelectText(String selectText) {

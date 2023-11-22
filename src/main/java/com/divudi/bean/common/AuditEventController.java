@@ -60,7 +60,6 @@ public class AuditEventController implements Serializable {
         m.put("niluka", buddhika);
         AuditEvent auditEvent = getFacade().findFirstByJpql(jpql, m);
         if (auditEvent == null) {
-            System.err.println("Audit Event NOT found " + buddhika);
             return;
         }
         Long duration;

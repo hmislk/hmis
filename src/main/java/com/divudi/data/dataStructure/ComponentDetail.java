@@ -34,15 +34,12 @@ public class ComponentDetail {
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         System.out.println("getMultiplePaymentMethod");
-        System.out.println("multiplePaymentMethod = " + multiplePaymentMethodComponentDetails);
         if (multiplePaymentMethodComponentDetails == null) {
             multiplePaymentMethodComponentDetails = new ArrayList<>();
         }
-        System.out.println("multiplePaymentMethod.isEmpty() = " + multiplePaymentMethodComponentDetails.isEmpty());
         if (multiplePaymentMethodComponentDetails.isEmpty()) {
             multiplePaymentMethodComponentDetails.add(new ComponentDetail());
         }
-        System.out.println("multiplePaymentMethod.size() = " + multiplePaymentMethodComponentDetails.size());
         return multiplePaymentMethodComponentDetails;
     }
     

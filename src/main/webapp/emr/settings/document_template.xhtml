@@ -14,49 +14,49 @@
         <ui:composition template="/emr/settings/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-4">
-                                <h3>Name:</h3>
-                                <h:inputText id="name" value="#{documentTeamplateController.current.name}" styleClass="form-control" />
-                            </div>
 
-                            <div class="col-2">
-                                <h3>Type:</h3>
-                                <h:selectOneMenu id="type" value="#{documentTeamplateController.current.type}" styleClass="form-control" >
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{documentTeamplateController.documentTemplateTypes}" ></f:selectItems>
-                                </h:selectOneMenu>
-                            </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <p:outputLabel value="Name" class="form-label" ></p:outputLabel>
+                            <p:inputText id="name" value="#{documentTeamplateController.current.name}" styleClass="form-control" />
+                            
+                            <p:outputLabel value="User" class="form-label" ></p:outputLabel>
+                            <p:autoComplete value="#{documentTeamplateController.current.webUser}" 
+                                            inputStyleClass="w-100"
+                                            class="w-100"
+                                            completeMethod="#{webUserController.completeUser}"
+                                            var="u"
+                                            itemLabel="#{u.name}"
+                                            itemValue="#{u}"
+                                            ></p:autoComplete>
 
-                            <div class="col-2">
-                                <h3>Default:</h3>
-                                <p:outputLabel for="default" value="Default Template" />
-                                <p:selectBooleanCheckbox id="default" value="#{documentTeamplateController.current.defaultTemplate}" styleClass="form-control" />
+                            <p:outputLabel value="Type" class="form-label" ></p:outputLabel>
+                            <h:selectOneMenu id="type" value="#{documentTeamplateController.current.type}" styleClass="form-control" >
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{documentTeamplateController.documentTemplateTypes}" ></f:selectItems>
+                            </h:selectOneMenu>
 
-                            </div>
+                            <p:outputLabel value="Default" class="form-label" ></p:outputLabel>
+                            <p:selectBooleanButton id="default"
+                                                   value="#{documentTeamplateController.current.defaultTemplate}"
+                                                   onLabel="Default"
+                                                   offLabel="NOT default"
+                                                   styleClass="form-control" />
 
-                            <div class="col-2">
-                                <h3>Auto Regen:</h3>
-                                <h:outputLabel for="auto" value="Auto Generate" />
-                                <p:selectBooleanCheckbox id="auto" value="#{documentTeamplateController.current.autoGenerate}" styleClass="form-control" />
 
-                            </div>
+                            <p:outputLabel value="Auto Regenerate" class="form-label" ></p:outputLabel>
+                            <p:selectBooleanButton id="auto" 
+                                                   onLabel="Yes"
+                                                   offLabel="NO"
+                                                   value="#{documentTeamplateController.current.autoGenerate}" styleClass="form-control" />
+
+
                         </div>
-
-                        <div class="row">
-                            <div class="col-12">
-                                <p:commandButton value="Save" ajax="false" action="#{documentTeamplateController.saveUserDocumentTemplate}" ></p:commandButton>
-                            </div>
-                        </div>
-
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h3>Text Editor:</h3>
-                                <p:textEditor id="textEditor" 
-                                              secure='false' 
-                                              value="#{documentTeamplateController.current.contents}" style="width: 100%; height: 300px;" />
-                            </div>
+                        <div class="col-8">
+                            <p:commandButton value="Save" ajax="false" action="#{documentTeamplateController.saveUserDocumentTemplate}" ></p:commandButton>
+                            <p:textEditor id="textEditor" 
+                                          secure='false' 
+                                          value="#{documentTeamplateController.current.contents}" style="width: 100%; height: 300px;" />
                         </div>
                     </div>
                 </h:form>
