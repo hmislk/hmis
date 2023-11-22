@@ -28,7 +28,8 @@
                             <p:commandButton 
                                 value="Edit Admission" 
                                 action="#{admissionController.navigateToEditAdmission}" 
-                                icon="fa fa-edit">
+                                icon="fa fa-edit"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{bhtEditController.current}" ></f:setPropertyActionListener>
@@ -46,7 +47,8 @@
                             <p:commandButton 
                                 value="Estimated Bill" 
                                 icon="fa fa-calculator"
-                                action="#{bhtSummeryController.navigateToIntrimBillEstimate}">
+                                action="#{bhtSummeryController.navigateToIntrimBillEstimate}"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
@@ -55,7 +57,8 @@
                                 rendered="#{admissionController.current.discharged}" 
                                 value="Final Bill" 
                                 action="#{inwardSearch.navigateToFinalBillForAdmission}"
-                                icon="fa fa-file">
+                                icon="fa fa-file"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{inwardSearch.admission}" ></f:setPropertyActionListener>
@@ -69,7 +72,8 @@
                                 value="Room Change" 
                                 action="#{admissionController.navigateToRoomChange}" 
                                 actionListener="#{roomChangeController.recreate}"
-                                icon="fa fa-exchange-alt">
+                                icon="fa fa-exchange-alt"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{roomChangeController.current}" />
@@ -79,7 +83,8 @@
                                 value="Guardian Room Change" 
                                 action="#{admissionController.navigateToGuardianRoomChange}" 
                                 actionListener="#{guardianRoomChangeController.recreate}"
-                                icon="fa fa-users">
+                                icon="fa fa-users"
+                                class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{guardianRoomChangeController.current}" />
@@ -89,7 +94,8 @@
                                 value="Add Services" 
                                 action="#{admissionController.navigateToAddServices}" 
                                 actionListener="#{billBhtController.makeNull}"
-                                icon="fa fa-plus-square">
+                                icon="fa fa-plus-square"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{billBhtController.current}" />
@@ -99,7 +105,8 @@
                                 value="Add Outside Charge" 
                                 action="#{admissionController.navigateToAddOutsideCharge}" 
                                 actionListener="#{inwardAdditionalChargeController.makeNull}"
-                                icon="fa fa-external-link-square-alt">
+                                icon="fa fa-external-link-square-alt"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{inwardAdditionalChargeController.current}" />
@@ -109,7 +116,8 @@
                                 value="Add Professional Fee" 
                                 action="#{admissionController.navigateToAddProfessionalFee}" 
                                 actionListener="#{inwardProfessionalBillController.makeNull}"
-                                icon="fa fa-user-md">
+                                icon="fa fa-user-md"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{inwardProfessionalBillController.current}" />
@@ -119,7 +127,8 @@
                                 value="Add Estimated Professional Fee" 
                                 action="#{admissionController.navigateToAddEstimatedProfessionalFee}" 
                                 actionListener="#{inwardProfessionalBillController.makeNull}"
-                                icon="fa fa-user-md">
+                                icon="fa fa-user-md"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{inwardProfessionalBillController.current}" />
@@ -129,7 +138,8 @@
                                 value="Add Timed Services" 
                                 action="#{timedItemController.inwardTimedServiceConsumeInward}" 
                                 actionListener="#{inwardTimedItemController.makeNull}"
-                                icon="fa fa-clock">
+                                icon="fa fa-clock"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{timedItemController.current}" 
                                     target="#{addTimedServicesController.current}" />
@@ -139,7 +149,8 @@
                                 value="Pharmacy BHT Request" 
                                 action="#{admissionController.navigateToPharmacyBhtRequest}" 
                                 actionListener="#{pharmacySaleBhtController.resetAll}"
-                                icon="fa fa-prescription-bottle-alt">
+                                icon="fa fa-prescription-bottle-alt"
+                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
                                     target="#{pharmacySaleBhtController.patientEncounter}" />

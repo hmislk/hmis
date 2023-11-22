@@ -10,10 +10,14 @@
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
 
     <jta-data-source>jdbc/arogyaaudit</jta-data-source>
+
+
+    <jta-data-source>jdbc/arogyaaudit</jta-data-source>
     <class>com.divudi.entity.AuditEvent</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
     <jta-data-source>jdbc/arogyaAudit</jta-data-source>
+
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
 
     <properties>
