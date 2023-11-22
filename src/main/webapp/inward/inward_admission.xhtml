@@ -35,7 +35,8 @@
                                 <h:panelGroup >
                                     <p:outputLabel class="mx-1 " value="Room No :" />
                                     <p:autoComplete  forceSelection="true"  
-                                                     id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
+                                                     id="cmbDoc" 
+                                                     disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                                      value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                                      completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                      var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
@@ -48,7 +49,7 @@
                                     <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
                                 </h:panelGroup>
 
-                                
+
                                 <p:commandButton 
                                     id="admt" 
                                     action="#{admissionController.saveSelected}" 
@@ -58,14 +59,20 @@
                                 <div class="d-flex justify-content-end">
                                     <p:commandButton 
                                         ajax="false" 
+                                        immediate="true"
                                         value="Patient Lookup" 
-                                        action="#{patientController.navigateToSearchPatients()}" />
+                                        action="#{patientController.navigateToSearchPatients()}" 
+                                        icon="fa fa-search" /> <!-- Font Awesome icon for search -->
+
                                     <p:commandButton 
                                         ajax="false" 
+                                        immediate="true"
                                         value="Patient Profile" 
-                                        action="#{patientController.navigateToOpdPatientProfile()}" >
+                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        icon="fa fa-user" > <!-- Font Awesome icon for user -->
                                         <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
+
                                 </div>
 
                                 <p:defaultCommand target="admt"/>
