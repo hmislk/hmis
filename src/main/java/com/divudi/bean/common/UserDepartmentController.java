@@ -158,9 +158,10 @@ public class UserDepartmentController implements Serializable {
         ///other properties
         d.setDepartment(currentDepartment);
         d.setWebUser(selectedUser);
-
         getEjbFacade().create(d);
+        items=null;
         currentDepartment = null;
+        
     }
 
     public List<WebUserDepartment> fillWebUserDepartments(WebUser wu) {
