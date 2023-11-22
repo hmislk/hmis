@@ -263,10 +263,14 @@
                                     <p:commandButton 
                                         id="btnGenerateNewDocument"
                                         value="Generate New Document" 
-                                        process="somTemplates btnGenerateNewDocument"
-                                        update="lstEncounterDocs msgs"
+                                        process="btnGenerateNewDocument somTemplates"
+                                        update="lstEncounterDocs msgs lblTest"
                                         action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
                                     </p:commandButton>
+                                    
+                                    <p:outputLabel id="lblTest" 
+                                                   value="AAAA - #{patientEncounterController.encounterReferrals}" >
+                                    </p:outputLabel>
 
                                     <p:messages id="msgs" ></p:messages>
 
@@ -285,7 +289,7 @@
                                         <p:commandButton 
                                             id="btnSaveDoc"
                                             value="Save" 
-                                            action="#{patientEncounterController}"
+                                            action="#{patientEncounterController.saveEncounterReferral()}"
                                             process="btnSaveDoc txtDoc"
                                             update="lstEncounterDocs">
                                         </p:commandButton>

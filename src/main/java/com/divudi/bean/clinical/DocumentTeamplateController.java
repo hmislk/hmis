@@ -94,26 +94,27 @@ public class DocumentTeamplateController implements Serializable {
     }
 
     public String generateDefaultTemplateContents() {
-        String contents = "";
-        contents = "{name}"
-                + "{age}"
-                + "{sex}"
-                + "{address}"
-                + "{phone}"
-                + "{medicines}"
-                + "{outdoor}"
-                + "{indoor}"
-                + "{ix}"
-                + "{past-dx}"
-                + "{routine-medicines}"
-                + "{allergies}"
-                + "{visit-date}"
-                + "{height}"
-                + "{weight}"
-                + "{bmi}"
-                + "{bp}";
-        return contents;
-    }
+    String contents = "";
+    contents = "{name}<br/>"
+            + "{age}<br/>"
+            + "{sex}<br/>"
+            + "{address}<br/>"
+            + "{phone}<br/>"
+            + "{medicines}<br/>"
+            + "{outdoor}<br/>"
+            + "{indoor}<br/>"
+            + "{ix}<br/>"
+            + "{past-dx}<br/>"
+            + "{routine-medicines}<br/>"
+            + "{allergies}<br/>"
+            + "{visit-date}<br/>"
+            + "{height}<br/>"
+            + "{weight}<br/>"
+            + "{bmi}<br/>"
+            + "{bp}";
+    return contents;
+}
+
 
     public String navigateToEditUserDocumentTemplates() {
         if (current == null) {
@@ -124,7 +125,7 @@ public class DocumentTeamplateController implements Serializable {
     }
 
     public String navigateToListUserDocumentTemplate() {
-        items = fillAllItems(sessionController.getLoggedUser());
+        items = fillAllItems(null);
         return "/emr/settings/document_templates";
     }
 
