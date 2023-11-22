@@ -71,7 +71,7 @@
                                 value="Name" 
                                 class="w-100"></h:outputLabel>
                             <p:inputText 
-                                
+
                                 required="true"
                                 requiredMessage="Name Required"
                                 autocomplete="off"
@@ -88,7 +88,7 @@
                                 completeMethod="#{vtmController.completeVtm}" 
                                 var="vt" 
                                 class="w-100"
-                                
+
                                 required="true"
                                 requiredMessage="Generic Unit Required"
                                 inputStyleClass="w-100"
@@ -96,13 +96,27 @@
                                 itemValue="#{vt}" >
                             </p:autoComplete>
 
+                            <h:outputLabel value="Category" ></h:outputLabel>
+                            <p:selectOneMenu 
+                                filter="true"
+
+                                required="true"
+                                requiredMessage="Category Required"
+                                value="#{vmpController.current.category}" 
+                                class="w-100">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{pharmaceuticalItemTypeController.items}"
+                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                            </p:selectOneMenu>
+                            
+                            
                             <h:outputLabel value="Dosage Form" ></h:outputLabel>
                             <p:selectOneMenu 
                                 filter="true"
-                                
+
                                 required="true"
                                 requiredMessage="Dosage Form Required"
-                                value="#{vmpController.current.category}" 
+                                value="#{vmpController.current.dosageForm}" 
                                 class="w-100">
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
                                 <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
@@ -120,7 +134,7 @@
                             <h:outputLabel value="Strength Unit" class="w-100" >
                             </h:outputLabel>
                             <p:selectOneMenu 
-                                
+
                                 required="true"
                                 requiredMessage="Strength Unit Required"
                                 value="#{vmpController.current.strengthUnit}"
@@ -151,98 +165,11 @@
                     </h:form>
                 </div>
             </div>
-            <f:facet name="footer" >
-                <h:form id="formMsg" >
-                    <p:messages id="msg" />
-                </h:form>
-            </f:facet>
         </p:panel>
 
-        <!--
-                <h:form>
-                    <p:panel header="Manage Products (VMPs)"  >
-        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p:panel header="List" >
-                                    <h:inputText autocomplete="off"  value="#{vmpController.selectText}" class="w-100">
-                                        <f:ajax execute="@this" render="lstSelect" event="keyup" />
-                                    </h:inputText>
-                                    <p:selectOneListbox class="w-100" id="lstSelect" value="#{vmpController.current}">
-                                        <f:selectItems value="#{vmpController.selectedItems}" itemLabel="#{v.name}" var="v" itemValue="#{v}"/>
-                                        <f:ajax render="gpDetail" execute="lstSelect viv" >
-                                        </f:ajax>
-                                    </p:selectOneListbox><p:spacer/>
-                                    <h:panelGrid id="gpSelectButtons" columns="3"  >
-        
-                                    </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="col-md-6">
-                                <p:panel id="gpDetail" header="Details" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
-        
-                                        <h:outputLabel value="Generic Name" style="white-space: nowrap;" class="w-100"></h:outputLabel>
-                                        <p:autoComplete converter="vtm" value="#{vmpController.addingVtmInVmp.vtm}" 
-                                                        forceSelection="true"
-                                                        completeMethod="#{vtmController.completeVtm}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                        </p:autoComplete>
-        
-                                        <h:outputLabel value="Strength" class="w-100" >
-                                        </h:outputLabel>
-        
-                                        <p:inputText autocomplete="off" value="#{vmpController.addingVtmInVmp.strength}" ></p:inputText>
-        
-                                        <h:outputLabel value="Strength Unit" class="w-100" >
-                                        </h:outputLabel>
-                                        <p:selectOneMenu value="#{vmpController.addingVtmInVmp.strengthUnit}" class="w-100">
-                                            <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
-                                            <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                                        </p:selectOneMenu>                          
-        
-                                        <h:outputLabel value="Type" ></h:outputLabel>
-        
-                                        <p:selectOneMenu value="#{vmpController.current.category}" class="w-100">
-                                            <f:selectItem itemLabel="Select Category" ></f:selectItem>
-                                            <f:selectItems value="#{pharmaceuticalItemTypeController.items}" var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                                        </p:selectOneMenu>
-        
-                                        <h:outputLabel value="Name" class="w-100"></h:outputLabel>
-                                        <p:inputText autocomplete="off" value="#{vmpController.current.name}" class="w-100"></p:inputText>
-        
-                                        <h:outputLabel value=""></h:outputLabel>
-                                        <p:commandButton value="Add" ajax="false" action="#{vmpController.addVtmInVmp()}" >
-                                        </p:commandButton>
-        
-                                    </h:panelGrid>
-        
-                                    <p:dataTable id="viv" value="#{vmpController.vivs}" var="v" >
-        
-                                        <p:column headerText="VTM">
-        #{v.vtm.name}
-    </p:column>
-    <p:column headerText="Strength">
-        #{v.strength} #{v.strengthUnit.name}
-    </p:column>
-    <p:column headerText="Remove">
-
-        <p:commandButton value="Remove" ajax="false" action="#{vmpController.remove}">
-            <f:setPropertyActionListener value="#{v}" target="#{vmpController.removingVtmInVmp}"/>
-        </p:commandButton>
-    </p:column>
-</p:dataTable>
-
-
-</p:panel>
-</div>
-</div>
-
-
-</p:panel>
-</h:form>
-        -->
-
-
+        <h:form id="formMsg" >
+            <p:growl id="msg" />
+        </h:form>
 
     </ui:define>
 

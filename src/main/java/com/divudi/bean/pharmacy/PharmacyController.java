@@ -237,6 +237,10 @@ public class PharmacyController implements Serializable {
     public String navigateToDosageForms() {
         return "/pharmacy/admin/dosage_forms";
     }
+    
+    public String navigateToPharmaceuticalItemCategories() {
+        return "/pharmacy/admin/pharmaceutical_item_category";
+    }
 
     public String navigateToAtc() {
         return "/pharmacy/admin/atc";
