@@ -35,8 +35,9 @@
                             </p:commandButton>
                             <p:commandButton 
                                 rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
-                                action="#{bhtSummeryController.navigateToIntrimBill()}"
+                                action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
                                 value="Interim Bill" 
+                                class="w-100"
                                 icon="fa fa-file">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
