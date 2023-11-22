@@ -21,6 +21,7 @@
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
+                                    showTime="true"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
                                 <p:outputLabel value="Date of Admission to " styleClass="form-label"></p:outputLabel>
@@ -28,6 +29,7 @@
                                     value="#{admissionController.toDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
+                                    showTime="true"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
                             </div>
