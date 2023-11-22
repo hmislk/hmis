@@ -97,25 +97,47 @@
 
                             <p:panel header="Hospital">
                                 <h:panelGrid columns="2" class="w-100">
-                                    <h:outputLabel value="Speciality"/>
+                                    <h:outputLabel value="OPD Doctor Speciality"/>
                                     <p:autoComplete forceSelection="true"
-                                                    value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
+                                                    value="#{bhtEditController.speciality}" id="acSpeciality"
                                                     completeMethod="#{specialityController.completeSpeciality}" 
                                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                     class="w-100 mx-2"
                                                     >
-                                        <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
+                                        <f:ajax event="itemSelect" execute="@this" render="somOpdDoc"/>
                                     </p:autoComplete>
+
                                     <h:outputLabel  value="Select OPD Doctor" ></h:outputLabel>
+                                    <p:selectOneMenu 
+                                        id="somOpdDoc"
+                                        value="#{bhtEditController.current.opdDoctor}" >
+                                        <f:selectItem itemLabel="Select OPD Doctor" ></f:selectItem>
+                                        <f:selectItems value="#{doctorController.listDoctors(inwardStaffPaymentBillController.speciality)}"
+                                                       var="opddoc"
+                                                       itemLabel="#{opddoc.person.nameWithTitle}"
+                                                       itemValue="#{opddoc}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    
                                     <p:autoComplete  class="w-100 mx-2" forceSelection="true" id="scStaff"
                                                      value="#{bhtEditController.current.opdDoctor}" 
-                                                     completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                     completeMethod="#{doctorController.completeDoctor}"
                                                      var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                      >
                                     </p:autoComplete>
-                                    <p:outputLabel value="Select Refering Doctor"/>                            
-                                    <p:autoComplete forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
-                                                    completeMethod="#{inwardStaffPaymentBillController.completeStaff}" var="ix" 
+
+                                    <!--                                    <h:outputLabel value="Referring Doctor Speciality"/>
+                                                                        <p:autoComplete forceSelection="true"
+                                                                                        value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" id="acSpeciality"
+                                                                                        completeMethod="#{specialityController.completeSpeciality}" 
+                                                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                                                        class="w-100 mx-2"
+                                                                                        >
+                                                                            <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
+                                                                        </p:autoComplete>-->
+
+                                    <p:outputLabel value="Refering Doctor"/>                            
+                                    <p:autoComplete id="acRefDoc" forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
+                                                    completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                     itemLabel="#{ix.person.name}" itemValue="#{ix}"  
                                                     class="w-100 mx-2"  >
                                     </p:autoComplete>
