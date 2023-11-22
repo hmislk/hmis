@@ -659,14 +659,18 @@ public class DataUploadBean {
             }
 
             Cell vmpCell = row.getCell(4);
+            System.out.println("vmpCell = " + vmpCell);
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
+                System.out.println("vmpName = " + vmpName);
                 vmp = vmpController.findVmpByName(vmpName);
                 System.out.println("vmp = " + vmp);
                 if (vmp == null) {
                     System.out.println("This VMP Name not found :  " + vmpName);
                     continue;
                 }
+            }else{
+                System.out.println("VMP cell type is NOT a String = ");
             }
 
             Cell manufacturerCell = row.getCell(5);
@@ -687,8 +691,11 @@ public class DataUploadBean {
 //            amp = new Amp();
             amp.setName(ampName);
             amp.setCode("amp_" + CommonController.nameToCode(ampName));
+            
+            System.out.println("vmp = " + vmp);
             if (vmp != null) {
                 amp.setVmp(vmp);
+                amp.setCategory(vmp.getCategory());
             }
             amp.setCode(code);
             amp.setBarcode(barcode);
