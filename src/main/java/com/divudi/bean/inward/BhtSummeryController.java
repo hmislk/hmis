@@ -1767,6 +1767,10 @@ public class BhtSummeryController implements Serializable {
         return "/inward/inward_bill_intrim";
     }
     
+     public String navigateToIntrimBillFromPatientProfile() {
+        return "/inward/inward_bill_intrim";
+    }
+    
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();

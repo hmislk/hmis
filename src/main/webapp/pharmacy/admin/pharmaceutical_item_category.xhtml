@@ -13,7 +13,7 @@
                     <p:growl/>
                     <p:focus id="selectFocus" context="gpSelect"/>
                     <p:focus id="detailFocus" context="gpDetail"/>
-                    <p:panel header="Manage Dosage Forms">
+                    <p:panel header="Manage Pharmaceutical Item Categories">
                         <div class="container-fluid">
                             <div class="row">
                                 <div class="col-md-5">
@@ -22,14 +22,14 @@
                                                          value="Add" 
                                                          class="w-100"
                                                          update="gpDetail lstSelect detailFocus" 
-                                                         action="#{dosageFormController.prepareAdd()}"  >
+                                                         action="#{pharmaceuticalItemCategoryController.prepareAdd()}"  >
                                         </p:commandButton>
                                         <p:commandButton id="btnDelete" 
                                                          ajax="false"
                                                          onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                                      return false;" 
                                                          class="w-100"
-                                                         action="#{dosageFormController.delete()}" 
+                                                         action="#{pharmaceuticalItemCategoryController.delete()}" 
                                                          process="lstSelect btnDelete"
                                                          update="lstSelect gpDetail"
                                                          value="Delete">
@@ -38,7 +38,7 @@
                                             value="Download as Excel" 
                                             class="w-100"
                                             ajax="false"
-                                            action="#{dosageFormController.downloadAsExcel}" />
+                                            action="#{pharmaceuticalItemCategoryController.downloadAsExcel}" />
 
                                     </h:panelGrid>
 
@@ -46,8 +46,8 @@
                                         <p:selectOneListbox id="lstSelect" 
                                                             filter="true"
                                                             filterMatchMode="contains"
-                                                            value="#{dosageFormController.current}">
-                                            <f:selectItems value="#{dosageFormController.items}" 
+                                                            value="#{pharmaceuticalItemCategoryController.current}">
+                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" 
                                                            var="myItem" 
                                                            itemValue="#{myItem}" 
                                                            itemLabel="#{myItem.name}"></f:selectItems>
@@ -62,29 +62,29 @@
                                 <div class="col-md-7">
 
                                     <h:panelGrid columns="2" id="gpDetail" class="w-100">
-                                        <label for="txtName" class="col-form-label">Dosage Form</label>
+                                        <label for="txtName" class="col-form-label">Pharmaceutical Item Category</label>
                                         <p:inputText 
                                             autocomplete="off" 
                                             id="txtName" 
-                                            value="#{dosageFormController.current.name}" 
+                                            value="#{pharmaceuticalItemCategoryController.current.name}" 
                                             styleClass="form-control"></p:inputText>
                                         <label for="txtCode" class="col-form-label">Code</label>
                                         <p:inputText 
                                             autocomplete="off" 
                                             id="txtCode" 
-                                            value="#{dosageFormController.current.code}" 
+                                            value="#{pharmaceuticalItemCategoryController.current.code}" 
                                             styleClass="form-control"></p:inputText>
                                         <label for="txtDes" class="col-form-label">Description</label>
                                         <p:inputTextarea 
                                             id="txtDes" 
-                                            value="#{dosageFormController.current.description}" 
+                                            value="#{pharmaceuticalItemCategoryController.current.description}" 
                                             styleClass="form-control"></p:inputTextarea>
                                         <p:commandButton 
                                             id="btnSave" 
                                             value="Save"
                                             process="gpDetail" 
                                             update="lstSelect selectFocus" 
-                                            action="#{dosageFormController.saveSelected()}" >
+                                            action="#{pharmaceuticalItemCategoryController.saveSelected()}" >
                                         </p:commandButton>
 
                                     </h:panelGrid>

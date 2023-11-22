@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
@@ -36,8 +37,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -60,7 +61,20 @@ public class DoctorController implements Serializable {
     String selectText = "";
     List<Doctor> doctors;
     Speciality speciality;
-    
+
+    public List<Doctor> listDoctors(Speciality speciality) {
+        List<Doctor> suggestions;
+        String sql;
+        sql = " select p "
+                + " from Doctor p "
+                + " where p.retired=false "
+                + " and p.speciality=:spe "
+                + " order by p.person.name";
+        HashMap hm = new HashMap();
+        hm.put("spe", speciality);
+        suggestions = getFacade().findByJpql(sql, hm);
+        return suggestions;
+    }
 
     public List<Doctor> completeDoctor(String query) {
         List<Doctor> suggestions;
@@ -74,21 +88,22 @@ public class DoctorController implements Serializable {
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql,hm);
+            suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
     }
 
-    public void listDoctors(){
+    public void listDoctors() {
         Date startTime = new Date();
-        
-         String temSql;
-            temSql = "SELECT d FROM Doctor d where d.retired=false ";
-            doctors = getFacade().findByJpql(temSql);   
-            
-            commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
-            
+
+        String temSql;
+        temSql = "SELECT d FROM Doctor d where d.retired=false ";
+        doctors = getFacade().findByJpql(temSql);
+
+        commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
+
     }
+
     public List<Doctor> getSelectedItems() {
         String sql = "";
         HashMap hm = new HashMap();
@@ -113,12 +128,12 @@ public class DoctorController implements Serializable {
 
         return selectedItems;
     }
-    
+
     public void prepareAdd() {
         current = new Doctor();
         specialityController.recreateModel();
     }
-    
+
     // Method to generate the Excel file and initiate the download
     public void downloadAsExcel() {
         getItems();
@@ -139,10 +154,8 @@ public class DoctorController implements Serializable {
             headerRow.createCell(7).setCellValue("Registration");
             headerRow.createCell(8).setCellValue("Qualification");
             headerRow.createCell(9).setCellValue("Refering Charge");
-            
-            
-            // Add more columns as needed
 
+            // Add more columns as needed
             // Populate the data rows
             int rowNum = 1;
             for (Doctor doctor : items) {
@@ -187,7 +200,7 @@ public class DoctorController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-      //  getItems();
+        //  getItems();
         current = null;
         getCurrent();
     }
@@ -203,10 +216,10 @@ public class DoctorController implements Serializable {
     private void recreateModel() {
         items = null;
     }
+
     public Title[] getTitle() {
         return Title.values();
     }
-    
 
     public void saveSelected() {
         if (current == null) {
@@ -221,7 +234,7 @@ public class DoctorController implements Serializable {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
-        if (current.getSpeciality()==null) {
+        if (current.getSpeciality() == null) {
             UtilityController.addErrorMessage("Please Select Speciality.");
             return;
         }
@@ -239,9 +252,9 @@ public class DoctorController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        current=new Doctor();
+        current = new Doctor();
         recreateModel();
-       // getItems();
+        // getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -317,8 +330,6 @@ public class DoctorController implements Serializable {
         this.speciality = speciality;
     }
 
-    
-    
     /**
      *
      */
@@ -362,7 +373,6 @@ public class DoctorController implements Serializable {
         }
     }
 
-
     public CommonController getCommonController() {
         return commonController;
     }
@@ -370,5 +380,5 @@ public class DoctorController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
 }
