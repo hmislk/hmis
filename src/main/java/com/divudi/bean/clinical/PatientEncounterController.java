@@ -2649,6 +2649,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
+        System.out.println("encounterReferral = " + encounterReferral);
         this.encounterReferral = encounterReferral;
     }
 
