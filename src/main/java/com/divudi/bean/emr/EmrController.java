@@ -76,13 +76,7 @@ public class EmrController implements Serializable {
         this.activeIndexOfReports = activeIndexOfReports;
     }
 
-//    public void onTabChange(TabChangeEvent event) {
-//        String activeIndexStr = ((AccordionPanel) event.getComponent()).getActiveIndex();
-//        activeIndexOfReports = Integer.parseInt(activeIndexStr);
-//        FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add("accordionForm:accordion"); //update accordion
-//        PrimeFaces.current().ajax().update("accordionForm:accordion"); //update accordion
-//        PrimeFaces.current().executeScript("PF('accordion').loadState();"); //load accordion state
-//    }
+
     public int getActiveIndexOfPatientProfile() {
         return activeIndexOfPatientProfile;
     }
