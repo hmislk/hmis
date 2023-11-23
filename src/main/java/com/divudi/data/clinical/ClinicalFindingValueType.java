@@ -22,9 +22,13 @@ public enum ClinicalFindingValueType {
     VisitImage,
     VisitInvestigation,
     VisitDiagnosticImage,
-    VisitReferral,
+//    @Deprecated
+//    VisitReferral,
+    @Deprecated
     VisitMedicalLeaveCertificate,
+    @Deprecated
     VisitMedicalFitnessCertificate,
+    VisitDocument,
     VisitProcedure,
     VisitPrescription,
 }

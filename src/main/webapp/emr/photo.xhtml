@@ -12,7 +12,7 @@
         <p:graphicImage  style="border: 1px solid red; width: 70%; margin: auto;" 
                          id="photos" cache="false"
                          rendered="#{patientController.current.baImage ne null}"    
-                         value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
+                         value="#{patientController.image}"  >
         </p:graphicImage>
 
     </h:body>

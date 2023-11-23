@@ -33,7 +33,7 @@
                                 <p:graphicImage  class="w-75 img-thumbnail" 
                                                  id="photos" cache="false"
                                                  rendered="#{patientController.current.baImage ne null}"    
-                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
+                                                 value="#{patientController.image}"  >
                                 </p:graphicImage>
 
                             </p:outputPanel>
@@ -48,6 +48,11 @@
                                         </p:commandButton>
                                         <p:commandButton value="OPD Visit" 
                                                          action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="Profile Picture" 
+                                            action="#{patientController.navigateToCapturePatientPhoto()}"
+                                            ajax="false" styleClass="mx-2">
                                         </p:commandButton>
 
 
@@ -109,8 +114,6 @@
 
                                                 <div class="row m-2" >
                                                     <div class="col-md-12" >
-
-
                                                         <p:dataTable
                                                             id="tblDxx"
                                                             value="#{patientEncounterController.patientDiagnoses}"
@@ -150,7 +153,7 @@
                                                     <div class="d-flex flex-wrap w-100">
 
                                                         <!-- Medicine Selection -->
-                                                        <div class="mx-1">
+                                                        <div class="mx-1 flex-fill">
                                                             <label for="acMedicine" class="w-100">Medicine:</label>
                                                             <p:autoComplete id="acMedicine"
                                                                             completeMethod="#{pharmaceuticalItemController.completeItem}"
@@ -168,35 +171,28 @@
                                                         </div>
 
                                                         <!-- Dose Group -->
-                                                        <div class="d-flex flex-column mx-1">
-                                                            <div class="row" >
-                                                                <div class="col" >
-                                                                    <p:outputLabel id="lblItem" value="Dose" class="w-100" ></p:outputLabel>
-                                                                </div>
-                                                            </div>
-                                                            <div class="row" >
-                                                                <div class="col m-0" >
-                                                                    <p:inputText class="w-100 m-0"
-                                                                                 id="txtDose"
-                                                                                 value="#{patientEncounterController.patientMedicine.prescription.dose}"
-                                                                                 placeholder="Dose"/>
-                                                                </div>
-                                                                <div class="col m-0" >
-                                                                    <p:selectOneMenu id="cmbDose" 
-                                                                                     class="w-100 m-0"
-                                                                                     value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
-                                                                        <f:selectItem itemLabel="Select" />
-                                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
-                                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                                    </p:selectOneMenu>
-                                                                </div>
+                                                        <div class="mx-1 flex-fill">
+                                                            <label class="w-100">Dose:</label>
+                                                            <div class="d-flex w-100">
+                                                                <p:inputText id="txtDose"
+                                                                             class="flex-grow-1"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                                             placeholder="Dose"/>
+                                                                <p:selectOneMenu id="cmbDose" 
+                                                                                 class="flex-grow-1"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
+                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                </p:selectOneMenu>
                                                             </div>
                                                         </div>
 
                                                         <!-- Frequency Selection -->
-                                                        <div class="d-flex flex-column mx-1">
+                                                        <div class="mx-1 flex-fill">
                                                             <label for="cmbFrequency" class="w-100">Frequency:</label>
                                                             <p:selectOneMenu id="cmbFrequency" 
+                                                                             class="w-100"
                                                                              value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}">
                                                                 <f:selectItem itemLabel="Select" />
                                                                 <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
@@ -207,14 +203,15 @@
                                                         </div>
 
                                                         <!-- Duration Group -->
-                                                        <div class="d-flex flex-column mx-1">
+                                                        <div class="mx-1 flex-fill">
                                                             <label class="w-100">Duration:</label>
                                                             <div class="d-flex">
-                                                                <p:inputText style="width: 6em;"
-                                                                             id="txtDuration"
+                                                                <p:inputText id="txtDuration"
+                                                                             style="width: 6em;"
                                                                              value="#{patientEncounterController.patientMedicine.prescription.duration}"
                                                                              placeholder="Duration"/>
                                                                 <p:selectOneMenu id="cmbDuration" 
+                                                                                 class="flex-grow-1"
                                                                                  value="#{patientEncounterController.patientMedicine.prescription.durationUnit}">
                                                                     <f:selectItem itemLabel="Select" />
                                                                     <f:selectItems value="#{measurementUnitController.durationUnits}" 
@@ -233,9 +230,11 @@
                                                                              process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                              update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                              action="#{patientEncounterController.addPatientMedicine}" />
+                                                            <p:defaultCommand target="btnAddRx" ></p:defaultCommand>
                                                         </div>
 
                                                     </div>
+
                                                 </div>
 
 
@@ -254,9 +253,9 @@
                                                                                    id="btnDeleteRx"
                                                                                    process="btnDeleteRx"
                                                                                    update="tblRxx"
-                                                                                   onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                                   onclick="if (!confirm('Are you sure you want to remove this medicine?'))
                                                                                                return false;"
-                                                                                   action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                                                               action="#{patientEncounterController.removePatientMedicine()}"
                                                                                    >
                                                                         <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
                                                                     </p:commandLink>

@@ -174,7 +174,7 @@
                                                 <p:graphicImage  style="border: 1px solid red;" 
                                                                  id="photos" 
                                                                  rendered="#{patientController.current.baImage ne null}"    
-                                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
+                                                                 value="#{patientController.image}"  >
                                                 </p:graphicImage>
                                                 <h:panelGroup >
                                                     <p:photoCam widgetVar="pc" listener="#{photoCamBean.oncapturePatientPhoto}" update="photos"/>  

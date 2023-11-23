@@ -112,9 +112,15 @@
                                                  class="w-100"
                                                  styleClass="mx-2">
                                 </p:commandButton>
+                                <p:commandButton value="Collecting Center Billing" 
+                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
+                                                 ajax="false"
+                                                 class="w-100"
+                                                 styleClass="mx-2">
+                                </p:commandButton>
                                 <p:commandButton value="OPD Bill for Cashier"
                                                  class="w-100"
-                                                 action="#{patientController.navigateToOpdBillFromOpdPatient()}" ajax="false" styleClass="mx-2">
+                                                 action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="OPD Packages" 
                                                  action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
