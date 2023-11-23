@@ -243,6 +243,7 @@ public class OpdBillController implements Serializable {
      *
      */
     public String navigateToSearchPatients() {
+        patientController.clearSearchDetails();
         patientController.setSearchedPatients(null);
         return "/opd/patient_search";
     }
