@@ -167,7 +167,10 @@ public class WebUser implements Serializable {
                 "primeone-dim-outlined",
                 "primeone-dim-filled",
                 "primeone-dark-outlined",
-                "primeone-dark-filled"
+                "primeone-dark-filled",
+                "saga",
+                "vela",
+                "arya"
         );
 
         
