@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patient" type="com.divudi.entity.Patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+        <p:outputPanel class="text-center">
+            <h:panelGroup rendered="#{cc.attrs.patient.baImage eq null}"  >
+                <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Male'}" 
+                                class="w-50 img-thumbnail"
+                                library="image" name="male.jpg">
+                </p:graphicImage>
+                <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Female'}" 
+                                class="w-50 img-thumbnail"
+                                library="image" name="female.png">
+                </p:graphicImage>
+            </h:panelGroup>
+            <p:graphicImage  class="w-75 img-thumbnail" 
+                             id="photos" cache="false"
+                             rendered="#{patientController.current.baImage ne null}"    
+                             value="#{patientController.image}"  >
+            </p:graphicImage>
+        </p:outputPanel>
+    </cc:implementation>
+</html>

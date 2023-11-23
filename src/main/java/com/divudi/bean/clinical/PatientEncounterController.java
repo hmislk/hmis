@@ -505,6 +505,7 @@ public class PatientEncounterController implements Serializable {
         }
         String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
         ClinicalFindingValue ref = new ClinicalFindingValue();
+        ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
         ref.setItemValue(selectedDocumentTemplate.getItem());
         ref.setLobValue(generatedDoc);
         ref.setStringValue(selectedDocumentTemplate.getName());
@@ -1090,6 +1091,9 @@ public class PatientEncounterController implements Serializable {
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
+        System.out.println("generateDocumentFromTemplate");
+        System.out.println("e = " + e);
+        System.out.println("t = " + t);
 
         String input = t.getContents();
         String output = "";
@@ -1128,29 +1132,31 @@ public class PatientEncounterController implements Serializable {
 
         String medicinesOutdoorAsString = "Rx" + "<br/>";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null && !Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
-                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-
-                medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            if (cf != null && cf.getPrescription() != null) {
+                if (!cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
             }
         }
 
         String medicinesIndoorAsString = "Rx" + "<br/>";
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
-                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-
-                medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                if (cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
             }
         }
 
@@ -1209,7 +1215,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
                 .replace("{bp}", bp);
-
+        System.out.println("output = " + output);
         return output;
 
     }
@@ -1223,9 +1229,10 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         dts = userDocumentTemplates;
-
+        System.out.println("dts = " + dts);
         for (DocumentTemplate t : dts) {
             if (t.isDefaultTemplate()) {
+                System.out.println("t = " + t);
                 switch (t.getType()) {
                     case FitnessCertificate:
 
@@ -2555,7 +2562,7 @@ public class PatientEncounterController implements Serializable {
 
     private List<ClinicalFindingValue> fillEncounterReferrals(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitReferral);
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDocument);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
@@ -2642,6 +2649,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
+        System.out.println("encounterReferral = " + encounterReferral);
         this.encounterReferral = encounterReferral;
     }
 

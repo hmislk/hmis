@@ -109,8 +109,9 @@
                                                 <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Visit" 
-                                                                 action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2 mb-2">
+                                                <p:commandButton 
+                                                    value="OPD Visit" 
+                                                    action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
 

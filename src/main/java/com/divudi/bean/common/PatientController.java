@@ -8,6 +8,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.divudi.bean.clinical.PatientEncounterController;
+import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.AdmissionController;
@@ -22,6 +23,7 @@ import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
@@ -38,6 +40,7 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
@@ -62,6 +65,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -70,6 +75,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
@@ -77,8 +83,11 @@ import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.context.PrimeRequestContext;
+import org.primefaces.event.CaptureEvent;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -155,14 +164,13 @@ public class PatientController implements Serializable {
     BillPackageMedicalController billPackageMedicalController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
-    
+
     /**
      *
      * Class Variables
      *
      *
      */
-
     Date fromDate;
     Date toDate;
     private static final long serialVersionUID = 1L;
@@ -177,6 +185,7 @@ public class PatientController implements Serializable {
     FamilyMember removingFamilyMember;
     Relation currentRelation;
     private String password;
+    private UploadedFile uploadedFile;
 
     private List<Patient> items = null;
     private List<Patient> selectedItems = null;
@@ -260,6 +269,71 @@ public class PatientController implements Serializable {
         }
 
         FacesContext.getCurrentInstance().responseComplete();
+    }
+
+    public void uploadPhoto(FileUploadEvent event) {
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Select Patient");
+            return;
+        }
+        byte[] fileBytes;
+        try {
+            uploadedFile = event.getFile();
+            fileBytes = uploadedFile.getContent();
+            getCurrent().setBaImage(fileBytes);
+
+            // Extracting the file extension and setting the file name
+            String fileName = uploadedFile.getFileName();
+            String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+            getCurrent().setFileName("patient_image_" + getCurrent().getId() + "." + extension);
+
+            getCurrent().setFileType(event.getFile().getContentType());
+            save(current);
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+    }
+
+    public void oncapturePhoto(CaptureEvent captureEvent) {
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            save(current);
+        }
+        getCurrent().setBaImage(captureEvent.getData());
+        getCurrent().setFileName("patient_image_" + getCurrent().getId() + ".png");
+        getCurrent().setFileType("image/png");
+    }
+
+    public String navigateToCapturePatientPhoto() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient");
+            return "";
+        }
+        return "/emr/patient_photo_capture";
+    }
+
+    public StreamedContent getImage() throws IOException {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
+            return DefaultStreamedContent.builder().build();
+        } else if (getCurrent() == null) {
+            return DefaultStreamedContent.builder().build();
+        } else {
+            String imageType = getCurrent().getFileType();
+            if (imageType == null || imageType.trim().equals("")) {
+                imageType = "image/png";
+            }
+            return DefaultStreamedContent.builder()
+                    .contentType(imageType)
+                    .stream(() -> new ByteArrayInputStream(getCurrent().getBaImage()))
+                    .build();
+        }
     }
 
     public void downloadPatientsPhoneNumbers() {
@@ -482,7 +556,7 @@ public class PatientController implements Serializable {
         patientEncounterController.fillCurrentPatientLists(current);
         return "/emr/patient_profile";
     }
-    
+
     public String navigateToEmrEditPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -508,8 +582,6 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
     }
-    
-    
 
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
@@ -522,7 +594,7 @@ public class PatientController implements Serializable {
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment";
     }
-    
+
     public String navigateToMedicalPakageBillingFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -559,13 +631,13 @@ public class PatientController implements Serializable {
         printPreview = false;
         return "/payments/patient/receive";
     }
-    
+
     public String navigateToCollectingCenterBillingFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        
+
         collectingCentreBillController.prepareNewBill();
         collectingCentreBillController.setSearchedPatient(getCurrent());
         return "/collecting_centre/bill";
@@ -599,7 +671,7 @@ public class PatientController implements Serializable {
         }
         return opdBillController.navigateToNewOpdBill(current);
     }
-    
+
     public String navigateToOpdPackageBillFromOpdPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -615,7 +687,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/opd_bill";
     }
-    
+
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
         return "/opd/patient_search";
@@ -689,7 +761,7 @@ public class PatientController implements Serializable {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setBillType(billType);
-        
+
         getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
@@ -1492,7 +1564,7 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
         }
     }
-    
+
     public void save(Patient p) {
         if (p == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
@@ -2278,6 +2350,14 @@ public class PatientController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
     }
 
     /**
