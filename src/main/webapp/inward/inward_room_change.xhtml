@@ -11,7 +11,7 @@
     <ui:define name="content">
 
 
-        
+
         <p:panel header="Admitted Patients" class="my-3"  rendered="#{roomChangeController.current eq null}">
             <h:form>
                 <h:panelGrid id="gpSelectText" columns="4" >
@@ -45,11 +45,52 @@
 
 
 
-        <h:panelGrid rendered="#{roomChangeController.current ne null}">
+        <h:panelGroup rendered="#{roomChangeController.current ne null}">
+
             <h:form>
-                <div class="col-12">
-                    <h:panelGroup rendered="true" styleClass="opdPanel" >
-                        <p:panel >
+                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
+                    <h:panelGrid columns="3">
+
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Lookup" 
+                            ajax="false"
+                            icon="fa fa-search"
+                            class="ui-button-warning " 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            >
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Profile" 
+                            ajax="false"
+                            icon="fa fa-user"
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{admissionController.current.patient}" 
+                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Back" 
+                            ajax="false"
+                            icon="fas fa-arrow-left"
+                            class="ui-button-secondary " 
+                            action="/inward/admission_profile.xhtml" 
+                            >
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
+
+                <div class="row w-100 ">
+                    <div class="col-6">
+                        <p:panel>
+                            <f:facet name="header" >
+                                <h:outputText styleClass="fas fa-id-card-alt" />
+                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                            </f:facet>
                             <p:tabView >
                                 <p:tab title="Patient Details">                            
                                     <p:panelGrid columns="2">
@@ -91,7 +132,14 @@
                                     </p:panelGrid>
                                 </p:tab>
                             </p:tabView>
-
+                        </p:panel>
+                    </div>
+                    <div class="col-6">
+                        <p:panel>
+                            <f:facet name="header" >
+                                <h:outputText styleClass="fas fa-door-open" />
+                                <h:outputLabel value="Room Details" class="mx-4"></h:outputLabel>
+                            </f:facet>
                             <p:tabView class="mt-3" >
                                 <p:tab title="New Room Detail">
                                     <h:panelGrid columns="2">
@@ -213,18 +261,18 @@
                                 </p:tab>
                             </p:tabView>
                         </p:panel>
-                    </h:panelGroup>
+                    </div>
+                </div>
+
+                <div class="col-12">
+
+                    <h:panelGrid columns="2" rendered="true" styleClass="opdPanel" class="w-100" >
+
+
+                    </h:panelGrid>
                 </div>
             </h:form>
-        </h:panelGrid>
-
-
-
-
-
-
-
-
+        </h:panelGroup>
     </ui:define>
 
 </ui:composition>
