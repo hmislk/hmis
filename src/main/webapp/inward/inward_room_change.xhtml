@@ -46,18 +46,44 @@
 
 
         <h:panelGroup rendered="#{roomChangeController.current ne null}">
-            
+
             <h:form>
-                <p:commandButton 
-                style="float: right;"
-                value="Back" 
-                ajax="false"
-                icon="fas fa-arrow-left"
-                class="ui-button-secondary mx-4 my-2" 
-                action="/inward/admission_profile.xhtml" 
-                >
-            </p:commandButton>
-                
+                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
+                    <h:panelGrid columns="3">
+
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Lookup" 
+                            ajax="false"
+                            icon="fa fa-search"
+                            class="ui-button-warning " 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            >
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Profile" 
+                            ajax="false"
+                            icon="fa fa-user"
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{admissionController.current.patient}" 
+                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Back" 
+                            ajax="false"
+                            icon="fas fa-arrow-left"
+                            class="ui-button-secondary " 
+                            action="/inward/admission_profile.xhtml" 
+                            >
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
+
                 <div class="row w-100 ">
                     <div class="col-6">
                         <p:panel>
