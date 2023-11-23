@@ -10,9 +10,12 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content" >
+                
+                  <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+                
                 <div class="row" >
                     <div class="col-12 px-4" >
-                        <h:form >
+                      
                             <p:commandButton 
                                 action="#{patientEncounterController.saveSelected()}"
                                 ajax="false"
@@ -34,14 +37,16 @@
                                 action="#{patientController.toEmrPatientProfile()}"
                                 process="panelPt" update="panelPt" ></p:commandButton>
 
-                        </h:form>
+                       
                     </div>
                 </div>
                 <div class="row" >
                     <div class="col-12" >
-                        <p:tabView>
+                        <p:tabView id="tblView" activeIndex="#{emrController.activeIndexOfOpdVisit}">
+                            <p:ajax event="tabChange" listener="#{emrController.onTabChange}" process="tblView" />
+
                             <p:tab title="Patient Details">
-                                <h:form>
+                               
                                     <div class="ui-g">
                                         <!-- Patient Basic Details & Photo in the first row -->
                                         <div class="ui-g-12 ui-md-4">
@@ -64,14 +69,14 @@
 
 
                                     </div>
-                                </h:form>
+                               
                             </p:tab>
 
                             <p:tab title="Visit Details">
                                 <div class="ui-g">
                                     <!-- Patient Basic Details & Photo in the first row -->
                                     <div class="ui-g-12 ui-md-4">
-                                        <h:form id="formVisitDetails">
+                                       
 
                                             <p:panel class="w-100 m-1">
                                                 <f:facet name="header" >
@@ -261,7 +266,7 @@
                                                             <p:commandButton value="Add"
                                                                              id="btnAddRx"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
                                                         </div>
 
@@ -292,7 +297,7 @@
                                                 </p:dataTable>
                                             </p:panel>
 
-                                        </h:form>
+                                      
                                     </div>
                                     <div class="ui-g-12 ui-md-4">
 
@@ -304,7 +309,7 @@
                                     <!-- Medicines, Conditions, and Allergies in the second row -->
                                     <div class="ui-g-12 ui-md-4">
 
-                                        <h:form>
+                                       
                                             <h:panelGroup id="docPrescreption">
                                                 <h:panelGroup rendered="#{patientEncounterController.encounterPrescreption ne null}">
                                                     <div class="card  m-1 p-1">
@@ -313,19 +318,19 @@
                                                         </div>
                                                         <div class="card card-body">
                                                             <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
-                                                                <p:printer target="txtDocs" ></p:printer>
+                                                                <p:printer target="txtPrescriptionDoc" ></p:printer>
                                                             </p:commandButton>
-                                                            <p:textEditor id="txtDocs" 
+                                                            <p:textEditor id="txtPrescriptionDoc" 
                                                                           toolbarVisible="false"
                                                                           secure='false' widgetVar="textEditorWidget" 
-                                                                          value="#{patientEncounterController.encounterPrescreption.stringValue}">
+                                                                          value="#{patientEncounterController.encounterPrescreption.lobValue}">
                                                             </p:textEditor>
                                                         </div>
                                                     </div>
                                                 </h:panelGroup>
 
                                             </h:panelGroup>
-                                        </h:form>
+                                      
                                     </div>
                                     <div class="ui-g-12 ui-md-8">
 
@@ -345,7 +350,7 @@
                             </p:tab>
                             <p:tab title="Referrals">
                                 <!-- Referral Management Content Here -->
-                                <h:form id="formDocuments">
+                               
                                     <p:panel id="panelDocuments" 
                                              rendered="#{patientEncounterController.userDocumentTemplates ne null}">
                                         <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
@@ -386,7 +391,7 @@
                                         <p:commandButton value="Update" 
                                                          ajax="false"
                                                          process="lstEncounterDocs" 
-                                                         update="gpReferralDoc lblTmp" ></p:commandButton>
+                                                         update="gpReferralDoc lblTmp txtReferralDoc" ></p:commandButton>
 
                                         <h1>A</h1>
                                         <p:outputLabel value="#{patientEncounterController.encounterReferral}" 
@@ -398,7 +403,7 @@
                                                 id="btnSaveDoc"
                                                 value="Save" 
                                                 action="#{patientEncounterController.saveEncounterReferral()}"
-                                                process="btnSaveDoc txtDoc"
+                                                process="btnSaveDoc txtReferralDoc"
                                                 update="lstEncounterDocs">
                                             </p:commandButton>
                                             <p:inputText 
@@ -406,7 +411,7 @@
                                                 id="txtDocName" 
                                                 value="#{patientEncounterController.encounterReferral.stringValue}"></p:inputText>
                                             <p:textEditor 
-                                                id="txtDoc"
+                                                id="txtReferralDoc"
                                                 rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
                                                 secure="false" 
                                                 value="#{patientEncounterController.encounterReferral.lobValue}" >
@@ -415,13 +420,13 @@
 
 
                                     </p:panel>
-                                </h:form>
+                                
                             </p:tab>
                             <p:tab title="Diagnostic Data">
                                 <!-- Imaging & Documents, including Photos, Lab Reports, etc. -->
                             </p:tab>
                             <p:tab title="Visit History and Notes" >
-                                <h:form >
+                              
                                     <div class="card m-1 p-1" >
                                         <div class="card-header" >
                                             <h4>Past Visits</h4>
@@ -445,7 +450,7 @@
                                             </p:dataTable>
                                         </div>
                                     </div>
-                                </h:form>
+                              
                             </p:tab>
                             <p:tab title="Health Analytics">
                                 <!-- Analytics such as FBS Graph, Lipid Profile, BMI Chart, etc. -->
@@ -468,7 +473,7 @@
 
 
 
-                            <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+                          
 
                                 <div class="card  m-1 p-1">
                                     <div class="card-header">Images</div>
@@ -567,7 +572,7 @@
 
 
                                 </div>
-                            </h:form>
+                         
 
 
                         </div>
@@ -626,7 +631,7 @@
                                                 <p:commandLink id="clRemoveIx"
                                                                action="#{patientEncounterController.removeEncounterInvestigations()}" 
                                                                process="clRemoveIx"
-                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} "
+                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
                                                                >
                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                     <h:outputText value="&nbsp;(X)" />
@@ -839,7 +844,7 @@
 
 
 
-
+                  </h:form>
 
             </ui:define>
         </ui:composition>

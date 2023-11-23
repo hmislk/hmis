@@ -513,6 +513,7 @@ public class PatientEncounterController implements Serializable {
         ref.setEncounter(current);
         ref.setOrderNo(getEncounterReferrals().size() + 1);
         clinicalFindingValueFacade.create(ref);
+        encounterReferral= ref;
         getEncounterReferrals().add(ref);
 
     }
@@ -1374,24 +1375,54 @@ public class PatientEncounterController implements Serializable {
         getEncounterFindingValues().add(getEncounterMedicine());
         encounterMedicines = fillEncounterMedicines(current);
 
-        updateDocuments();
+        updateOrGeneratePrescription();
         setEncounterMedicine(null);
 
         JsfUtil.addSuccessMessage("Added");
     }
 
-    private void updateDocuments() {
+    private void updateOrGeneratePrescription() {
+        System.out.println("updateOrGeneratePrescription");
+        System.out.println("updateOrGeneratePrescription = " + userDocumentTemplates);
         if (userDocumentTemplates == null) {
             return;
         }
         if (getEncounterPrescreptions() == null) {
             return;
         }
+
+        if (encounterPrescreption != null) {
+            encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
+            return;
+        } else {
+            DocumentTemplate prescTemplate = null;
+            for (DocumentTemplate dt : userDocumentTemplates) {
+                if (dt.isDefaultTemplate()) {
+                    prescTemplate = dt;
+                }
+            }
+            if (prescTemplate != null) {
+                encounterPrescreption = new ClinicalFindingValue();
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+                encounterPrescreption.setItemValue(selectedDocumentTemplate.getItem());
+                encounterPrescreption.setDocumentTemplate(prescTemplate);
+                encounterPrescreption.setEncounter(current);
+                encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
+                encounterPrescreption.setPatient(current.getPatient());
+                encounterPrescreption.setPerson(current.getPatient().getPerson());
+                encounterPrescreption.setStringValue(prescTemplate.getName());
+                clinicalFindingValueFacade.create(encounterPrescreption);
+                getEncounterPrescreptions().add(encounterPrescreption);
+            }
+        }
+
         for (DocumentTemplate dt : userDocumentTemplates) {
+            System.out.println("dt = " + dt);
             if (dt.isAutoGenerate()) {
                 for (ClinicalFindingValue cfv : getEncounterPrescreptions()) {
                     if (cfv.getDocumentTemplate().equals(dt)) {
-                        cfv.setStringValue(generateDocumentFromTemplate(dt, current));
+                        cfv.setLobValue(generateDocumentFromTemplate(dt, current));
+                        cfv.setStringValue(dt.getName());
                     }
                 }
             }

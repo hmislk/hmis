@@ -8,6 +8,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import org.primefaces.PrimeFaces;
 import org.primefaces.component.accordionpanel.AccordionPanel;
+import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -29,6 +30,7 @@ public class EmrController implements Serializable {
 
     private int activeIndexOfReports = 0;
     private int activeIndexOfPatientProfile = 0;
+    private int activeIndexOfOpdVisit = 0;
     private int activeIndexOfSettings = 0;
 
     public String navigateToSettings() {
@@ -59,6 +61,12 @@ public class EmrController implements Serializable {
         return "/clinical/clinical_administration.xhtml?faces-redirect=true";
     }
 
+    public void onTabChange(TabChangeEvent event) {
+        TabView tabView = (TabView) event.getComponent();
+        this.activeIndexOfOpdVisit = tabView.getActiveIndex();
+        // Additional logic if needed
+    }
+
     public String navigateToManageDiagnoses() {
         diagnosisController.fillItems();
         return "/clinical/clinical_diagnosis";
@@ -76,7 +84,6 @@ public class EmrController implements Serializable {
         this.activeIndexOfReports = activeIndexOfReports;
     }
 
-
     public int getActiveIndexOfPatientProfile() {
         return activeIndexOfPatientProfile;
     }
@@ -91,6 +98,16 @@ public class EmrController implements Serializable {
 
     public void setActiveIndexOfSettings(int activeIndexOfSettings) {
         this.activeIndexOfSettings = activeIndexOfSettings;
+    }
+
+    public int getActiveIndexOfOpdVisit() {
+        System.out.println("getting activeIndexOfOpdVisit = " + activeIndexOfOpdVisit);
+        return activeIndexOfOpdVisit;
+    }
+
+    public void setActiveIndexOfOpdVisit(int activeIndexOfOpdVisit) {
+        this.activeIndexOfOpdVisit = activeIndexOfOpdVisit;
+        System.out.println("setting activeIndexOfOpdVisit = " + activeIndexOfOpdVisit);
     }
 
 }
