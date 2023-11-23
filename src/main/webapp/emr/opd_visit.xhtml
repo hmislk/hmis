@@ -45,8 +45,10 @@
                                     <emr:patient 
                                         patient="#{patientController.current}" ></emr:patient>
                                     <emr:patient_photo
-                                        patient="#{patientController.current}" 
-                                        image="#{patientController.image}"></emr:patient_photo>
+                                        patient="#{patientController.current}" ></emr:patient_photo>
+                                    <emr:patient_medicines
+                                        medicines="#{patientEncounterController.patientMedicines}" ></emr:patient_photo>
+
                                 </h:form>
                             </p:tab>
                             <p:tab title="Visit Details">
