@@ -109,8 +109,8 @@
 
                                                 <div class="row m-2" >
                                                     <div class="col-md-12" >
-                                                        
-                                                        #{documentTeamplateController}
+
+
                                                         <p:dataTable
                                                             id="tblDxx"
                                                             value="#{patientEncounterController.patientDiagnoses}"
@@ -169,18 +169,27 @@
 
                                                         <!-- Dose Group -->
                                                         <div class="d-flex flex-column mx-1">
-                                                            <div class="d-flex">
-                                                                <p:outputLabel id="lblItem" value="Dose" class="w-100" ></p:outputLabel>
-                                                                <p:inputText style="width: 6em;"
-                                                                             id="txtDose"
-                                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
-                                                                             placeholder="Dose"/>
-                                                                <p:selectOneMenu id="cmbDose" 
-                                                                                 value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
-                                                                    <f:selectItem itemLabel="Select" />
-                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
-                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                                </p:selectOneMenu>
+                                                            <div class="row" >
+                                                                <div class="col" >
+                                                                    <p:outputLabel id="lblItem" value="Dose" class="w-100" ></p:outputLabel>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row" >
+                                                                <div class="col m-0" >
+                                                                    <p:inputText class="w-100 m-0"
+                                                                                 id="txtDose"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                                                 placeholder="Dose"/>
+                                                                </div>
+                                                                <div class="col m-0" >
+                                                                    <p:selectOneMenu id="cmbDose" 
+                                                                                     class="w-100 m-0"
+                                                                                     value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
+                                                                        <f:selectItem itemLabel="Select" />
+                                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
+                                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                    </p:selectOneMenu>
+                                                                </div>
                                                             </div>
                                                         </div>
 
