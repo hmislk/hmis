@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -18,14 +19,7 @@
                                 icon="pi pi-save"
                                 class="p-0 m-1" 
                                 title="Save"/>
-                            <p:commandButton 
-                                id="btnCommentPrint"
-                                ajax="false"
-                                icon="pi pi-print"
-                                class="p-0 m-1" 
-                                title="Print">
-                                <p:printer target=":formVisitDetails:txtComments"/>
-                            </p:commandButton>
+
                             <p:commandButton 
                                 class="p-0 m-1" 
                                 action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
@@ -35,6 +29,10 @@
                             </p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" value="To Patient Profile"
+                                action="#{patientController.toEmrPatientProfile()}"
+                                process="panelPt" update="panelPt" ></p:commandButton>
 
                         </h:form>
                     </div>
@@ -43,57 +41,12 @@
                     <div class="col-12" >
                         <p:tabView>
                             <p:tab title="Patient Details">
-                                <!-- Patient Profile Content Here -->
                                 <h:form >
-                                    <div class="card m-1 p-1" >
-
-                                        <div class="card-header" >
-                                            <p:outputLabel value="Patient Details" ></p:outputLabel>
-                                        </div>
-                                        <div class="card-body" >
-                                            <h:outputText value="Name : "  ></h:outputText>
-                                            <h:outputText id="txtPersonName" 
-                                                          value="#{patientEncounterController.current.patient.person.name}">
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText 
-                                                value="Address : " ></h:outputText>
-                                            <h:outputText 
-                                                value="#{patientEncounterController.current.patient.person.address}">
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText 
-                                                value="Age: " ></h:outputText>
-                                            <h:outputText 
-
-                                                value="#{patientEncounterController.current.patient.age}" >
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText 
-                                                value="Sex : " ></h:outputText>
-                                            <h:outputText 
-
-                                                value="#{patientEncounterController.current.patient.person.sex}" >
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText 
-                                                value="Personal Hx : "  ></h:outputText>
-                                            <h:outputText 
-                                                value="#{patientEncounterController.current.patient.comments}" >
-                                            </h:outputText>
-                                            <br/>
-
-                                            <p:commandButton 
-                                                ajax="false" value="To Patient Profile"
-                                                action="#{patientEncounterController.updatePerson()}"
-                                                process="panelPt" update="panelPt" ></p:commandButton>
-
-
-
-
-                                        </div>
-
-                                    </div>
+                                    <emr:patient 
+                                        patient="#{patientController.current}" ></emr:patient>
+                                    <emr:patient_photo
+                                        patient="#{patientController.current}" 
+                                        image="#{patientController.image}"></emr:patient_photo>
                                 </h:form>
                             </p:tab>
                             <p:tab title="Visit Details">
@@ -111,6 +64,14 @@
                                             <div class="position-absolute top-0 end-0">
 
                                             </div>
+                                            <p:commandButton 
+                                                id="btnCommentPrint"
+                                                ajax="false"
+                                                icon="pi pi-print"
+                                                class="p-0 m-1" 
+                                                title="Print">
+                                                <p:printer target="txtComments"/>
+                                            </p:commandButton>
                                             <p:inputTextarea id="txtComments" 
                                                              queryDelay="0" 
                                                              placeholder="Write comments here."
@@ -411,7 +372,7 @@
                             <p:tab title="Diagnostic Data">
                                 <!-- Imaging & Documents, including Photos, Lab Reports, etc. -->
                             </p:tab>
-                            <p:tab title="Visit History & Notes" >
+                            <p:tab title="Visit History and Notes" >
                                 <h:form >
                                     <div class="card m-1 p-1" >
                                         <div class="card-header" >

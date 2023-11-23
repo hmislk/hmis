@@ -33,7 +33,7 @@
                                 <p:graphicImage  class="w-75 img-thumbnail" 
                                                  id="photos" cache="false"
                                                  rendered="#{patientController.current.baImage ne null}"    
-                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
+                                                 value="#{patientController.image}"  >
                                 </p:graphicImage>
 
                             </p:outputPanel>
@@ -48,6 +48,11 @@
                                         </p:commandButton>
                                         <p:commandButton value="OPD Visit" 
                                                          action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="Profile Picture" 
+                                            action="#{patientController.navigateToCapturePatientPhoto()}"
+                                            ajax="false" styleClass="mx-2">
                                         </p:commandButton>
 
 
@@ -109,7 +114,7 @@
 
                                                 <div class="row m-2" >
                                                     <div class="col-md-12" >
-                                                        
+
                                                         #{documentTeamplateController}
                                                         <p:dataTable
                                                             id="tblDxx"
