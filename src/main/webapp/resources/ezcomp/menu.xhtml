@@ -276,7 +276,7 @@
 
                     <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht" value="Investigation Trace"></p:menuitem>
                     <p:menuitem  ajax="false"  action="/inward/inward_reports" value="Inward Reports" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/inward/inward_administration" value="Inward Administration" rendered="#{webUserController.hasPrivilege('InwardAdministration')}" ></p:menuitem>
+                    
                 </p:submenu>
 
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
@@ -479,8 +479,7 @@
                     <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access" value="Credit Dues and Access"  ></p:menuitem>
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('PharmacySearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('PharmacyReports')}" ></p:menuitem>
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>                                    
-                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" ></p:menuitem>
+                    <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
                     <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
@@ -634,7 +633,7 @@
                     <p:menuitem  ajax="false" action="/store/store_search"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/store/store_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
                     <p:menuitem  ajax="false" action="/store/store_summery_index"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
-                    <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                    
                 </p:submenu>
 
                 <p:submenu
@@ -835,7 +834,6 @@
                                  actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
 
                     <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports" rendered="#{webUserController.hasPrivilege('HrReports')}" />
-                    <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration" rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                 </p:submenu>
 
 
@@ -899,6 +897,12 @@
                         icon="fa fa-user-circle"
                         rendered="#{webUserController.hasPrivilege('AdminStaff')}" >
                     </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/hr/hr_admin" 
+                        value="Manage HR" 
+                        icon="fa fa-fw fa-users"
+                        rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                     <p:menuitem 
                         ajax="false" 
                         action="#{investigationController.navigateToLimsAdminIndex()}" 
@@ -942,6 +946,12 @@
                         icon="fa fa-medkit"
                         rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >
                     </p:menuitem>
+                    <p:menuitem  
+                        ajax="false" 
+                        action="/store/store_admin"  
+                        value="Manage Store" 
+                        icon="fa fa-fw fa-store"
+                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 
