@@ -18,26 +18,38 @@
 
                 <p:panel header="Investigation Counts">
                     <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-vials" />
                         <p:outputLabel value="Investigation Counts" 
-                                       styleClass="noPrintButton"/>
+                                       styleClass="noPrintButton mx-2"/>
                     </f:facet> 
+                    <p:commandButton  value="Back" ajax="false" styleClass="noPrintButton mx-1" action="/reportLab/lab/summeries_index" >
+                    </p:commandButton> 
+                    
 
-                    <table >
+                    <table class="mt-2">
                         <tr>
                             <td>
-                                <h:panelGrid columns="3" styleClass="noPrintButton">
-                                    <h:outputLabel value="From"/>
-                                    <h:outputLabel value=" : "/>
-                                    <p:calendar styleClass="dateTimePicker" navigator="true" id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                    </p:calendar>
-                                    <h:outputLabel value="To"/>
-                                    <h:outputLabel value=" : "/>
-                                    <p:calendar styleClass="dateTimePicker" navigator="true" id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                    </p:calendar>
-                                </h:panelGrid>
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-6">
+                                        <h:outputLabel value="From"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:calendar styleClass="dateTimePicker" navigator="true" id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                        </p:calendar>
+                                    </div>
+                                </div>
+                                <div class="row d-flex align-items-center my-2">
+                                    <div class="col-6">
+                                        <h:outputLabel value="To"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:calendar styleClass="dateTimePicker" navigator="true" id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                        </p:calendar>
+                                    </div>
+                                </div>
                             </td>
                             <td rowspan="2" >
-                                <p:fieldset styleClass="noPrintButton" style="max-width: 70%; float: right; text-align: justify; height: 70px; overflow-y: scroll; overflow-x: auto; "  >
+                                <p:fieldset styleClass="noPrintButton my-1" style="max-width: 70%; float: right; text-align: justify; height: 25%; overflow-y: scroll; overflow-x: auto; "  >
                                     <p>
                                         This report lists the counts of all the investigation performed using the application. It includes results from all institutions and their departments. This also includes OPD requests, inward requests and collecting centre requests. Investigations requested using any payment method is listed here.
                                     </p>
@@ -54,17 +66,16 @@
                                     <p:commandButton ajax="false"  value="Process"  
                                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
                                                      styleClass="noPrintButton" style="float: right;" />
-                                    <p:commandButton id="print" value="Print">
+                                    <p:commandButton class="mx-1" id="print" value="Print">
                                         <p:printer target="tbl" />
                                     </p:commandButton>
                                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
                                         <p:dataExporter type="xlsx" target="tbl" fileName="Investigation Counts"
-                                                       
-                                                            
-                                                       />
+
+
+                                                        />
                                     </p:commandButton> 
-                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab/summeries_index" >
-                                    </p:commandButton> 
+
                                 </h:panelGrid>
                             </td>
                         </tr>
@@ -74,7 +85,8 @@
 
                     <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c"
                                  rowKey="#{c.investigation}"
-                                 rowIndexVar="i">
+                                 rowIndexVar="i"
+                                 class="my-2">
                         <f:facet name="header" >
                             <h:outputLabel value="Investigation Counts"/>
                             <br></br>

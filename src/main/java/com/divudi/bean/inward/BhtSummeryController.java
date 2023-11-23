@@ -157,6 +157,11 @@ public class BhtSummeryController implements Serializable {
     private Item item;
     boolean changed = false;
 
+    
+    public String navigateToIntrimBillEstimate(){
+        return "/inward/inward_bill_intrim_estimate";
+    }
+    
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {
             patientRooms = createPatientRooms();
@@ -1759,6 +1764,10 @@ public class BhtSummeryController implements Serializable {
     public String navigateToIntrimBill() {
         patientEncounter = null;
         makeNull();
+        return "/inward/inward_bill_intrim";
+    }
+    
+     public String navigateToIntrimBillFromPatientProfile() {
         return "/inward/inward_bill_intrim";
     }
     

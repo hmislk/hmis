@@ -14,10 +14,14 @@
                     <div class="row" >
                         <div class="col-4 p-1" >
                             <h:form id="formVisitDetails">
-                                <div class="card m-1 p-1">
-                                    <div class="card-header">
+
+                                <p:panel class="w-100 m-1">
+                                    <f:facet name="header" >
                                         Visit Details
-                                    </div>
+                                    </f:facet>
+
+
+
                                     <div class="card-body position-relative">
                                         <div class="position-absolute top-0 end-0">
 
@@ -44,7 +48,7 @@
                                                         event="keyup" 
                                                         process="txtWt" 
                                                         update="txtBmi"
-                                                            listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
+                                                        listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
                                                 </p:inputText>
                                                 <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                             </div>
@@ -53,7 +57,7 @@
                                                 <p:inputText  
                                                     id="txtHt"
                                                     style="width: 5em;"
-                                                              value="#{patientEncounterController.current.height}" >
+                                                    value="#{patientEncounterController.current.height}" >
                                                     <p:ajax event="keyup" process="txtHt" 
                                                             update="txtBmi"
                                                             listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
@@ -94,100 +98,132 @@
                                         </div>
                                     </div>
 
-                                </div>
-
-                                <div class="card " >
-                                    <div class="card card-header" >
-                                        <h4><p:outputLabel value="Prescreption" ></p:outputLabel></h4>
-                                    </div>
-                                    <div class="card card-body" >
-                                        <div class="d-flex w-100">
-
-                                            <p:autoComplete 
-                                                id="acMedicine"
-                                                completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                                value="#{patientEncounterController.encounterMedicine.prescription.item}"
-                                                var="item"
-                                                itemLabel="#{item}"
-                                                itemValue="#{item}"
-                                                placeholder="Select Medicine"
-                                                />
+                                </p:panel>
 
 
+                                <p:panel class="w-100 m-1">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Prescreption" ></p:outputLabel>
+                                    </f:facet>
+                                    <div class="container-fluid m-2 w-100">
+                                        <div class="d-flex flex-wrap w-100">
 
-
-                                        </div>
-                                        <div class="d-flex w-100">
-                                            <p:inputText style="width: 6em;"
-                                                         id="txtDose"
-                                                         value="#{patientEncounterController.encounterMedicine.prescription.dose}"
-                                                         placeholder="Dose"/>
-                                            <p:selectOneMenu id="cmbDose" value="#{patientEncounterController.encounterMedicine.prescription.doseUnit}" >
-                                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                <f:selectItems value="#{measurementUnitController.doseUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                            </p:selectOneMenu>
-                                            <p:selectOneMenu id="cmbFrequency" value="#{patientEncounterController.encounterMedicine.prescription.frequencyUnit}" >
-                                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
-                                                               var="du" 
-                                                               itemLabel="#{du.name}"
-                                                               itemValue="#{du}" ></f:selectItems>
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div class="d-flex w-100">
-                                            <p:inputText style="width: 6em;"
-                                                         id="txtDuration"
-                                                         value="#{patientEncounterController.encounterMedicine.prescription.duration}"
-                                                         placeholder="Duration"/>
-                                            <p:selectOneMenu id="cmbDuration" 
-                                                             value="#{patientEncounterController.encounterMedicine.prescription.durationUnit}" >
-                                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div class="d-flex w-100">
-                                            <p:selectBooleanCheckbox id="chkIndoor" label="Indoor" value="#{patientEncounterController.encounterMedicine.prescription.indoor}" ></p:selectBooleanCheckbox>
-
-                                            <p:commandButton value="Add"
-                                                             id="btnAddRx"
-                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration "
-                                                             action="#{patientEncounterController.addEncounterMedicine}"
-                                                             />
-                                        </div>
-
-
-                                        <div class="row " >
-                                            <div class="col-md-12" >
-
-                                                <p:dataTable
-                                                    id="tblRxx"
-                                                    value="#{patientEncounterController.encounterMedicines}"
-                                                    var="rx">
-                                                    <p:column headerText="Prescription">
-                                                        <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} (#{rx.prescription.indoor ? 'indoor' : 'outdoor'})">
-                                                        </p:outputLabel>
-                                                        <p:spacer height="1" width="5" ></p:spacer>
-                                                        <p:commandLink value="X" class="text-danger" 
-                                                                       id="btnDeleteRx"
-                                                                       process="btnDeleteRx"
-                                                                       update="tblRxx"
-                                                                       onclick="if (!confirm('Are you sure you want to delete this allergy?'))
-                                                                                   return false;"
-                                                                       action="#{patientEncounterController.removePatientDiagnosis()}"
-                                                                       >
-                                                            <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
-                                                        </p:commandLink>
-                                                        <p:tooltip value="Delete" for="btnDeleteRx" ></p:tooltip>
-                                                    </p:column>
-                                                </p:dataTable>
-
-
-
+                                            <!-- Medicine Selection -->
+                                            <div class="mx-1">
+                                                <label for="acMedicine" class="w-100">Medicine:</label>
+                                                <p:autoComplete id="acMedicine"
+                                                                completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                value="#{patientEncounterController.encounterMedicine.prescription.item}"
+                                                                var="item"
+                                                                class="w-100 m-1"
+                                                                inputStyleClass="w-100"
+                                                                itemLabel="#{item}"
+                                                                itemValue="#{item}"
+                                                                minQueryLength="4"
+                                                                maxResults="10"
+                                                                placeholder="Select Medicine" />
                                             </div>
+
+                                            <!-- Dose Group -->
+                                            <div class="d-flex flex-column mx-1">
+                                                <label class="w-100">Dose:</label>
+                                                <div class="d-flex">
+                                                    <p:inputText style="width: 6em;"
+                                                                 id="txtDose"
+                                                                 class="m-1"
+                                                                 value="#{patientEncounterController.encounterMedicine.prescription.dose}"
+                                                                 placeholder="Dose"/>
+                                                    <p:selectOneMenu id="cmbDose" 
+                                                                     value="#{patientEncounterController.encounterMedicine.prescription.doseUnit}"
+                                                                     class="m-1">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.encounterMedicine.prescription.item)}" 
+                                                                       var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+
+                                            <!-- Frequency Selection -->
+                                            <div class="d-flex flex-column mx-1">
+                                                <label for="cmbFrequency" class="w-100">Frequency:</label>
+                                                <p:selectOneMenu id="cmbFrequency" 
+                                                                 value="#{patientEncounterController.encounterMedicine.prescription.frequencyUnit}"
+                                                                 class="m-1">
+                                                    <f:selectItem itemLabel="Select" />
+                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                   var="du" 
+                                                                   itemLabel="#{du.name}"
+                                                                   itemValue="#{du}" />
+                                                </p:selectOneMenu>
+                                            </div>
+
+                                            <!-- Duration Group -->
+                                            <div class="d-flex flex-column mx-1">
+                                                <label class="w-100">Duration:</label>
+                                                <div class="d-flex">
+                                                    <p:inputText style="width: 6em;"
+                                                                 id="txtDuration"
+                                                                 class="m-1"
+                                                                 value="#{patientEncounterController.encounterMedicine.prescription.duration}"
+                                                                 placeholder="Duration"/>
+                                                    <p:selectOneMenu id="cmbDuration" 
+                                                                     value="#{patientEncounterController.encounterMedicine.prescription.durationUnit}"
+                                                                     class="m-1">
+                                                        <f:selectItem itemLabel="Select" />
+                                                        <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                       var="du" 
+                                                                       itemLabel="#{du.name}" 
+                                                                       itemValue="#{du}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+
+                                            <!-- Indoor/Outdoor Selection -->
+                                            <div class="d-flex flex-column mx-1">
+                                                <label for="chkIndoor" class="w-100">Location:</label>
+                                                <p:selectBooleanButton id="chkIndoor" 
+                                                                       class="m-1"
+                                                                       onLabel="Indoor"
+                                                                       offLabel="Outdoor"
+                                                                       value="#{patientEncounterController.encounterMedicine.prescription.indoor}" />
+                                            </div>
+
+                                            <!-- Add Prescription Button -->
+                                            <div class="mx-1">
+                                                <label class="w-100"></label>
+                                                <p:commandButton value="Add"
+                                                                 id="btnAddRx"
+                                                                 process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 action="#{patientEncounterController.addEncounterMedicine}" />
+                                            </div>
+
                                         </div>
                                     </div>
-                                </div>
+
+
+                                    <p:dataTable
+                                        id="tblRxx"
+                                        value="#{patientEncounterController.encounterMedicines}"
+                                        var="rx">
+                                        <p:column>
+                                            <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} (#{rx.prescription.indoor ? 'indoor' : 'outdoor'})">
+                                            </p:outputLabel>
+                                            <p:spacer height="1" width="5" ></p:spacer>
+                                            <p:commandLink value="X" class="text-danger" 
+                                                           id="btnDeleteRx"
+                                                           process="btnDeleteRx"
+                                                           update="tblRxx"
+                                                           onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                       return false;"
+                                                           action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                           >
+                                                <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
+                                            </p:commandLink>
+                                            <p:tooltip value="Delete" for="btnDeleteRx" ></p:tooltip>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
 
                             </h:form>
                             <h:form>
@@ -211,6 +247,61 @@
                                     </h:panelGroup>
 
                                 </h:panelGroup>
+                            </h:form>
+                            <h:form id="formDocuments">
+                                <p:panel id="panelDocuments" 
+                                         rendered="#{patientEncounterController.userDocumentTemplates ne null}">
+                                    <p:outputLabel value="Select Document Template" ></p:outputLabel>
+                                    <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{patientEncounterController.userDocumentTemplates}"
+                                            var="dt"
+                                            itemLabel="#{dt.name}"
+                                            itemValue="#{dt}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <p:commandButton 
+                                        id="btnGenerateNewDocument"
+                                        value="Generate New Document" 
+                                        process="somTemplates btnGenerateNewDocument"
+                                        update="lstEncounterDocs msgs"
+                                        action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
+                                    </p:commandButton>
+
+                                    <p:messages id="msgs" ></p:messages>
+
+                                    <p:selectOneListbox 
+                                        id="lstEncounterDocs"
+                                        value="#{patientEncounterController.encounterReferral}" var="ref" >
+                                        <f:selectItems 
+                                            value="#{patientEncounterController.encounterReferrals}" 
+                                            var="ref"
+                                            itemLabel="#{ref.stringValue}"
+                                            itemValue="#{ref}"></f:selectItems>
+                                        <p:ajax process="lstEncounterDocs" update="gpReferralDoc" ></p:ajax>
+                                    </p:selectOneListbox>
+
+                                    <h:panelGroup id="gpReferralDoc" >
+                                        <p:commandButton 
+                                            id="btnSaveDoc"
+                                            value="Save" 
+                                            action="#{patientEncounterController}"
+                                            process="btnSaveDoc txtDoc"
+                                            update="lstEncounterDocs">
+                                        </p:commandButton>
+                                        <p:inputText 
+                                            id="txtDocName" 
+                                            value="#{patientEncounterController.encounterReferral.stringValue}"></p:inputText>
+                                        <p:textEditor 
+                                            id="txtDoc"
+                                            rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
+                                            secure="false" 
+                                            value="#{patientEncounterController.encounterReferral.lobValue}" >
+                                        </p:textEditor>
+                                    </h:panelGroup>           
+
+
+                                </p:panel>
                             </h:form>
                         </div>
                         <div class="col-4 p-1" >
@@ -430,7 +521,8 @@
                                             <p:commandButton ajax="true" 
                                                              id="btnIx" 
                                                              action="#{patientEncounterController.addEncounterInvestigation()}"
-                                                             process="acIx txtIx btnIx" update="acIx txtIx gpIx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                             process="acIx txtIx btnIx" 
+                                                             update="acIx txtIx gpIx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                             <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
@@ -462,7 +554,7 @@
                                                 <p:commandLink id="clRemoveIx"
                                                                action="#{patientEncounterController.removeEncounterInvestigations()}" 
                                                                process="clRemoveIx"
-                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                               update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} "
                                                                >
                                                     <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                     <h:outputText value="&nbsp;(X)" />
@@ -498,7 +590,7 @@
                                                              id="btnAddDx" 
                                                              action="#{patientEncounterController.addDx}"
                                                              process="acDx txtDx btnAddDx" 
-                                                             update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}"
+                                                             update="acDx txtDx gpDx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                         </div>
@@ -525,7 +617,7 @@
                                                                value="(X)"
                                                                process="clRemoveDx" 
                                                                action="#{patientEncounterController.removeEncounterDiagnoses()}"
-                                                               update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}">
+                                                               update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} ">
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandLink>
                                             </p:column>
@@ -560,7 +652,7 @@
                                             <p:commandButton ajax="true" 
                                                              id="btnSx" 
                                                              action="#{patientEncounterController.addEncounterProcedure}"
-                                                             process="acSx txtSx btnSx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}" update="acSx txtSx gpSx"
+                                                             process="acSx txtSx btnSx " update="acSx txtSx gpSx"
                                                              icon="pi pi-plus">
                                             </p:commandButton>
                                             <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
@@ -592,7 +684,7 @@
                                                     ajax="true" 
                                                     action="#{patientEncounterController.removeCfv}" 
                                                     process="btnRemoveSx"
-                                                    update="tblSx :#{p:resolveFirstComponentWithId('publicGrowl',view).clientId}">
+                                                    update="tblSx ">
                                                     <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
                                                     <h:outputText value="&nbsp;(X)" />
                                                 </p:commandLink>

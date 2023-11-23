@@ -7,60 +7,163 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
         <h:form id="form">
-
-            <div class="row" >
-                <div class="col-5" >
-                    <p:panel header="Patient Details" style="height: 20vh;" >
-                        
-                    </p:panel>
-                    <!-- Patient Details Section -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fa fa-user"></i> Patient Details
-                        </div>
-                        <div class="card-body">
-                            <!-- Insert patient details here, e.g. #{admissionController.current.patient} -->
-                        </div>
+            <p:panel >
+                <f:facet name="header" >
+                    <p:outputLabel value="Inpatient Dashboard" ></p:outputLabel>
+                </f:facet>
+                <div class="row" >
+                    <div class="col-4" >
+                        <common:patient_details patient="#{admissionController.current.patient}"/>
                     </div>
-                </div>
-                <div class="col-5" >
-                    <!-- Admission & Discharge Details Section -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fa fa-bed"></i> Admission &amp; Discharge Details
-                        </div>
-                        <div class="card-body">
-                            <!-- Insert Admission & Discharge details here, e.g. #{admissionController.current} -->
-                        </div>
+                    <div class="col-5" >
+                        <common:admission_details admission="#{admissionController.current}" ></common:admission_details>
                     </div>
-                </div>
-                <div class="col-2" >
-                    <!-- Action Buttons Section -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fa fa-tasks"></i> Actions
-                        </div>
-                        <div class="card-body">
+                    <div class="col-3" >
+                        <p:panelGrid columns="1" >
                             <p:commandButton 
                                 value="Edit Admission" 
-                                action="#{admissionController.navigateToEditAdmission}" icon="fa fa-edit"/>
-                            <p:commandButton rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" value="Interim Bill" icon="fa fa-file"/>
-                            <p:commandButton value="Estimated Bill" icon="fa fa-calculator"/>
-                            <p:commandButton rendered="#{admissionController.current.discharged}" value="Final Bill" icon="fa fa-file"/>
-                            <p:commandButton value="Add Services" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Medicines" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Items" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Timed Services" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Professional Charges" icon="fa fa-plus"/>
-                            <p:commandButton value="Add Estimated Professional Charges" icon="fa fa-plus"/>
-                        </div>
+                                action="#{admissionController.navigateToEditAdmission}" 
+                                icon="fa fa-edit"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{bhtEditController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
+                                action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
+                                value="Interim Bill" 
+                                class="w-100"
+                                icon="fa fa-file">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Estimated Bill" 
+                                icon="fa fa-calculator"
+                                action="#{bhtSummeryController.navigateToIntrimBillEstimate}"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                rendered="#{admissionController.current.discharged}" 
+                                value="Final Bill" 
+                                action="#{inwardSearch.navigateToFinalBillForAdmission}"
+                                icon="fa fa-file"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{inwardSearch.admission}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+
+
+
+
+
+                            <p:commandButton 
+                                value="Room Change" 
+                                action="#{admissionController.navigateToRoomChange}" 
+                                actionListener="#{roomChangeController.recreate}"
+                                icon="fa fa-exchange-alt"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{roomChangeController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Guardian Room Change" 
+                                action="#{admissionController.navigateToGuardianRoomChange}" 
+                                actionListener="#{guardianRoomChangeController.recreate}"
+                                icon="fa fa-users"
+                                class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{guardianRoomChangeController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Add Services" 
+                                action="#{admissionController.navigateToAddServices}" 
+                                actionListener="#{billBhtController.makeNull}"
+                                icon="fa fa-plus-square"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{billBhtController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Add Outside Charge" 
+                                action="#{admissionController.navigateToAddOutsideCharge}" 
+                                actionListener="#{inwardAdditionalChargeController.makeNull}"
+                                icon="fa fa-external-link-square-alt"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{inwardAdditionalChargeController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Add Professional Fee" 
+                                action="#{admissionController.navigateToAddProfessionalFee}" 
+                                actionListener="#{inwardProfessionalBillController.makeNull}"
+                                icon="fa fa-user-md"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{inwardProfessionalBillController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Add Estimated Professional Fee" 
+                                action="#{admissionController.navigateToAddEstimatedProfessionalFee}" 
+                                actionListener="#{inwardProfessionalBillController.makeNull}"
+                                icon="fa fa-user-md"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{inwardProfessionalBillController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Add Timed Services" 
+                                action="#{timedItemController.inwardTimedServiceConsumeInward}" 
+                                actionListener="#{inwardTimedItemController.makeNull}"
+                                icon="fa fa-clock"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{timedItemController.current}" 
+                                    target="#{addTimedServicesController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Pharmacy BHT Request" 
+                                action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                                actionListener="#{pharmacySaleBhtController.resetAll}"
+                                icon="fa fa-prescription-bottle-alt"
+                                 class="w-100">
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current}" 
+                                    target="#{pharmacySaleBhtController.patientEncounter}" />
+                            </p:commandButton>
+
+
+
+                          
+                        </p:panelGrid>
                     </div>
                 </div>
-            </div>
+            </p:panel>
+
 
 
 

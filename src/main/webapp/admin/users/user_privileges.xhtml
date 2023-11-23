@@ -42,22 +42,25 @@
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:commandButton value="Update User Privilage"  
-                                             action="#{userPrivilageController.savePrivileges()}"
-                                             class="ui-button-success"
-                                             ajax="false"  >  
-                            </p:commandButton>
+                            <p:spacer/>
+                            <h:panelGroup >
+                                <p:commandButton value="Update User Privilage"  
+                                                 action="#{userPrivilageController.savePrivileges}"
+                                                 class="ui-button-success mx-1"
+                                                 ajax="false"  >  
+                                </p:commandButton>
 
-                            <p:commandButton value="List Privileges"
-                                             process="cmbInstitution cmbDepartment"
-                                             class="ui-button-warning"
-                                             update="tree"
-                                             ajax="false"
-                                             action="#{userPrivilageController.fillUserPrivileges}"></p:commandButton>
+                                <p:commandButton value="List Privileges"
+                                                 process="cmbInstitution cmbDepartment"
+                                                 class="ui-button-warning mx-1"
+                                                 ajax="false"
+                                                 action="#{userPrivilageController.fillUserPrivileges}"></p:commandButton>
+
+                            </h:panelGroup>
 
                         </p:panelGrid>
 
-
+                       
 
                         <p:tree
                             id="tree"
@@ -66,39 +69,16 @@
                             selection="#{userPrivilageController.selectedNodes}"
                             value="#{userPrivilageController.rootTreeNode}" 
                             var="node" 
+                            propagateSelectionDown="true"
+                            propagateSelectionUp="true"
                             >  
-                            <p:ajax event="select"
-                                    listener="#{userPrivilageController.onNodeSelect}" 
-                                    />
-                            <p:ajax event="unselect" 
-                                    listener="#{userPrivilageController.onNodeUnselect}" 
-                                    />
                             <p:treeNode>  
                                 <h:outputText value="#{node}" />  
                             </p:treeNode>  
                         </p:tree>
-
-
-
-                        <h:commandButton value="Refresh" ></h:commandButton>
-
-                        <h1>
-                            #{userPrivilageController.selectedNodes}
-                        </h1>
-
                     </p:panel>
-
-
-
-
                 </h:form>
-
-
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
-
 </html>

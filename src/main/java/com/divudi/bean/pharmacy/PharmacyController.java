@@ -82,6 +82,8 @@ public class PharmacyController implements Serializable {
     CommonController commonController;
     @Inject
     private AmpController ampController;
+    @Inject
+    VtmController vtmController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -235,6 +237,10 @@ public class PharmacyController implements Serializable {
     public String navigateToDosageForms() {
         return "/pharmacy/admin/dosage_forms";
     }
+    
+    public String navigateToPharmaceuticalItemCategories() {
+        return "/pharmacy/admin/pharmaceutical_item_category";
+    }
 
     public String navigateToAtc() {
         return "/pharmacy/admin/atc";
@@ -257,6 +263,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVtm() {
+        vtmController.fillItems();
         return "/pharmacy/admin/vtm";
     }
 

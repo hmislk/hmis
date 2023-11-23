@@ -29,68 +29,71 @@
             rel="stylesheet" 
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
 
-        
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
-        
+
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
     <h:body >
-        <style >
-            .no-padding-margin-border .ui-panel-content,
-            .no-padding-margin-border .ui-panel-titlebar,
-            .no-padding-margin-border {
+        <style>
+            .no-padding-margin-border > .ui-panel-content,
+            .no-padding-margin-border > .ui-panel-titlebar {
                 padding: 0 !important;
                 margin: 0 !important;
                 border: none !important;
             }
         </style>
-
-
-        <div class="row" >
-            <div class="col-12" >
-                <h:panelGroup rendered="#{!sessionController.firstLogin}" >
-                    <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                        <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
-                            <ui:insert name="login">
-                                <ez:login/>
-                            </ui:insert>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-                            <!--Need to redirect to /index1.xhtml-->
-                        </h:panelGroup>
-                    </h:panelGroup>
-                    <h:panelGroup rendered ="#{sessionController.logged}"  >
-                        <h:panelGroup rendered="#{sessionController.department ne null}" >
-                            <ez:menu/>
-                            <ez:user_icon_bar/>
-                            <p:panel styleClass="no-padding-margin-border" 
-                                     style="height: 100vh; padding: 0px ;margin: 0px; border: none;" class="w-100"  >
-                                <ui:insert name="content">
-                                    
-     
-
-                                </ui:insert>
-                            </p:panel>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{sessionController.department eq null}" >
-                            <ez:select_department/>
-                        </h:panelGroup>
-                        <ez:footer/>
-                    </h:panelGroup>
+        <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+            <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
+                    <ui:insert name="login">
+                        <ez:login/>
+                    </ui:insert>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{sessionController.firstLogin}" >
-                    <ez:first_login/>
+                <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
+                    <!--Need to redirect to /index1.xhtml-->
                 </h:panelGroup>
-            </div>
-        </div>
-        <div class="row w-100" style="bottom: 0; position: fixed;" >
-            <div class="col-12" >
-                <p:messages id="publicGrowl" showDetail="true" closable="true" ></p:messages>
-            </div>
+            </h:panelGroup>
+            <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
+                <p:panel 
+                    rendered="#{sessionController.department ne null}" 
+                    class="m-0 p-0 no-padding-margin-border"
+                    style=" padding: 0 !important;
+                    margin: 0 !important;
+                    border: none !important;">
+                    <ez:menu />
+                    <ez:user_icon_bar rendered="false"/>
+                    <ui:insert name="content" class="m-0 p-0 borderless" >
+
+                    </ui:insert>
+                </p:panel>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" >
+                <ez:select_department/>
+            </h:panelGroup>
+            <ez:footer/>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionController.firstLogin}" >
+            <ez:first_login/>
+        </h:panelGroup>
+        <div class="d-flex justify-content-center align-items-center">
+            <p:growl id="growl" life="2000"  />
+<!--            <p:messages class="w-75 text-center " id="publicGrowl"  closable="true" ></p:messages>-->
         </div>
 
 
+<!--        <script>
+            setTimeout(function () {
+                var growlContainer = document.getElementById('publicGrowl');
+                growlContainer.style.display = 'none';
+            }, 20000);
+
+            // Add a timeout function to hide the messages after a certain duration (e.g., 5000 milliseconds or 5 seconds)
+            setTimeout(function () {
+                $('#publicGrowl').alert('close');
+            }, 5000);
+        </script>-->
     </h:body>
 </html>

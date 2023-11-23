@@ -41,15 +41,6 @@
                                         <p:column headerText="Parent Category">
                                             <h:outputLabel value="#{cat.parentCategory.name}"/>
                                         </p:column> 
-                                        <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                        </p:column> 
-
                                     </p:autoComplete>
 
                                     <h:outputLabel value="BHT Type"/>

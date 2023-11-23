@@ -66,11 +66,12 @@
                     </p:column>
                     <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
                         <p:selectBooleanCheckbox value="#{pr.discharged}" 
-                                                 itemLabel="Discharge"/>
+                                                 itemLabel="Releazed from Room"/>
                     </p:column>
                     <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
                         <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}"  />
                     </p:column>
+                    
                 </p:dataTable>
 
 

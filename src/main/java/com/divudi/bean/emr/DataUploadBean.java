@@ -14,6 +14,7 @@ import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
 import com.divudi.data.EncounterType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Category;
@@ -123,7 +124,7 @@ public class DataUploadBean {
     public String toUploadAmps() {
         return "/pharmacy/admin/upload_amps";
     }
-    
+
     public String toUploadAmpsMin() {
         return "/pharmacy/admin/upload_amps_minimal";
     }
@@ -609,30 +610,22 @@ public class DataUploadBean {
             Row row = rowIterator.next();
             Amp amp = new Amp();
             Atm atm = null;
-            Vmp vmp = null;
+            Vmp vmp=null;
 
-            /**
-             * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
-             * strength unit issue unit pack unit StrengthUnitsPerIssueUnit
-             * IssueUnitsPerPack	ROL	ROQ	MinROQ	manu_Institution
-             * importer_Institution	supplier_Institution	SalePrice	PurchasePrice
-             * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
-             */
             Long id;
-            String ampName = null;
+            String ampName;
             String code = null;
-            String atmName = null;
-            String vmpName = null;
+            String barcode = null;
+            String vmpName;
             String manufacturerName = null;
             String importerName = null;
-            String supplierName = null;
-            Institution supplier;
             Institution importer;
             Institution manufacturer;
 
             Cell idCell = row.getCell(0);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
+                System.out.println("id = " + id);
                 amp.setItemId(id);
             }
 
@@ -642,9 +635,14 @@ public class DataUploadBean {
                 if (ampName == null || ampName.trim().equals("")) {
                     continue;
                 }
+                System.out.println("ampName = " + ampName);
                 amp = ampController.findAmpByName(ampName);
-                if (amp != null) {
-                    continue;
+                System.out.println("amp = " + amp);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(ampName);
+                    amp.setCreatedAt(new Date());
+                    amp.setCreater(sessionController.getLoggedUser());
                 }
             } else {
                 continue;
@@ -655,16 +653,24 @@ public class DataUploadBean {
                 code = codeCell.getStringCellValue();
             }
 
-            Cell atmCell = row.getCell(3);
-            if (atmCell != null && atmCell.getCellType() == CellType.STRING) {
-                atmName = atmCell.getStringCellValue();
-                atm = atmController.findAtmByName(atmName);
+            Cell barcodeCell = row.getCell(3);
+            if (barcodeCell != null && barcodeCell.getCellType() == CellType.STRING) {
+                barcode = barcodeCell.getStringCellValue();
             }
 
             Cell vmpCell = row.getCell(4);
+            System.out.println("vmpCell = " + vmpCell);
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
+                System.out.println("vmpName = " + vmpName);
                 vmp = vmpController.findVmpByName(vmpName);
+                System.out.println("vmp = " + vmp);
+                if (vmp == null) {
+                    System.out.println("This VMP Name not found :  " + vmpName);
+                    continue;
+                }
+            }else{
+                System.out.println("VMP cell type is NOT a String = ");
             }
 
             Cell manufacturerCell = row.getCell(5);
@@ -679,20 +685,27 @@ public class DataUploadBean {
                 importer = institutionController.findAndSaveInstitutionByName(importerName);
             }
 
-            Cell supplierCell = row.getCell(7);
-            if (supplierCell != null && supplierCell.getCellType() == CellType.STRING) {
-                supplierName = supplierCell.getStringCellValue();
-                supplier = institutionController.findAndSaveInstitutionByName(supplierName);
-            }
+            manufacturer = institutionController.getInstitutionByName(manufacturerName, InstitutionType.Manufacturer);
+            importer = institutionController.getInstitutionByName(importerName, InstitutionType.Importer);
 
-            amp = new Amp();
+//            amp = new Amp();
             amp.setName(ampName);
             amp.setCode("amp_" + CommonController.nameToCode(ampName));
-            if (atm != null) {
-                amp.setAtm(atm);
+            
+            System.out.println("vmp = " + vmp);
+            if (vmp != null) {
+                amp.setVmp(vmp);
+                amp.setCategory(vmp.getCategory());
             }
-            amp.setVmp(vmp);
-            amp.setBarcode(code);
+            amp.setCode(code);
+            amp.setBarcode(barcode);
+            if (manufacturer != null) {
+                amp.setManufacturer(manufacturer);
+            }
+            if (importer != null) {
+                amp.setImporter(importer);
+            }
+
             amp.setCreater(sessionController.getLoggedUser());
 
             ampController.saveAmp(amp);
@@ -713,208 +726,110 @@ public class DataUploadBean {
 
         List<Vmp> vmps = new ArrayList<>();
 
-        // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
-            rowIterator.next();
+            rowIterator.next(); // Skip header row
         }
 
         while (rowIterator.hasNext()) {
-            output.append("while").append("\n");
             Row row = rowIterator.next();
             Vmp vmp = new Vmp();
             Vtm vtm = null;
             Category dosageForm = null;
             MeasurementUnit strengthUnit = null;
             MeasurementUnit issueUnit = null;
-            MeasurementUnit packUnit = null;
-            MeasurementUnit minimumIssueUnit = null;
-            MeasurementUnit issueMultipliesUnit = null;
-            /**
-             * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
-             * strength unit issue unit pack unit StrengthUnitsPerIssueUnit
-             * IssueUnitsPerPack	ROL	ROQ	MinROQ	manu_Institution
-             * importer_Institution	supplier_Institution	SalePrice	PurchasePrice
-             * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
-             */
             Long id;
-            String vmpName;
+            String vmpName = "";
             String vtmName;
             String dosageFormName;
             String strengthUnitName;
             String issueUnitName;
-            String packUnitName;
-            String minimumIssueUnitName;
-            String issueMultipliesUnitName;
-
             Double strengthUnitsPerIssueUnit = null;
-            Double issueUnitsPerPack = null;
             Double minimumIssueQuantity = null;
             Double issueMultipliesQuantity = null;
 
+            // Read ID (Optional)
             Cell idCell = row.getCell(0);
-            System.out.println("idCell = " + idCell);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
                 vmp.setItemId(id);
             }
 
+            // Read VMP Name
             Cell nameCell = row.getCell(1);
-            System.out.println("nameCell = " + nameCell);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 vmpName = nameCell.getStringCellValue();
-                output.append("vmpName").append(vmpName).append("/n");
-                if (vmpName == null || vmpName.trim().equals("")) {
-                    output.append("vmpName is null. exiting from Loop.").append("/n");
+                if (vmpName != null && !vmpName.trim().isEmpty()) {
+                    vmp = vmpController.findVmpByName(vmpName);
+                    if (vmp != null) {
+                        vmps.add(vmp);
+                        continue;
+                    }
+                } else {
                     continue;
                 }
-                vmp = vmpController.findVmpByName(vmpName);
-                output.append("vmp").append(vmp).append("/n");
-                if (vmp != null) {
-                    vmps.add(vmp);
-                    continue;
-                }
-            } else {
-                output.append("exiting from loop").append("/n");
-                continue;
             }
 
+            // Read VTM Name
             Cell vtmCell = row.getCell(2);
-            System.out.println("vtmCell = " + vtmCell);
             if (vtmCell != null && vtmCell.getCellType() == CellType.STRING) {
                 vtmName = vtmCell.getStringCellValue();
                 vtm = vtmController.findAndSaveVtmByName(vtmName);
             }
 
+            // Read Dosage Form
             Cell dosageFormCell = row.getCell(3);
-            System.out.println("dosageFormCell = " + dosageFormCell);
             if (dosageFormCell != null && dosageFormCell.getCellType() == CellType.STRING) {
                 dosageFormName = dosageFormCell.getStringCellValue();
                 dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
             }
 
+            // Read Strength Unit
             Cell strengthUnitCell = row.getCell(4);
-            System.out.println("strengthUnitCell = " + strengthUnitCell);
             if (strengthUnitCell != null && strengthUnitCell.getCellType() == CellType.STRING) {
                 strengthUnitName = strengthUnitCell.getStringCellValue();
                 strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
-                strengthUnit.setStrengthUnit(true);
-                measurementUnitController.save(strengthUnit);
             }
 
+            // Read Issue Unit
             Cell issueUnitCell = row.getCell(5);
-            System.out.println("issueUnitCell = " + issueUnitCell);
             if (issueUnitCell != null && issueUnitCell.getCellType() == CellType.STRING) {
                 issueUnitName = issueUnitCell.getStringCellValue();
                 issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
-                issueUnit.setIssueUnit(true);
-                measurementUnitController.save(issueUnit);
             }
 
+            // Read Strength Units per Issue Unit
             Cell strengthUnitsPerIssueUnitCell = row.getCell(6);
-            System.out.println("strengthUnitsPerIssueUnitCell = " + strengthUnitsPerIssueUnitCell);
-            if (strengthUnitsPerIssueUnitCell != null) {
-                // Check the cell type before retrieving the value
-                if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.NUMERIC) {
-                    strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
-                } else if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.STRING) {
-                    // If the cell contains a string, you can either parse the string as a numeric value or handle the error
-                    try {
-                        strengthUnitsPerIssueUnit = Double.parseDouble(strengthUnitsPerIssueUnitCell.getStringCellValue());
-                    } catch (NumberFormatException e) {
-// Handle the error, e.g., log it, throw a custom exception, or set a default value
-                                                strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
-                    }
-                } else {
-// Handle other cell types or set a default value
-                                        strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
-                }
+            if (strengthUnitsPerIssueUnitCell != null && strengthUnitsPerIssueUnitCell.getCellType() == CellType.NUMERIC) {
+                strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
             }
 
-            Cell issueUnitsPerPackCell = row.getCell(7);
-            System.out.println("issueUnitsPerPackCell = " + issueUnitsPerPackCell);
-            if (issueUnitsPerPackCell != null && issueUnitsPerPackCell.getCellType() == CellType.NUMERIC) {
-                issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
-            }
-
-            Cell packUnitCell = row.getCell(8);
-            System.out.println("packUnitCell = " + packUnitCell);
-            if (packUnitCell != null && packUnitCell.getCellType() == CellType.STRING) {
-                packUnitName = packUnitCell.getStringCellValue();
-                packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
-                packUnit.setIssueUnit(true);
-                measurementUnitController.save(packUnit);
-            }
-
-            Cell minIQtyCell = row.getCell(9);
-            System.out.println("minIQtyCell = " + minIQtyCell);
+            // Read Min Issue Quantity
+            Cell minIQtyCell = row.getCell(7);
             if (minIQtyCell != null && minIQtyCell.getCellType() == CellType.NUMERIC) {
                 minimumIssueQuantity = minIQtyCell.getNumericCellValue();
             }
 
-            Cell minimumIssueUnitCell = row.getCell(10);
-            if (minimumIssueUnitCell != null && minimumIssueUnitCell.getCellType() == CellType.STRING) {
-                minimumIssueUnitName = minimumIssueUnitCell.getStringCellValue();
-                minimumIssueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(minimumIssueUnitName);
-                minimumIssueUnit.setIssueUnit(true);
-                measurementUnitController.save(minimumIssueUnit);
-            }
-
-            Cell issueMultipliesQuentityCell = row.getCell(11);
+            // Read Issue Multiplies Quantity
+            Cell issueMultipliesQuentityCell = row.getCell(8);
             if (issueMultipliesQuentityCell != null && issueMultipliesQuentityCell.getCellType() == CellType.NUMERIC) {
                 issueMultipliesQuantity = issueMultipliesQuentityCell.getNumericCellValue();
             }
 
-            Cell issueMultipliesUnitNameCell = row.getCell(12);
-            if (issueMultipliesUnitNameCell != null && issueMultipliesUnitNameCell.getCellType() == CellType.STRING) {
-                issueMultipliesUnitName = issueMultipliesUnitNameCell.getStringCellValue();
-                issueMultipliesUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueMultipliesUnitName);
-                issueMultipliesUnit.setIssueUnit(true);
-                measurementUnitController.save(issueMultipliesUnit);
-            }
-            output.append("vtm = ").append(vtm).append("\n");
-            output.append("dosageForm = ").append(dosageForm).append("\n");
-            output.append("strengthUnitsPerIssueUnit = ").append(strengthUnitsPerIssueUnit).append("\n");
-            output.append("strengthUnit = ").append(strengthUnit).append("\n");
-            output.append("issueUnitsPerPack = ").append(issueUnitsPerPack).append("\n");
-            output.append("packUnit = ").append(packUnit).append("\n");
-            output.append("minimumIssueQuantity = ").append(minimumIssueQuantity).append("\n");
-            output.append("minimumIssueUnit = ").append(minimumIssueUnit).append("\n");
-            output.append("issueMultipliesQuantity = ").append(issueMultipliesQuantity).append("\n");
-            output.append("issueMultipliesUnit = ").append(issueMultipliesUnit).append("\n");
-
-            if (vtm == null
-                    || dosageForm == null
-                    || strengthUnitsPerIssueUnit == null
-                    || strengthUnit == null
-                    || issueUnitsPerPack == null
-                    || packUnit == null
-                    || minimumIssueQuantity == null
-                    || minimumIssueUnit == null
-                    || issueMultipliesQuantity == null
-                    || issueMultipliesUnit == null) {
-                output.append("One or more of the required parameters for createVmp are null.").append("\n");
-                continue;
-            } else {
+            // Check for null values and create VMP
+            if (vtm != null && dosageForm != null && strengthUnitsPerIssueUnit != null && strengthUnit != null
+                    && minimumIssueQuantity != null && issueMultipliesQuantity != null) {
                 vmp = vmpController.createVmp(vmpName,
                         vtm,
                         dosageForm,
-                        strengthUnitsPerIssueUnit,
                         strengthUnit,
-                        issueUnitsPerPack,
-                        packUnit,
-                        minimumIssueQuantity,
-                        minimumIssueUnit,
-                        issueMultipliesQuantity,
-                        issueMultipliesUnit
-                );
-                output.append("VMP Created.").append("\n");
+                        issueUnit,
+                        strengthUnitsPerIssueUnit,
+                        minimumIssueQuantity, issueMultipliesQuantity);
+                vmps.add(vmp);
             }
-
-            vmps.add(vmp);
-
         }
-        outputString = output.toString();
 
+        outputString = output.toString();
         return vmps;
     }
 

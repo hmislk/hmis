@@ -245,6 +245,51 @@ public class AdmissionController implements Serializable {
 
     }
 
+    public String navigateToEditAdmission() {
+        return "/inward/inward_edit_bht?faces-redirect=true";
+    }
+
+    public String navigateToRoomOccupancy() {
+        return "/inward/inward_room_occupancy?faces-redirect=true";
+    }
+
+    public String navigateToRoomVacancy() {
+        return "/inward/inward_room_vacant?faces-redirect=true";
+    }
+
+    public String navigateToRoomChange() {
+        return "/inward/inward_room_change?faces-redirect=true";
+    }
+
+    public String navigateToGuardianRoomChange() {
+        return "/inward/inward_room_change_guardian?faces-redirect=true";
+    }
+
+    // Services & Items Submenu Methods
+    public String navigateToAddServices() {
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToAddOutsideCharge() {
+        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+
+    public String navigateToAddProfessionalFee() {
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFee() {
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBhtRequest() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public String navigateToSearchInwardBills() {
+        return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
+    }
+
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
         String sql;
@@ -266,14 +311,17 @@ public class AdmissionController implements Serializable {
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
-                + " where c.retired=:ret "
-                + " and c.discharged=false ";
+                + " where c.retired=:ret ";
         m.put("ret", false);
-        if (patientNameForSearch != null) {
+        j += " and c.dateOfAdmission between :fd and :td ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (patientNameForSearch != null && !patientNameForSearch.trim().equals("")) {
             j += " and c.patient.person.name like :name ";
             m.put("name", "%" + patientNameForSearch + "%");
         }
-        if (bhtNumberForSearch != null) {
+        if (bhtNumberForSearch != null && !bhtNumberForSearch.trim().equals("")) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberForSearch + "%");
         }
@@ -294,32 +342,48 @@ public class AdmissionController implements Serializable {
         }
 
         if (admissionStatusForSearch != null) {
-            if (admissionStatusForSearch == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED) {
-                j += "  and c.discharged=:dis ";
-                m.put("dis", false);
-            } else if (admissionStatusForSearch == AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED) {
-                j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                m.put("dis", true);
-                m.put("bf", false);
-            } else if (admissionStatusForSearch == AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED) {
-                j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
-                m.put("dis", true);
-                m.put("bf", true);
-            } else if (admissionStatusForSearch == AdmissionStatus.ANY_STATUS) {
+            if (null != admissionStatusForSearch) {
+                switch (admissionStatusForSearch) {
+                    case ADMITTED_BUT_NOT_DISCHARGED:
+                        j += "  and c.discharged=:dis ";
+                        m.put("dis", false);
+                        break;
+                    case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", false);
+                        break;
+                    case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                        j += "  and c.discharged=:dis and c.paymentFinalized=:bf ";
+                        m.put("dis", true);
+                        m.put("bf", true);
+                        break;
+                    case ANY_STATUS:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (institutionForSearch != null) {
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
-        items = getFacade().findByJpql(j, m);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
-    
-    public String navigateToAdmissionProfilePage(){
-        if(current==null){
+
+    public String navigateToAdmissionProfilePage() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
+        if (current.getPatient() == null) {
+            JsfUtil.addErrorMessage("No Patient. Program Error");
+            return "";
+        }
+        current.getPatient().setEditingMode(false);
         return "/inward/admission_profile";
     }
 
@@ -1113,6 +1177,9 @@ public class AdmissionController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
         return fromDate;
     }
 
@@ -1121,6 +1188,9 @@ public class AdmissionController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 

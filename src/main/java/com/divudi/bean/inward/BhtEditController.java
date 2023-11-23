@@ -19,6 +19,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.inward.PatientRoom;
@@ -87,6 +88,9 @@ public class BhtEditController implements Serializable {
     CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
+    
+    private Speciality referringSpeciality;
+    private Speciality opdSpeciality;
 
     public void resetSpecialities() {
         if (current == null) {
@@ -312,6 +316,9 @@ public class BhtEditController implements Serializable {
         getPatientRoomFacade().edit(tmp);
     }
 
+    
+    
+    
     public void dateChangeListen() {
         getCurrent().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
@@ -505,6 +512,22 @@ public class BhtEditController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public Speciality getReferringSpeciality() {
+        return referringSpeciality;
+    }
+
+    public void setReferringSpeciality(Speciality referringSpeciality) {
+        this.referringSpeciality = referringSpeciality;
+    }
+
+    public Speciality getOpdSpeciality() {
+        return opdSpeciality;
+    }
+
+    public void setOpdSpeciality(Speciality opdSpeciality) {
+        this.opdSpeciality = opdSpeciality;
     }
 
     /**
