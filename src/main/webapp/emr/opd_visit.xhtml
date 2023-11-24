@@ -493,9 +493,7 @@
                                                     update="lstEncounterDocs gpReferralDoc"
                                                     action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
                                                 </p:commandButton>
-
                                             </p:panelGrid>
-
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>
@@ -513,12 +511,6 @@
                                                         update="gpReferralDoc" ></p:ajax>
                                                 </p:selectOneListbox>
                                             </p:panelGrid>
-
-
-
-
-
-
                                         </div>
                                         <div class="col-8" >
                                             <p:panelGrid columns="1" id="gpReferralDoc" >

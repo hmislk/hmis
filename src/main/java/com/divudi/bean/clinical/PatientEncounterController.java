@@ -498,6 +498,7 @@ public class PatientEncounterController implements Serializable {
         return "/emr/reports/visits";
     }
 
+    
     public void generateAndAddDocumentFromTemplate() {
         if (selectedDocumentTemplate == null) {
             JsfUtil.addErrorMessage("Select a template");
@@ -515,7 +516,6 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueFacade.create(ref);
         encounterReferral = ref;
         getEncounterReferrals().add(ref);
-
     }
 
     public String listAllEncounters() {
