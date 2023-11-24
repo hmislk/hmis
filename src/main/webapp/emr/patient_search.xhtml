@@ -66,8 +66,12 @@
                                 <div class="mb-3">
                                     <p:commandButton value="New" styleClass="btn btn-warning"
                                                      action="#{patientController.toAddNewPatient()}" />
-                                    <p:commandButton value="Search" id="btnSearch" styleClass="btn btn-primary ms-2"
-                                                     action="#{patientController.searchPatient()}" />
+                                    <p:commandButton 
+                                        value="Search" 
+                                        id="btnSearch" 
+                                        styleClass="btn btn-primary ms-2"
+                                        ajax="false"
+                                        action="#{patientController.searchPatient()}" />
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
                                     <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
                                                      action="#{patientController.clearSearchDetails()}" />
