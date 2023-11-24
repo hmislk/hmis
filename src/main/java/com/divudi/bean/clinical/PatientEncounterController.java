@@ -1096,6 +1096,14 @@ public class PatientEncounterController implements Serializable {
         System.out.println("e = " + e);
         System.out.println("t = " + t);
 
+        if (t == null) {
+            return "";
+        }
+        
+        if(t.getContents()==null){
+            return "";
+        }
+
         String input = t.getContents();
         String output = "";
 
@@ -1409,7 +1417,6 @@ public class PatientEncounterController implements Serializable {
             if (prescTemplate != null) {
                 encounterPrescreption = new ClinicalFindingValue();
                 encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
-                encounterPrescreption.setItemValue(selectedDocumentTemplate.getItem());
                 encounterPrescreption.setDocumentTemplate(prescTemplate);
                 encounterPrescreption.setEncounter(current);
                 encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));

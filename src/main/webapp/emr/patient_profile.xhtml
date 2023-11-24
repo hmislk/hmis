@@ -44,24 +44,56 @@
                             <div class="row" >
                                 <div class="col-12 p-2" >
                                     <h:form >
-                                        <p:commandButton value="Edit" action="#{patientController.navigateToEmrEditPatient()}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
-                                        <p:commandButton value="OPD Visit" 
-                                                         action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            value="Profile Picture" 
-                                            action="#{patientController.navigateToCapturePatientPhoto()}"
-                                            ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
+                                        <div class="d-flex justify-content-end">
+                                            <p:commandButton 
+                                                value="Edit" 
+                                                action="#{patientController.navigateToEmrEditPatient()}" 
+                                                ajax="false" 
+                                                icon="fa fa-pencil"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="OPD Visit" 
+                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                                ajax="false" 
+                                                icon="fa fa-stethoscope"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Profile Picture" 
+                                                action="#{patientController.navigateToCapturePatientPhoto()}"
+                                                ajax="false" 
+                                                icon="fa fa-user"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
 
 
-                                        <p:commandButton value="Data Entry" 
-                                                         action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
-                                        <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
-                                            <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                        </p:commandButton>
+                                            <p:commandButton 
+                                                value="Data Entry" 
+                                                action="#{patientController.navigateToNewDataEntryForm}" 
+                                                ajax="false" 
+                                                icon="fa fa-keyboard"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Billing" 
+                                                action="#{patientController.toEmrPatientProfile()}" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                style="float: right;"
+                                                value="Lookup" 
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning mx-1" 
+                                                action="#{opdBillController.navigateToSearchPatients()}" 
+                                                >
+                                            </p:commandButton>
+                                        </div>
                                     </h:form>
 
 
@@ -104,7 +136,8 @@
                                                     <div class="col-md-3" >
                                                         <p:commandButton value="Add"
                                                                          id="btnAddDx"
-                                                                         class="w-100"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
                                                                          process="btnAddDx acDx txtDx"
                                                                          update="tblDxx acDx txtDx"
                                                                          action="#{patientEncounterController.addPatientDiagnosis()}"
@@ -227,6 +260,8 @@
                                                             <label class="w-100"></label>
                                                             <p:commandButton value="Add"
                                                                              id="btnAddRx"
+                                                                             icon="fa fa-plus"
+                                                                             class="mx-1 ui-button-success"
                                                                              process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                              update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                              action="#{patientEncounterController.addPatientMedicine}" />
@@ -255,7 +290,7 @@
                                                                                    update="tblRxx"
                                                                                    onclick="if (!confirm('Are you sure you want to remove this medicine?'))
                                                                                                return false;"
-                                                                                               action="#{patientEncounterController.removePatientMedicine()}"
+                                                                                   action="#{patientEncounterController.removePatientMedicine()}"
                                                                                    >
                                                                         <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
                                                                     </p:commandLink>
@@ -309,7 +344,8 @@
                                                         <p:commandButton 
                                                             value="Add Allergy"
                                                             id="btnAddAllergy"
-                                                            class="w-100"
+                                                            icon="fa fa-plus"
+                                                            class="mx-1 ui-button-success"
                                                             process="btnAddAllergy acAllergy txtAllergy"
                                                             update="tblAllergies acAllergy txtAllergy"
                                                             action="#{patientEncounterController.addPatientAllergy()}"
