@@ -266,7 +266,7 @@
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
                                                             <p:commandLink id="clRemoveIx"
-                                                                           action="#{patientEncounterController.removeEncounterInvestigations()}" 
+                                                                           action="#{patientEncounterController.removeEncounterInvestigation()}" 
                                                                            process="clRemoveIx"
                                                                            update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
                                                                            >
@@ -502,7 +502,7 @@
                                                     id="lstEncounterDocs"
                                                     value="#{patientEncounterController.encounterReferral}"  >
                                                     <f:selectItems 
-                                                        value="#{patientEncounterController.encounterReferrals}" 
+                                                        value="#{patientEncounterController.encounterDocuments}" 
                                                         var="ref"
                                                         itemLabel="#{ref.stringValue}"
                                                         itemValue="#{ref}"></f:selectItems>
