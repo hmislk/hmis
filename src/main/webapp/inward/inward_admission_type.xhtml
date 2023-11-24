@@ -11,10 +11,10 @@
     <ui:define name="subcontent">
 
         <h:panelGroup >
-            <h:form  >
+            <h:form>
                 <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
 
 
 
@@ -22,20 +22,38 @@
                     <div class="row">
                         <div class="col-4">
                             <p:panel>
-                                <h:panelGrid id="gpSelectButtons" columns="2" class="my-2"  >
-                                    <p:commandButton id="btnAdd" value="Add" action="#{admissionTypeController.prepareAdd()}"  >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
-                                        </f:ajax>
-                                    </p:commandButton>
-                                    <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{admissionTypeController.delete()}"  value="Delete"  >
-                                    </p:commandButton>
-                                </h:panelGrid>
+                                <p:panelGrid id="gpSelectButtons" columns="2" class="my-2"  >
+
+                                </p:panelGrid>
                                 <div class="container">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton 
+                                                id="btnAdd" 
+                                                value="Add" 
+                                                class="w-25 m-1 ui-button-success"
+                                                action="#{admissionTypeController.prepareAdd()}" 
+                                                update="lstSelect gpDetail detailFocus" 
+                                                process="btnAdd" >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                id="btnDelete" 
+                                                class="w-25 m-1 ui-button-danger"
+                                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                            return false;" 
+                                                action="#{admissionTypeController.delete()}"  
+                                                value="Delete"  >
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="form-group">                                            
-                                                <p:selectOneListbox id="lstSelect" value="#{admissionTypeController.current}" class="form-control h-100"> 
+                                                <p:selectOneListbox
+                                                    id="lstSelect" 
+                                                    value="#{admissionTypeController.current}" 
+                                                    filter="true"
+                                                    class="form-control h-100"> 
                                                     <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                                     <f:ajax render="gpDetail" execute="lstSelect"></f:ajax>
                                                 </p:selectOneListbox>
@@ -47,60 +65,99 @@
                         </div>
 
                         <div class="col-8">
-                            <p:panel>
-                                <h:panelGrid id="gpDetail" columns="1">
-                                    <div class="row bg-primary w-100">
-                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
-                                            <p:outputLabel id="lblName" value="Name of the Admission Type" class="w-100"></p:outputLabel>
-                                            <p:inputText autocomplete="off" id="txtName" value="#{admissionTypeController.current.name}" class="w-100 mx-2"></p:inputText>
 
-                                            <p:outputLabel value="Day Case or Inward Stay" class="w-100"></p:outputLabel>
-                                            <p:selectOneMenu value="#{admissionTypeController.current.admissionTypeEnum}" class="w-100 mx-2">
-                                                <f:selectItems value="#{enumController.admissionTypeEnum}" var="ate" itemValue="#{ate}" itemLabel="#{ate.label}" />
-                                            </p:selectOneMenu>
+                            <p:panelGrid id="gpDetail" columns="2" class="w-100">
+                                <f:facet name="header" >
+                                    <p:commandButton 
+                                        id="btnSave" 
+                                        value="Save" 
+                                        class="ui-button-warning"
+                                        action="#{admissionTypeController.saveSelected()}"
+                                        update="lstSelect selectFocus" 
+                                        process="btnSave gpDetail">
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave" />
+                                </f:facet>
 
-                                            <p:outputLabel value="Code" class="w-100"></p:outputLabel>
-                                            <p:inputText autocomplete="off" value="#{admissionTypeController.current.code}" class="w-100 mx-2"></p:inputText>
+                                <p:outputLabel 
+                                    id="lblName"
+                                    value="Name of the Admission Type" 
+                                    class="w-100"></p:outputLabel>
+                                <p:inputText
+                                    autocomplete="off"
+                                    id="txtName" 
+                                    value="#{admissionTypeController.current.name}" 
+                                    required="true"
+                                    requiredMessage="Requires a name"
+                                    class="w-100 m-1"></p:inputText>
 
-                                            <h:outputLabel value="Admission Fee" class="w-100"></h:outputLabel>
-                                            <p:inputText autocomplete="off" value="#{admissionTypeController.current.admissionFee}" class="w-100 mx-2" />
+                                <p:outputLabel
+                                    value="Day Case or Inward Stay" 
+                                    class="w-100"></p:outputLabel>
+                                <p:selectOneMenu 
+                                    value="#{admissionTypeController.current.admissionTypeEnum}" 
+                                    class="w-100 m-1"
+                                    required="true"
+                                    requiredMessage="Requires a type"
+                                    >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.admissionTypeEnum}" var="ate" itemValue="#{ate}" itemLabel="#{ate.label}" />
+                                </p:selectOneMenu>
 
-                                            <h:outputLabel value="Default Room" class="w-100"></h:outputLabel>
-                                            <p:autoComplete forceSelection="true"
-                                                            value="#{admissionTypeController.current.roomFacilityCharge}"
-                                                            completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                                            var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" class="w-100 ml-2" inputStyleClass="w-100">
-                                            </p:autoComplete>
+                                <p:outputLabel 
+                                    value="Code" 
+                                    class="w-100"></p:outputLabel>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    required="true"
+                                    requiredMessage="Requires a code"
+                                    value="#{admissionTypeController.current.code}" 
+                                    class="w-100 m-1"></p:inputText>
 
-                                            <h:outputLabel value="Need to allocate a room" class="w-100"></h:outputLabel>
-                                            <p:selectBooleanCheckbox value="#{admissionTypeController.current.roomChargesAllowed}" class="w-100 mx-2" />
+                                <p:outputLabel 
+                                    value="Admission Fee" 
+                                    class="w-100"></p:outputLabel>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    required="true"
+                                    requiredMessage="Requires a fee"
+                                    value="#{admissionTypeController.current.admissionFee}" 
+                                    class="w-100 m-1" />
 
-                                            <h:outputLabel value="Count to start Admission Numbers" class="w-100"></h:outputLabel>
-                                            <p:inputText autocomplete="off" value="#{admissionTypeController.current.additionToCount}" class="w-100 mx-2" />
-                                        </h:panelGrid>
+                                <p:outputLabel 
+                                    value="Default Room" 
+                                    class="w-100"></p:outputLabel>
+                                <p:autoComplete 
+                                    forceSelection="true"
+                                    value="#{admissionTypeController.current.roomFacilityCharge}"
+                                    completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                    var="rf" 
+                                    itemLabel="#{rf.name}" 
+                                    itemValue="#{rf}" 
+                                    class="w-100 m-1"
+                                    inputStyleClass="w-100">
+                                </p:autoComplete>
 
-                                    </div>
-                                    <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <p:commandButton id="btnSave" value="Save" action="#{admissionTypeController.saveSelected()}" >
-                                            <f:ajax render="btnAdd btnDelete btnSave lstSelect gpDetail selectFocus" execute="gpDetail"></f:ajax>
-                                        </p:commandButton>
-                                        <p:defaultCommand target="btnSave" />
-                                    </h:panelGrid>
-                                </h:panelGrid>
+                                <p:outputLabel 
+                                    value="Need to allocate a room" 
+                                    class="w-100"></p:outputLabel>
+                                <p:selectBooleanCheckbox 
+                                    value="#{admissionTypeController.current.roomChargesAllowed}" class="w-100 m-1" />
 
-                            </p:panel>
+                                <p:outputLabel value="Count to start Admission Numbers" class="w-100"></p:outputLabel>
+                                <p:inputText autocomplete="off" value="#{admissionTypeController.current.additionToCount}" class="w-100 m-1" />
+
+
+
+
+
+
+                            </p:panelGrid>
+
+
                         </div>
                     </div>
 
-                    <h:panelGrid id ="gpVeda" columns="2" >                      
-                        <h:panelGrid id="gpSelect" columns="1"  >
-
-                        </h:panelGrid  >
-
-
-
-
-                    </h:panelGrid>
                 </p:panel>
             </h:form>
 
