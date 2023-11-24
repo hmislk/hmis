@@ -1098,7 +1098,7 @@ public class PatientEncounterController implements Serializable {
         encounterDiagnoses = fillEncounterDiagnoses(encounter);
         encounterImages = fillEncounterImages(encounter);
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
-        encounterDocuments = fillEncounterReferrals(encounter);
+        encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
     }
 
@@ -1242,6 +1242,7 @@ public class PatientEncounterController implements Serializable {
 
     public void generateDocumentsFromDocumentTemplates(PatientEncounter encounter) {
         List<DocumentTemplate> dts;
+        encounterPrescreption = null;
         if (userDocumentTemplates == null) {
             userDocumentTemplates = documentTemplateController.fillAllItems(sessionController.getLoggedUser());
         }
@@ -1249,34 +1250,18 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         dts = userDocumentTemplates;
-        System.out.println("dts = " + dts);
         for (DocumentTemplate t : dts) {
             if (t.isDefaultTemplate()) {
-                System.out.println("t = " + t);
-                switch (t.getType()) {
-                    case FitnessCertificate:
-
-                        break;
-                    case MedicalCertificate:
-
-                        break;
-                    case Prescription:
-                        ClinicalFindingValue cfv = new ClinicalFindingValue();
-                        cfv.setEncounter(encounter);
-                        cfv.setDocumentTemplate(t);
-                        cfv.setStringValue(t.getName());
-                        cfv.setLobValue(generateDocumentFromTemplate(t, encounter));
-                        getEncounterPrescreptions().add(cfv);
-                        setEncounterPrescreption(cfv);
-                        break;
-                    case Referral:
-                        break;
-                    default:
-                        continue;
-                }
+                ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setEncounter(encounter);
+                cfv.setDocumentTemplate(t);
+                cfv.setStringValue(t.getName());
+                cfv.setLobValue(generateDocumentFromTemplate(t, encounter));
+                getEncounterPrescreptions().add(cfv);
+                setEncounterPrescreption(cfv);
+                break;
             }
         }
-
     }
 
     public void removePatientAllergy() {
@@ -1311,8 +1296,6 @@ public class PatientEncounterController implements Serializable {
         getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
-
-    
 
     public void addPatientAllergy() {
         if (getPatientAllergy().getItemValue() == null) {
@@ -1546,7 +1529,6 @@ public class PatientEncounterController implements Serializable {
         removeCfv();
         encounterMedicines = fillEncounterMedicines(current);
     }
-    
 
     public void removeEncounterDiagnosticImage() {
         removeCfv();
@@ -1565,7 +1547,7 @@ public class PatientEncounterController implements Serializable {
 
     public void removeEncounterDocument() {
         removeCfv();
-        encounterDocuments = fillEncounterReferrals(current);
+        encounterDocuments = fillEncounterDocuments(current);
     }
 
     public void removeEncounterPrescription() {
@@ -2573,7 +2555,7 @@ public class PatientEncounterController implements Serializable {
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
-    private List<ClinicalFindingValue> fillEncounterReferrals(PatientEncounter encounter) {
+    private List<ClinicalFindingValue> fillEncounterDocuments(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDocument);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
