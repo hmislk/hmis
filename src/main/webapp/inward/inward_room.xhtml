@@ -50,12 +50,12 @@
                                     <h:panelGrid id="gpDetailText" columns="2" >
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
                                         <p:inputText autocomplete="off" id="txtName" value="#{roomController.current.name}" class="ml-2 w-100" ></p:inputText>
-                                        <h:outputLabel value="Room Facility Category"/>
+                                        <h:outputLabel value="Default Facility Category"/>
                                         <p:selectOneMenu value="#{roomController.current.parentCategory}" class="ml-2 w-100">
-                                            <f:selectItem itemLabel="Select Room Category"/>
+                                            <f:selectItem itemLabel="Select a default Facility Category"/>
                                             <f:selectItems value="#{roomCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         </p:selectOneMenu>   
-                                        <h:outputText value="Room Under Construction" ></h:outputText>
+                                        <h:outputText value="Room is Under Construction" ></h:outputText>
                                         <p:selectBooleanCheckbox value="#{roomController.current.filled}" class="ml-2" />
 
 
