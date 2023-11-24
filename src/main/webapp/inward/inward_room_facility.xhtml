@@ -22,7 +22,7 @@
 
                     
                         <div class="row w-100">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <p:panel >
                                     <h:panelGrid id="gpSelectButtons" columns="3"  >
                                         <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{roomFacilityChargeController.prepareAdd()}" styleClass="buttons"   >
@@ -42,13 +42,13 @@
                                     
                                 </p:panel>
                             </div>
-                            <div class="col-6">
-                                <p:panel>
+                            <div class="col-8">
+                                
                                     <h:panelGrid id="gpDetail" columns="1">
                                         <h:panelGrid id="gpDetailText" columns="2">
                                             <h:outputText id="lblName" value="Name" ></h:outputText>
                                             <p:inputText autocomplete="off" id="txtName" value="#{roomFacilityChargeController.current.name}" class="w-100 ml-2"  ></p:inputText>
-                                            <h:outputLabel value="Room Facility"/>
+                                            <h:outputLabel value="Facilitiy"/>
                                             <p:selectManyCheckbox  value="#{roomFacilityChargeController.current.roomFacilities}" class="w-100 ml-2">
                                                 <f:selectItems value="#{roomFacilityChargeController.roomFacilitys}"/>
                                             </p:selectManyCheckbox>
@@ -68,23 +68,23 @@
                                                             completeMethod="#{departmentController.completeDept}" 
                                                             var="c" itemLabel="#{c.name}" itemValue="#{c}" class="w-100 ml-2" >
                                             </p:autoComplete>
-                                            <h:outputLabel value="Duration Hour"/>
+                                            <h:outputLabel value="Fee Calculation Block Duration in Hours"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationHours}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Over Shoot Hour"/>
+                                            <h:outputLabel value="Over Shoot Hour for the last Block"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.overShootHours}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Administration Charge"/>
+                                            <h:outputLabel value="Administration Charge for a Block"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.adminstrationCharge}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Madical Care Charge"/>
+                                            <h:outputLabel value="Madical Care Charge for a Block"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.medicalCareCharge}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Room Charge"></h:outputLabel>
+                                            <h:outputLabel value="Room Charge for a Block"></h:outputLabel>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.roomCharge}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Maintanace Charge"/>
+                                            <h:outputLabel value="Maintanace Charge for a Block"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.maintananceCharge}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Nursing Charge"/>
+                                            <h:outputLabel value="Nursing Charge for a Block"/>
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.nursingCharge}" class="w-100 ml-2"/>
-                                            <h:outputLabel value="Duration Days For Mo Charge" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                            <h:outputLabel value="Duration Days For Mo Charge for a Block" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
                                             <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                            <h:outputLabel value="MO Charge" />
+                                            <h:outputLabel value="MO Charge for a Block" />
                                             <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moCharge}" class="w-100 ml-2"/>
                                             <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
                                             <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
@@ -99,7 +99,7 @@
                                             <p:defaultCommand target="btnSave"/>
                                         </h:panelGrid>
                                     </h:panelGrid>
-                                </p:panel>
+                              
                             </div>
                         </div>
 
