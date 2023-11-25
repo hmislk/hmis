@@ -24,10 +24,12 @@
                             <h:panelGrid id="gpSelect" columns="1" class="w-100"  >
                             <p:panel class="w-100" >
                                 <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneMenu  id="lstSelect" class="w-100" value="#{serviceCategoryController.current}">
+                                    <p:selectOneListbox 
+                                        filter="true"
+                                        id="lstSelect" class="w-100" value="#{serviceCategoryController.current}">
                                         <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                         <f:ajax render="gpDetail" execute="lstSelect" />
-                                    </p:selectOneMenu>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="2" >
 
