@@ -16,33 +16,25 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
         <p:dataTable 
             id="tblAllergies"
             value="#{cc.attrs.allergies}"
             var="allergy"
-            >
-            <p:column headerText="Allergen">
-                <h:outputText value="#{allergy.itemValue.name}"/>
-                <p:commandLink 
-                    value="X" 
-                    class="text-danger" 
-                    id="btnDeleteAllergy"
-                    onclick="if (!confirm('Are you sure you want to delete this allergy?'))
-                                return false;"
-                    process="btnDeleteAllergy tblAllergies"
-                    update="tblAllergies"
-                    action="#{patientEncounterController.removePatientAllergy()}"
-                    >
-                    <f:setPropertyActionListener 
-                        target="#{patientEncounterController.removingClinicalFindingValue}" 
-                        value="#{allergy}"
-                        />
-                </p:commandLink>
+            styleClass="table table-striped"
+            rowStyleClass="#{not empty allergy.stringValue ? 'table-danger' : ''}">
 
-            </p:column>
-            <p:column headerText="Details">
-                <h:outputText value="#{allergy.stringValue}"/>
+            <p:column headerText="Allergy Information">
+                <h:outputText value="#{allergy.itemValue.name}" style="font-weight:bold;"/>
+                <h:outputText value="#{not empty allergy.stringValue ? ' - '.concat(allergy.stringValue) : ''}" />
+                <p:commandLink 
+                    styleClass="ui-button-danger float-right"
+                    onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                        return false;"
+                    process="@this"
+                    update="tblAllergies"
+                    action="#{patientEncounterController.removePatientAllergyForComposite(cc.attrs.allergies, allergy)}">
+                    <i class="pi pi-times" />
+                </p:commandLink>
             </p:column>
         </p:dataTable>
 
