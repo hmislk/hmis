@@ -13,8 +13,8 @@
         <h:panelGroup >
             <h:form  >
                 <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
 
 
 
@@ -23,9 +23,17 @@
                         <div class="col-6">
                             <h:panelGrid id="gpSelect" class="w-100">
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
-                                    <p:commandButton id="btnAdd" value="Add"  
-                                                     action="#{doctorController.prepareAdd()}" styleClass="buttons" ajax="false" class="w-100"/>                                   
-                                    <p:commandButton ajax="false" id="btnDelete" 
+                                    <p:commandButton 
+                                        id="btnAdd" 
+                                        value="Add"  
+                                        action="#{doctorController.prepareAdd()}" 
+                                        process="btnAdd"
+                                        update="gpDetail"
+                                        class="w-100"/>                                   
+                                    <p:commandButton 
+                                        process="btnDelete"
+                                        update="lstSelect gpDetail"
+                                        id="btnDelete" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                                  return false;" action="#{doctorController.delete()}"  value="Delete" class="w-100">
                                     </p:commandButton>
@@ -55,16 +63,22 @@
                         </div>
                         <div class="col-6">
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
+
+
+                                <h:outputText  value="Name" />
+                                <p:inputText
+                                    id="txtName"
+                                    autocomplete="off" value="#{doctorController.current.person.name}" class="w-100" />
+
                                 <h:outputText  value="Title" />
                                 <p:selectOneMenu
+                                    id="somTitle"
                                     filter="true"
                                     value="#{doctorController.current.person.title}">
                                     <f:selectItem itemLabel="Please select a title"/>
                                     <f:selectItems value="#{doctorController.title}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />
                                 </p:selectOneMenu>
 
-                                <h:outputText  value="Name" />
-                                <p:inputText autocomplete="off" value="#{doctorController.current.person.name}" class="w-100" />
                                 <h:outputText  value="Phone" />
                                 <p:inputText  value="#{doctorController.current.person.phone}" class="w-100" />
                                 <h:outputText  value="Fax" />
