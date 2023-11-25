@@ -16,7 +16,7 @@
                 <h:form >
                     <p:dataTable id="documentTemplateTable"
                                  var="doc"
-                                 value="#{documentTeamplateController.items}"
+                                 value="#{documentTemplateController.items}"
                                  paginator="true"
                                  rows="10"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -38,11 +38,11 @@
                            <h:outputText value="#{doc.autoGenerate ? 'Yes' : 'No'}" />
                         </p:column>
                         <p:column headerText="Actions" style="width: 150px;">
-                            <p:commandButton value="Edit" action="#{documentTeamplateController.navigateToEditUserDocumentTemplates()}" ajax="false">
-                                <f:setPropertyActionListener target="#{documentTeamplateController.current}" value="#{doc}" />
+                            <p:commandButton value="Edit" action="#{documentTemplateController.navigateToEditUserDocumentTemplates()}" ajax="false">
+                                <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
                             </p:commandButton>
-                            <p:commandButton value="Remove" action="#{documentTeamplateController.removeUserDocumentTemplate()}" ajax="false">
-                                <f:setPropertyActionListener target="#{documentTeamplateController.current}" value="#{doc}" />
+                            <p:commandButton value="Remove" action="#{documentTemplateController.removeUserDocumentTemplate()}" ajax="false">
+                                <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
                             </p:commandButton>
                         </p:column>
                     </p:dataTable>

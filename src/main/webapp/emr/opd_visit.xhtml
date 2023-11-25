@@ -266,7 +266,7 @@
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
                                                             <p:commandLink id="clRemoveIx"
-                                                                           action="#{patientEncounterController.removeEncounterInvestigations()}" 
+                                                                           action="#{patientEncounterController.removeEncounterInvestigation()}" 
                                                                            process="clRemoveIx"
                                                                            update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
                                                                            >
@@ -469,14 +469,12 @@
 
                                 </p:tab>
                                 <p:tab title="Referrals">
-
                                     <div class="row" >
                                         <div class="col-4 p-1" >
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generate New Document" ></p:outputLabel>
                                                 </f:facet>
-
                                                 <p:outputLabel value="Select a Template" ></p:outputLabel>
                                                 <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
@@ -490,12 +488,10 @@
                                                     id="btnGenerateNewDocument"
                                                     value="Generate" 
                                                     process="btnGenerateNewDocument somTemplates"
-                                                    update="lstEncounterDocs"
+                                                    update="lstEncounterDocs gpReferralDoc"
                                                     action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
                                                 </p:commandButton>
-
                                             </p:panelGrid>
-
                                             <p:panelGrid columns="3" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>
@@ -504,7 +500,7 @@
                                                     id="lstEncounterDocs"
                                                     value="#{patientEncounterController.encounterReferral}"  >
                                                     <f:selectItems 
-                                                        value="#{patientEncounterController.encounterReferrals}" 
+                                                        value="#{patientEncounterController.encounterDocuments}" 
                                                         var="ref"
                                                         itemLabel="#{ref.stringValue}"
                                                         itemValue="#{ref}"></f:selectItems>
@@ -513,12 +509,6 @@
                                                         update="gpReferralDoc" ></p:ajax>
                                                 </p:selectOneListbox>
                                             </p:panelGrid>
-
-
-
-
-
-
                                         </div>
                                         <div class="col-8" >
                                             <p:panelGrid columns="1" id="gpReferralDoc" >
