@@ -23,7 +23,7 @@
                         <div class="col-12 px-4" >
 
                             <p:commandButton 
-                                action="#{patientEncounterController.saveSelected()}"
+                                action="#{pastPatientEncounterController.saveSelected()}"
                                 ajax="false"
                                 icon="pi pi-save"
                                 class="p-0 m-1" 
@@ -31,10 +31,10 @@
 
                             <p:commandButton 
                                 class="p-0 m-1" 
-                                action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
+                                action="#{pastPatientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
+                            <p:commandButton class="p-0 m-1" action="#{pastPatientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
-                                <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
+                                <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${pastPatientEncounterController.current}" />
                             </p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
@@ -67,13 +67,13 @@
                                             <emr:patient patient="#{patientController.current}"></emr:patient>
                                         </div>
                                         <div class="ui-g-12 ui-md-4">
-                                            <emr:patient_allergies allergies="#{patientEncounterController.patientAllergies}"></emr:patient_allergies>
+                                            <emr:patient_allergies allergies="#{pastPatientEncounterController.patientAllergies}"></emr:patient_allergies>
                                         </div>
                                         <div class="ui-g-12 ui-md-4">
-                                            <emr:patient_conditions conditions="#{patientEncounterController.patientDiagnoses}"></emr:patient_conditions>
+                                            <emr:patient_conditions conditions="#{pastPatientEncounterController.patientDiagnoses}"></emr:patient_conditions>
                                         </div>
                                         <div class="ui-g-12 ui-md-8">
-                                            <emr:patient_medicines medicines="#{patientEncounterController.patientMedicines}"></emr:patient_medicines>
+                                            <emr:patient_medicines medicines="#{pastPatientEncounterController.patientMedicines}"></emr:patient_medicines>
                                         </div>
                                     </div>
                                 </p:tab>
@@ -86,12 +86,13 @@
                                                     <h:outputText value="Clinical Details" ></h:outputText>
                                                 </f:facet>
                                                 <p:inputTextarea id="txtComments" 
+                                                                 readonly="true"
                                                                  queryDelay="0" 
                                                                  placeholder="Write comments here."
                                                                  class="w-100" 
                                                                  autoResize="true"
-                                                                 value="#{patientEncounterController.current.comments}" 
-                                                                 completeMethod="#{patientEncounterController.completeClinicalComments}" 
+                                                                 value="#{pastPatientEncounterController.current.comments}" 
+                                                                 completeMethod="#{pastPatientEncounterController.completeClinicalComments}" 
                                                                  minQueryLength="1">
                                                     <f:ajax event="keyup" execute="@this" ></f:ajax>
                                                 </p:inputTextarea>
@@ -100,16 +101,16 @@
                                                 <div class="row my-1" ></div>
                                                 <div class="row" >
                                                     <div class="col-md-6" >
-                                                        <p:commandLink value="Weight&nbsp;:&nbsp;" action="#{patientEncounterController.createWtChart()}" ajax="false"  target="_blank"></p:commandLink>
+                                                        <p:commandLink value="Weight&nbsp;:&nbsp;" action="#{pastPatientEncounterController.createWtChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                         <p:inputText  
                                                             id="txtWt"
                                                             style="width: 4em;"
-                                                            value="#{patientEncounterController.current.weight}" >
+                                                            value="#{pastPatientEncounterController.current.weight}" >
                                                             <p:ajax 
                                                                 event="keyup" 
                                                                 process="txtWt" 
                                                                 update="txtBmi"
-                                                                listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
+                                                                listener="#{pastPatientEncounterController.calculateBmi()}"></p:ajax>
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                                     </div>
@@ -118,10 +119,10 @@
                                                         <p:inputText  
                                                             id="txtHt"
                                                             style="width: 5em;"
-                                                            value="#{patientEncounterController.current.height}" >
+                                                            value="#{pastPatientEncounterController.current.height}" >
                                                             <p:ajax event="keyup" process="txtHt" 
                                                                     update="txtBmi"
-                                                                    listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
+                                                                    listener="#{pastPatientEncounterController.calculateBmi()}"></p:ajax>
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>
                                                     </div>
@@ -129,18 +130,18 @@
                                                 <div class="row my-1" ></div>
                                                 <div class="row"  >
                                                     <div class="col-md-6" >
-                                                        <p:commandLink value="BP&nbsp;:&nbsp;" action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
+                                                        <p:commandLink value="BP&nbsp;:&nbsp;" action="#{pastPatientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                         <h:panelGroup >
                                                             <p:inputText
                                                                 id="txtSbp"
                                                                 style="width: 3em;" maxlength="3" 
-                                                                value="#{patientEncounterController.current.sbp}"
+                                                                value="#{pastPatientEncounterController.current.sbp}"
                                                                 >
 
                                                             </p:inputText>
                                                             <p:outputLabel value="/" ></p:outputLabel>
                                                             <p:inputText  style="width: 3em;" maxlength="3" 
-                                                                          value="#{patientEncounterController.current.dbp}" ></p:inputText>
+                                                                          value="#{pastPatientEncounterController.current.dbp}" ></p:inputText>
                                                             <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
                                                         </h:panelGroup>
                                                     </div>
@@ -148,7 +149,7 @@
                                                         <p:outputLabel value="BMI&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText 
                                                             id="txtBmi"
-                                                            value="#{patientEncounterController.current.bmi}" style="width:5em;" >
+                                                            value="#{pastPatientEncounterController.current.bmi}" style="width:5em;" >
                                                             <f:convertNumber pattern="#0.0" ></f:convertNumber>
 
                                                         </p:inputText>
@@ -165,7 +166,7 @@
                                                 <div class="row" >
                                                     <div class="col-md-9" >
                                                         <p:autoComplete id="acDx" 
-                                                                        value="#{patientEncounterController.diagnosis}"
+                                                                        value="#{pastPatientEncounterController.diagnosis}"
                                                                         completeMethod="#{diagnosisController.completeDiagnosis}"
                                                                         var="dx" forceSelection="true"
                                                                         itemLabel="#{dx.name}" 
@@ -177,7 +178,7 @@
                                                     <div class="col-md-3" >
                                                         <p:commandButton ajax="true" 
                                                                          id="btnAddDx" 
-                                                                         action="#{patientEncounterController.addDx}"
+                                                                         action="#{pastPatientEncounterController.addDx}"
                                                                          process="acDx txtDx btnAddDx" 
                                                                          update="acDx txtDx gpDx"
                                                                          icon="pi pi-plus">
@@ -186,15 +187,15 @@
                                                 </div>
                                                 <p:inputTextarea class="w-100" autoResize="true"
                                                                  id="txtDx" 
-                                                                 value="#{patientEncounterController.diagnosisComments}">
+                                                                 value="#{pastPatientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
                                                 <p:watermark value="Select Diagnosis." for="acDx"></p:watermark>
                                                 <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx"></p:watermark>
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
-                                                                 rendered="#{patientEncounterController.encounterDiagnoses ne null and patientEncounterController.encounterDiagnoses.size() > 0}"
-                                                                 value="#{patientEncounterController.encounterDiagnoses}"
+                                                                 rendered="#{pastPatientEncounterController.encounterDiagnoses ne null and pastPatientEncounterController.encounterDiagnoses.size() > 0}"
+                                                                 value="#{pastPatientEncounterController.encounterDiagnoses}"
                                                                  emptyMessage="No Diagnosis Added Yet" rows="5"
                                                                  paginatorAlwaysVisible="false"
                                                                  paginator="true"
@@ -205,9 +206,9 @@
                                                             <p:commandLink id="clRemoveDx" 
                                                                            value="(X)"
                                                                            process="clRemoveDx" 
-                                                                           action="#{patientEncounterController.removeEncounterDiagnoses()}"
+                                                                           action="#{pastPatientEncounterController.removeEncounterDiagnoses()}"
                                                                            update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} ">
-                                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
+                                                                <f:setPropertyActionListener value="#{edx}" target="#{pastPatientEncounterController.removingCfv}" />
                                                             </p:commandLink>
                                                         </p:column>
                                                         <p:column headerText="Details">
@@ -220,44 +221,10 @@
                                             </p:panel>
 
                                             <p:panel header="Tests" class="w-100 m-1">
-                                                <div class="row" >
-                                                    <div class="col-9" >
-                                                        <p:autoComplete id="acIx" 
-                                                                        value="#{patientEncounterController.encounterInvestigation.itemValue}"
-                                                                        completeMethod="#{investigationController.completeInvestigation}"
-                                                                        var="ix" forceSelection="true"
-                                                                        itemLabel="#{ix.name}" 
-                                                                        itemValue="#{ix}"
-                                                                        class="w-100"
-                                                                        inputStyleClass="w-100">
-                                                        </p:autoComplete>
-                                                    </div>
-                                                    <div class="col-3" >
-                                                        <p:commandButton ajax="true" 
-                                                                         id="btnIx" 
-                                                                         action="#{patientEncounterController.addEncounterInvestigation()}"
-                                                                         process="acIx txtIx btnIx" 
-                                                                         update="acIx txtIx gpIx"
-                                                                         icon="pi pi-plus">
-                                                        </p:commandButton>
-                                                    </div>
-                                                </div>
-
-
-                                                <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
-                                                <p:inputText class="w-100" 
-                                                             id="txtIx" 
-                                                             value="#{patientEncounterController.encounterInvestigation.lobValue}">
-                                                </p:inputText>
-
-
-
-                                                <p:watermark value="Select an investigation." for="acIx"></p:watermark>
-                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
-                                                                 rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
-                                                                 value="#{patientEncounterController.encounterInvestigations}"
+                                                                 rendered="#{pastPatientEncounterController.encounterInvestigations ne null and pastPatientEncounterController.encounterInvestigations.size() > 0}"
+                                                                 value="#{pastPatientEncounterController.encounterInvestigations}"
                                                                  emptyMessage="No Investigations Added Yet" rows="5"
                                                                  paginatorAlwaysVisible="false"
                                                                  paginator="true"
@@ -266,11 +233,11 @@
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
                                                             <p:commandLink id="clRemoveIx"
-                                                                           action="#{patientEncounterController.removeEncounterInvestigation()}" 
+                                                                           action="#{pastPatientEncounterController.removeEncounterInvestigation()}" 
                                                                            process="clRemoveIx"
                                                                            update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
                                                                            >
-                                                                <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                                <f:setPropertyActionListener value="#{ix}" target="#{pastPatientEncounterController.removingCfv}" />
                                                                 <h:outputText value="&nbsp;(X)" />
                                                             </p:commandLink>
                                                         </p:column>
@@ -289,96 +256,10 @@
                                                 <f:facet name="header">
                                                     <p:outputLabel value="Prescription" />
                                                 </f:facet>
-                                                <div class="container-fluid m-0 p-0 w-100">
-                                                    <div class="d-flex flex-wrap w-100">
-                                                        <!-- Medicine Selection -->
-                                                        <div class="m-1">
-                                                            <label for="acMedicine" class="w-100">Medicine:</label>
-                                                            <p:autoComplete id="acMedicine"
-                                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                                                            value="#{patientEncounterController.encounterMedicine.prescription.item}"
-                                                                            var="item"
-                                                                            class="w-100"
-                                                                            inputStyleClass="w-100"
-                                                                            itemLabel="#{item}"
-                                                                            itemValue="#{item}"
-                                                                            minQueryLength="4"
-                                                                            maxResults="10"
-                                                                            placeholder="Select Medicine" />
-                                                        </div>
 
-                                                        <!-- Dose Group -->
-                                                        <div class="m-1 d-flex flex-column">
-                                                            <label>Dose:</label>
-                                                            <div class="d-flex">
-                                                                <p:inputText style="width: 6em;"
-                                                                             id="txtDose"
-                                                                             value="#{patientEncounterController.encounterMedicine.prescription.dose}"
-                                                                             placeholder="Dose"/>
-                                                                <p:selectOneMenu id="cmbDose" 
-                                                                                 value="#{patientEncounterController.encounterMedicine.prescription.doseUnit}">
-                                                                    <f:selectItem itemLabel="Select" />
-                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.encounterMedicine.prescription.item)}" 
-                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
-                                                                </p:selectOneMenu>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Frequency Selection -->
-                                                        <div class="m-1 d-flex flex-column">
-                                                            <label for="cmbFrequency">Frequency:</label>
-                                                            <p:selectOneMenu id="cmbFrequency" 
-                                                                             value="#{patientEncounterController.encounterMedicine.prescription.frequencyUnit}">
-                                                                <f:selectItem itemLabel="Select" />
-                                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
-                                                                               var="du" 
-                                                                               itemLabel="#{du.name}"
-                                                                               itemValue="#{du}" />
-                                                            </p:selectOneMenu>
-                                                        </div>
-
-                                                        <!-- Duration Group -->
-                                                        <div class="m-1 d-flex flex-column">
-                                                            <label>Duration:</label>
-                                                            <div class="d-flex">
-                                                                <p:inputText style="width: 6em;"
-                                                                             id="txtDuration"
-                                                                             value="#{patientEncounterController.encounterMedicine.prescription.duration}"
-                                                                             placeholder="Duration"/>
-                                                                <p:selectOneMenu id="cmbDuration" 
-                                                                                 value="#{patientEncounterController.encounterMedicine.prescription.durationUnit}">
-                                                                    <f:selectItem itemLabel="Select" />
-                                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" 
-                                                                                   var="du" 
-                                                                                   itemLabel="#{du.name}" 
-                                                                                   itemValue="#{du}" />
-                                                                </p:selectOneMenu>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Indoor/Outdoor Selection -->
-                                                        <div class="m-1 d-flex flex-column">
-                                                            <label for="chkIndoor">Location:</label>
-                                                            <p:selectBooleanButton id="chkIndoor"
-                                                                                   onLabel="Indoor"
-                                                                                   offLabel="Outdoor"
-                                                                                   value="#{patientEncounterController.encounterMedicine.prescription.indoor}" />
-                                                        </div>
-
-                                                        <!-- Add Prescription Button -->
-                                                        <div>
-                                                            <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton value="Add"
-                                                                             id="btnAddRx"
-                                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
-                                                                             action="#{patientEncounterController.addEncounterMedicine}" />
-                                                        </div>
-                                                    </div>
-                                                </div>
 
                                                 <p:dataTable id="tblRxx"
-                                                             value="#{patientEncounterController.encounterMedicines}"
+                                                             value="#{pastPatientEncounterController.encounterMedicines}"
                                                              var="rx">
                                                     <p:column>
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
@@ -392,7 +273,7 @@
                                                 <div class="row" >
                                                     <div class="col-md-9" >
                                                         <p:autoComplete id="acSx" 
-                                                                        value="#{patientEncounterController.encounterProcedure.itemValue}"
+                                                                        value="#{pastPatientEncounterController.encounterProcedure.itemValue}"
                                                                         completeMethod="#{procedureController.completeProcedures}"
                                                                         var="sx" forceSelection="true"
                                                                         itemLabel="#{sx.name}" 
@@ -406,7 +287,7 @@
                                                     <div class="col-md-3" >
                                                         <p:commandButton ajax="true" 
                                                                          id="btnSx" 
-                                                                         action="#{patientEncounterController.addEncounterProcedure}"
+                                                                         action="#{pastPatientEncounterController.addEncounterProcedure}"
                                                                          process="acSx txtSx btnSx" update="acSx txtSx gpSx"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
@@ -415,15 +296,15 @@
                                                 </div>
                                                 <p:inputTextarea class="w-100" autoResize="true"
                                                                  id="txtSx" 
-                                                                 value="#{patientEncounterController.encounterProcedure.lobValue}">
+                                                                 value="#{pastPatientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
                                                 <p:watermark value="Select Procedure." for="acSx"></p:watermark>
                                                 <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
-                                                                 rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
-                                                                 value="#{patientEncounterController.encounterProcedures}"
+                                                                 rendered="#{pastPatientEncounterController.encounterProcedures ne null and pastPatientEncounterController.encounterProcedures.size() > 0}"
+                                                                 value="#{pastPatientEncounterController.encounterProcedures}"
                                                                  emptyMessage="No Procedure Added Yet" rows="5"
                                                                  paginatorAlwaysVisible="false"
                                                                  paginator="true"
@@ -434,10 +315,10 @@
                                                             <p:commandLink 
                                                                 id="btnRemoveSx"
                                                                 ajax="true" 
-                                                                action="#{patientEncounterController.removeCfv}" 
+                                                                action="#{pastPatientEncounterController.removeCfv}" 
                                                                 process="btnRemoveSx"
                                                                 update="tblSx ">
-                                                                <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
+                                                                <f:setPropertyActionListener value="#{sx}" target="#{pastPatientEncounterController.removingCfv}" />
                                                                 <h:outputText value="&nbsp;(X)" />
                                                             </p:commandLink>
                                                         </p:column>
@@ -459,7 +340,7 @@
                                                 <p:textEditor id="txtPrescriptionDoc" 
                                                               toolbarVisible="false"
                                                               secure='false' widgetVar="textEditorWidget" 
-                                                              value="#{patientEncounterController.encounterPrescreption.lobValue}">
+                                                              value="#{pastPatientEncounterController.encounterPrescreption.lobValue}">
                                                 </p:textEditor>
                                             </p:panel>
                                         </div>
@@ -476,10 +357,10 @@
                                                     <p:outputLabel value="Generate New Document" ></p:outputLabel>
                                                 </f:facet>
                                                 <p:outputLabel value="Select a Template" ></p:outputLabel>
-                                                <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
+                                                <p:selectOneMenu id="somTemplates" value="#{pastPatientEncounterController.selectedDocumentTemplate}" >
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                                     <f:selectItems 
-                                                        value="#{patientEncounterController.userDocumentTemplates}"
+                                                        value="#{pastPatientEncounterController.userDocumentTemplates}"
                                                         var="dt"
                                                         itemLabel="#{dt.name}"
                                                         itemValue="#{dt}"></f:selectItems>
@@ -489,7 +370,7 @@
                                                     value="Generate" 
                                                     process="btnGenerateNewDocument somTemplates"
                                                     update="lstEncounterDocs gpReferralDoc"
-                                                    action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
+                                                    action="#{pastPatientEncounterController.generateAndAddDocumentFromTemplate}" >
                                                 </p:commandButton>
                                             </p:panelGrid>
                                             <p:panelGrid columns="3" class="w-100 m-1" >
@@ -498,9 +379,9 @@
                                                 </f:facet>
                                                 <p:selectOneListbox 
                                                     id="lstEncounterDocs"
-                                                    value="#{patientEncounterController.encounterReferral}"  >
+                                                    value="#{pastPatientEncounterController.encounterReferral}"  >
                                                     <f:selectItems 
-                                                        value="#{patientEncounterController.encounterDocuments}" 
+                                                        value="#{pastPatientEncounterController.encounterDocuments}" 
                                                         var="ref"
                                                         itemLabel="#{ref.stringValue}"
                                                         itemValue="#{ref}"></f:selectItems>
@@ -517,27 +398,27 @@
                                                     <p:commandButton 
                                                         id="btnSaveDoc"
                                                         value="Save" 
-                                                        action="#{patientEncounterController.saveEncounterReferral()}"
+                                                        action="#{pastPatientEncounterController.saveEncounterReferral()}"
                                                         process="btnSaveDoc txtReferralDoc"
                                                         update="lstEncounterDocs">
                                                     </p:commandButton>
                                                     <p:commandButton 
                                                         id="btnDeleteDoc"
                                                         value="Delete" 
-                                                        action="#{patientEncounterController.saveEncounterReferral()}"
+                                                        action="#{pastPatientEncounterController.saveEncounterReferral()}"
                                                         process="btnDeleteDoc"
                                                         update="lstEncounterDocs txtReferralDoc">
                                                     </p:commandButton>
                                                     <h:outputLabel 
-                                                        rendered="#{patientEncounterController.encounterReferral.stringValue ne null}"
+                                                        rendered="#{pastPatientEncounterController.encounterReferral.stringValue ne null}"
                                                         id="txtDocName" 
-                                                        value="#{patientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
+                                                        value="#{pastPatientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
                                                 </f:facet>
                                                 <h:panelGroup id="txtReferralDoc" ></h:panelGroup>
                                                 <p:textEditor 
-                                                    rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
+                                                    rendered="#{pastPatientEncounterController.encounterReferral.lobValue ne null}" 
                                                     secure="false" 
-                                                    value="#{patientEncounterController.encounterReferral.lobValue}" >
+                                                    value="#{pastPatientEncounterController.encounterReferral.lobValue}" >
                                                 </p:textEditor>
                                             </p:panelGrid>          
 
@@ -547,7 +428,7 @@
 
 
                                     <p:panel id="panelDocuments" 
-                                             rendered="#{patientEncounterController.userDocumentTemplates ne null}">
+                                             rendered="#{pastPatientEncounterController.userDocumentTemplates ne null}">
 
 
 
@@ -578,7 +459,7 @@
                                         <div class="card-body">
                                             <p:dataTable id="imageSwitcher" 
                                                          styleClass="noHeader" 
-                                                         widgetVar="imageSwitcherTable" value="#{patientEncounterController.encounterImages}" var="photo"
+                                                         widgetVar="imageSwitcherTable" value="#{pastPatientEncounterController.encounterImages}" var="photo"
                                                          paginator="true" 
                                                          paginatorAlwaysVisible="false"
                                                          rows="1" 
@@ -587,13 +468,13 @@
                                                          emptyMessage="No visit photos">
                                                 <p:column>
                                                     <div class="position-relative">
-                                                        <p:commandButton id="btnRemoveImage" action="#{patientEncounterController.removeEncounterImage()}"
+                                                        <p:commandButton id="btnRemoveImage" action="#{pastPatientEncounterController.removeEncounterImage()}"
                                                                          process="@this" update="imageSwitcher" icon="pi pi-trash"
                                                                          style="position: absolute; top: 5px; left: 5px;" >
-                                                            <f:setPropertyActionListener value="#{photo}" target="#{patientEncounterController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
+                                                            <f:setPropertyActionListener value="#{photo}" target="#{pastPatientEncounterController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
                                                         </p:commandButton>
 
-                                                        <p:graphicImage value="#{patientEncounterController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
+                                                        <p:graphicImage value="#{pastPatientEncounterController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
                                                             <f:param name="id" value="#{photo.id}" />
                                                         </p:graphicImage>
                                                     </div>
@@ -603,7 +484,7 @@
                                             <h:outputScript library="photocam" name="webcam.js" />
 
                                             <div style="display:none;">
-                                                <p:photoCam listener="#{patientEncounterController.oncaptureVisitPhoto}" 
+                                                <p:photoCam listener="#{pastPatientEncounterController.oncaptureVisitPhoto}" 
                                                             widgetVar="pc" width="400" height="300"
                                                             photoWidth="800" photoHeight="600" />
                                             </div>
@@ -613,18 +494,18 @@
                                                     <p:commandButton id="btnCaptureImage" 
                                                                      onclick="PF('pc').capture();" 
                                                                      icon="pi pi-camera"
-                                                                     action="#{patientEncounterController.updateEncounterImages}" 
+                                                                     action="#{pastPatientEncounterController.updateEncounterImages}" 
                                                                      update="imageSwitcher" 
                                                                      class="btn btn-primary h-50"/> <!-- Adjust height -->
                                                 </div>
                                                 <div class="col d-flex align-items-center">
-                                                    <p:fileUpload value="#{patientEncounterController.uploadedFile}" 
+                                                    <p:fileUpload value="#{pastPatientEncounterController.uploadedFile}" 
                                                                   auto="true"
                                                                   mode="advanced" 
                                                                   dragDropSupport="true"
                                                                   multiple="false" update="imageSwitcher" accept="image/*" 
                                                                   class="m-2" title="Upload Image"
-                                                                  listener="#{patientEncounterController.uploadPhoto}" />
+                                                                  listener="#{pastPatientEncounterController.uploadPhoto}" />
                                                 </div>
 
                                             </div>
@@ -678,7 +559,7 @@
                                             <h4>Past Visits</h4>
                                         </div>
                                         <div class="card-body" >
-                                            <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
+                                            <p:dataTable id="tblVisits" value="#{pastPatientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
                                                 <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
                                                     <f:facet name="header">
                                                         <h:outputText value="Date / Time" />

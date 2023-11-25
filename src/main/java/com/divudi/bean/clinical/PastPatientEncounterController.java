@@ -87,7 +87,7 @@ import org.primefaces.model.file.UploadedFile;
  * Consultant (Health Informatics)
  */
 @Named
-@ViewScoped
+@SessionScoped
 public class PastPatientEncounterController implements Serializable {
 
     /**
