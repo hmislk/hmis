@@ -228,7 +228,7 @@ public class PastPatientEncounterController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         generateDocumentsFromDocumentTemplates(current);
-        return "";
+        return "/emr/opd_visit_view";
     }
 
     public void calculateBmi() {
@@ -2863,11 +2863,3 @@ public class PastPatientEncounterController implements Serializable {
 
 }
 
-enum ClinicalField {
-
-    History,
-    Examination,
-    Investigations,
-    Treatments,
-    Management,
-}
