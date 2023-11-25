@@ -610,6 +610,22 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addSuccessMessage("Saved");
         }
     }
+    
+    public void removeEncounterReferral() {
+        if (encounterReferral == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        encounterReferral.setRetired(true);
+        encounterReferrals.remove(encounterReferral);
+        if (encounterReferral.getId() == null) {
+            clinicalFindingValueFacade.create(encounterReferral);
+            JsfUtil.addSuccessMessage("Removed");
+        } else {
+            clinicalFindingValueFacade.edit(encounterReferral);
+            JsfUtil.addSuccessMessage("Removed");
+        }
+    }
 
     public void addEncounterInvestigation() {
         if (current == null) {
