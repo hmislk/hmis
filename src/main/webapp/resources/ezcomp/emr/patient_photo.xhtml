@@ -17,16 +17,19 @@
         <p:outputPanel class="text-center">
             <h:panelGroup rendered="#{cc.attrs.patient.baImage eq null}"  >
                 <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Male'}" 
-                                class="w-75 img-thumbnail"
+                                class="w-100 m-1 img-thumbnail"
+                                cache="true"
                                 library="image" name="male.jpg">
                 </p:graphicImage>
                 <p:graphicImage rendered="#{cc.attrs.patient.person.sex eq 'Female'}" 
-                                class="w-75 img-thumbnail"
+                                class="w-100 m-1 img-thumbnail"
+                                cache="true"
                                 library="image" name="female.png">
                 </p:graphicImage>
             </h:panelGroup>
-            <p:graphicImage  class="w-75 img-thumbnail" 
-                             id="photos" cache="false"
+            <p:graphicImage  class="w-100 m-1 img-thumbnail" 
+                             id="photos" 
+                             cache="false"
                              rendered="#{patientController.current.baImage ne null}"    
                              value="#{patientController.image}"  >
             </p:graphicImage>
