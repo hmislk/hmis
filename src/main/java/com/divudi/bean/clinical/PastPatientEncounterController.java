@@ -1142,6 +1142,7 @@ public class PastPatientEncounterController implements Serializable {
         String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
+        String comments = e.getComments();
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1195,7 +1196,7 @@ public class PastPatientEncounterController implements Serializable {
 
         String ixAsString = "Ix" + "<br/>";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
+            ixAsString += ix.getItemValue().getName() + "<br/>";;
         }
 
         String allergiesAsString = "";
@@ -1234,6 +1235,7 @@ public class PastPatientEncounterController implements Serializable {
         output = input.replace("{name}", name)
                 .replace("{age}", age)
                 .replace("{sex}", sex)
+                .replace("{comments}", comments)
                 .replace("{address}", address)
                 .replace("{phone}", phone)
                 .replace("{medicines}", medicinesAsString)

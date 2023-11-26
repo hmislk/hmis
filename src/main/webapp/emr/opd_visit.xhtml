@@ -60,28 +60,20 @@
                                 <p:ajax event="tabChange" listener="#{emrController.onTabChange}" process="tblView" />
                                 <p:tab title="Patient Details">
                                     <div class="ui-g">
-                                        <div class="ui-g-12 ui-md-2">
-                                            <emr:patient_photo 
-                                                patient="#{patientController.current}"></emr:patient_photo>
-                                        </div>
-                                        <div class="ui-g-12 ui-md-3">
-                                            <emr:patient patient="#{patientController.current}"></emr:patient>
-                                        </div>
-                                        <div class="ui-g-12 ui-md-3">
-                                            <emr:patient_allergies 
-                                                editable="true"
-                                                allergies="#{patientEncounterController.patientAllergies}">
-                                            </emr:patient_allergies>
-                                            <emr:patient_conditions 
-                                                conditions="#{patientEncounterController.patientDiagnoses}"
-                                                editable="true">
-                                            </emr:patient_conditions>
+                                        <div class="ui-g-12 ui-md-4">
+                                            <emr:patient_photo patient="#{patientController.current}"></emr:patient_photo>
                                         </div>
                                         <div class="ui-g-12 ui-md-4">
-                                            <emr:patient_medicines 
-                                                editable="true"
-                                                medicines="#{patientEncounterController.patientMedicines}">
-                                            </emr:patient_medicines>
+                                            <emr:patient patient="#{patientController.current}"></emr:patient>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4">
+                                            <emr:patient_allergies allergies="#{patientEncounterController.patientAllergies}"></emr:patient_allergies>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4">
+                                            <emr:patient_conditions conditions="#{patientEncounterController.patientDiagnoses}"></emr:patient_conditions>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-8">
+                                            <emr:patient_medicines medicines="#{patientEncounterController.patientMedicines}"></emr:patient_medicines>
                                         </div>
                                     </div>
                                 </p:tab>
@@ -108,23 +100,16 @@
                                                 <div class="row my-1" ></div>
                                                 <div class="row" >
                                                     <div class="col-md-6" >
-                                                        <p:commandLink 
-                                                            value="Weight&nbsp;:&nbsp;"
-                                                            action="#{patientEncounterController.createWtChart()}" 
-                                                            ajax="false"  
-                                                            target="_blank"></p:commandLink>
+                                                        <p:commandLink value="Weight&nbsp;:&nbsp;" action="#{patientEncounterController.createWtChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                         <p:inputText  
                                                             id="txtWt"
-                                                            style="width: 5em;"
+                                                            style="width: 4em;"
                                                             value="#{patientEncounterController.current.weight}" >
                                                             <p:ajax 
                                                                 event="keyup" 
                                                                 process="txtWt" 
-                                                                update="txtBmi"></p:ajax>
-                                                            <p:ajax 
-                                                                event="keyup" 
-                                                                process="txtWt" 
-                                                                update="txtBmi"></p:ajax>
+                                                                update="txtBmi"
+                                                                listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                                     </div>
@@ -134,10 +119,9 @@
                                                             id="txtHt"
                                                             style="width: 5em;"
                                                             value="#{patientEncounterController.current.height}" >
-                                                            <p:ajax 
-                                                                event="keyup" 
-                                                                process="txtHt" 
-                                                                update="txtBmi"></p:ajax>
+                                                            <p:ajax event="keyup" process="txtHt" 
+                                                                    update="txtBmi"
+                                                                    listener="#{patientEncounterController.calculateBmi()}"></p:ajax>
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>
                                                     </div>
@@ -149,13 +133,13 @@
                                                         <h:panelGroup >
                                                             <p:inputText
                                                                 id="txtSbp"
-                                                                style="width: 4em;" maxlength="3" 
+                                                                style="width: 3em;" maxlength="3" 
                                                                 value="#{patientEncounterController.current.sbp}"
                                                                 >
 
                                                             </p:inputText>
                                                             <p:outputLabel value="/" ></p:outputLabel>
-                                                            <p:inputText  style="width: 4em;" maxlength="3" 
+                                                            <p:inputText  style="width: 3em;" maxlength="3" 
                                                                           value="#{patientEncounterController.current.dbp}" ></p:inputText>
                                                             <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
                                                         </h:panelGroup>
@@ -166,10 +150,11 @@
                                                             id="txtBmi"
                                                             value="#{patientEncounterController.current.bmi}" style="width:5em;" >
                                                             <f:convertNumber pattern="#0.0" ></f:convertNumber>
-                                                        </p:inputText>
-                                                        <p:outputLabel value="&nbsp;kg/m" escape="false"></p:outputLabel>
-                                                        <p:outputLabel value="2" style="vertical-align: super;" escape="false"></p:outputLabel>
 
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;kg/"  ></p:outputLabel>
+                                                        <p:outputLabel  value="m"  ></p:outputLabel>
+                                                        <p:outputLabel  value="2"   ></p:outputLabel>
                                                     </div>
                                                 </div>
 
@@ -383,10 +368,11 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
+                                                            <p:focus id="focusMedicine" for="acMedicine" ></p:focus>
                                                             <p:commandButton value="Add"
                                                                              id="btnAddRx"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxList tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
+                                                                             update="acMedicine tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
                                                         </div>
                                                     </div>
@@ -399,13 +385,6 @@
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
                                                     </p:column>
                                                 </p:dataTable>
-
-                                                <emr:patient_medicines 
-                                                    id="tblRxList"
-                                                    editable="true"
-                                                    medicines="#{patientEncounterController.encounterMedicines}">
-                                                </emr:patient_medicines>                                                
-
                                             </p:panel>
 
 
