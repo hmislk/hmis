@@ -1263,6 +1263,17 @@ public class PatientEncounterController implements Serializable {
             }
         }
     }
+    
+    
+    public void removePatientAllergyForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
+        if (cfvs == null || cfv==null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        cfv.setRetired(true);
+        clinicalFindingValueFacade.edit(cfv);
+        cfvs.remove(cfv);
+    }
 
     public void removePatientAllergy() {
         if (getRemovingClinicalFindingValue() == null) {
