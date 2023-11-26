@@ -135,10 +135,18 @@ public class DepartmentController implements Serializable {
         items = null;
     }
 
+    
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
-            String sql = "Select d from Department d where d.retired=false order by d.name";
-            searchItems = getFacade().findByJpql(sql);
+            String jpql = "select d "
+                    + "from Department d "
+                    + "where d.retired=:ret "
+                    + "order by d.name";
+            
+            Map m = new HashMap();
+            m.put("ret",false);
+            searchItems = getFacade().findByJpql(jpql,m);
+             
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -354,6 +362,7 @@ public class DepartmentController implements Serializable {
     }
 
     private void recreateModel() {
+        searchItems = null;
         items = null;
     }
 
@@ -375,8 +384,9 @@ public class DepartmentController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved");
         }
-        fillSearchItems();
         recreateModel();
+        fillSearchItems();
+        
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins, DepartmentType departmentType) {
@@ -515,6 +525,9 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getItems() {
+        if(items == null){
+            fillSearchItems();
+        }
         return items;
     }
 
