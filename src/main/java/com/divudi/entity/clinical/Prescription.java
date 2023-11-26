@@ -15,6 +15,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.FrequencyUnit;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -65,10 +66,10 @@ public class Prescription implements Serializable {
     private MeasurementUnit frequencyUnit;
 
     private Double orderNo;
-    
+
     @ManyToOne
     private MeasurementUnit durationUnit;
-    
+
     private Double duration;
 
     @ManyToOne
@@ -77,7 +78,7 @@ public class Prescription implements Serializable {
 
     @OneToMany(mappedBy = "parent")
     private List<Prescription> children;
-    
+
     private boolean indoor;
 
     //Created Properties
@@ -97,6 +98,88 @@ public class Prescription implements Serializable {
     private WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+
+    public String getFormattedPrescription() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Formats the number to avoid unnecessary decimal places
+
+        StringBuilder prescriptionText = new StringBuilder();
+
+        if (item != null) {
+            prescriptionText.append(item.getName()); // Append medicine name
+        }
+        // Append dose with formatted value
+        if (dose != null) {
+            String formattedDose = dose % 1 == 0 ? String.valueOf(dose.intValue()) : df.format(dose);
+            prescriptionText.append(" ").append(formattedDose);
+        }
+
+        // Append dose unit
+        if (doseUnit != null) {
+            prescriptionText.append(" ").append(doseUnit.getName());
+        }
+
+        // Append frequency
+        if (frequencyUnit != null) {
+            prescriptionText.append(" ").append(frequencyUnit.getName());
+        }
+
+        // Append duration
+        if (duration != null) {
+            String formattedDuration = duration % 1 == 0 ? String.valueOf(duration.intValue()) : df.format(duration);
+            prescriptionText.append(" for ").append(formattedDuration);
+        }
+
+        // Append duration unit
+        if (durationUnit != null ) {
+            prescriptionText.append(" ").append(durationUnit.getName());
+        }
+        
+        if(indoor){
+             prescriptionText.append(" (indoor)").append(durationUnit.getName());
+        }else{
+             prescriptionText.append(" (outdoor)").append(durationUnit.getName());
+        }
+
+        return prescriptionText.toString();
+    }
+    
+    public String getFormattedPrescriptionWithoutIndoorOutdoor() {
+        DecimalFormat df = new DecimalFormat("#.##"); // Formats the number to avoid unnecessary decimal places
+
+        StringBuilder prescriptionText = new StringBuilder();
+
+        if (item != null) {
+            prescriptionText.append(item.getName()); // Append medicine name
+        }
+        // Append dose with formatted value
+        if (dose != null) {
+            String formattedDose = dose % 1 == 0 ? String.valueOf(dose.intValue()) : df.format(dose);
+            prescriptionText.append(" ").append(formattedDose);
+        }
+
+        // Append dose unit
+        if (doseUnit != null) {
+            prescriptionText.append(" ").append(doseUnit.getName());
+        }
+
+        // Append frequency
+        if (frequencyUnit != null) {
+            prescriptionText.append(" ").append(frequencyUnit.getName());
+        }
+
+        // Append duration
+        if (duration != null) {
+            String formattedDuration = duration % 1 == 0 ? String.valueOf(duration.intValue()) : df.format(duration);
+            prescriptionText.append(" for ").append(formattedDuration);
+        }
+
+        // Append duration unit
+        if (durationUnit != null ) {
+            prescriptionText.append(" ").append(durationUnit.getName());
+        }
+        
+        return prescriptionText.toString();
+    }
 
     public Long getId() {
         return id;
@@ -122,10 +205,6 @@ public class Prescription implements Serializable {
         this.encounter = encounter;
     }
 
-    
-    
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
