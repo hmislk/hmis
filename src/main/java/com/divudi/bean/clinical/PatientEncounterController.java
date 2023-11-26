@@ -1129,6 +1129,7 @@ public class PatientEncounterController implements Serializable {
         String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
+        String comments = e.getComments();
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1220,6 +1221,7 @@ public class PatientEncounterController implements Serializable {
 
         output = input.replace("{name}", name)
                 .replace("{age}", age)
+                .replace("{comments}", comments)
                 .replace("{sex}", sex)
                 .replace("{address}", address)
                 .replace("{phone}", phone)
