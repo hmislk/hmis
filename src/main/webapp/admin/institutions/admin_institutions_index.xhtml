@@ -33,7 +33,7 @@
                                                          icon="bi bi-building-fill-add" value="List Departments">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" actionListener="#{departmentController.fillSearchItems()}"/>
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="#{navigationController.navigateToArea()}" />

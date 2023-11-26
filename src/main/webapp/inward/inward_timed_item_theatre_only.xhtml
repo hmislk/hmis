@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="subcontent">
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl id="msg"  />
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
+                <p:panel header="Manage Timed Item (Theatre Only)" >
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p:commandButton id="btnAdd" value="Add" action="#{timedItemController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd" update="gpDetail lstSelect">
+
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="btnDelete" 
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                action="#{timedItemController.delete()}"  
+                                value="Delete" 
+                                class=" m-1 ui-button-danger w-25" 
+                                process="btnDelete" 
+                                update="gpDetail lstSelect">
+                            </p:commandButton>
+                            <p:selectOneListbox   id="lstSelect"   value="#{timedItemController.current}" class="w-100 m-1" filter="true">
+                                <f:selectItems  value="#{timedItemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+
+                        </div>
+                        <div class="col-md-6">
+                            <p:panel>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Edit Details"></p:outputLabel>
+                                </f:facet>
+
+                                <f:facet name="footer" >
+
+                                    <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{timedItemController.saveSelected()}" styleClass="buttons" 
+                                                     process="gpDetail btnSave" update="lstSelect msg" class=" m-1 ui-button-warning w-25">
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
+                                </f:facet>
+                                <p:panelGrid id="gpDetail" columns="2" rendered="#{timedItemController.current ne null}">
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{timedItemController.current.name}" required="true" class="w-100"></h:inputText>
+                                    <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtAddress"  class="pdInputText w-100" value="#{timedItemController.current.printName}"></h:inputText>
+                                    <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtFullName"  class="pdInputText w-100" value="#{timedItemController.current.fullName}" ></h:inputText>
+
+
+                                    <h:outputText value="Institution" ></h:outputText>
+                                    <h:selectOneListbox id="cmbIns" size="1" value="#{timedItemController.current.institution}" >
+                                        <f:selectItem itemLabel="Please select a Institution"/>
+                                        <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:ajax execute="cmbIns" render="cmbDep" event="change"/>   
+                                    </h:selectOneListbox>
+                                    <h:outputText value="Department" ></h:outputText>
+                                    <h:selectOneListbox id="cmbDep" size="1" value="#{timedItemController.current.department}" >
+                                        <f:selectItem itemLabel="Please select a Department"/>
+                                        <f:selectItems value="#{timedItemController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </h:selectOneListbox>
+
+                                    <h:outputText value="Inward Charge Category" ></h:outputText>
+                                    <p:selectOneMenu id="cmbInward" value="#{timedItemController.current.inwardChargeType}" >
+                                        <f:selectItem itemLabel="Please select Charge"/>
+                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="Category" ></h:outputText>
+                                    <p:selectOneMenu id="cmbCat" value="#{timedItemController.current.category}" >
+                                        <f:selectItem itemLabel="Please select a Category"/>
+                                        <f:selectItems value="#{timedItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{timedItemController.current.userChangable}" itemLabel="Can change Rate"/>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{timedItemController.current.discountAllowed}" itemLabel="Discount Allowed"/>
+
+
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+    </ui:define>
+
+
+
+</ui:composition>
