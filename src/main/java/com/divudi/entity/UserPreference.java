@@ -967,7 +967,7 @@ public class UserPreference implements Serializable {
 
     public String getLongDateTimeFormat() {
         if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
-            longDateTimeFormat = "dd MMMM yyyy hh:mm:ss";
+            longDateTimeFormat = "dd MMM yyyy hh:mm:ss";
         }
         return longDateTimeFormat;
     }
