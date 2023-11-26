@@ -8,40 +8,31 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-
-        <cc:attribute 
-            name="conditions"   />
-
+        <cc:attribute name="conditions" />
+        <cc:attribute name="editable" type="boolean" default="false" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
         <p:dataTable
             id="tblDxx"
             value="#{cc.attrs.conditions}"
             var="dx">
+            
             <p:column headerText="Diagnosis">
-                <p:outputLabel value="#{dx.itemValue.name}">
-                </p:outputLabel>
-                <p:spacer height="1" width="5" ></p:spacer>
-                <p:commandLink value="X" class="text-danger" 
-                               id="btnDeleteDx"
-                               process="btnDeleteDx"
-                               update="tblDxx"
-                               onclick="if (!confirm('Are you sure you want to delete this allergy?'))
-                                           return false;"
-
-                               action="#{patientEncounterController.removePatientDiagnosis()}"
-                               >
-                    <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{dx}"/>
-                </p:commandLink>
-                <p:tooltip value="Delete" for="btnDeleteDx" ></p:tooltip>
-            </p:column>
-            <p:column headerText="Details">
-                <h:outputText value="#{dx.stringValue}"/>
+                <p:outputLabel value="#{dx.itemValue.name}" />
+                <h:outputText value="#{not empty dx.stringValue ? ' - '.concat(dx.stringValue) : ''}" />
+                <p:spacer height="1" width="20" ></p:spacer>
+                <p:commandButton 
+                    rendered="#{cc.attrs.editable}"
+                    icon="pi pi-times" 
+                    styleClass="ui-button-danger float-right"
+                    process="@this"
+                    update="tblDxx"
+                    onclick="if (!confirm('Are you sure you want to delete this diagnosis?')) return false;"
+                    action="#{patientEncounterController.removeClinicalFindingValueForComposite(cc.attrs.conditions, dx)}">
+                </p:commandButton>
             </p:column>
         </p:dataTable>
-
     </cc:implementation>
 </html>
