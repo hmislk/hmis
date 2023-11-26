@@ -13,75 +13,50 @@
         <h:panelGroup  >
             <h:form>
                 <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
-
-
-
-                <p:panel>
-                    <f:facet name="header"  >
-                        <p:outputLabel value="Manage Departments" ></p:outputLabel>
-                        <p:commandButton id="btnBack" value="Back" 
-                                         action="/admin_mange_institutions_index" style="float: right;"
-                                         ajax="false">
-                        </p:commandButton>
-
-                    </f:facet>
-
-                    <h:panelGrid id ="gpVeda" columns="4" styleClass="alignTop" >
-
+                <p:focus id="selectFocus" for="lstSelect" />
                         <div class="row">
-                            <div class="col-md-3">
-                                <h:panelGrid id="gpSelect" columns="1"  >
-                                    <p:panel style="height: 650px; width: 500px">
+                            <div class="col-md-6">
 
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Search Departments" ></p:outputLabel>
+                                <p:commandButton id="btnAdd" value="Add New" action="#{departmentController.prepareAdd()}" class=" m-1 ui-button-success w-25"
+                                                 update="lstSelect gpDetail" process="btnAdd">
+                                </p:commandButton>
 
-                                            <p:commandButton id="btnAdd" value="Add New" action="#{departmentController.prepareAdd()}" style="float: right;"
-                                                             update="lstSelect gpDetail detailFocus" process="btnAdd">
-                                            </p:commandButton>
+                                <p:commandButton id="btnDelete" 
+                                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                                         return false;" 
+                                                 action="#{departmentController.delete()}"  
+                                                 value="Delete"
+                                                 update="lstSelect gpDetail" process="btnDelete"
+                                                 class=" m-1 ui-button-danger w-25"
+                                                 >
+                                </p:commandButton>
 
-                                        </f:facet>
+<!--                                <p:inputText value="#{departmentController.selectText}" id="txtSearch" style="standardText" >
+                                    <f:ajax event="keyup" execute="@this" render="lstSelect" listener="#{departmentController.fillSearchItems()}" ></f:ajax>
+
+                                </p:inputText>-->
+
+                                <p:selectOneListbox  id="lstSelect"
+                                                     value="#{departmentController.current}" 
+                                                     style="w-100"
+                                                     filter="true">
+                                    <f:selectItems  value="#{departmentController.searchItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <p:ajax update="gpDetail" process="lstSelect" >
+                                    </p:ajax>
+                                </p:selectOneListbox>
 
 
-                                        <h:panelGrid id="gpSelectText" >
-
-                                            <p:inputText value="#{departmentController.selectText}" id="txtSearch" style="standardText" >
-                                                <f:ajax event="keyup" execute="@this" render="lstSelect" listener="#{departmentController.fillSearchItems()}" ></f:ajax>
-
-                                            </p:inputText>
-
-                                            <p:selectOneListbox  id="lstSelect"
-                                                                 value="#{departmentController.current}" 
-                                                                 styleClass="standardList">
-                                                <f:selectItems  value="#{departmentController.searchItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                                <f:ajax render="gpDetail" execute="lstSelect" ></f:ajax>
-                                                <f:ajax event="click" execute="lstSelect" render="gpDetail"  ></f:ajax>
-                                            </p:selectOneListbox>
-
-                                        </h:panelGrid>
-                                        <h:panelGrid id="gpSelectButtons" columns="3"  >
-
-                                            <p:commandButton id="btnDelete" 
-                                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                                 return false;" 
-                                                             action="#{departmentController.delete()}"  
-                                                             value="Delete"
-                                                             ajax="false">
-                                            </p:commandButton>
-                                        </h:panelGrid>
-                                    </p:panel>
-                                </h:panelGrid  >
                             </div>
 
-                            <div class="col-md-8">
-                                <p:panel style="width: 600px;">
-
+                            <div class="col-md-6">
+                                <p:panel>
+                                    
                                     <f:facet name="header" >
-
                                         <p:outputLabel value="Details of Selected Department" ></p:outputLabel>
-                                        <p:commandButton id="btnSave" value="Save" action="#{departmentController.saveSelected()}" style="margin-left: 30px;" process="btnSave gpDetail" update="lstSelect gpDetail selectFocus" >
+                                    </f:facet>
+
+                                    <f:facet name="footer" >
+                                        <p:commandButton id="btnSave" value="Save" action="#{departmentController.saveSelected()}" style="margin-left: 30px;" process="btnSave gpDetail" update="lstSelect gpDetail selectFocus" class=" m-1 ui-button-warning w-25">
                                         </p:commandButton>
                                         <p:defaultCommand target="btnSave"/>
                                     </f:facet>
@@ -115,8 +90,8 @@
                                                     <h:outputText  value="Email" ></h:outputText>
                                                     <p:inputText style="width: 450px" autocomplete="off"  value="#{departmentController.current.email}"  ></p:inputText>
                                                     <h:outputText id="lblDept" value="Department Type" ></h:outputText>
-                                                    <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>
-                                                    <p:selectOneMenu style="width: 450px" id="cmbDept" value="#{departmentController.current.departmentType}" rendered="#{departmentController.current ne null}" >
+<!--                                                    <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>-->
+                                                    <p:selectOneMenu style="width: 450px" id="cmbDept" value="#{departmentController.departmentType}">
                                                         <f:selectItem itemLabel="Select the Department Type" />
                                                         <f:selectItems value="#{departmentController.departmentType}"/>                                        
                                                     </p:selectOneMenu>
@@ -154,12 +129,7 @@
                             </div>
                         </div>
 
-
-
-
-
-                    </h:panelGrid>
-                </p:panel>
+              
             </h:form>
 
         </h:panelGroup>
