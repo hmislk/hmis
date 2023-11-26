@@ -330,9 +330,9 @@ public class TimedItemController implements Serializable {
     }
 
     public TimedItem getCurrent() {
-//        if (current == null) {
-//            current = new TimedItem();
-//        }
+        if (current == null) {
+            current = new TimedItem();
+        }
         return current;
     }
 
@@ -383,7 +383,7 @@ public class TimedItemController implements Serializable {
         m.put("pasindu", false);
 
         items = getFacade().findByJpql(jpql, m);
-    }
+    }  
 
     public List<TimedItem> getItems() {
         if (items == null) {
