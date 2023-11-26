@@ -31,7 +31,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class DocumentTeamplateController implements Serializable {
+public class DocumentTemplateController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -94,27 +94,26 @@ public class DocumentTeamplateController implements Serializable {
     }
 
     public String generateDefaultTemplateContents() {
-    String contents = "";
-    contents = "{name}<br/>"
-            + "{age}<br/>"
-            + "{sex}<br/>"
-            + "{address}<br/>"
-            + "{phone}<br/>"
-            + "{medicines}<br/>"
-            + "{outdoor}<br/>"
-            + "{indoor}<br/>"
-            + "{ix}<br/>"
-            + "{past-dx}<br/>"
-            + "{routine-medicines}<br/>"
-            + "{allergies}<br/>"
-            + "{visit-date}<br/>"
-            + "{height}<br/>"
-            + "{weight}<br/>"
-            + "{bmi}<br/>"
-            + "{bp}";
-    return contents;
-}
-
+        String contents = "";
+        contents = "{name}<br/>"
+                + "{age}<br/>"
+                + "{sex}<br/>"
+                + "{address}<br/>"
+                + "{phone}<br/>"
+                + "{medicines}<br/>"
+                + "{outdoor}<br/>"
+                + "{indoor}<br/>"
+                + "{ix}<br/>"
+                + "{past-dx}<br/>"
+                + "{routine-medicines}<br/>"
+                + "{allergies}<br/>"
+                + "{visit-date}<br/>"
+                + "{height}<br/>"
+                + "{weight}<br/>"
+                + "{bmi}<br/>"
+                + "{bp}";
+        return contents;
+    }
 
     public String navigateToEditUserDocumentTemplates() {
         if (current == null) {
@@ -134,9 +133,11 @@ public class DocumentTeamplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
-        current.setWebUser(sessionController.getLoggedUser());
+        if (current.getWebUser() == null) {
+            current.setWebUser(sessionController.getLoggedUser());
+        }
         saveSelected();
-        fillAllItems(sessionController.getLoggedUser());
+        fillAllItems(null);
         JsfUtil.addSuccessMessage("Saved");
     }
 
@@ -172,7 +173,7 @@ public class DocumentTeamplateController implements Serializable {
         return sessionController;
     }
 
-    public DocumentTeamplateController() {
+    public DocumentTemplateController() {
     }
 
     public DocumentTemplate getCurrent() {
@@ -217,8 +218,8 @@ public class DocumentTeamplateController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            DocumentTeamplateController controller = (DocumentTeamplateController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "documentTeamplateController");
+            DocumentTemplateController controller = (DocumentTemplateController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "documentTemplateController");
             if (controller == null) {
                 JsfUtil.addErrorMessage("controller null");
                 return null;
@@ -261,7 +262,7 @@ public class DocumentTeamplateController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DocumentTeamplateController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + DocumentTemplateController.class.getName());
             }
         }
     }

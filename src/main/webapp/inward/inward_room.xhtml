@@ -53,6 +53,7 @@
                                         <p:commandButton id="btnSave" value="Save"  
                                                          action="#{roomController.saveSelected()}" 
                                                          process="btnSave gpDetailText" 
+                                                         update="lstSelect"
                                                          class=" m-1 ui-button-warning w-25"
                                                          >
                                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >

@@ -75,6 +75,7 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.view.ViewScoped;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
@@ -87,7 +88,7 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class PatientEncounterController implements Serializable {
+public class PastPatientEncounterController implements Serializable {
 
     /**
      * EJBs
@@ -217,6 +218,18 @@ public class PatientEncounterController implements Serializable {
     private InvestigationItem graphInvestigationItem;
 
     private UploadedFile uploadedFile;
+
+    public String navigateToViewPastEncounter() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        setStartedEncounter(current);
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        generateDocumentsFromDocumentTemplates(current);
+        return "/emr/opd_visit_view";
+    }
 
     public void calculateBmi() {
         if (current == null) {
@@ -1051,7 +1064,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void fillCurrentPatientLists(Patient patient) {
-        encounters = fillPatientEncounters(patient);
+       
 
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
@@ -2036,7 +2049,7 @@ public class PatientEncounterController implements Serializable {
         return sessionController;
     }
 
-    public PatientEncounterController() {
+    public PastPatientEncounterController() {
     }
 
     public PatientEncounter getCurrent() {
@@ -2816,7 +2829,7 @@ public class PatientEncounterController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            PatientEncounterController controller = (PatientEncounterController) facesContext.getApplication().getELResolver().
+            PastPatientEncounterController controller = (PastPatientEncounterController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "patientEncounterController");
             return controller.getFacade().find(getKey(value));
         }
@@ -2843,18 +2856,10 @@ public class PatientEncounterController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientEncounterController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + PastPatientEncounterController.class.getName());
             }
         }
     }
 
 }
 
-enum ClinicalField {
-
-    History,
-    Examination,
-    Investigations,
-    Treatments,
-    Management,
-}
