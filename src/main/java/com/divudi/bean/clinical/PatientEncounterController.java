@@ -218,6 +218,7 @@ public class PatientEncounterController implements Serializable {
 
     private UploadedFile uploadedFile;
 
+    @Deprecated
     public void calculateBmi() {
         if (current == null) {
             return;
@@ -1265,7 +1266,7 @@ public class PatientEncounterController implements Serializable {
     }
     
     
-    public void removePatientAllergyForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
+    public void removeClinicalFindingValueForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
         if (cfvs == null || cfv==null) {
             JsfUtil.addErrorMessage("Error");
             return;
@@ -1273,6 +1274,7 @@ public class PatientEncounterController implements Serializable {
         cfv.setRetired(true);
         clinicalFindingValueFacade.edit(cfv);
         cfvs.remove(cfv);
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void removePatientAllergy() {

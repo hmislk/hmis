@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" class="w-100" >
+        <p:panelGrid columns="2" class="w-100 m-1 p-1" >
             <p:outputLabel value="Name:" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
             <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
 
@@ -66,6 +66,6 @@
 
 
 
-        </h:panelGrid>
+        </p:panelGrid>
     </cc:implementation>
 </html>
