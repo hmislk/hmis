@@ -13,7 +13,7 @@ import javax.persistence.Entity;
  * @author buddhika
  */
 @Entity
-@Deprecated
+@Deprecated 
 public class ClinicalFindingItem extends Item implements Serializable {
     
 }
