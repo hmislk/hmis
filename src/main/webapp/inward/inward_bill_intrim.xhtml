@@ -248,14 +248,14 @@
                                             <p:calendar navigator="true"  
                                                         id="roomAdmittedTimeStamp"
                                                         value="#{rm.admittedAt}" 
-                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                        pattern="dd MMM yyyy - hh:mm:ss a"
                                                         size="8"/>     
                                         </p:column>
                                         <p:column headerText="Discharged At">                                      
                                             <p:calendar navigator="true"  
                                                         id="roomDischargeTimeStamp"
                                                         value="#{rm.dischargedAt}" 
-                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                        pattern="dd MMM yyyy - hh:mm:ss a"
                                                         size="8"/> 
                                         </p:column>
                                         <p:column headerText="Room Charge" >
@@ -266,32 +266,32 @@
 
 
 
-                                        <p:column headerText="Maintain Charge" style="text-align: right;">
+                                        <p:column headerText="Maintain Charge" >
                                             <h:outputLabel value="#{rm.calculatedMaintainCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>    
-                                        <p:column headerText="MO Charge" style="text-align: right;">
+                                        <p:column headerText="MO Charge" >
                                             <h:outputLabel  value="#{rm.calculatedMoCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>                                        
-                                        <p:column headerText="Nursing Charge" style="text-align: right;">
+                                        <p:column headerText="Nursing Charge" >
                                             <h:outputLabel value="#{rm.calculatedNursingCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column> 
-                                        <p:column headerText="Linen Charge" style="text-align: right;">
+                                        <p:column headerText="Linen Charge" >
                                             <h:outputLabel value="#{rm.calculatedLinenCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column> 
-                                        <p:column headerText="Administration Charge" style="text-align: right;">
+                                        <p:column headerText="Administration Charge" >
                                             <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column> 
-                                        <p:column headerText="Madical Care Charge" style="text-align: right;">
+                                        <p:column headerText="Madical Care Charge" >
                                             <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -332,7 +332,7 @@
                                                         value="#{pt.toTime}" 
                                                         pattern="dd/MM/yyyy  hh:mm:ss a" />                                    
                                         </p:column>
-                                        <p:column headerText="Total" style="text-align: right;">
+                                        <p:column headerText="Total" >
                                             <h:outputLabel value="#{pt.serviceValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -393,6 +393,7 @@
 
                                                     </f:facet>
                                                 </p:column>
+                                               
                                             </p:row>
                                         </p:columnGroup>
 
@@ -403,10 +404,10 @@
                                             <p:column>
                                                 <h:outputLabel value="#{ser.name}" rendered="#{ser.transBillItemCount ne 0}"/>                                        
                                             </p:column>
-                                            <p:column style="text-align: right;">
+                                            <p:column>
                                                 <h:outputLabel value="#{ser.transBillItemCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>    
-                                            <p:column style="text-align: right;">
+                                            <p:column>
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>    
                                             <p:column>
@@ -434,7 +435,7 @@
 
                                             #{iss.deptId}
                                         </p:column>                               
-                                        <p:column headerText="Bill Total" style="text-align: right;">
+                                        <p:column headerText="Bill Total" >
                                             <h:outputLabel  value="#{iss.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -508,7 +509,7 @@
 
                                             #{iss.deptId}
                                         </p:column>                               
-                                        <p:column headerText="Bill Total" style="text-align: right;">
+                                        <p:column headerText="Bill Total" >
                                             <h:outputLabel  value="#{iss.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -581,7 +582,7 @@
                                         <p:column headerText="Name">
                                             #{bil.comments}
                                         </p:column>
-                                        <p:column headerText="Cost" style="text-align: right;">
+                                        <p:column headerText="Cost" >
                                             <h:outputLabel  value="#{bil.total}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -657,7 +658,7 @@
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
-                                        <p:column headerText="Fee Value" style="text-align: right;">
+                                        <p:column headerText="Fee Value" >
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -713,7 +714,7 @@
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
                                         </p:column>
-                                        <p:column headerText="Fee Value" style="text-align: right;">
+                                        <p:column headerText="Fee Value" >
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -796,7 +797,7 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
-                                        <p:column headerText="Value" style="text-align: right;">
+                                        <p:column headerText="Value" >
                                             <h:outputLabel  value="#{p.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>

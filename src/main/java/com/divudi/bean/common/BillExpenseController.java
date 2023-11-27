@@ -155,6 +155,9 @@ public class BillExpenseController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
+        current=null;
+        getCurrent();
 
     }
 
