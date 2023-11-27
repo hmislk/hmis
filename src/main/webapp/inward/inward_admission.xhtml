@@ -50,7 +50,7 @@
                         </f:facet>
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="6" class="m-2 w-100" > 
+                                <h:panelGrid columns="8" class="m-2 w-100" > 
                                     <h:panelGroup >
                                         <p:outputLabel value="Admission Type" ></p:outputLabel>
                                         <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
@@ -59,7 +59,7 @@
                                             <p:ajax event="change" process="@this" update="bh cmbDoc" listener="#{admissionController.bhtNumberCalculation()}" />
                                         </p:selectOneMenu>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="false">
+                                    <h:panelGroup>
                                         <p:outputLabel class="px-2 py-2" id="bht" value="BHT"/>
                                         <p:outputLabel class="px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
                                     </h:panelGroup>
