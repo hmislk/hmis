@@ -4,7 +4,9 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+    
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -13,6 +15,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <div class="row">
+            <div class="col-md-12">
+                <emr:patient patient="#{cc.attrs.admission.patient}" class="w-100"/>
+            </div> 
+        </div>
+        
         <div class="row">
             <div class="col-md-12">
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
@@ -25,26 +33,9 @@
                     <h:outputLabel   value="Paymentmethod  " />
                     <h:outputLabel value=":" class="mx-2"  />
                     <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" />
-                    <h:outputLabel   value="Membership Scheme  " />
-                    <h:outputLabel value=":"  class="mx-2" />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.membershipScheme.name}" />
                     <h:outputLabel   value="Room  " />
                     <h:outputLabel value=":" class="mx-2"  />
                     <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
-                    <h:outputLabel   value="Name  " />
-                    <h:outputLabel value=":" class="mx-2" />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
-                    <h:outputLabel   value="Age  " />
-                    <h:outputLabel value=":" class="mx-2" />
-                    <h:outputLabel value="#{cc.attrs.admission.patient.age}" />
-                    <h:outputLabel  value="DOB  "  />
-                    <h:outputLabel value=":" class="mx-2" />
-                    <p:outputLabel value="#{cc.attrs.admission.patient.person.dob}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </p:outputLabel>           
-                    <h:outputLabel  value="Adress  " />
-                    <h:outputLabel value=":" class="mx-2" />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.address}" />
                     <h:outputLabel  value="Date of Admission  "  />
                     <h:outputLabel value=":" class="mx-2" />
                     <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">

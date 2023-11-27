@@ -5,6 +5,8 @@
 
 
 
+
+
 .standedicon{
     width: 2em;
     height: 2em;
@@ -38,3 +40,8 @@
     height: 50px;
     width: 100px;
 }
+.printingOnly{
+        display: none!important;
+        
+}
+
