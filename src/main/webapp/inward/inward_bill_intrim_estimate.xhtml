@@ -16,17 +16,20 @@
     <ui:define name="content">
         <h:panelGroup >
             <h:form  >
-                <p:panel  >
+                <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}" >
+                    
                     <f:facet name="header">
-                        <p:outputLabel value="Inward Payment Bill - Estimated Professional Fees"/>
+                        <p:outputLabel value="Patient Details"/>
                     </f:facet>
-                    <p:panel header="BHT" rendered="#{bhtSummeryController.patientEncounter eq null}">
+                    <h:panelGrid columns="10" >
+                        <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
                         <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                          value="#{bhtSummeryController.patientEncounter}"
                                          completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                          var="myItem" itemValue="#{myItem}" 
                                          itemLabel="#{myItem.bhtNo}" 
-                                         size="30"  >
+                                         size="30"
+                                         class="m-2">
                             <!--                            <p:ajax event="itemSelect" 
                                                                 process="@this" 
                                                                 update="@all" 
@@ -49,9 +52,10 @@
                                          class="ml-2">
                         </p:commandButton>
 
+                    </h:panelGrid>
                     </p:panel>
                     
-                    <p:panel rendered="#{bhtSummeryController.patientEncounter ne null}">
+                <p:panel header="Inward Payment Bill - Estimated Professional Fees" rendered="#{bhtSummeryController.patientEncounter ne null}">
 
 
 
@@ -711,7 +715,7 @@
 
                     </p:panel>
 
-                </p:panel>
+                
 
 
             </h:form>
