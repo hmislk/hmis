@@ -15,6 +15,37 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
 
+                <p:panel header="Patient Details">
+                    <div class="row d-flex align-items-center">
+                        <p:panelGrid columns="3">
+                            <h:outputLabel value="Type Patient Name or BHT : "/>
+                        
+                            <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                            value="#{inwardProfessionalBillController.current.patientEncounter}" 
+                                            completeMethod="#{admissionController.completePatient}"
+                                            var="apt2" itemLabel="#{amp2.bhtNo}"
+                                            itemValue="#{apt2}"  class=" w-100">
+                                <p:ajax event="itemSelect" process="acPt2" update="panSearch2" listener="#{inwardProfessionalBillController.makeNullList()}"/>
+                                <p:column >
+                                    <h:outputLabel value="#{apt2.bhtNo}"/>
+                                </p:column>
+                                <p:column >
+                                    <h:outputLabel value="#{apt2.patient.person.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                            </p:autoComplete>  
+                        
+                            <p:commandButton
+                                id="btnSelect"
+                                ajax="false"
+                                value="Select"
+                                />
+                            </p:panelGrid>
+                    </div>
+                </p:panel>
+
                 <p:panel>
                     <f:facet name="header" >
                         <h:panelGrid columns="10"  >
@@ -26,41 +57,10 @@
                     </f:facet>
 
                     <div class="row">
-                        <div class="col-6">
-                            <h:panelGroup id="panelPatient" >
-                                <p:panel header="Patient Details">
-                                    <div class="row d-flex align-items-center">
-                                        <div class="col-6">
-                                            <h:outputLabel value="Type Patient Name or BHT : "/>
-                                        </div>
-                                        <div class="col-6 ">
-                                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                        value="#{inwardProfessionalBillController.current.patientEncounter}" 
-                                                        completeMethod="#{admissionController.completePatient}"
-                                                        var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                        itemValue="#{apt2}"  class=" w-100">
-                                            <p:ajax event="itemSelect" process="acPt2" update="panSearch2" listener="#{inwardProfessionalBillController.makeNullList()}"/>
-                                            <p:column >
-                                                <h:outputLabel value="#{apt2.bhtNo}"/>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputLabel value="#{apt2.patient.person.name}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                            </p:column>
-                                        </p:autoComplete>  
-                                        </div>
-                                        
-                                       
-                                    </div>
-
-                                    <br/><br/>
-                                    <h:panelGroup id="panSearch2">
-                                        <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
-                                    </h:panelGroup>
-                                </p:panel>
-                            </h:panelGroup>
+                        <div class="col-6" >
+                            <p:panel id="panSearch2">
+                                <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
+                            </p:panel>
                         </div>
                         <div class="col-6">
                             <h:panelGroup id="panelIx" >
