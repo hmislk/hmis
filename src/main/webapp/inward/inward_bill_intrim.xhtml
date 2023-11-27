@@ -23,13 +23,12 @@
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
-                            <h:outputText styleClass="fas fa-arrow-down" />
-                            <p:outputLabel value="Inward Payment Bill" class="mx-2"/>
+                            <p:outputLabel value="Patient Details" />
                         </f:facet>
 
                         <h:panelGrid columns="10">
 
-                            <p:outputLabel value="Type to Select BHT" ></p:outputLabel>
+                            <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                              value="#{bhtSummeryController.patientEncounter}"
                                              completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
@@ -51,7 +50,7 @@
                                 </p:column>
                             </p:autoComplete>   
                             <p:commandButton ajax="false"  
-                                             value="Display Details" 
+                                             value="Select" 
                                              action="#{bhtSummeryController.createTables()}" >
                             </p:commandButton>
 
