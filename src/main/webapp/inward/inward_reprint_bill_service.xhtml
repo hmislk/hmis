@@ -19,12 +19,14 @@
                             <div >
                                 <p:commandButton ajax="false" 
                                                  value="Cancel" 
+                                                 icon="fa fa-ban"
                                                  action="inward_cancel_bill_service"
                                                  disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
                                                  class="m-2 ui-button-danger">                           
                                 </p:commandButton>
                                 <p:commandButton ajax="false" 
                                                  value="Return" 
+                                                 icon="fa fa-undo"
                                                  actionListener="#{billSearch.recreateModel()}"
                                                  action="inward_bill_service_refund"
                                                  disabled="#{inwardSearch.bill.cancelled}"
@@ -39,20 +41,24 @@
                             <div>
                                 <p:commandButton ajax="false" 
                                                  value="Mark As Checked"
+                                                 icon="fa fa-check-square"
                                                  action="#{inwardSearch.markAsChecked()}"
                                                  rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
                                                  class="m-2 ui-button-success"/>
                                 <p:commandButton ajax="false" 
                                                  value="Mark As Un Check"
+                                                 icon="fa fa-square"
                                                  action="#{inwardSearch.markAsUnChecked()}"
                                                  rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
                                                  class="m-2 ui-button-warning"/>
                                 <p:commandButton ajax="false" 
                                                  value="Back To View" 
+                                                 icon="fa fa-backward"
                                                  action="/inward/inward_edit_bill_item_view"  
                                                  class="m-2 "/>
                                 <p:commandButton ajax="false" 
                                                  value="Back To Interim" 
+                                                 icon="fa fa-arrow-circle-left"
                                                  action="/inward/inward_bill_intrim" 
                                                  actionListener="#{bhtSummeryController.createTables()}"
                                                  class="m-2 ui-button-warning"/>
