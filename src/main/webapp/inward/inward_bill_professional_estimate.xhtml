@@ -59,10 +59,42 @@
                     <h:panelGrid columns="10"  >
                         <h:outputLabel value="Inward Estimated Professional Charges" />                           
 
-                        <p:commandButton class="mx-2" value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                        </p:commandButton>
+
                     </h:panelGrid>
                 </f:facet>
+
+                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
+                    <h:panelGrid columns="3">
+                        <p:commandButton class="w-100 ui-button-warning m-2 "
+                                         style="float: right"
+                                         value="New Bill" 
+                                         icon="fa fa-plus"
+                                         ajax="false" 
+                                         actionListener="#{inwardProfessionalBillController.makeNull()}" >
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Lookup" 
+                            ajax="false"
+                            icon="fa fa-search"
+                            class="ui-button-warning " 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            >
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Profile" 
+                            ajax="false"
+                            icon="fa fa-user"
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{opdBillController.patient}" 
+                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
 
                 <div class="row">
                     <div class="col-4" >
@@ -74,7 +106,7 @@
                             <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
                         </p:panel>
 
-                        
+
                     </div>
                     <div class="col-8">
                         <h:panelGroup id="panelIx" >
@@ -153,7 +185,7 @@
                             </p:panel>
 
                         </h:panelGroup>
-                        
+
                         <p:panel id="pBillDetails">
                             <f:facet name="header">
                                 <h:outputText styleClass="fas fa-dollar-sign"></h:outputText>
@@ -172,7 +204,7 @@
                                 </div>
                             </div>
                         </p:panel>
-                        
+
                     </div>
                 </div>
 
