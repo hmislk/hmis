@@ -35,16 +35,56 @@
             </p:panel>
 
             <p:panel rendered="#{roomChangeController.current ne null}">
+                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
+                    <h:panelGrid columns="3">
+
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Lookup" 
+                            ajax="false"
+                            icon="fa fa-search"
+                            class="ui-button-warning " 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            >
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Profile" 
+                            ajax="false"
+                            icon="fa fa-user"
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{admissionController.current.patient}" 
+                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton 
+                            style="float: right;"
+                            value="Back" 
+                            ajax="false"
+                            icon="fas fa-arrow-left"
+                            class="ui-button-secondary " 
+                            action="/inward/admission_profile.xhtml" 
+                            >
+                        </p:commandButton>
+                    </h:panelGrid>
+                </div>
                 <h:panelGrid columns="2" class="mb-2 d-flex justify-content-end">
-                    <p:commandButton value="Change"  class="mx-3"
+<!--                    <p:commandButton value="Change"  class="mx-3"
                                      action="#{roomChangeController.changeGurdianRoom()}" ajax="false"   />
                     <p:commandButton value="Clear"  class="mx-3"
                                      action="#{roomChangeController.recreate()}"
-                                     ajax="false"   />
+                                     ajax="false"   />-->
                 </h:panelGrid>
                 <div class="row mt-3">
-                    <div class="col-3">
+                    <div class="col-6">
                         <p:panel>
+                            <f:facet name="header" >
+                                <h:outputText styleClass="fas fa-id-card-alt" />
+                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                            </f:facet>
+                                
 
                             <p:tabView >
                                 <p:tab title="Patient Details" >
@@ -77,8 +117,12 @@
                         </p:panel>
 
                     </div>
-                    <div class="col-9">
+                    <div class="col-6">
                         <p:panel>
+                            <f:facet name="header" >
+                                <h:outputText styleClass="fas fa-door-open" />
+                                <h:outputLabel value="Room Details" class="mx-4"></h:outputLabel>
+                            </f:facet>
                             <p:tabView >
 
                                 <p:tab title="New Room Details">
