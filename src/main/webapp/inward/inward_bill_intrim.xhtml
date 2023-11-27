@@ -8,7 +8,8 @@
        xmlns:in="http://java.sun.com/jsf/composite/inward"
        xmlns:p="http://primefaces.org/ui"
        xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-       xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
+       xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany"
+    >
 
     <h:head>
         <title >Intrim Bill</title>
@@ -126,6 +127,7 @@
                                         <h:outputText styleClass="fa fa-user-circle"/>
                                         <p:outputLabel class="mx-2" value="Patient Details"/>
                                     </f:facet>
+                                    
                                     <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}" class="w-100"/>
                                 </p:panel>
                             </div>
