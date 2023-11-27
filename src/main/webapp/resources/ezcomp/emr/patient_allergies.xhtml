@@ -8,43 +8,41 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute 
+            name="allergies"
+            />
 
         <cc:attribute 
-            name="allergies"   />
-
+            name="editable"
+            default="false"
+            />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
         <p:dataTable 
             id="tblAllergies"
             value="#{cc.attrs.allergies}"
             var="allergy"
-            >
-            <p:column headerText="Allergen">
-                <h:outputText value="#{allergy.itemValue.name}"/>
-                <p:commandLink 
-                    value="X" 
-                    class="text-danger" 
-                    id="btnDeleteAllergy"
+            rowStyleClass="#{not empty allergy.stringValue ? 'table-danger' : ''}">
+
+            <p:column headerText="Allergy Information">
+                <h:outputText value="#{allergy.itemValue.name}" styleClass="text-danger"/>
+                <h:outputText value="#{not empty allergy.stringValue ? ' - '.concat(allergy.stringValue) : ''}" />
+                <p:spacer height="1" width="20" ></p:spacer>
+                <p:commandButton 
+                    icon="pi pi-times" 
+                    class="ml-5"
+                    styleClass="ui-button-danger float-right"
                     onclick="if (!confirm('Are you sure you want to delete this allergy?'))
                                 return false;"
-                    process="btnDeleteAllergy tblAllergies"
+                    process="@this"
                     update="tblAllergies"
-                    action="#{patientEncounterController.removePatientAllergy()}"
-                    >
-                    <f:setPropertyActionListener 
-                        target="#{patientEncounterController.removingClinicalFindingValue}" 
-                        value="#{allergy}"
-                        />
-                </p:commandLink>
-
-            </p:column>
-            <p:column headerText="Details">
-                <h:outputText value="#{allergy.stringValue}"/>
+                    action="#{patientEncounterController.removeClinicalFindingValueForComposite(cc.attrs.allergies, allergy) }">
+                </p:commandButton>
             </p:column>
         </p:dataTable>
+
 
     </cc:implementation>
 </html>

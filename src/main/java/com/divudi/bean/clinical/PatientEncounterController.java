@@ -218,6 +218,7 @@ public class PatientEncounterController implements Serializable {
 
     private UploadedFile uploadedFile;
 
+    @Deprecated
     public void calculateBmi() {
         if (current == null) {
             return;
@@ -1129,6 +1130,7 @@ public class PatientEncounterController implements Serializable {
         String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
+        String comments = e.getComments();
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1220,6 +1222,7 @@ public class PatientEncounterController implements Serializable {
 
         output = input.replace("{name}", name)
                 .replace("{age}", age)
+                .replace("{comments}", comments)
                 .replace("{sex}", sex)
                 .replace("{address}", address)
                 .replace("{phone}", phone)
@@ -1262,6 +1265,18 @@ public class PatientEncounterController implements Serializable {
                 break;
             }
         }
+    }
+    
+    
+    public void removeClinicalFindingValueForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
+        if (cfvs == null || cfv==null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        cfv.setRetired(true);
+        clinicalFindingValueFacade.edit(cfv);
+        cfvs.remove(cfv);
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void removePatientAllergy() {

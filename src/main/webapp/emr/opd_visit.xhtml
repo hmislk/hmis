@@ -368,10 +368,11 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
+                                                            <p:focus id="focusMedicine" for="acMedicine" ></p:focus>
                                                             <p:commandButton value="Add"
                                                                              id="btnAddRx"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
+                                                                             update="acMedicine tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
                                                         </div>
                                                     </div>
@@ -716,7 +717,6 @@
                                     <!-- Analytics such as FBS Graph, Lipid Profile, BMI Chart, etc. -->
                                 </p:tab>
                             </p:tabView>
-
                         </div>
                     </div>
 

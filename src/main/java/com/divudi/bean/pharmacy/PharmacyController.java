@@ -30,6 +30,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Atm;
+import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.Vmp;
@@ -168,6 +169,8 @@ public class PharmacyController implements Serializable {
     private Amp amp;
     private Vmpp vmpp;
     private Ampp ampp;
+
+    private MeasurementUnit issueUnit;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
@@ -237,7 +240,7 @@ public class PharmacyController implements Serializable {
     public String navigateToDosageForms() {
         return "/pharmacy/admin/dosage_forms";
     }
-    
+
     public String navigateToPharmaceuticalItemCategories() {
         return "/pharmacy/admin/pharmaceutical_item_category";
     }
@@ -399,6 +402,27 @@ public class PharmacyController implements Serializable {
         }
         for (Vmp i : vmpsSelected) {
             i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vmpFacade.batchEdit(vmpsSelected);
+        fillVmps();
+    }
+
+    public void assignIssueUnitToMultipleVmps() {
+        if (issueUnit == null) {
+            JsfUtil.addErrorMessage("No Issue Unit Selected");
+            return;
+        }
+        if (vmpsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmpsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmp i : vmpsSelected) {
+            i.setIssueUnit(issueUnit);
             //TODO: Write to AuditEvent
         }
         vmpFacade.batchEdit(vmpsSelected);
@@ -2549,6 +2573,14 @@ public class PharmacyController implements Serializable {
 
     public void setAmpps(List<Ampp> ampps) {
         this.ampps = ampps;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
     }
 
 }

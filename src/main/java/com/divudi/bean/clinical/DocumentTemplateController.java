@@ -101,6 +101,7 @@ public class DocumentTemplateController implements Serializable {
                 + "{address}<br/>"
                 + "{phone}<br/>"
                 + "{medicines}<br/>"
+                + "{comments}<br/>"
                 + "{outdoor}<br/>"
                 + "{indoor}<br/>"
                 + "{ix}<br/>"
