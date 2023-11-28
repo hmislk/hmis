@@ -539,13 +539,7 @@ public class ServiceController implements Serializable {
 
     public void delete() {
 
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(new Date());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
-
+        
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -556,7 +550,9 @@ public class ServiceController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getSelectedItems();
+        getItems();
+        current = null;
+        getCurrent();
 
     }
 

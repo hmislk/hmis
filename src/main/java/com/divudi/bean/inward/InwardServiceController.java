@@ -309,12 +309,6 @@ public class InwardServiceController implements Serializable {
 
     public void delete() {
 
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(new Date());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
 
         if (current != null) {
             current.setRetired(true);
@@ -326,6 +320,9 @@ public class InwardServiceController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
 
     }
 
