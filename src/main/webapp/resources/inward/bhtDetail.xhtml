@@ -26,19 +26,19 @@
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
                     <h:outputLabel   value="BHT NO  " />
                     <h:outputLabel value=":" class="mx-2" />
-                    <h:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
+                    <h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.bhtNo}" />
                     <h:outputLabel   value="Admission Type  " />
                     <h:outputLabel value=":" class="mx-2"  />
-                    <h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
-                    <h:outputLabel   value="Paymentmethod  " />
+                    <h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.admissionType.name}" />
+                    <h:outputLabel   value="Payment method  " />
                     <h:outputLabel value=":" class="mx-2"  />
-                    <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" />
+                    <h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.paymentMethod}" />
                     <h:outputLabel   value="Room  " />
                     <h:outputLabel value=":" class="mx-2"  />
-                    <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
-                    <h:outputLabel  value="Date of Admission  "  />
+                    <h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                    <h:outputLabel  value="Admission Date  "  />
                     <h:outputLabel value=":" class="mx-2" />
-                    <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
+                    <h:outputLabel value="&nbsp;&nbsp;#{cc.attrs.admission.dateOfAdmission}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel/>
