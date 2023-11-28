@@ -44,8 +44,8 @@
             <p:panel rendered="#{inwardTimedItemController.current.patientEncounter ne null}" >
                 
                 <f:facet name="header" >
-<!--                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />-->
-                    <h:outputLabel value="Manage Inward Timed Services" />                            
+                    <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
+                    <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>                            
 
                 </f:facet>
 
@@ -53,14 +53,12 @@
                     <h:panelGrid columns="3">
                         <p:commandButton class="w-100 ui-button-success m-2 "
                                          style="float: right"
-                                         value="New" 
                                          icon="fa fa-plus"
                                          ajax="false" 
                                          actionListener="#{inwardTimedItemController.makeNull()}" >
                         </p:commandButton>
                         <p:commandButton 
                             style="float: right;"
-                            value="Lookup" 
                             ajax="false"
                             icon="fa fa-search"
                             class="ui-button-warning " 
@@ -69,7 +67,6 @@
                         </p:commandButton>
                         <p:commandButton 
                             style="float: right;"
-                            value="Profile" 
                             ajax="false"
                             icon="fa fa-user"
                             class="ui-button-warning mx-1" 
@@ -77,7 +74,8 @@
                             >
                             <f:setPropertyActionListener 
                                 value="#{inwardTimedItemController.current.patientEncounter.patient}" 
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                target="#{patientController.current}" >
+                            </f:setPropertyActionListener>
                         </p:commandButton>
                     </h:panelGrid>
                 </div>
