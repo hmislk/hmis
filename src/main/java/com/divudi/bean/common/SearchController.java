@@ -4857,10 +4857,10 @@ public class SearchController implements Serializable {
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
-        sql += " order by pi.id desc  ";
+        sql += " order by pi.approveAt desc  ";
 //    
 
-        temMap.put("toDate", getToDate());
+        temMap.put("toDate", getToDate()); 
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
