@@ -10,12 +10,11 @@
 
 
     <ui:define name="content">
-        <h:panelGroup >
-            <h:form  >
+        <h:panelGroup>
+            <h:form>
                 <p:panel>
-
                     <f:facet name="header">
-                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
                         <p:outputLabel value="Patient Details" class="m-2"/>
                     </f:facet>
 
@@ -51,8 +50,7 @@
 
                     <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
                         <div class="col-12">
-                            <h:panelGroup rendered="true" styleClass="opdPanel" >
-
+                            <h:panelGroup rendered="true" styleClass="opdPanel">
                                 <p:panel >
 
                                     <h:panelGrid columns="4" class="mb-2 d-flex justify-content-end">
@@ -82,10 +80,6 @@
                                             action="/inward/inward_bill_service" />
 
                                     </h:panelGrid>
-
-
-
-
 
                                     <div class="row">
                                         <div class="col-4 ">
