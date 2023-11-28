@@ -19,7 +19,11 @@
             <h:panelGroup class="row" rendered="#{billBhtController.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
-                        <p:panel header="Patient Details">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
@@ -58,46 +62,6 @@
                 <p:panel>
                     <f:facet name="header">
                         <p:outputLabel class="w-100" value="Inward Add Services"/>
-
-                        <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                            <h:panelGrid columns="3">
-
-                                <p:commandButton 
-                                    style="float: right;"
-                                    value="Lookup" 
-                                    ajax="false"
-                                    icon="fa fa-search"
-                                    class="ui-button-warning " 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    >
-                                </p:commandButton>
-                                <p:commandButton 
-                                    style="float: right;"
-                                    value="Profile" 
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                    >
-                                    <f:setPropertyActionListener 
-                                        value="#{billBhtController.patientEncounter.patient}" 
-                                        target="#{patientController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    style="float: right;"
-                                    value="Back" 
-                                    ajax="false"
-                                    icon="fas fa-arrow-left"
-                                    class="ui-button-secondary " 
-                                    action="/inward/admission_profile.xhtml" 
-                                    >
-<!--                                    <f:setPropertyActionListener 
-                                        value="#{billBhtController.patientEncounter.patient.person}" 
-                                        target="#{admissionController.current}" ></f:setPropertyActionListener>-->
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </div>
-
                     </f:facet>
 
                     <div class="col-12">
@@ -107,7 +71,7 @@
 
                             <p:panel rendered="#{!billBhtController.printPreview}">
 
-                                <div class="d-flex justify-content-end align-items-center ">
+                                <div class="d-flex justify-content-end align-items-center gap-3">
 
                                     <h:panelGrid columns="4" >
                                         <p:commandButton class="w-100 ui-button-success m-3" id="btnSettle" 
@@ -132,6 +96,40 @@
                                                          action="/inward/inward_bill_outside_charge" />
                                     </h:panelGrid>
 
+
+                                    <h:panelGrid columns="3">
+
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning " 
+                                            action="#{patientController.navigateToSearchPatients()}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            class="ui-button-warning mx-1" 
+                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            >
+                                            <f:setPropertyActionListener 
+                                                value="#{billBhtController.patientEncounter.patient}" 
+                                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            icon="fa fa-id-card"
+                                            class="ui-button-secondary " 
+                                            action="/inward/admission_profile.xhtml" 
+                                            >
+                                            <!--                                    <f:setPropertyActionListener 
+                                                                                    value="#{billBhtController.patientEncounter.patient.person}" 
+                                                                                    target="#{admissionController.current}" ></f:setPropertyActionListener>-->
+                                        </p:commandButton>
+                                    </h:panelGrid>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4">

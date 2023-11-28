@@ -16,7 +16,11 @@
                 <div class="col-12">
 
                     <h:panelGroup id="panelPatient" >
-                        <p:panel header="Patient Details">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
@@ -37,10 +41,7 @@
                             <p:commandButton value="Select" ajax="false" >
                             </p:commandButton>
 
-                            <br/><br/>
-                            <h:panelGroup id="panSearch2">
-                                <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
-                            </h:panelGroup>
+
                         </p:panel>
                     </h:panelGroup>
 
@@ -51,12 +52,12 @@
 
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputText styleClass="fas fa-money-bill" />
-                        <h:outputLabel class="mx-4" value="Add Professional Fees" />    
+                        <h:outputText styleClass="fas fa-money-bill fa-lg" />
+                        <h:outputLabel class="mx-2" value="Add Professional Fees" />    
 
                         <div class="d-flex justify-content-end align-items-center">
                             <p:commandButton 
-                                class="mx-1 ui-button-primaryy"
+                                class="mx-1 ui-button-success"
                                 value="New Bill" 
                                 ajax="false" 
                                 actionListener="#{inwardProfessionalBillController.makeNull()}" >

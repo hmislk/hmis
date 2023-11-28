@@ -13,7 +13,11 @@
             <h:panelGroup class="row" rendered="#{inwardTimedItemController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
-                        <p:panel header="Patient Details">
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
                             <p:autoComplete  
                                 widgetVar="aPt" id="acPt" forceSelection="true" 
@@ -38,14 +42,16 @@
             </h:panelGroup>
 
             <p:panel rendered="#{inwardTimedItemController.current.patientEncounter ne null}" >
+                
                 <f:facet name="header" >
+<!--                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />-->
                     <h:outputLabel value="Manage Inward Timed Services" />                            
 
                 </f:facet>
 
                 <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
                     <h:panelGrid columns="3">
-                        <p:commandButton class="w-100 ui-button-warning m-2 "
+                        <p:commandButton class="w-100 ui-button-success m-2 "
                                          style="float: right"
                                          value="New" 
                                          icon="fa fa-plus"
