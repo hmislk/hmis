@@ -27,8 +27,7 @@
                                 var="myItem" itemValue="#{myItem}" 
                                 itemLabel="#{myItem.bhtNo}" 
                                 size="40" class="mb-2 mx-2">
-                                <p:ajax event="itemSelect" process="acPt" 
-                                        update="panSearch2 con" listener="#{inwardTimedItemController.createPatientItems()}"/>
+                                
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
