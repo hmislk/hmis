@@ -90,7 +90,7 @@
                             action="#{patientController.navigateToOpdPatientProfile()}" 
                             >
                             <f:setPropertyActionListener 
-                                value="#{opdBillController.patient}" 
+                                value="#{inwardProfessionalBillController.current.patient}" 
                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </h:panelGrid>
