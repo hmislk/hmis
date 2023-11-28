@@ -55,9 +55,9 @@
                                     <div class="d-grid gap-2">
 
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" icon="bi bi-gear-fill"/>
 <!--                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />-->
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" icon="fa-solid fa-wrench" action="#{sessionController.toManageDepartmentPreferences()}" />
 
 
                                     </div>
@@ -66,8 +66,8 @@
                                     <div class="d-grid gap-2">
 
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" icon="fa-solid fa-trash"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  icon="fa-solid fa-trash-can"/>
 
 
                                     </div>
