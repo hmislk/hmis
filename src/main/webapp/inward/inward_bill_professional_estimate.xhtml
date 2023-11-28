@@ -16,7 +16,11 @@
             <h:panelGroup  class="row" rendered="#{inwardProfessionalBillController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
-                        <p:panel header="Patient Details">
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
@@ -56,16 +60,14 @@
 
             <p:panel rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
                 <f:facet name="header" >
-                    <h:panelGrid columns="10"  >
-                        <h:outputLabel value="Inward Estimated Professional Charges" />                           
-
-
-                    </h:panelGrid>
+                    <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
+                    <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" /> 
+                    
                 </f:facet>
 
                 <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
                     <h:panelGrid columns="3">
-                        <p:commandButton class="w-100 ui-button-warning m-2 "
+                        <p:commandButton class="w-100 ui-button-success m-2 "
                                          style="float: right"
                                          value="New Bill" 
                                          icon="fa fa-plus"
@@ -200,7 +202,7 @@
                                 </div>
                             </p:panel>
                         </h:panelGroup>
-                        
+
                         <p:panel id="panelBillItems" class="mt-2">
                             <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardProfessionalBillController.lstBillFees}" var="bif" >
                                 <f:facet name="header">
@@ -236,9 +238,9 @@
                         </p:panel>
                     </div>
 
-                    
-                        
-                    
+
+
+
 
                 </div>
 
