@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                 template="/admin/institutions/admin_institutions_index.xhtml"
+                template="/admin/institutions/admin_institutions_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -13,52 +13,44 @@
         <h:panelGroup >
             <h:form  >
                 <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
 
 
 
                 <p:panel header="Manage Area" >
-                    <h:panelGrid id ="gpVeda" columns="2" >
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{areaController.prepareAdd()}" class=" m-1 ui-button-success w-25" 
+                                             process="btnAdd" update="lstSelect gpDetail">
 
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
-                                <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneListbox  id="lstSelect"  value="#{areaController.current}" style="min-width: 223px;height: 300px;">
-                                        <f:selectItems  value="#{areaController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                        </f:ajax>
-                                    </p:selectOneListbox>
-                                </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{areaController.prepareAdd()}" styleClass="buttons"  >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
-                                        </f:ajax>
-                                    </p:commandButton>
-                                    <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{areaController.delete()}"  value="Delete">
-                                    </p:commandButton>
-                                </h:panelGrid>
-                            </p:panel>
-                        </h:panelGrid  >
-
-                        <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                            </p:commandButton>
+                            <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" action="#{areaController.delete()}"  value="Delete" process="btnDelete" update="lstSelect gpDetail"
+                                             class=" m-1 ui-button-danger w-25">
+                            </p:commandButton>
+                            <p:selectOneListbox  id="lstSelect"  value="#{areaController.current}" class="w-100" filter="true">
+                                <f:selectItems  value="#{areaController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-md-6">
+                            <p:panelGrid id="gpDetail" columns="1" class="w-100">
+                                <h:panelGrid columns="2" class="w-100">
                                     <h:outputText value="Name" ></h:outputText>
-                                    <p:inputText autocomplete="off" value="#{areaController.current.name}"  />
-                                    
+                                    <p:inputText autocomplete="off" value="#{areaController.current.name}"  id="txtName" class="w-100"/>
                                 </h:panelGrid>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <p:commandButton id="btnSave" ajax="false" value="Save" action="#{areaController.saveSelected()}" styleClass="buttons" >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
-                                        </f:ajax>
-                                    </p:commandButton>
-<p:defaultCommand target="btnSave"/>
-                                </h:panelGrid>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid>
+
+
+                            </p:panelGrid>
+                            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{areaController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect" >
+
+                            </p:commandButton>
+                            <p:defaultCommand target="btnSave"/>
+                        </div>
+                    </div>
+
                 </p:panel>
             </h:form>
 
