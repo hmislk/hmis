@@ -12,12 +12,12 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="login.css" ></h:outputStylesheet>
 
-        <div style="margin-top: 10%">
+        <div style="background-color: lightgray; height: 100vh;">
             <section class="h-100 gradient-form">
                 <div class="container py-5 h-100" >
                     <div class="row d-flex justify-content-center align-items-center h-100" >
                         <div class="col-xl-10" >
-                            <div class="card rounded-3 text-black shadow" >
+                            <div class="card rounded-3 text-black" style="box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);">
                                 <div class="row g-0" >
                                     <div class="col-lg-6" >
                                         <div class="card-body p-md-5 mx-md-4">
@@ -63,7 +63,7 @@
 
 
                                                 <div class="text-center pt-1 mb-5 pb-1">
-                                                    <p:commandButton class="btn m-1 w-75 btn"
+                                                    <p:commandButton class="btn m-1 w-75 btn shadow-sm"
                                                                      value="Login"
                                                                      ajax="false"
                                                                      action="#{sessionController.loginActionWithoutDepartment()}" >
