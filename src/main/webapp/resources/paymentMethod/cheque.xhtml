@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap">
+        <div class="d-flex ">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col mx-1" layout="block"  >
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
                     <p:ajax process="@this" ></p:ajax>
@@ -36,8 +36,8 @@
                 </p:selectOneMenu>
             </div>
             
-            <div class="col mx-1" >
-                <p:calendar   value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+            <div class="col " >
+                <p:calendar value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
             </div>
