@@ -45,3 +45,16 @@
         
 }
 
+
+/* Style for screen (if needed) */
+.prescription-text .ql-container.ql-snow {
+    /* Your default styles here */
+}
+
+/* Style for printing */
+@media print {
+    .prescription-text .ui-texteditor .ql-container.ql-snow,
+    .prescription-text .ql-container.ql-snow {
+        border: none !important;
+    }
+}

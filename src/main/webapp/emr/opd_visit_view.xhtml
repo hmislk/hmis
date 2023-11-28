@@ -23,25 +23,24 @@
                         <div class="col-12 px-4" >
 
                             <p:commandButton 
-                                action="#{pastPatientEncounterController.saveSelected()}"
-                                ajax="false"
-                                icon="pi pi-save"
-                                class="p-0 m-1" 
-                                title="Save"/>
-
-                            <p:commandButton 
                                 class="p-0 m-1" 
                                 action="#{pastPatientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
+
                             <p:commandButton class="p-0 m-1" action="#{pastPatientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
+
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${pastPatientEncounterController.current}" />
                             </p:commandButton>
+
                             <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
+
                             <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
+
                             <p:commandButton 
                                 ajax="false" value="To Patient Profile"
                                 action="#{patientController.toEmrPatientProfile()}"
                                 process="panelPt" update="panelPt" ></p:commandButton>
+
                             <p:commandButton 
                                 id="btnCommentPrint"
                                 ajax="false"
@@ -60,20 +59,20 @@
                                 <p:ajax event="tabChange" listener="#{emrController.onTabChange}" process="tblView" />
                                 <p:tab title="Patient Details">
                                     <div class="ui-g">
-                                        <div class="ui-g-12 ui-md-4">
+                                        <div class="ui-g-12 ui-md-2">
                                             <emr:patient_photo patient="#{patientController.current}"></emr:patient_photo>
                                         </div>
-                                        <div class="ui-g-12 ui-md-4">
+                                        <div class="ui-g-12 ui-md-3">
                                             <emr:patient patient="#{patientController.current}"></emr:patient>
                                         </div>
-                                        <div class="ui-g-12 ui-md-4">
+                                        <div class="ui-g-12 ui-md-3">
                                             <emr:patient_allergies allergies="#{pastPatientEncounterController.patientAllergies}"></emr:patient_allergies>
+                                            <emr:patient_conditions conditions="#{pastPatientEncounterController.patientDiagnoses}"></emr:patient_conditions>
+
                                         </div>
                                         <div class="ui-g-12 ui-md-4">
-                                            <emr:patient_conditions conditions="#{pastPatientEncounterController.patientDiagnoses}"></emr:patient_conditions>
-                                        </div>
-                                        <div class="ui-g-12 ui-md-8">
                                             <emr:patient_medicines medicines="#{pastPatientEncounterController.patientMedicines}"></emr:patient_medicines>
+
                                         </div>
                                     </div>
                                 </p:tab>
@@ -170,89 +169,71 @@
 
                                             </p:panel>
 
-                                            <p:panel header="Diagnosis" class="w-100 m-1" >
-                                                <h:panelGroup id="gpDx" >
-                                                    <p:dataTable id="tblDx" 
-                                                                 rendered="#{pastPatientEncounterController.encounterDiagnoses ne null and pastPatientEncounterController.encounterDiagnoses.size() > 0}"
-                                                                 value="#{pastPatientEncounterController.encounterDiagnoses}"
-                                                                 emptyMessage="No Diagnosis Added Yet" rows="5"
-                                                                 paginatorAlwaysVisible="false"
-                                                                 paginator="true"
-                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                                 var="edx" class="w-100">
-                                                        <p:column headerText="Diagnosis">
-                                                            <h:outputLabel value="#{edx.itemValue.name}"></h:outputLabel>
-                                                        </p:column>
-                                                        <p:column headerText="Details">
-                                                            <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
-                                                        </p:column>
-                                                    </p:dataTable>
-                                                </h:panelGroup>
-
-
-                                            </p:panel>
-
-                                            <p:panel header="Tests" class="w-100 m-1">
-                                                <p:dataTable id="tblIx" 
-                                                             rendered="#{pastPatientEncounterController.encounterInvestigations ne null and pastPatientEncounterController.encounterInvestigations.size() > 0}"
-                                                             value="#{pastPatientEncounterController.encounterInvestigations}"
-                                                             emptyMessage="No Investigations Added Yet" rows="5"
-                                                             paginatorAlwaysVisible="false"
-                                                             paginator="true"
-                                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                             var="ix" class="w-100">
-                                                    <p:column headerText="Procedure" >
-                                                        <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Details">
-                                                        <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </p:panel>
-
+                                            <p:dataTable id="tblIx" 
+                                                         rendered="#{pastPatientEncounterController.encounterInvestigations ne null and pastPatientEncounterController.encounterInvestigations.size() > 0}"
+                                                         value="#{pastPatientEncounterController.encounterInvestigations}"
+                                                         emptyMessage="No Investigations Added Yet" rows="5"
+                                                         paginatorAlwaysVisible="false"
+                                                         paginator="true"
+                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                         var="ix" class="w-100 m-1">
+                                                <p:column headerText="Tests" >
+                                                    <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Details">
+                                                    <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                </p:column>
+                                            </p:dataTable>
                                         </div>
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel class="w-100 m-0 p-0">
-                                                <f:facet name="header">
-                                                    <p:outputLabel value="Medicines" />
+                                            <p:dataTable id="tblDx" 
+                                                         rendered="#{pastPatientEncounterController.encounterDiagnoses ne null and pastPatientEncounterController.encounterDiagnoses.size() > 0}"
+                                                         value="#{pastPatientEncounterController.encounterDiagnoses}"
+                                                         emptyMessage="No Diagnosis Added Yet" rows="5"
+                                                         paginatorAlwaysVisible="false"
+                                                         paginator="true"
+
+                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                         var="edx" class="w-100  m-1">
+                                                <p:column headerText="Diagnosis">
+                                                    <h:outputLabel value="#{edx.itemValue.name}"></h:outputLabel>
+                                                    <p:spacer width="10" height="1" ></p:spacer>
+                                                    <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
+                                                </p:column>
+                                            </p:dataTable>
+                                            <p:dataTable
+                                                class="m-1 w-100"
+                                                id="tblRxx"
+                                                value="#{pastPatientEncounterController.encounterMedicines}"
+                                                var="rx">
+                                                <p:column headerText="Medicines">
+                                                    <p:outputLabel value="#{rx.prescription.formattedPrescription}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                            <p:dataTable id="tblSx" 
+                                                         value="#{pastPatientEncounterController.encounterProcedures}"
+                                                         emptyMessage="No Procedure Added" rows="5"
+                                                         paginatorAlwaysVisible="false"
+                                                         paginator="true"
+                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                         var="sx" class="w-100 m-1">
+                                                <p:column headerText="Procedure" >
+                                                    <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
+                                                    <p:spacer width="10" height="1" ></p:spacer>
+                                                    <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4">
+                                            <p:panel id="docPrescreption" >
+                                                <f:facet name="header" >
+                                                    <h:outputLabel value="Prescription" ></h:outputLabel>
+                                                    <p:commandButton class="mx-5" ajax="false" value="Print"  icon="pi pi-print" >
+                                                        <p:printer target="txtPrescriptionDoc" ></p:printer>
+                                                    </p:commandButton>
                                                 </f:facet>
-                                                <p:dataTable id="tblRxx"
-                                                             value="#{pastPatientEncounterController.encounterMedicines}"
-                                                             var="rx">
-                                                    <p:column>
-                                                        <p:outputLabel value="#{rx.prescription.formattedPrescription}" />
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </p:panel>
 
-
-                                            <p:panel header="Procedures" class="w-100 m-1" >
-                                                <p:dataTable id="tblSx" 
-                                                             rendered="#{pastPatientEncounterController.encounterProcedures ne null and pastPatientEncounterController.encounterProcedures.size() > 0}"
-                                                             value="#{pastPatientEncounterController.encounterProcedures}"
-                                                             emptyMessage="No Procedure Added Yet" rows="5"
-                                                             paginatorAlwaysVisible="false"
-                                                             paginator="true"
-                                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                             var="sx" class="w-100">
-                                                    <p:column headerText="Procedure" >
-                                                        <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Details">
-                                                        <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </p:panel>
-
-
-                                        </div>
-
-                                        <div class="ui-g-12 ui-md-4">
-                                            <p:panel id="docPrescreption" header="Prescription" >
-                                                <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
-                                                </p:commandButton>
                                                 <p:textEditor 
                                                     class="prescription-text"
                                                     id="txtPrescriptionDoc" 
@@ -291,14 +272,28 @@
                                             </p:panelGrid>
                                         </div>
                                         <div class="col-8" >
-                                            <p:panelGrid columns="1" id="gpReferralDoc" >
+                                            <p:panelGrid 
+                                                columns="1"
+                                                id="gpReferralDoc" 
+                                                class="w-100">
                                                 <f:facet name="header" >
                                                     <h:outputLabel 
                                                         rendered="#{pastPatientEncounterController.encounterReferral.stringValue ne null}"
                                                         id="txtDocName" 
                                                         value="#{pastPatientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
+                                                    <p:commandButton
+                                                        class="ui-button-success mx-5"
+                                                        ajax="false" 
+                                                        value="Print"  
+                                                        icon="pi pi-print" >
+                                                        <p:printer target="textEditorReferralDocument" ></p:printer>
+                                                    </p:commandButton>
                                                 </f:facet>
                                                 <p:textEditor 
+                                                    id="textEditorReferralDocument"
+                                                    class="prescription-text"
+                                                    disabled="true"
+                                                    toolbarVisible="false"
                                                     rendered="#{pastPatientEncounterController.encounterReferral.lobValue ne null}" 
                                                     secure="false" 
                                                     value="#{pastPatientEncounterController.encounterReferral.lobValue}" >
@@ -338,49 +333,7 @@
                                                     </div>
                                                 </p:column>
                                             </p:dataTable>
-
-                                            <h:outputScript library="photocam" name="webcam.js" />
-
-                                            <div style="display:none;">
-                                                <p:photoCam listener="#{pastPatientEncounterController.oncaptureVisitPhoto}" 
-                                                            widgetVar="pc" width="400" height="300"
-                                                            photoWidth="800" photoHeight="600" />
-                                            </div>
-
-                                            <div class="row align-items-center"> <!-- Use Bootstrap row class -->
-                                                <div class="col"> <!-- Use Bootstrap col class -->
-                                                    <p:commandButton id="btnCaptureImage" 
-                                                                     onclick="PF('pc').capture();" 
-                                                                     icon="pi pi-camera"
-                                                                     action="#{pastPatientEncounterController.updateEncounterImages}" 
-                                                                     update="imageSwitcher" 
-                                                                     class="btn btn-primary h-50"/> <!-- Adjust height -->
-                                                </div>
-                                                <div class="col d-flex align-items-center">
-                                                    <p:fileUpload value="#{pastPatientEncounterController.uploadedFile}" 
-                                                                  auto="true"
-                                                                  mode="advanced" 
-                                                                  dragDropSupport="true"
-                                                                  multiple="false" update="imageSwitcher" accept="image/*" 
-                                                                  class="m-2" title="Upload Image"
-                                                                  listener="#{pastPatientEncounterController.uploadPhoto}" />
-                                                </div>
-
-                                            </div>
-
                                         </div>
-
-                                        <script type="text/javascript">
-                                            //<![CDATA[
-                                            $(document).ready(function () {
-                                                let dataTable = PF('imageSwitcherTable');
-                                                if (dataTable.paginator.cfg.rowCount <= 1) {
-                                                    $('.ui-paginator').hide();
-                                                }
-                                            });
-                                            //]]>
-                                        </script>
-
                                         <style>
                                             .noHeader thead {
                                                 display: none;
@@ -405,13 +358,9 @@
                                                 top: -10px;
                                             }
                                         </style>
-
-
-
                                     </div>
                                 </p:tab>
                                 <p:tab title="Visit History and Notes" >
-
                                     <div class="card m-1 p-1" >
                                         <div class="card-header" >
                                             <h4>Past Visits</h4>
