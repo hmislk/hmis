@@ -148,6 +148,22 @@ public class MetadataSuperCategoryController implements Serializable {
         recreateModel();
         getItems();
     }
+    public void delete() {
+
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            UtilityController.addSuccessMessage("Deleted Successfully");
+        } else {
+            UtilityController.addSuccessMessage("Nothing to Delete");
+        }
+        recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;

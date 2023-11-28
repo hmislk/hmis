@@ -5,6 +5,8 @@
 
 
 
+
+
 .standedicon{
     width: 2em;
     height: 2em;
@@ -38,19 +40,8 @@
     height: 50px;
     width: 100px;
 }
-
-
-/* Style for screen (if needed) */
-.prescription-text .ql-container.ql-snow {
-    /* Your default styles here */
+.printingOnly{
+        display: none!important;
+        
 }
-
-/* Style for printing */
-@media print {
-    .prescription-text .ui-texteditor .ql-container.ql-snow,
-    .prescription-text .ql-container.ql-snow {
-        border: none !important;
-    }
-}
-
 
