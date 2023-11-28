@@ -80,7 +80,7 @@
                                     action="#{patientController.navigateToOpdPatientProfile()}" 
                                     >
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current.patient}" 
+                                        value="#{billBhtController.patientEncounter.patient}" 
                                         target="#{patientController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
@@ -91,6 +91,9 @@
                                     class="ui-button-secondary " 
                                     action="/inward/admission_profile.xhtml" 
                                     >
+<!--                                    <f:setPropertyActionListener 
+                                        value="#{billBhtController.patientEncounter.patient.person}" 
+                                        target="#{admissionController.current}" ></f:setPropertyActionListener>-->
                                 </p:commandButton>
                             </h:panelGrid>
                         </div>
