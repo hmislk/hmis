@@ -215,7 +215,7 @@
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-0 p-0">
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="Prescription" />
+                                                    <p:outputLabel value="Medicines" />
                                                 </f:facet>
                                                 <p:dataTable id="tblRxx"
                                                              value="#{pastPatientEncounterController.encounterMedicines}"
@@ -253,10 +253,14 @@
                                                 <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
                                                     <p:printer target="txtPrescriptionDoc" ></p:printer>
                                                 </p:commandButton>
-                                                <p:textEditor id="txtPrescriptionDoc" 
-                                                              toolbarVisible="false"
-                                                              secure='false' widgetVar="textEditorWidget" 
-                                                              value="#{pastPatientEncounterController.encounterPrescreption.lobValue}">
+                                                <p:textEditor 
+                                                    class="prescription-text"
+                                                    id="txtPrescriptionDoc" 
+                                                    disabled="true"
+                                                    style="border:none!important;"
+                                                    toolbarVisible="false"
+                                                    secure='false' widgetVar="textEditorWidget" 
+                                                    value="#{pastPatientEncounterController.encounterPrescreption.lobValue}">
                                                 </p:textEditor>
                                             </p:panel>
                                         </div>
