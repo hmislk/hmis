@@ -114,6 +114,8 @@ public class InstitutionBranchController implements Serializable {
         getCurrent().getInstitution().getBranch().add(getCurrent());
         getEjbFacade().edit(getCurrent().getInstitution());
         recreateModel();
+        getItems();
+        current=null;
     }
 
     public void setSelectText(String selectText) {
