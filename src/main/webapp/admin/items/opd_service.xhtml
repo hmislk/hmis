@@ -10,7 +10,7 @@
 
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl />
+                <p:growl id="msg" />
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
@@ -36,7 +36,7 @@
                                                             return false;" 
                                                 action="#{serviceController.delete()}"
                                                 value="Delete"
-                                                update="lstSelect gpDetail selectFocus"
+                                                update="lstSelect gpDetail selectFocus msg"
                                                 process="btnDelete">
                                             </p:commandButton>
                                         </div>
@@ -69,7 +69,7 @@
                                     <p:commandButton 
                                         style="float: right"
                                         class="ui-button-warning"
-                                        update="lstSelect selectFocus"
+                                        update="lstSelect selectFocus msg"
                                         process="btnSave gpDetail" 
                                         id="btnSave" 
                                         value="Save"          
