@@ -24,7 +24,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="BHT NO"/></div>
+                    <div class="col-md-2"><p:outputLabel value="BHT No"/></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
                 </div>
@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-3"><p:outputLabel value="Payment method"  /></div>
+                    <div class="col-md-3"><p:outputLabel value="Payment Method"  /></div>
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                     <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
                 </div>
@@ -44,13 +44,13 @@
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Room"  /></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Admission Date"  /></div>
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel value="&nbsp;&nbsp;#{cc.attrs.admission.dateOfAdmission}">
+                    <div class="col-md-8"><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel></div>
                 </div>
@@ -58,7 +58,7 @@
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Room"  /></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
                 </div>
 
 

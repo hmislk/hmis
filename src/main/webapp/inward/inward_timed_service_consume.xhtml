@@ -26,7 +26,7 @@
                                 completeMethod="#{admissionController.completePatient}" 
                                 var="myItem" itemValue="#{myItem}" 
                                 itemLabel="#{myItem.bhtNo}" 
-                                size="40" class="mb-2 mx-2">
+                                size="40" required="true" class="m-2" requiredMessage="Please enter patient details">
                                 
                                 <p:column>
                                     #{myItem.bhtNo}
@@ -55,6 +55,7 @@
                                          style="float: right"
                                          icon="fa fa-plus"
                                          ajax="false" 
+                                         value="Add"
                                          actionListener="#{inwardTimedItemController.makeNull()}" >
                         </p:commandButton>
                         <p:commandButton 
@@ -122,7 +123,7 @@
                                 </div>
                                 <div class="row m-1">
                                     <div class="col-4">
-                                        <p:outputLabel value="StartTime:"/>
+                                        <p:outputLabel value="Start Time"/>
                                     </div>
                                     <div class="col-4">
                                         <p:calendar class="mx-2" id="startTime" value="#{inwardTimedItemController.current.fromTime}" 
@@ -130,8 +131,10 @@
                                         </p:calendar>  
                                     </div>
                                 </div>
-                                <div class="row m-1">
+                                
+                                <div class="row">
                                     <div class="col-4">
+                                        
                                         <p:commandButton class="mx-2" value="Add Service" ajax="false"
                                                          action="#{inwardTimedItemController.save}" 
                                                          />
