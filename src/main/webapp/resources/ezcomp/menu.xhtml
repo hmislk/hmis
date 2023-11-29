@@ -222,7 +222,7 @@
                     </p:submenu>
                     <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" value="Room Occupancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="#{admissionController.navigateToRoomVacancy()}" value="Room Vacany" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="#{admissionController.navigateToRoomVacancy()}" value="Room Vacancy" rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{admissionController.navigateToRoomChange()}" value="Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}" ></p:menuitem>   
                         <p:menuitem ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" value="Guardian Room Change" actionListener="#{roomChangeController.recreate()}" rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" ></p:menuitem>   
                     </p:submenu>  

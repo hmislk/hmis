@@ -17,6 +17,9 @@
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
+                    
+                    <p:growl id="msg" ></p:growl>
+                    
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-circle-plus" />
@@ -85,7 +88,7 @@
                                                              class="w-100 mx-1 ui-button-success"
                                                              action="#{opdBillController.addToBill()}"  
                                                              process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
+                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
                                             </p:commandButton>
                                         </div>
                                     </div>

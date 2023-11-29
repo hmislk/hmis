@@ -521,6 +521,7 @@ public class InwardTimedItemController implements Serializable {
             return true;
         }
         if (getCurrent().getItem() == null) {
+            UtilityController.addErrorMessage("Please Select service");
             return true;
         }
         return false;

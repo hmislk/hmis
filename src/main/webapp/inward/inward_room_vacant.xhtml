@@ -14,9 +14,15 @@
                 Room Vacancy Details
             </f:facet>
             <h:form>
-                <p:commandButton ajax="false" 
-                                 action="#{roomOccupancyController.createPatientRoomVacant()}"
-                                 value="Fill"  />             
+                <div class="row">
+                    <div class="col-md-3">
+                        <p:commandButton ajax="false" 
+                                         action="#{roomOccupancyController.createPatientRoomVacant()}"
+                                         value="Fill" class="w-50" />    
+                    </div>
+                </div>
+
+
                 <p:dataTable 
                     value="#{roomOccupancyController.roomFacilityCharges}" 
                     var="pr"

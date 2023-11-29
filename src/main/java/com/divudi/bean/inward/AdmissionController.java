@@ -65,7 +65,8 @@ public class AdmissionController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-
+    @Inject
+    RoomOccupancyController roomOccupancyController;
     @Inject
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
     ////////////
@@ -250,10 +251,12 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToRoomOccupancy() {
+        roomOccupancyController.setPatientRooms(null);
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
     public String navigateToRoomVacancy() {
+        roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
     }
 
@@ -1299,16 +1302,29 @@ public class AdmissionController implements Serializable {
             }
             AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionController");
-            return controller.getEjbFacade().find(getKey(value));
+            if(controller == null){
+                return null;
+            }
+            Long l = getKey(value);
+            if(l == null){
+                return  null;
+            }
+            return controller.getEjbFacade().find(l);
         }
 
         java.lang.Long getKey(String value) {
+            if(value == null){
+                return null;
+            }
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
+            if(value == null){
+                return null;
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();

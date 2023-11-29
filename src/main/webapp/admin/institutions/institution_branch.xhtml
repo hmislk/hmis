@@ -44,7 +44,7 @@
                                     <p:inputText autocomplete="off"  value="#{institutionBranchController.current.institutionCode}"  class="w-100 p-1" >
                                     </p:inputText>   
                                     <h:outputText value="Bank" ></h:outputText>
-                                    <p:selectOneMenu id="cmbIns" value="#{institutionBranchController.current.institution}" class="w-100 p-1" size="1">
+                                    <p:selectOneMenu id="cmbIns" value="#{institutionBranchController.current.institution}" class="w-100 p-1" >
                                         <f:selectItem itemLabel="Select the Institution" />
                                         <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                     </p:selectOneMenu>
