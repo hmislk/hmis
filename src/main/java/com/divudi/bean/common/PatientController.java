@@ -715,7 +715,7 @@ public class PatientController implements Serializable {
         return "/lab/patient_lab_reports";
     }
 
-     public void createPatientInvestigationsTableAllByLoggedInstitution() {
+    public void createPatientInvestigationsTableAllByLoggedInstitution() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
@@ -728,7 +728,7 @@ public class PatientController implements Serializable {
 
         //System.err.println("Sql " + sql);
 //        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        patientInvestigations=
+       // patientInvestigations=
 
     }
      
