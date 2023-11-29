@@ -19,11 +19,11 @@
             <h:panelGroup class="row" rendered="#{billBhtController.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
-                        <p:panel>
+                        <p:panel >
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
-                                <p:outputLabel value="Patient Details" class="m-2"/>
-                            </f:facet>
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                        <p:outputLabel value="Patient Details" class="m-2"/>
+                    </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
@@ -61,19 +61,19 @@
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">  
                 <p:panel>
                     <f:facet name="header">
-                        <p:outputLabel class="w-100" value="Inward Add Services"/>
+                        <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
+                        <p:outputLabel value="Inward Add Services" class="m-2"/>
                     </f:facet>
 
                     <div class="col-12">
-
-
                         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
                             <p:panel rendered="#{!billBhtController.printPreview}">
 
                                 <div class="d-flex justify-content-end align-items-center gap-3">
+                                    
 
-                                    <h:panelGrid columns="4" >
+                                    <h:panelGrid columns="4" class="m-2">
                                         <p:commandButton class="w-100 ui-button-success m-3" id="btnSettle" 
                                                          value="Settle" 
                                                          style="float: right"
@@ -81,7 +81,9 @@
                                                          action="#{billBhtController.settleBill}" 
                                                          ajax="false" >
                                         </p:commandButton>
+                                        
                                         <p:defaultCommand target="btnSettle"/>
+                                        
                                         <p:commandButton class="w-100 ui-button-warning m-2" 
                                                          action="#{billBhtController.makeNull}" 
                                                          style="float: right"
@@ -95,9 +97,8 @@
                                                          style="float: right"
                                                          action="/inward/inward_bill_outside_charge" />
                                     </h:panelGrid>
-
-
-                                    <h:panelGrid columns="3">
+                                    
+                                    <h:panelGrid columns="3" class="m-4">
 
                                         <p:commandButton 
                                             style="float: right;"
@@ -115,7 +116,7 @@
                                             action="#{patientController.navigateToOpdPatientProfile()}" 
                                             >
                                             <f:setPropertyActionListener 
-                                                value="#{billBhtController.patientEncounter.patient}" 
+                                                value="#{admissionController.current.patient}" 
                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:commandButton 
@@ -125,11 +126,9 @@
                                             class="ui-button-secondary " 
                                             action="/inward/admission_profile.xhtml" 
                                             >
-                                            <!--                                    <f:setPropertyActionListener 
-                                                                                    value="#{billBhtController.patientEncounter.patient.person}" 
-                                                                                    target="#{admissionController.current}" ></f:setPropertyActionListener>-->
                                         </p:commandButton>
                                     </h:panelGrid>
+
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4">
