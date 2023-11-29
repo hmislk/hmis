@@ -920,6 +920,7 @@ public class PatientController implements Serializable {
     public void clearSearchDetails() {
         searchName = null;
         searchPhone = null;
+        searchPhn=null;
         searchNic = null;
         searchPatientCode = null;
         searchPatientId = null;
