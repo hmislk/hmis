@@ -5,7 +5,8 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
 
 
     <ui:define name="content">
@@ -26,8 +27,7 @@
                                 var="myItem" itemValue="#{myItem}" 
                                 itemLabel="#{myItem.bhtNo}" 
                                 size="40" class="mb-2 mx-2">
-                                <p:ajax event="itemSelect" process="acPt" 
-                                        update="panSearch2 con" listener="#{inwardTimedItemController.createPatientItems()}"/>
+                                
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
@@ -44,8 +44,8 @@
             <p:panel rendered="#{inwardTimedItemController.current.patientEncounter ne null}" >
                 
                 <f:facet name="header" >
-<!--                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" />-->
-                    <h:outputLabel value="Manage Inward Timed Services" />                            
+                    <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
+                    <h:outputLabel value="Manage Inward Timed Services" class="m-2"/>                            
 
                 </f:facet>
 
@@ -53,14 +53,12 @@
                     <h:panelGrid columns="3">
                         <p:commandButton class="w-100 ui-button-success m-2 "
                                          style="float: right"
-                                         value="New" 
                                          icon="fa fa-plus"
                                          ajax="false" 
                                          actionListener="#{inwardTimedItemController.makeNull()}" >
                         </p:commandButton>
                         <p:commandButton 
                             style="float: right;"
-                            value="Lookup" 
                             ajax="false"
                             icon="fa fa-search"
                             class="ui-button-warning " 
@@ -69,7 +67,6 @@
                         </p:commandButton>
                         <p:commandButton 
                             style="float: right;"
-                            value="Profile" 
                             ajax="false"
                             icon="fa fa-user"
                             class="ui-button-warning mx-1" 
@@ -77,7 +74,8 @@
                             >
                             <f:setPropertyActionListener 
                                 value="#{inwardTimedItemController.current.patientEncounter.patient}" 
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                target="#{patientController.current}" >
+                            </f:setPropertyActionListener>
                         </p:commandButton>
                     </h:panelGrid>
                 </div>
@@ -89,41 +87,10 @@
                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                 <h:outputLabel value="Pateient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-                            <h:panelGrid id="panSearch2" columns="5" >
-                                <h:outputLabel  value="Name" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel  value=":" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-
-                                <h:outputLabel  value="Sex" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel  value=":" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.age}" ></h:outputLabel>
-
-                                <h:outputLabel  value="DOB"  />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel  value=":" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.dob}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>
-
-                                <h:outputLabel  value="Adress" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel  value=":" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.patient.person.address}" ></h:outputLabel>
-
-                                <h:outputLabel  value="Date of Admission"  />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel  value=":" />
-                                <p:spacer width="10" height="1" ></p:spacer>
-                                <h:outputLabel value="#{inwardTimedItemController.current.patientEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>
-                            </h:panelGrid>
+                            
+                            <in:bhtDetail admission="#{inwardTimedItemController.current.patientEncounter}"/>
+                            
+                            
                         </p:panel>
                     </div>
                     <div class="col-6">

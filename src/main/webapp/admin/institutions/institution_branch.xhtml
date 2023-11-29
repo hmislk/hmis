@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-
+                <p:growl id="msg"/>
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
@@ -26,7 +26,7 @@
                             </p:commandButton>
                             <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{institutionBranchController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25" process="btnDelete"
-                                    update="lstSelect gpDetail">
+                                    update="lstSelect gpDetail msg">
                             </p:commandButton>
                             <p:selectOneListbox  id="lstSelect"   value="#{institutionBranchController.current}" class="w-100" filter="true">
                                 <f:selectItems  value="#{institutionBranchController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
@@ -38,23 +38,23 @@
                             <p:panelGrid id="gpDetail" columns="1" class="w-100">
                                 <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                     <h:outputText  value="Branch Name" ></h:outputText>
-                                    <h:inputText autocomplete="off"  value="#{institutionBranchController.current.name}"  class="w-100 p-1"  ></h:inputText>
+                                    <p:inputText autocomplete="off"  value="#{institutionBranchController.current.name}"  class="w-100 p-1"  ></p:inputText>
                                     <h:outputText value="Branch Code" >                                        
                                     </h:outputText>
-                                    <h:inputText autocomplete="off"  value="#{institutionBranchController.current.institutionCode}"  class="w-100 p-1" >
-                                    </h:inputText>   
+                                    <p:inputText autocomplete="off"  value="#{institutionBranchController.current.institutionCode}"  class="w-100 p-1" >
+                                    </p:inputText>   
                                     <h:outputText value="Bank" ></h:outputText>
-                                    <h:selectOneListbox id="cmbIns" value="#{institutionBranchController.current.institution}" class="w-100 p-1" size="1">
+                                    <p:selectOneMenu id="cmbIns" value="#{institutionBranchController.current.institution}" class="w-100 p-1" size="1">
                                         <f:selectItem itemLabel="Select the Institution" />
                                         <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                    </h:selectOneListbox>
+                                    </p:selectOneMenu>
                                 </h:panelGrid>
                                
                                    
                                
                             </p:panelGrid>
                              <p:commandButton id="btnSave" value="Save" action="#{institutionBranchController.saveSelected()}" process="btnSave gpDetail" 
-                                                         update="lstSelect" class=" m-1 ui-button-warning w-25">
+                                                         update="lstSelect msg" class=" m-1 ui-button-warning w-25">
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                         </div>
