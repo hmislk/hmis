@@ -31,6 +31,7 @@
 
                             <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                             required="true" requiredMessage="Please select a patient"
                                              value="#{bhtSummeryController.patientEncounter}"
                                              completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                              var="myItem" itemValue="#{myItem}" 
@@ -41,14 +42,9 @@
                                     #{myItem.bhtNo}
                                 </p:column>
                                 <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
+                                    #{myItem.patient.person.name}
                                 </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
+                                
                             </p:autoComplete>   
                             <p:commandButton ajax="false"  
                                              value="Select" 
