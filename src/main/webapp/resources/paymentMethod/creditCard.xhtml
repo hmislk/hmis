@@ -19,10 +19,10 @@
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal"/>
                 <p:watermark value="Value" for="txtVal" />
             </h:panelGroup>
-            <p:inputText class="mx-1" 
+            <p:inputText class="mx-1 " 
                 autocomplete="off"   
                 value="#{cc.attrs.paymentMethodData.creditCard.no}" id="refno"/>                                
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" class="mx-2" >
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" class="mx-2" style="width: 10em;">
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>

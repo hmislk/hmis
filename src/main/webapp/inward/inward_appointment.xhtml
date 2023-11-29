@@ -24,51 +24,26 @@
                     <p:panel header="Inward Appointments" style="height: 100vh"> 
                         <div class="row">
                             <div class="col-12 d-flex justify-content-end align-items-center">
-                                <h:panelGrid columns="3">
-                                    <p:selectOneMenu   
-                                        id="cmbPs" 
-                                        
-                                        class="mx-0 w-100"
-                                        value="#{appointmentController.currentBill.paymentMethod}">                                                                     
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                        <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
-                                    </p:selectOneMenu>
 
-                                    <p:commandButton  
-                                        value="Settle" 
-                                        action="#{appointmentController.settleBill}" 
-                                        ajax="false"
-                                        icon="fa fa-check"
-                                        class="ui-button-success mx-2 "
-                                        >
-                                    </p:commandButton>
 
-                                    <p:commandButton 
-                                        value="New Bill"
-                                        ajax="false" 
-                                        action="#{appointmentController.prepareNewBill()}" >
-                                    </p:commandButton>
-                                </h:panelGrid>
-                                <div class="d-flex align-items-center">
-                                    
-                                </div>
-                                
+
+                                <p:commandButton  
+                                    value="Settle" 
+                                    action="#{appointmentController.settleBill}" 
+                                    ajax="false"
+                                    icon="fa fa-check"
+                                    class="ui-button-success mx-2 "
+                                    >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="New Bill"
+                                    ajax="false" 
+                                    action="#{appointmentController.prepareNewBill()}" >
+                                </p:commandButton>
+
                             </div>
-                            <div class="d-flex justify-content-end align-items-center my-2">
-                                <h:panelGroup 
-                                    id="creditCard" 
-                                    style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                    <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
 
-                                <h:panelGroup id="cheque" style="display: #{appointmentController.currentBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                    <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="slip" style="display: #{appointmentController.currentBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                    <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
-                            </div>
                         </div>
 
                         <div class="row mt-3">
@@ -81,14 +56,47 @@
                                         </f:facet>
 
                                         <ez:patientDetail   patient="#{appointmentController.searchedPatient}"/>
+
                                     </p:panel>
                                 </h:panelGroup>
                             </div>
 
-
-
-
                             <div class="col-md-6">
+                                <p:panel class="mb-3">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa-solid fa-money-bill-1-wave" />
+                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <div class="d-flex justify-content-between align-items-center my-2">
+                                        <div>
+                                            <p:selectOneMenu   
+                                                id="cmbPs" 
+                                                style="width: 10em;"
+                                                class="mx-0"
+                                                value="#{appointmentController.currentBill.paymentMethod}">                                                                     
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                                                <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div>
+                                            <h:panelGroup 
+                                                id="creditCard" 
+                                                style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{appointmentController.currentBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{appointmentController.currentBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+
+                                    </div>
+                                </p:panel>
+
                                 <p:panel>
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-info-circle" />
