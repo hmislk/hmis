@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
-    
+
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -20,74 +20,61 @@
                 <emr:patient patient="#{cc.attrs.admission.patient}" class="w-100"/>
             </div> 
         </div>
-        
+
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
-                    <div class="col-md-2"><h:outputLabel   value="BHT No" /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=":" class="mx-2" /></div>
+                    <div class="col-md-2"><p:outputLabel value="BHT NO"/></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
                 </div>
-                
+
                 <div class="row">
-                    <div class="col-md-2"><h:outputLabel   value="Admission Type" /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=":" class="mx-2" /></div>
+                    <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></div>
                 </div>
-                
+
                 <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Payment&nbsp;Mode" /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=":" class="mx-2" /></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
+                    <div class="col-md-3"><p:outputLabel value="Payment method"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-2"><h:outputLabel   value="Room" /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=":" class="mx-2"  /></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Admission Date"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel value="&nbsp;&nbsp;#{cc.attrs.admission.dateOfAdmission}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        </h:outputLabel></div>
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-2"><h:outputLabel  value="Admission Date"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><h:outputLabel value=":" class="mx-2"  /></div>
-                    <div class="col-md-8"><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel></div>
+                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="&nbsp;&nbsp;#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
                 </div>
-                
-                <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner"/>
-                    
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill"/>
-                    
+
+
+                <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
+                    <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
+
+                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill  "/>
+
                     <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
                     <h:outputLabel  value="Admission Fee  " rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
-                 
+
                     <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
                     <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>
-            </div>
-        </div>    
-        
-        <div class="row">
-            <div class="col-md-12">
-                <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                  
-                    
-                    
-                    
-                    
-                    
-                   
-                    
-           
 
-            </h:panelGrid>
+
+                </h:panelGrid>
             </div>
         </div>
     </cc:implementation>
