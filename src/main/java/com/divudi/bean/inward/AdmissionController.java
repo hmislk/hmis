@@ -320,6 +320,7 @@ public class AdmissionController implements Serializable {
             UtilityController.addErrorMessage("Please select to date below or equal to the current date");
             return;
         }
+        
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
