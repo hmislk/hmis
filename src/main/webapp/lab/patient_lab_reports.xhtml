@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition 
+        template="/resources/template/template.xhtml">
+
+        <ui:define name="content">
+            <h:form>
+                <p:panel header="Patient Lab Reports" >
+
+                    <p:dataTable   
+                        id="tblBills" 
+                        value="#{searchController.patientInvestigations}" 
+                        var="pi"  >
+
+                        <p:column 
+                            rendered="true"  
+                            headerText="Order No" 
+                            styleClass="alignTop" 
+                            >
+
+                            <h:outputLabel id="lblBillNo" 
+                                           value="#{pi.billItem.bill.insId}" 
+                                           styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+
+                        </p:column>
+
+                        <p:column  rendered="true"   headerText="Investigation"  styleClass="alignTop" >
+                            <h:outputLabel value="#{pi.billItem.item.name}" >
+                            </h:outputLabel>
+
+                        </p:column>
+
+
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:form>
+
+        </ui:define>
+
+    </ui:composition>
+
+</html>
