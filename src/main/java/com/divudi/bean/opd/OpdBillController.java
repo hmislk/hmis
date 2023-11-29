@@ -1169,12 +1169,12 @@ public class OpdBillController implements Serializable {
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            try {
-                getPersonFacade().create(getPatient().getPerson());
-            } catch (Exception e) {
-                getPersonFacade().edit(getPatient().getPerson());
+            if (getPatient().getPerson().getId() != null) {
+                getPatientFacade().edit(getPatient());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+                getPatientFacade().create(getPatient());
             }
             try {
                 getPatientFacade().create(getPatient());
@@ -1182,7 +1182,13 @@ public class OpdBillController implements Serializable {
                 getPatientFacade().edit(getPatient());
             }
         } else {
-            getPatientFacade().edit(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+                getPatientFacade().edit(getPatient());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+                getPatientFacade().create(getPatient());
+            }
         }
     }
 
@@ -2060,13 +2066,12 @@ public class OpdBillController implements Serializable {
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
 
-        
-        if(getSessionController()!=null){
-            if(getSessionController().getLoggedPreference()!=null){
-                
+        if (getSessionController() != null) {
+            if (getSessionController().getLoggedPreference() != null) {
+
             }
         }
-        
+
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);

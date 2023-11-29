@@ -4,6 +4,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
+import static com.divudi.ejb.CommonFunctions.getEndOfDay;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -80,6 +81,10 @@ public class CommonFunctionsController {
         cal2.setTime(date);
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
         return inDays;
+    }
+    
+    public Date getEndOfDay() {
+        return getEndOfDay(new Date());
     }
 
     public Long getDayCount(Date frm, Date to) {
