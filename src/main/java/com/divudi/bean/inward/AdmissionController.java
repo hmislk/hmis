@@ -311,12 +311,17 @@ public class AdmissionController implements Serializable {
     }
 
     public void searchAdmissions() {
+        if(fromDate == null||toDate==null){
+            UtilityController.addErrorMessage("Please select date");
+            return;
+        }
+        
         if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
             UtilityController.addErrorMessage("Please select from date below or equal to the current date");
             return;
         }
         
-        if (toDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
             UtilityController.addErrorMessage("Please select to date below or equal to the current date");
             return;
         }
