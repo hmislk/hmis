@@ -24,11 +24,13 @@
                     <p:panel header="Inward Appointments" style="height: 100vh"> 
                         <div class="row">
                             <div class="col-12 d-flex justify-content-end align-items-center">
-                                <div class="d-flex align-items-center">
+                                <h:panelGrid columns="3">
                                     <p:selectOneMenu   
                                         id="cmbPs" 
+                                        
+                                        class="mx-0 w-100"
                                         value="#{appointmentController.currentBill.paymentMethod}">                                                                     
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                         <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
                                     </p:selectOneMenu>
 
@@ -37,7 +39,7 @@
                                         action="#{appointmentController.settleBill}" 
                                         ajax="false"
                                         icon="fa fa-check"
-                                        class="ui-button-success mx-1"
+                                        class="ui-button-success mx-2 "
                                         >
                                     </p:commandButton>
 
@@ -46,7 +48,11 @@
                                         ajax="false" 
                                         action="#{appointmentController.prepareNewBill()}" >
                                     </p:commandButton>
+                                </h:panelGrid>
+                                <div class="d-flex align-items-center">
+                                    
                                 </div>
+                                
                             </div>
                             <div class="d-flex justify-content-end align-items-center my-2">
                                 <h:panelGroup 
