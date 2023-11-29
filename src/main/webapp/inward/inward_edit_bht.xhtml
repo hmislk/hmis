@@ -26,7 +26,8 @@
                             </f:facet>
                             <h:outputLabel value="Type Patient Name or BHT : "/>
                             
-                            <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            required="true" requiredMessage="Please select a patient"
                                             value="#{bhtEditController.current}"
                                             completeMethod="#{bhtEditController.completePatient}" 
                                             var="myItem" itemValue="#{myItem}" 
@@ -45,7 +46,6 @@
                                 id="btnSelect"
                                 ajax="false"
                                 value="Select"
-                                action="#{bhtEditController.displayDetails}"
                                 />
 
                         </p:panel>
