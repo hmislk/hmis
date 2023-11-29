@@ -1317,16 +1317,29 @@ public class AdmissionController implements Serializable {
             }
             AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionController");
-            return controller.getEjbFacade().find(getKey(value));
+            if(controller == null){
+                return null;
+            }
+            Long l = getKey(value);
+            if(l == null){
+                return  null;
+            }
+            return controller.getEjbFacade().find(l);
         }
 
         java.lang.Long getKey(String value) {
+            if(value == null){
+                return null;
+            }
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
+            if(value == null){
+                return null;
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();
