@@ -16,33 +16,33 @@
         <h:form>
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel header="Admit a Patient">
-                    
-                     <div class="d-flex justify-content-end mb-2">
-                                    <p:commandButton 
-                                        id="admt" 
-                                        action="#{admissionController.saveSelected}" 
-                                        ajax="false" 
-                                        class="ui-button-success mx-1"
-                                        value="Admit"  />
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        immediate="true"
-                                        value="Patient Lookup" 
-                                        class="ui-button-warning mx-1" 
-                                        action="#{patientController.navigateToSearchPatients()}" 
-                                        icon="fa fa-search" /> <!-- Font Awesome icon for search -->
 
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        immediate="true"
-                                        class="ui-button-warning mx-1" 
-                                        value="Patient Profile" 
-                                        action="#{patientController.navigateToOpdPatientProfile()}" 
-                                        icon="fa fa-user" > <!-- Font Awesome icon for user -->
-                                        <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                    <div class="d-flex justify-content-end mb-2">
+                        <p:commandButton 
+                            id="admt" 
+                            action="#{admissionController.saveSelected}" 
+                            ajax="false" 
+                            class="ui-button-success mx-1"
+                            value="Admit"  />
+                        <p:commandButton 
+                            ajax="false" 
+                            immediate="true"
+                            value="Patient Lookup" 
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            icon="fa fa-search" /> <!-- Font Awesome icon for search -->
 
-                                </div>
+                        <p:commandButton 
+                            ajax="false" 
+                            immediate="true"
+                            class="ui-button-warning mx-1" 
+                            value="Patient Profile" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            icon="fa fa-user" > <!-- Font Awesome icon for user -->
+                            <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+
+                    </div>
                     <p:panel header="Admission Details" class="w-100" >
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-hospital"></h:outputText>
@@ -63,8 +63,12 @@
                                         </p:selectOneMenu>
                                     </h:panelGroup>
                                     <h:panelGroup>
-                                        <p:outputLabel class="px-2 py-2" id="bht" value="BHT"/>
-                                        <p:outputLabel class="px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
+                                        <div class="d-flex align-items-center ">
+                                            <p:outputLabel class="px-2 py-2 " id="bht" value="BHT :"/>
+                                            <div class="border mx-4">
+                                                <p:outputLabel class="px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
                                     <h:panelGroup >
@@ -96,7 +100,7 @@
 
                                 </h:panelGrid>
                             </div>
-                            
+
                         </div>
                     </p:panel>
 
@@ -125,7 +129,7 @@
                         </div>
 
                         <div class="col-6">
-                            <p:panel>
+                            <p:panel class="my-1">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fa fa-medkit"></h:outputText>
                                     <h:outputLabel value="Hospital Use" class="mx-3"></h:outputLabel>
