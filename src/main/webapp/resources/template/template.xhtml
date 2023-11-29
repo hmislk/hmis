@@ -40,7 +40,7 @@
                 border: none !important;
             }
         </style>
-        <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+        <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
             <h:panelGroup rendered ="#{not sessionController.logged}"  >
                 <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
                     <ui:insert name="login">
@@ -65,8 +65,8 @@
                     </ui:insert>
                 </p:panel>
             </h:panelGroup>
-            <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" >
-                <ez:select_department/>
+            <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">
+                <ez:select_department class="w-100"/>
             </h:panelGroup>
             <ez:footer/>
         </h:panelGroup>
@@ -75,20 +75,20 @@
         </h:panelGroup>
         <div class="d-flex justify-content-center align-items-center">
             <p:growl id="growl" life="2000"  />
-<!--            <p:messages class="w-75 text-center " id="publicGrowl"  closable="true" ></p:messages>-->
+            <!--            <p:messages class="w-75 text-center " id="publicGrowl"  closable="true" ></p:messages>-->
         </div>
 
 
-<!--        <script>
-            setTimeout(function () {
-                var growlContainer = document.getElementById('publicGrowl');
-                growlContainer.style.display = 'none';
-            }, 20000);
-
-            // Add a timeout function to hide the messages after a certain duration (e.g., 5000 milliseconds or 5 seconds)
-            setTimeout(function () {
-                $('#publicGrowl').alert('close');
-            }, 5000);
-        </script>-->
+        <!--        <script>
+                    setTimeout(function () {
+                        var growlContainer = document.getElementById('publicGrowl');
+                        growlContainer.style.display = 'none';
+                    }, 20000);
+        
+                    // Add a timeout function to hide the messages after a certain duration (e.g., 5000 milliseconds or 5 seconds)
+                    setTimeout(function () {
+                        $('#publicGrowl').alert('close');
+                    }, 5000);
+                </script>-->
     </h:body>
 </html>
