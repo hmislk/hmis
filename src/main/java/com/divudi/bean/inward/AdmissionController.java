@@ -69,6 +69,8 @@ public class AdmissionController implements Serializable {
     RoomOccupancyController roomOccupancyController;
     @Inject
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    RoomChangeController roomChangeController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -261,10 +263,14 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToRoomChange() {
+        roomChangeController.recreate();
+        roomChangeController.createPatientRoom();
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
+         roomChangeController.recreate();
+        roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 

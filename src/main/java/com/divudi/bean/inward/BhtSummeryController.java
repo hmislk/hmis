@@ -82,8 +82,8 @@ import org.primefaces.event.RowEditEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -157,11 +157,11 @@ public class BhtSummeryController implements Serializable {
     private Item item;
     boolean changed = false;
 
-    
-    public String navigateToIntrimBillEstimate(){
+    public String navigateToIntrimBillEstimate() {
+        createTablesWithEstimatedProfessionalFees();
         return "/inward/inward_bill_intrim_estimate";
     }
-    
+
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {
             patientRooms = createPatientRooms();
@@ -241,7 +241,6 @@ public class BhtSummeryController implements Serializable {
             default:
                 disValue = discountSet(cit, discountPercent);
         }
-
 
         cit.setDiscount(disValue);
 //        cit.setAdjustedTotal(cit.getTotal());
@@ -1266,22 +1265,18 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        
         String j = "select i from Item i where i.inwardChargeType=:ict and i.retired=false order by i.id desc";
         Map m = new HashMap();
         m.put("ict", InwardChargeType.VAT);
         Item i = getItemFacade().findFirstByJpql(j, m);
-        
-        
-        if(i==null){
+
+        if (i == null) {
             JsfUtil.addErrorMessage("No VAT service");
-            return ;
-        }else{
-            
+            return;
+        } else {
+
         }
-        
-        
-        
+
     }
 
     public void discharge() {
@@ -1383,7 +1378,6 @@ public class BhtSummeryController implements Serializable {
         getIntrimPrintController().getCurrentBill().setTotal(grantTotal);
         getIntrimPrintController().getCurrentBill().setPaidAmount(paid);
         getIntrimPrintController().getCurrentBill().setAdjustedTotal(grantTotal);
-
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             BillItem billItem = new BillItem();
@@ -1760,17 +1754,18 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
-    
+
     public String navigateToIntrimBill() {
         patientEncounter = null;
         makeNull();
         return "/inward/inward_bill_intrim";
     }
-    
-     public String navigateToIntrimBillFromPatientProfile() {
+
+    public String navigateToIntrimBillFromPatientProfile() {
+        createTables();
         return "/inward/inward_bill_intrim";
     }
-    
+
     public String toIntrimBillclear() {
         patientEncounter = null;
         makeNull();
@@ -1828,7 +1823,7 @@ public class BhtSummeryController implements Serializable {
     private void setPatientRoomData() {
 
         for (PatientRoom p : patientRooms) {
-            if(p.getAdmittedAt()==null){
+            if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
             }
             calculateRoomCharge(p);

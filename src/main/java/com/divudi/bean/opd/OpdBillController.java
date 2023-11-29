@@ -245,7 +245,7 @@ public class OpdBillController implements Serializable {
     public String navigateToSearchPatients() {
         patientController.clearSearchDetails();
         patientController.setSearchedPatients(null);
-        return "/opd/patient_search?faces-redirect=false";
+        return "/opd/patient_search?faces-redirect=true";
     }
 
     public String navigateToOpdAnalyticsIndex() {
