@@ -852,6 +852,50 @@ public class PatientController implements Serializable {
     }
 
     public String searchPatientForOpd() {
+        
+        boolean noSearchCriteriaWasFound=true;
+        
+        if(searchPhn != null && !searchPhn.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchPhone != null && !searchPhone.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchNic != null && !searchNic.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchPatientCode != null && !searchPatientCode.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchName != null && !searchName.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchBillId != null && !searchBillId.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchPhone != null && !searchPhone.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchPatientId != null && !searchPatientId.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(searchSampleId != null && !searchSampleId.trim().equals("")){
+            noSearchCriteriaWasFound=false;
+        }
+        
+        if(noSearchCriteriaWasFound){
+            JsfUtil.addErrorMessage("No Search criteria Found !");
+            return "";
+        }
+                
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
         } else if (searchSampleId != null && !searchSampleId.trim().equals("")) {
