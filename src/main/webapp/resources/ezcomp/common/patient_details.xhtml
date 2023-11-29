@@ -33,21 +33,21 @@
                     </p:commandLink>
 
                     <!-- Save Link with Icon -->
-                    <p:commandLink id="saveLink"
+                    <p:commandLink id="btnPatientSave"
                                    action="#{patientController.save(cc.attrs.patient)}" 
                                    rendered="#{cc.attrs.patient.editingMode}"
                                    styleClass="btn btn-link p-0 m-0"
-                                   ajax="false">
+                                   process="btnPatientSave gpPatient"
+                                   update="gpPatient"
+                                   >
                         <i class="fa fa-save"></i>
-                        <p:ajax process="@this gpPatient" update="gpPatient" />
+                        
                     </p:commandLink>
+                    
                 </h:panelGroup>
             </f:facet>
 
             <h:panelGroup id="gpPatient" >
-
-
-
                 <div class="row">
                     <div class="col-md-3 p-1">
                         <p:selectOneMenu 
