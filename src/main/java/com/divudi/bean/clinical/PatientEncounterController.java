@@ -672,14 +672,11 @@ public class PatientEncounterController implements Serializable {
         dx.setPerson(current.getPatient().getPerson());
         dx.setStringValue(diagnosis.getName());
         dx.setLobValue(diagnosisComments);
-        current.getClinicalFindingValues().add(dx);
-        getFacade().edit(current);
+        clinicalFindingValueFacade.create(dx);
+        encounterFindingValues.add(dx);
         diagnosis = null;
         diagnosisComments = "";
-
-        getEncounterFindingValues().add(dx);
         encounterDiagnoses = fillEncounterDiagnoses(current);
-
         UtilityController.addSuccessMessage("Diagnosis added");
     }
 
@@ -1131,6 +1128,9 @@ public class PatientEncounterController implements Serializable {
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
+        if (comments == null) {
+            comments = "";
+        }
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1266,10 +1266,9 @@ public class PatientEncounterController implements Serializable {
             }
         }
     }
-    
-    
+
     public void removeClinicalFindingValueForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
-        if (cfvs == null || cfv==null) {
+        if (cfvs == null || cfv == null) {
             JsfUtil.addErrorMessage("Error");
             return;
         }
