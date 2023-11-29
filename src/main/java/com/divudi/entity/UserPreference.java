@@ -956,7 +956,7 @@ public class UserPreference implements Serializable {
 
     public String getShortDateFormat() {
         if (shortDateFormat == null || shortDateFormat.trim().equals("")) {
-            shortDateFormat = "dd MM yy";
+            shortDateFormat = "dd MMM yy";
         }
         return shortDateFormat;
     }
@@ -967,7 +967,7 @@ public class UserPreference implements Serializable {
 
     public String getLongDateTimeFormat() {
         if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
-            longDateTimeFormat = "dd MMM yyyy hh:mm:ss";
+            longDateTimeFormat = "dd MMM yyyy HH:mm:ss";
         }
         return longDateTimeFormat;
     }
@@ -978,7 +978,7 @@ public class UserPreference implements Serializable {
 
     public String getShortDateTimeFormat() {
         if (shortDateTimeFormat == null || shortDateTimeFormat.trim().equals("")) {
-            shortDateTimeFormat = "dd MM yy hh:mm a";
+            shortDateTimeFormat = "dd MMM yy HH:mm";
         }
         return shortDateTimeFormat;
     }
@@ -989,7 +989,7 @@ public class UserPreference implements Serializable {
 
     public String getLongTimeFormat() {
         if (longTimeFormat == null || longTimeFormat.trim().equals("")) {
-            longTimeFormat = "hh:mm:ss a";
+            longTimeFormat = "HH:mm:ss";
         }
         return longTimeFormat;
     }
@@ -1000,7 +1000,7 @@ public class UserPreference implements Serializable {
 
     public String getShortTimeFormat() {
         if (shortTimeFormat == null || shortTimeFormat.trim().equals("")) {
-            shortTimeFormat = "hh:mm a";
+            shortTimeFormat = "HH:mm";
         }
         return shortTimeFormat;
     }
