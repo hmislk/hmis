@@ -35,6 +35,7 @@
                             <f:selectItems  value="#{packageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                             <p:ajax process="lstSelect" update="gpDetails" ></p:ajax>
                         </p:selectOneListbox>
+                        
                         <p:commandButton 
                             id="btnAdd" 
                             process="btnAdd"

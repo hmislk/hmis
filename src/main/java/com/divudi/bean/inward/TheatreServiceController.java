@@ -257,6 +257,8 @@ public class TheatreServiceController implements Serializable {
         }
         recreateModel();
         getItems();
+        current=null;
+        getCurrent();
     }
 
     public void setSelectText(String selectText) {
@@ -311,6 +313,10 @@ public class TheatreServiceController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
+        current=null;
+        getCurrent();
+
 
     }
 

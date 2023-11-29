@@ -75,6 +75,7 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.view.ViewScoped;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
@@ -87,7 +88,7 @@ import org.primefaces.model.file.UploadedFile;
  */
 @Named
 @SessionScoped
-public class PatientEncounterController implements Serializable {
+public class PastPatientEncounterController implements Serializable {
 
     /**
      * EJBs
@@ -218,7 +219,18 @@ public class PatientEncounterController implements Serializable {
 
     private UploadedFile uploadedFile;
 
-    @Deprecated
+    public String navigateToViewPastEncounter() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        setStartedEncounter(current);
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(current);
+        generateDocumentsFromDocumentTemplates(current);
+        return "/emr/opd_visit_view";
+    }
+
     public void calculateBmi() {
         if (current == null) {
             return;
@@ -1052,7 +1064,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void fillCurrentPatientLists(Patient patient) {
-        encounters = fillPatientEncounters(patient);
+       
 
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
@@ -1184,7 +1196,7 @@ public class PatientEncounterController implements Serializable {
 
         String ixAsString = "Ix" + "<br/>";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
+            ixAsString += ix.getItemValue().getName() + "<br/>";;
         }
 
         String allergiesAsString = "";
@@ -1222,8 +1234,8 @@ public class PatientEncounterController implements Serializable {
 
         output = input.replace("{name}", name)
                 .replace("{age}", age)
-                .replace("{comments}", comments)
                 .replace("{sex}", sex)
+                .replace("{comments}", comments)
                 .replace("{address}", address)
                 .replace("{phone}", phone)
                 .replace("{medicines}", medicinesAsString)
@@ -1265,18 +1277,6 @@ public class PatientEncounterController implements Serializable {
                 break;
             }
         }
-    }
-    
-    
-    public void removeClinicalFindingValueForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
-        if (cfvs == null || cfv==null) {
-            JsfUtil.addErrorMessage("Error");
-            return;
-        }
-        cfv.setRetired(true);
-        clinicalFindingValueFacade.edit(cfv);
-        cfvs.remove(cfv);
-        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void removePatientAllergy() {
@@ -2051,7 +2051,7 @@ public class PatientEncounterController implements Serializable {
         return sessionController;
     }
 
-    public PatientEncounterController() {
+    public PastPatientEncounterController() {
     }
 
     public PatientEncounter getCurrent() {
@@ -2823,53 +2823,7 @@ public class PatientEncounterController implements Serializable {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
 
-    @FacesConverter(forClass = PatientEncounter.class)
-    public static class PatientEncounterConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            PatientEncounterController controller = (PatientEncounterController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "patientEncounterController");
-            return controller.getFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof PatientEncounter) {
-                PatientEncounter o = (PatientEncounter) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientEncounterController.class.getName());
-            }
-        }
-    }
+    
 
 }
 
-enum ClinicalField {
-
-    History,
-    Examination,
-    Investigations,
-    Treatments,
-    Management,
-}

@@ -28,7 +28,7 @@
                 <f:selectItems value="#{cc.attrs.controller.sex}"/>
             </p:selectOneMenu>
             <h:outputLabel value="Age"/>
-            <h:panelGroup>
+            <h:panelGroup class="d-flex">
                 <p:inputText autocomplete="off"  id="year" value="#{cc.attrs.controller.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
                 </p:inputText>

@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="col" >
+        <div class="col d-flex flex-wrap align-items-center" >
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="mx-1" >
                 <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal"/>
                 <p:watermark value="Value" for="txtVal" />

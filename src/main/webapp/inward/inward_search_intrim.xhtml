@@ -11,13 +11,8 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
-                        <f:facet name="header" >
+                    <p:panel header="Search Bills" style="height: 100vh" >
                             <div class="d-flex">
-                                <div>
-                                    <p:panel>
-                                        <h:panelGroup>
-
                                             <h:panelGrid columns="1">
                                                 <h:outputLabel value="From Date"/>
                                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
@@ -27,7 +22,11 @@
                                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                                 </p:calendar>
-                                                <p:commandButton class="mt-2" ajax="false" action="#{searchController.createInwardIntrimBills()}" value="Search"  />
+                                                <p:commandButton 
+                                                    class="mt-2 w-100" 
+                                                    ajax="false" 
+                                                    action="#{searchController.createInwardIntrimBills()}"
+                                                    value="Search"  />
 
 
 
@@ -44,11 +43,6 @@
                                                 <h:outputLabel value="Net Total"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                                             </h:panelGrid>
-
-
-                                        </h:panelGroup>
-                                    </p:panel>
-                                </div>
                                 <div class="p-1">
                                     <p:dataTable 
                                         id="tblBills"
@@ -57,6 +51,7 @@
                                         paginator="true"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="5,10,15"
+                                        class="mx-1"
                                         >
                                         <p:column>
                                             <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_intrim"  >
@@ -114,16 +109,10 @@
                                     </p:dataTable>
                                 </div>
                             </div>
-                        </f:facet>
-
-
-
+                      
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
 
     </h:body>

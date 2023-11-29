@@ -18,32 +18,36 @@
                                     <div class="d-grid gap-2">
                                         <p:commandButton class="btn btn-primary"
                                                          action="#{institutionController.toAddNewInstitution()}" 
-                                                         icon="bi bi-building-fill-add" value="Add New Institution">
+                                                         icon="fa-solid fa-building-user" value="Add New Institution">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{institutionController.toListInstitutions()}" 
-                                                         icon="bi bi-building-fill-add" value="List Institutions">
+                                                         icon="bi bi-list" value="List Institutions">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{departmentController.toAddNewDepartment()}" 
-                                                         icon="bi bi-building-fill-add" value="Add New Department">
+                                                         icon="fa-solid fa-building"
+                                                          value="Add New Department">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" 
                                                          action="#{departmentController.toListDepartments()}" 
-                                                         icon="bi bi-building-fill-add" value="List Departments">
+                                                         icon="bi bi-list"
+                                                          value="List Departments">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="#{navigationController.navigateToArea()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" actionListener="#{departmentController.fillSearchItems()}" icon="fa-regular fa-building"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" icon="fa-solid fa-warehouse" action="#{navigationController.navigateToCollectingCenter()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" icon="bi bi-credit-card" action="#{navigationController.navigateToCreditCompany()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" icon="bi bi-geo-alt" action="#{navigationController.navigateToArea()}" />
                                         <p:commandButton class="btn btn-primary"
                                                          action="#{routeController.toAddNewRoute}" 
-                                                         icon="bi bi-building-fill-add" value="Add New Route">
+                                                         icon="bi bi-geo-alt"
+                                                          value="Add New Route">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{routeController.toListRoutes()}" 
-                                                         icon="bi bi-building-fill-add" value="List Routes">
+                                                         value="List Routes"
+                                                         icon="bi bi-list">
                                         </p:commandButton>
                                     </div>
                                 </p:tab>
@@ -51,9 +55,9 @@
                                     <div class="d-grid gap-2">
 
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Application Preferences" action="#{sessionController.toManageApplicationPreferences}" icon="bi bi-gear-fill"/>
 <!--                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />-->
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" icon="fa-solid fa-wrench" action="#{sessionController.toManageDepartmentPreferences()}" />
 
 
                                     </div>
@@ -62,8 +66,8 @@
                                     <div class="d-grid gap-2">
 
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" icon="fa-solid fa-trash"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  icon="fa-solid fa-trash-can"/>
 
 
                                     </div>

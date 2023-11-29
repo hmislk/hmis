@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -34,8 +35,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -63,8 +64,8 @@ public class TimedItemController implements Serializable {
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         //////System.out.println("gettin ins dep ");
-        if(current==null){
-             return new ArrayList<>();
+        if (current == null) {
+            return new ArrayList<>();
         }
         if (getCurrent().getInstitution() == null) {
             return new ArrayList<>();
@@ -105,12 +106,12 @@ public class TimedItemController implements Serializable {
         departmentType = null;
         return "/inward/inward_timed_service_consume";
     }
-    
+
     public String inwardTimedServiceConsumeInward() {
-        departmentType =DepartmentType.Inward;
+        departmentType = DepartmentType.Inward;
         return "/inward/inward_timed_service_consume";
     }
-    
+
     public String inwardTimedServiceConsumeTheatre() {
         departmentType = DepartmentType.Theatre;
         return "/theater/inward_timed_service_consume_surgery";
@@ -134,7 +135,7 @@ public class TimedItemController implements Serializable {
                         + " order by c.name";
                 Map m = new HashMap();
                 m.put("dt", departmentType);
-                suggestions = getFacade().findByJpql(sql,m);
+                suggestions = getFacade().findByJpql(sql, m);
             }
         }
         return suggestions;
@@ -184,7 +185,6 @@ public class TimedItemController implements Serializable {
 //        }
 //        return selectedItems;
 //    }
-
 //    public List<TimedItem> getSelectedTheatreItems() {
 //        String sql = "select c from TimedItem c "
 //                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
@@ -196,7 +196,6 @@ public class TimedItemController implements Serializable {
 //        ////System.out.println("selectedItems = " + selectedItems);
 //        return selectedItems;
 //    }
-
 //    public List<TimedItem> getSelectedInwardItems() {
 //        String sql = "select c from TimedItem c "
 //                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
@@ -208,7 +207,6 @@ public class TimedItemController implements Serializable {
 //        ////System.out.println("selectedItems = " + selectedItems);
 //        return selectedItems;
 //    }
-
     public void prepareAdd() {
         current = new TimedItem();
     }
@@ -252,7 +250,7 @@ public class TimedItemController implements Serializable {
     public List<TimedItem> getSelectedItems() {
         return selectedItems;
     }
-    
+
     public String getSelectText() {
         return selectText;
     }
@@ -263,7 +261,7 @@ public class TimedItemController implements Serializable {
     }
 
     public void saveSelected() {
-        if(current==null){
+        if (current == null) {
             UtilityController.addErrorMessage("Nothing to save. Please click add button.");
             return;
         }
@@ -290,7 +288,7 @@ public class TimedItemController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updated Successfully");
+            UtilityController.addSuccessMessage("Created Successfully");
         } else {
 //            
 //            getFacade().create(getCurrent());
@@ -302,10 +300,10 @@ public class TimedItemController implements Serializable {
 //            }
             getFacade().edit(getCurrent());
             ////System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            UtilityController.addSuccessMessage("Updated Successfully");
         }
         recreateModel();
-        //  getItems();
+        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -332,9 +330,9 @@ public class TimedItemController implements Serializable {
     }
 
     public TimedItem getCurrent() {
-//        if (current == null) {
-//            current = new TimedItem();
-//        }
+        if (current == null) {
+            current = new TimedItem();
+        }
         return current;
     }
 
@@ -375,8 +373,22 @@ public class TimedItemController implements Serializable {
         return ejbFacade;
     }
 
+    public void fillItems() {
+        String jpql = "Select senula "
+                + "from TimedItem senula "
+                + "where senula.retired=:pasindu "
+                + "order by senula.name";
+
+        Map m = new HashMap();
+        m.put("pasindu", false);
+
+        items = getFacade().findByJpql(jpql, m);
+    }  
+
     public List<TimedItem> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            fillItems();
+        }
         return items;
     }
 
