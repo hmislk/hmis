@@ -65,7 +65,8 @@ public class AdmissionController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-
+    @Inject
+    RoomOccupancyController roomOccupancyController;
     @Inject
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
     ////////////
@@ -250,10 +251,12 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToRoomOccupancy() {
+        roomOccupancyController.setPatientRooms(null);
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
     public String navigateToRoomVacancy() {
+        roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
     }
 
