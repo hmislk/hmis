@@ -16,18 +16,13 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill" >
+                    
+                    <p:growl id="panelError" />
+                    
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
-                        <h:panelGroup id="panelError" >
-                            <h:panelGroup  
-                                rendered="#{pharmacySaleController.errorMessage ne null}"
-                                style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
-                                <p:outputLabel value="#{pharmacySaleController.errorMessage}" ></p:outputLabel>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
                         <p:panel>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton class="mx-1" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
@@ -45,6 +40,11 @@
                                 <div class="col-6">
                                     <p:panel header="Add Items" class="my-1">
                                         
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fas fa-store" />
+                                            <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+
                                         <h:panelGrid columns="6" >
                                             <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
@@ -137,7 +137,7 @@
 
 
                                     <p:panel header="Bill Items" id="pBis">
-                                        
+
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 

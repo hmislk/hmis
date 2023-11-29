@@ -90,6 +90,7 @@
                                                          icon="fa fa-plus"
                                                          ajax="false" 
                                                          value="New Bill" />
+                                        
                                         <p:commandButton class="w-100 ui-button-warning" 
                                                          value="Go To Add Outside" 
                                                          ajax="false" 
@@ -157,7 +158,7 @@
                                                             <h:outputLabel value="Category"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:autoComplete value="#{itemController.category}" id="ct" size="73"
+                                                            <p:autoComplete value="#{itemController.category}" id="ct" size="75"
                                                                             forceSelection="true"
                                                                             completeMethod="#{categoryController.completeCategoryService}"
                                                                             var="cat" itemLabel="#{cat.name}" 
@@ -201,7 +202,7 @@
                                                                              value="#{billBhtController.currentBillItem.item}"
                                                                              completeMethod="#{itemController.completeInwardItemsCategoryNew}"
                                                                              var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                                             size="73" >
+                                                                             size="75" >
                                                                 <p:column>
                                                                     <h:outputLabel value="#{ix.name}"/>
                                                                 </p:column>
@@ -258,7 +259,13 @@
                                                     </div>
                                                     <div class="row m-1">
                                                         <div class="col-2">
-                                                            <p:commandButton id="btnAddIx" ajax="false" class="w-100" value="Add" action="#{billBhtController.addToBill()}" />
+                                                            <p:commandButton
+                                                                id="btnAddIx" 
+                                                                ajax="false" 
+                                                                
+                                                                class="w-100 ui-button-success" 
+                                                                value="Add" 
+                                                                action="#{billBhtController.addToBill()}" />
                                                         </div>
                                                     </div>
 
@@ -436,10 +443,6 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </h:panelGroup>
-
-
-
-
                         </h:panelGroup>
                     </div>
                 </p:panel>
