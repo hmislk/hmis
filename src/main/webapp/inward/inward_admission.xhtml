@@ -17,7 +17,7 @@
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel header="Admit a Patient">
                     
-                     <div class="d-flex justify-content-end m-1">
+                     <div class="d-flex justify-content-end mb-2">
                                     <p:commandButton 
                                         id="admt" 
                                         action="#{admissionController.saveSelected}" 
@@ -52,8 +52,11 @@
                             <div class="col-md-12">
                                 <h:panelGrid columns="8" class="m-2 w-100" > 
                                     <h:panelGroup >
-                                        <p:outputLabel value="Admission Type" ></p:outputLabel>
-                                        <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
+                                        <p:outputLabel value="Admission Type :" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="lstSelect"  
+                                            value="#{admissionController.current.admissionType}"
+                                            class="mx-4">
                                             <f:selectItem itemLabel="Select Admission Type"/>
                                             <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                             <p:ajax event="change" process="@this" update="bh cmbDoc" listener="#{admissionController.bhtNumberCalculation()}" />
@@ -68,6 +71,7 @@
                                         <p:outputLabel class="mx-1 " value="Room No :" />
                                         <p:autoComplete  forceSelection="true"  
                                                          id="cmbDoc" 
+                                                         class="mx-4"
                                                          disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                                          completeMethod="#{roomFacilityChargeController.completeRoom}"
@@ -77,8 +81,8 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup >
-                                        <p:outputLabel value="Comments" ></p:outputLabel>
-                                        <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
+                                        <p:outputLabel value="Comments :" ></p:outputLabel>
+                                        <p:inputText class="mx-4" id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
                                     </h:panelGroup>
 
 
@@ -92,9 +96,7 @@
 
                                 </h:panelGrid>
                             </div>
-                            <div class="col-md-4">
-                                
-                            </div>
+                            
                         </div>
                     </p:panel>
 
@@ -136,12 +138,12 @@
                                                                      itemLabel="Mark as Foreigner"/>
 
                                             <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
-                                                                     itemLabel="Claimable" class="mx-2"/>
+                                                                     itemLabel="Claimable" class="mx-4"/>
 
                                             <p:outputLabel value="Admitted Time"/>
                                             <p:calendar value="#{admissionController.current.dateOfAdmission}" 
                                                         id="admissionTimeStamp"
-                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" class="mx-2" >                               
+                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" class="mx-4" >                               
                                             </p:calendar>     
 
                                             <p:watermark class="mx-2" value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
@@ -152,7 +154,7 @@
                                                             value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
                                                             completeMethod="#{specialityController.completeSpeciality}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                            class="mx-2"  >
+                                                            class="mx-4"  >
                                                 <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
                                                 <f:ajax event="blur" execute="@this" render="acRefDoc"/>
                                             </p:autoComplete>
@@ -164,7 +166,7 @@
                                                             var="ix" required="true" requiredMessage="Please select referring doctor"
                                                             itemLabel="#{ix.person.name}" 
                                                             itemValue="#{ix}" 
-                                                            class="mx-2">
+                                                            class="mx-4">
                                             </p:autoComplete>
 
                                             <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
@@ -176,13 +178,13 @@
                                                             id="acSpeciality"
                                                             completeMethod="#{specialityController.completeSpeciality}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                            class="mx-2">
+                                                            class="mx-4">
 
                                                 <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
                                                 <f:ajax event="blur" execute="@this" render="scStaff"/>
                                             </p:autoComplete>
                                             <p:outputLabel value="OPD Doctor Name"/>
-                                            <p:autoComplete class="mx-2"  forceSelection="true" id="scStaff"
+                                            <p:autoComplete class="mx-4"  forceSelection="true" id="scStaff"
                                                             value="#{admissionController.current.opdDoctor}" 
                                                             completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
                                                             var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
@@ -192,12 +194,12 @@
                                         </h:panelGrid>
                                     </p:tab>
                                     <p:tab title="Referrals" >
-                                        <p:panelGrid columns="2" >
+                                        <h:panelGrid columns="2" >
                                             <p:outputLabel value="Refferal Institution"></p:outputLabel>
                                             <p:autoComplete forceSelection="true" id="cmdIns" 
                                                             value="#{admissionController.current.referredByInstitution}" 
                                                             completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                            itemLabel="#{refi.name}" itemValue="#{refi}" >
+                                                            itemLabel="#{refi.name}" itemValue="#{refi}" class="mx-2" >
                                                 <p:column headerText="Name">
                                                     #{refi.name}
                                                 </p:column>
@@ -209,8 +211,8 @@
                                                 </p:column>
                                             </p:autoComplete>
                                             <p:outputLabel value="Referral Number"></p:outputLabel>
-                                            <p:inputText value="#{admissionController.current.referralId}"></p:inputText>
-                                        </p:panelGrid>
+                                            <p:inputText class="mx-2" value="#{admissionController.current.referralId}"></p:inputText>
+                                        </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>
@@ -221,15 +223,15 @@
                                         <p:tab title="Guardian Detail">
                                             <h:panelGrid columns="2">
                                                 <p:outputLabel  value="Name" />
-                                                <p:inputText id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
+                                                <p:inputText class="mx-4" id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
                                                 <p:outputLabel value="NIC"/>
-                                                <p:inputText id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
+                                                <p:inputText class="mx-4" id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
                                                 <p:outputLabel value="Address" />
-                                                <p:inputText id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                <p:inputText class="mx-4" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                                 <p:outputLabel value="Mobile No" />
-                                                <p:inputText id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
+                                                <p:inputText class="mx-4" id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
                                                 <p:outputLabel value="Home Phone No" />
-                                                <p:inputText id="ghno"   value="#{admissionController.current.guardian.phone}"  />
+                                                <p:inputText class="mx-4" id="ghno"   value="#{admissionController.current.guardian.phone}"  />
 
                                                 <p:watermark value="Guardian Name" for="gname" />
                                                 <p:watermark value="Guardian NIC" for="gnic" />
