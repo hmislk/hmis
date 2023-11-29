@@ -12,8 +12,10 @@
 
         <h:panelGroup  >
             <h:form>
-                <p:growl />
+                <p:growl id="msg"/>
                 <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="gpDetail" />
+                
                 <p:panel header="Manage Departments">
                     <div class="row">
                         <div class="col-md-6">
@@ -27,7 +29,7 @@
                                                              return false;" 
                                              action="#{departmentController.delete()}"  
                                              value="Delete"
-                                             update="lstSelect gpDetail" process="btnDelete"
+                                             update="lstSelect gpDetail msg" process="btnDelete"
                                              class=" m-1 ui-button-danger w-25"
                                              >
                             </p:commandButton>
@@ -80,9 +82,9 @@
                                                 <p:inputText class="w-100" autocomplete="off"  value="#{departmentController.current.fax}"  ></p:inputText>
                                                 <h:outputText  value="Email" ></h:outputText>
                                                 <p:inputText class="w-100" autocomplete="off"  value="#{departmentController.current.email}"  ></p:inputText>
-                                                <h:outputText id="lblDept" value="Department Type" ></h:outputText>
+                                                <h:outputText id="lblDept" value="Department Type"></h:outputText>
 <!--                                                    <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>-->
-                                                <p:selectOneMenu class="w-100" id="cmbDept" value="#{departmentController.departmentType}">
+                                                <p:selectOneMenu class="w-100" id="cmbDept" value="#{departmentController.current.departmentType}">
                                                     <f:selectItem itemLabel="Select the Department Type" />
                                                     <f:selectItems value="#{departmentController.departmentType}"/>                                        
                                                 </p:selectOneMenu>
@@ -115,7 +117,7 @@
                                     </p:tab>
                                 </p:tabView>
 
-                                <p:commandButton id="btnSave" value="Save" action="#{departmentController.saveSelected()}" style="margin-left: 30px;" process="btnSave gpDetail" update="lstSelect gpDetail selectFocus" class=" m-1 ui-button-warning w-25">
+                                <p:commandButton id="btnSave" value="Save" action="#{departmentController.saveSelected()}" process="btnSave gpDetail" update="lstSelect msg" class=" m-1 ui-button-warning w-25">
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                             </p:panel>
