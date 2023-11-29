@@ -84,6 +84,10 @@
                                     <div class="row">
                                         <div class="col-4 ">
                                             <p:panel>
+                                                <f:facet name="header" >
+                                                    <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
+                                                    <h:outputText value="Patient Detail" class="mx-3"></h:outputText>
+                                                </f:facet>
                                                 <h:panelGroup id="panSearch2">
                                                     <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
                                                 </h:panelGroup>
@@ -104,7 +108,7 @@
                                                         </div>
                                                         <div class="col-8">
                                                             <div>
-                                                                <p:selectOneMenu  value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
                                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 </p:selectOneMenu>
@@ -117,7 +121,7 @@
                                                             <h:outputLabel value="From Institution"/>
                                                         </div>
                                                         <div class="col-8 ">
-                                                            <p:autoComplete class="w-100" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                            <p:autoComplete size="73" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>
