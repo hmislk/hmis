@@ -24,7 +24,7 @@
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
-                            <p:outputLabel value="Patient Details" />
+                            <p:outputLabel value="Interim Bill" />
                         </f:facet>
 
                         <h:panelGrid columns="10">
@@ -37,7 +37,7 @@
                                              var="myItem" itemValue="#{myItem}" 
                                              itemLabel="#{myItem.bhtNo}" 
                                              size="30"  
-                                             class="mx-2">
+                                             class="m-2">
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
@@ -48,6 +48,7 @@
                             </p:autoComplete>   
                             <p:commandButton ajax="false"  
                                              value="Select" 
+                                             class="ml-2"
                                              action="#{bhtSummeryController.createTables()}" >
                             </p:commandButton>
 
