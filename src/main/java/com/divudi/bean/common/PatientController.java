@@ -577,7 +577,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/patient";
+        return "/opd/patient?faces-redirect=false";
     }
 
     public String navigateToAdmitFromPatientProfile() {
