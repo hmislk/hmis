@@ -28,18 +28,33 @@
 
 
                                 <p:commandButton  
-                                    value="Settle" 
+                                    value="Make Appointment" 
                                     action="#{appointmentController.settleBill}" 
                                     ajax="false"
                                     icon="fa fa-check"
-                                    class="ui-button-success mx-2 "
+                                    class="ui-button-success mx-1 "
                                     >
                                 </p:commandButton>
 
                                 <p:commandButton 
-                                    value="New Bill"
+                                    value="Patient Lookup"
                                     ajax="false" 
-                                    action="#{appointmentController.prepareNewBill()}" >
+                                    icon="fa fa-search"
+                                    action="#{opdBillController.navigateToSearchPatients()}"
+                                    class="ui-button-warning mx-1 ">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Profile"
+                                    ajax="false" 
+                                    icon="fa fa-user"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    class="ui-button-secondary mx-1 ">
+                                    <f:setPropertyActionListener 
+                                        target="#{patientController.current}" 
+                                        value="#{appointmentController.searchedPatient}">
+                                        
+                                    </f:setPropertyActionListener>
                                 </p:commandButton>
 
                             </div>
