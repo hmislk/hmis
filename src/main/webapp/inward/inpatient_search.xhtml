@@ -21,16 +21,16 @@
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
-                                    
+                                    maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:calendar>
                                 <p:outputLabel value="Date of Admission to " styleClass="form-label"></p:outputLabel>
-                                <p:calendar 
+                                <p:datePicker 
                                     value="#{admissionController.toDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:calendar>
+                                </p:datePicker>
                             </div>
                             <div class="mb-3">
                                 <p:outputLabel value="BHT Number" styleClass="form-label"></p:outputLabel>

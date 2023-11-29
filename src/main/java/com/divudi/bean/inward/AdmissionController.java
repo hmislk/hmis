@@ -316,15 +316,15 @@ public class AdmissionController implements Serializable {
             return;
         }
         
-        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
-            return;
-        }
-        
-        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
-            return;
-        }
+//        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
+//            return;
+//        }
+//        
+//        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
+//            return;
+//        }
         
         String j;
         HashMap m = new HashMap();
