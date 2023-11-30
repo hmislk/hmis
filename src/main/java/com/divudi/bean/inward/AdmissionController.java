@@ -263,29 +263,29 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToRoomChange() {
-        roomChangeController.recreate();
+//        roomChangeController.recreate();
         roomChangeController.createPatientRoom();
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
-         roomChangeController.recreate();
+//         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 
-    // Services & Items Submenu Methods
-    public String navigateToAddServices() {
-        return "/inward/inward_bill_service?faces-redirect=true";
-    }
+//    // Services & Items Submenu Methods
+//    public String navigateToAddServices() {
+//        return "/inward/inward_bill_service?faces-redirect=true";
+//    }
 
-    public String navigateToAddOutsideCharge() {
-        return "/inward/inward_bill_outside_charge?faces-redirect=true";
-    }
+//    public String navigateToAddOutsideCharge() {
+//        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+//    }
 
-    public String navigateToAddProfessionalFee() {
-        return "/inward/inward_bill_professional?faces-redirect=true";
-    }
+//    public String navigateToAddProfessionalFee() {
+//        return "/inward/inward_bill_professional?faces-redirect=true";
+//    }
 
     public String navigateToAddEstimatedProfessionalFee() {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
