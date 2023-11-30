@@ -12,41 +12,40 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="PHARMACY BILL SEARCH TO PAY "/>
-
-                            <h:panelGrid columns="7" >
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createPharmacyPreTable}"/>
-                                <p:commandButton ajax="false" value="Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
-                                <p:commandButton ajax="false" value="Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
-                                <h:outputLabel/>
-                                <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
-
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                            </h:panelGrid>
-                            <h:panelGrid columns="5" >
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Patient Name"/>                               
-                                <h:outputLabel value="Total"/>
-                                <h:outputLabel value="Net Total"/>   
-                                <h:outputLabel value="Pharmacy"/>   
-
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                <p:selectOneMenu value="#{searchController.reportKeyWord.department}">
-                                    <f:selectItem itemLabel="Select Department"/>
-                                    <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
-
-                            </h:panelGrid>
-
+                            <h:outputText styleClass="fas fa-search" />
+                            <h:outputLabel class="mx-4" value="Pharmacy Bill Search To Pay "/>
                         </f:facet>
+
+                        <h:panelGrid columns="7" >
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+                            <p:commandButton id="btnSearch" class="mx-1 ui-button-success" icon="fas fa-search" ajax="false" value="Search All" action="#{searchController.createPharmacyPreTable}"/>
+                            <p:commandButton ajax="false" class=" ui-button-warning" icon="fas fa-search" value="Search Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
+                            <p:commandButton ajax="false" class="mx-1 ui-button-warning" icon="fas fa-search" value="Search Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
+                            <h:outputLabel/>
+                            <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
+                            <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="5" >
+                            <h:outputLabel value="Bill No"/>
+                            <h:outputLabel value="Patient Name"/>                               
+                            <h:outputLabel value="Total"/>
+                            <h:outputLabel value="Net Total"/>   
+                            <h:outputLabel value="Pharmacy"/>   
+
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                            <p:selectOneMenu value="#{searchController.reportKeyWord.department}">
+                                <f:selectItem itemLabel="Select Department"/>
+                                <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
 
                         <p:defaultCommand target="btnSearch"/>
 
@@ -56,6 +55,8 @@
                             value="#{searchController.bills}" 
                             var="bill"   
                             paginator="true"
+                            paginatorPosition="bottom"
+                            class="my-4"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
