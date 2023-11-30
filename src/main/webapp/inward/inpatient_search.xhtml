@@ -32,20 +32,20 @@
                                 <p:commandButton ajax="false"
                                                  value="Search"
                                                  action="#{admissionController.searchAdmissions}"
-                                                 class="mt-2 mb-3"></p:commandButton>
+                                                 class="mt-2 w-100 mb-3"></p:commandButton>
 
 
 
-                                <p:outputLabel value="BHT Number" ></p:outputLabel>
+                                <p:outputLabel value="BHT No" ></p:outputLabel>
                                 <p:inputText value="#{admissionController.bhtNumberForSearch}" ></p:inputText>
 
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
                                 <p:inputText value="#{admissionController.patientNameForSearch}" ></p:inputText>
 
-                                <p:outputLabel value="Patient Phone Number" ></p:outputLabel>
+                                <p:outputLabel value="Patient Phone" ></p:outputLabel>
                                 <p:inputText value="#{admissionController.patientPhoneNumberForSearch}" ></p:inputText>
 
-                                <p:outputLabel value="Patient Identity Card Number" ></p:outputLabel>
+                                <p:outputLabel value="Patient NIC" ></p:outputLabel>
                                 <p:inputText value="#{admissionController.patientIdentityNumberForSearch}" ></p:inputText>
 
                                 <p:outputLabel value="Referring Doctor" ></p:outputLabel>
@@ -71,7 +71,8 @@
                                 <p:outputLabel value="Institution"></p:outputLabel>
                                 <p:selectOneMenu id="cmbFromInstitution"
                                                  value="#{admissionController.institutionForSearch}"
-                                                 filter="true">
+                                                 filter="true"
+                                                 style="width: 200px">
                                     <f:selectItem itemLabel="All"></f:selectItem>
                                     <f:selectItems value="#{institutionController.managaeInstitutionIndex}"
                                                    var="i"
