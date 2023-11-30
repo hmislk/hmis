@@ -19,7 +19,6 @@
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
                     
                     <p:growl id="msg" ></p:growl>
-                    
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-circle-plus" />
@@ -267,14 +266,14 @@
                                 </p:panel>
                             </div>
                             <div class="col-md-6" >
-                                <div class="row m-1"  >
-                                    <p:panel >
+                                
+                                <p:panel class="m-1">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                             <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row my-1"  >
-                                            <div class="col-3" >
+                                            <div class="col-2" >
                                                 <p:selectOneMenu   
                                                     id="pay" 
                                                     style="max-width: 100%;"
@@ -421,7 +420,7 @@
 
                                         </div>
                                     </p:panel>
-                                </div>
+                                
                                 <div class="row m-1" >
                                     <p:panel id="panelBillReferrals" >
                                         <f:facet name="header" >
