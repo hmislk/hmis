@@ -42,9 +42,9 @@
                                    update="gpPatient msg"
                                    >
                         <i class="fa fa-save"></i>
-                        
+
                     </p:commandLink>
-                    
+
                 </h:panelGroup>
             </f:facet>
 
@@ -70,7 +70,11 @@
                             id="txtNewPtName" 
                             placeholder="Enter the Name of the patient"
                             value="#{cc.attrs.patient.person.name}"
-                            class="form-control" />
+                            validatorMessage="Please enter only letters and spaces."
+                            class="form-control" >
+                            <f:validateRegex pattern="^[a-zA-Z\s]*$" />
+                            
+                        </p:inputText>
                     </div>
                 </div>
 
@@ -141,7 +145,10 @@
                             autocomplete="off" 
                             placeholder="Mobile Number"
                             value="#{cc.attrs.patient.person.mobile}"
-                            class="form-control" />
+                            class="form-control" 
+                            validatorMessage="Please enter valid Number">
+                            <f:validateRegex pattern="^[0-9\s\+]*$"/>
+                        </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
@@ -150,21 +157,25 @@
                             autocomplete="off" 
                             placeholder="Phone Number"
                             value="#{cc.attrs.patient.person.phone}"
-                            class="form-control" />
+                            class="form-control" validatorMessage="Please enter valid Number">
+                            <f:validateRegex pattern="^[0-9\s\+]*$"/>
+                        </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
                             disabled="#{!cc.attrs.patient.editingMode}"
                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                             value="#{cc.attrs.patient.person.email}"
-                            class="form-control">
+                            class="form-control"
+                            validatorMessage="Please enter valid email">
+                             <f:validateRegex pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" />
                         </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
                             id="txtNic"
                             disabled="#{!cc.attrs.patient.editingMode}"
-                            placeholder="National ID No."
+                            placeholder="National ID Number"
                             value="#{cc.attrs.patient.person.nic}"
                             class="form-control"/>
                     </div>
