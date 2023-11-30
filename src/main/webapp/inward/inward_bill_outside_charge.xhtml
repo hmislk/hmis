@@ -17,7 +17,37 @@
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
                         <p:outputLabel value="Add Outside Charge" class="m-2"/>
                     </f:facet>
-
+                    <div class="row" >
+                        <div class="col-12 text-al" >
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning " 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary " 
+                                action="/inward/admission_profile.xhtml" 
+                                >
+                            </p:commandButton>
+                        </div>
+                    </div>
                     <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
                         <div class="row">
                             <div class="col-12" >
@@ -83,7 +113,7 @@
                                     </h:panelGrid>
 
                                     <div class="row">
-                                        <div class="col-4 ">
+                                        <div class="col-5 ">
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
@@ -95,7 +125,7 @@
                                             </p:panel>
 
                                         </div>
-                                        <div class="col-8" >
+                                        <div class="col-7" >
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
@@ -122,7 +152,7 @@
                                                             <h:outputLabel value="From Institution"/>
                                                         </div>
                                                         <div class="col-8 ">
-                                                            <p:autoComplete size="73" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>

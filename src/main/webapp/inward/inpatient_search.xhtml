@@ -16,7 +16,7 @@
                     <div class="row m-0 p-0" >
                         <div class="col-2">
                             <div class="mb-3">
-                                <p:outputLabel value="Date of Admission from" styleClass="form-label"></p:outputLabel>
+                                <p:outputLabel value="From Date" styleClass="form-label"></p:outputLabel>
                                 <p:calendar
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
@@ -24,7 +24,7 @@
                                     maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:calendar>
-                                <p:outputLabel value="Date of Admission to" styleClass="form-label"></p:outputLabel>
+                                <p:outputLabel value="To Date" styleClass="form-label"></p:outputLabel>
                                 <p:calendar 
                                     value="#{admissionController.toDate}" 
                                     class="w-100"

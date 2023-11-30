@@ -131,7 +131,7 @@
 
                                         <h:panelGroup id="panelBillReferrals" class="w-100">
                                             <p:tabView >
-                                                <p:tab title="Refering Doctor" class="w-100">
+                                                <p:tab title="referring doctor" class="w-100">
                                                     <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billPackageController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  >
                                                     </p:autoComplete>
                                                     <p:commandButton id="btnAddNewDoc" type="button" class="mx-2" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
