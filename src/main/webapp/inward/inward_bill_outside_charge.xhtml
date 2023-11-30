@@ -15,15 +15,46 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
-                        <p:outputLabel value="Patient Details" class="m-2"/>
+                        <p:outputLabel value="Add Outside Charge" class="m-2"/>
                     </f:facet>
-
+                    <div class="row" >
+                        <div class="col-12 text-al" >
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning " 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary " 
+                                action="/inward/admission_profile.xhtml" 
+                                >
+                            </p:commandButton>
+                        </div>
+                    </div>
                     <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
                         <div class="row">
                             <div class="col-12" >
                                 <h:outputLabel value="Type Patient Name or BHT : " class="m-1"/>
 
                                 <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                 required="true" requiredMessage="Please select a patient"
                                                  value="#{inwardAdditionalChargeController.current.patientEncounter}"
                                                  completeMethod="#{admissionController.completePatient}" 
                                                  var="myItem" itemValue="#{myItem}" 
@@ -84,6 +115,10 @@
                                     <div class="row">
                                         <div class="col-4 ">
                                             <p:panel>
+                                                <f:facet name="header" >
+                                                    <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
+                                                    <h:outputText value="Patient Detail" class="mx-3"></h:outputText>
+                                                </f:facet>
                                                 <h:panelGroup id="panSearch2">
                                                     <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
                                                 </h:panelGroup>
@@ -104,7 +139,7 @@
                                                         </div>
                                                         <div class="col-8">
                                                             <div>
-                                                                <p:selectOneMenu  value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
                                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 </p:selectOneMenu>
@@ -117,7 +152,7 @@
                                                             <h:outputLabel value="From Institution"/>
                                                         </div>
                                                         <div class="col-8 ">
-                                                            <p:autoComplete class="w-100" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                            <p:autoComplete size="73" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>

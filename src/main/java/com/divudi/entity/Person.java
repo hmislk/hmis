@@ -420,7 +420,7 @@ public class Person implements Serializable {
     }
 
     public void setAddress(String address) {
-        this.address = address.toUpperCase();
+        this.address = address;
     }
 
     public String getFax() {

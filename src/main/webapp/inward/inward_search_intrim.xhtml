@@ -11,7 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" style="height: 100vh" >
+                    <p:panel header="Search Interim Bills" style="height: 100vh" >
                             <div class="d-flex">
                                             <h:panelGrid columns="1">
                                                 <h:outputLabel value="From Date"/>
@@ -23,7 +23,7 @@
 
                                                 </p:calendar>
                                                 <p:commandButton 
-                                                    class="mt-2 w-100" 
+                                                    class="mt-2 w-100 mb-3" 
                                                     ajax="false" 
                                                     action="#{searchController.createInwardIntrimBills()}"
                                                     value="Search"  />
@@ -63,7 +63,7 @@
                                             <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Bht No" >
+                                        <p:column headerText="BHT No" >
                                             <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                         </p:column>
 
@@ -92,7 +92,7 @@
                                         <p:column headerText="Client" >
                                             <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                                         </p:column>         
-                                        <p:column headerText="PaymentMethod">                            
+                                        <p:column headerText="Payment Method">                            
                                             <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                         </p:column>
                                         <p:column headerText="Value" >                              

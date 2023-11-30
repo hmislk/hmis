@@ -65,9 +65,12 @@ public class AdmissionController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-
+    @Inject
+    RoomOccupancyController roomOccupancyController;
     @Inject
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    RoomChangeController roomChangeController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -250,33 +253,39 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToRoomOccupancy() {
+        roomOccupancyController.setPatientRooms(null);
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
     public String navigateToRoomVacancy() {
+        roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
     }
 
     public String navigateToRoomChange() {
+//        roomChangeController.recreate();
+        roomChangeController.createPatientRoom();
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
+//         roomChangeController.recreate();
+        roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 
-    // Services & Items Submenu Methods
-    public String navigateToAddServices() {
-        return "/inward/inward_bill_service?faces-redirect=true";
-    }
+//    // Services & Items Submenu Methods
+//    public String navigateToAddServices() {
+//        return "/inward/inward_bill_service?faces-redirect=true";
+//    }
 
-    public String navigateToAddOutsideCharge() {
-        return "/inward/inward_bill_outside_charge?faces-redirect=true";
-    }
+//    public String navigateToAddOutsideCharge() {
+//        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+//    }
 
-    public String navigateToAddProfessionalFee() {
-        return "/inward/inward_bill_professional?faces-redirect=true";
-    }
+//    public String navigateToAddProfessionalFee() {
+//        return "/inward/inward_bill_professional?faces-redirect=true";
+//    }
 
     public String navigateToAddEstimatedProfessionalFee() {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
@@ -308,6 +317,21 @@ public class AdmissionController implements Serializable {
     }
 
     public void searchAdmissions() {
+        if(fromDate == null||toDate==null){
+            UtilityController.addErrorMessage("Please select date");
+            return;
+        }
+        
+//        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
+//            return;
+//        }
+//        
+//        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
+//            return;
+//        }
+        
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
@@ -1299,16 +1323,29 @@ public class AdmissionController implements Serializable {
             }
             AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionController");
-            return controller.getEjbFacade().find(getKey(value));
+            if(controller == null){
+                return null;
+            }
+            Long l = getKey(value);
+            if(l == null){
+                return  null;
+            }
+            return controller.getEjbFacade().find(l);
         }
 
         java.lang.Long getKey(String value) {
+            if(value == null){
+                return null;
+            }
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
+            if(value == null){
+                return null;
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();

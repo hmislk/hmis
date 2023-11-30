@@ -107,16 +107,12 @@ public class TimedItemController implements Serializable {
         return "/inward/inward_timed_service_consume";
     }
 
-    public String inwardTimedServiceConsumeInward() {
+    public String addInwardTimedServicesFromInpatientProfile() {
         departmentType = DepartmentType.Inward;
         return "/inward/inward_timed_service_consume";
     }
-
-    public String inwardTimedServiceConsumeTheatre() {
-        departmentType = DepartmentType.Theatre;
-        return "/theater/inward_timed_service_consume_surgery";
-    }
-
+    
+    
     public List<TimedItem> completeTimedService(String query) {
         List<TimedItem> suggestions;
         String sql;

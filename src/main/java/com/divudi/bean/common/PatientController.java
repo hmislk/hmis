@@ -41,6 +41,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
@@ -48,6 +49,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientFacade;
+import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -78,6 +80,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
@@ -122,6 +125,8 @@ public class PatientController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     private WebUserFacade webUserFacade;
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
     /**
      *
      * Controllers
@@ -220,6 +225,8 @@ public class PatientController implements Serializable {
     private PaymentMethodData paymentMethodData;
 
     private boolean printPreview = false;
+    
+    private List<PatientInvestigation> patientInvestigations;
 
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
@@ -262,7 +269,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -380,7 +387,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -570,7 +577,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/patient";
+        return "/opd/patient?faces-redirect=true";
     }
 
     public String navigateToAdmitFromPatientProfile() {
@@ -692,6 +699,40 @@ public class PatientController implements Serializable {
         setSearchedPatients(null);
         return "/opd/patient_search";
     }
+
+    public String navigateToPatientAcceptPayment() {
+        setSearchedPatients(null);
+        return "/opd/patient_accept_payment";
+    }
+
+    public String navigateToPatientRefundPayment() {
+        setSearchedPatients(null);
+        return "/opd/patient_refund_payment";
+    }
+
+    public String navigateToPatientLabReports() {
+        setSearchedPatients(null);
+        return "/lab/patient_lab_reports";
+    }
+
+    public void createPatientInvestigationsTableAllByLoggedInstitution() {
+
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + " and b.institution =:ins ";
+
+        Map temMap = new HashMap();
+        temMap.put("ins", getSessionController().getInstitution());
+        sql += " order by pi.approveAt desc  ";
+
+        //System.err.println("Sql " + sql);
+//        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+       // patientInvestigations=
+
+    }
+     
+     
 
     public void settlePatientDepositReceive() {
         Date startTime = new Date();
@@ -852,6 +893,50 @@ public class PatientController implements Serializable {
     }
 
     public String searchPatientForOpd() {
+
+        boolean noSearchCriteriaWasFound = true;
+
+        if (searchPhn != null && !searchPhn.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchPhone != null && !searchPhone.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchNic != null && !searchNic.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchName != null && !searchName.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchBillId != null && !searchBillId.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchPhone != null && !searchPhone.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchPatientId != null && !searchPatientId.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (searchSampleId != null && !searchSampleId.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
+
+        if (noSearchCriteriaWasFound) {
+            JsfUtil.addErrorMessage("No Search criteria Found !");
+            return "";
+        }
+
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
         } else if (searchSampleId != null && !searchSampleId.trim().equals("")) {
@@ -876,6 +961,7 @@ public class PatientController implements Serializable {
     public void clearSearchDetails() {
         searchName = null;
         searchPhone = null;
+        searchPhn = null;
         searchNic = null;
         searchPatientCode = null;
         searchPatientId = null;
@@ -1570,14 +1656,17 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
             return;
         }
+        
         if (p.getPerson() == null) {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
+        
         if (p.getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
+        
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -1585,11 +1674,13 @@ public class PatientController implements Serializable {
         } else {
             getPersonFacade().edit(p.getPerson());
         }
+        
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().create(p);
+            UtilityController.addSuccessMessage("Saved Successfully");
         } else {
             getFacade().edit(p);
         }
@@ -2358,6 +2449,14 @@ public class PatientController implements Serializable {
 
     public void setUploadedFile(UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
+    }
+
+    public PatientInvestigationFacade getPatientInvestigationFacade() {
+        return patientInvestigationFacade;
+    }
+
+    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
+        this.patientInvestigationFacade = patientInvestigationFacade;
     }
 
     /**

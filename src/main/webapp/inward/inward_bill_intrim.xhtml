@@ -24,34 +24,31 @@
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
-                            <p:outputLabel value="Patient Details" />
+                            <p:outputLabel value="Interim Bill" />
                         </f:facet>
 
                         <h:panelGrid columns="10">
 
                             <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                             required="true" requiredMessage="Please select a patient"
                                              value="#{bhtSummeryController.patientEncounter}"
                                              completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                              var="myItem" itemValue="#{myItem}" 
                                              itemLabel="#{myItem.bhtNo}" 
                                              size="30"  
-                                             class="mx-2">
+                                             class="m-2">
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
                                 <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
+                                    #{myItem.patient.person.name}
                                 </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
+
                             </p:autoComplete>   
                             <p:commandButton ajax="false"  
                                              value="Select" 
+                                             class="ml-2"
                                              action="#{bhtSummeryController.createTables()}" >
                             </p:commandButton>
 
@@ -201,29 +198,27 @@
                                 </h:panelGrid>
                             </div>
                             <div class="col-md-4">
-                                <p:panel>
+                                <p:dataTable id="sum" 
+                                             value="#{bhtSummeryController.chargeItemTotals}" 
+                                             var="c" 
+                                             scrollHeight="350"
+                                             scrollable="true"
+                                             scrollRows="10"
+                                             >
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill" />
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
+                                    <p:column headerText="Charge Type" >
+                                        <h:outputLabel value="#{c.inwardChargeType.label}"/>
+                                    </p:column>
+                                    <p:column  sortBy="#{c.total}"  headerText="Total">
+                                        <h:outputLabel value="#{c.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
 
-                                    <p:dataTable id="sum" 
-                                                 value="#{bhtSummeryController.chargeItemTotals}" 
-                                                 var="c" 
-                                                 scrollHeight="220"
-                                                 scrollable="true"
-
-                                                 >
-                                        <p:column headerText="Charge Type" >
-                                            <h:outputLabel value="#{c.inwardChargeType.label}"/>
-                                        </p:column>
-                                        <p:column  sortBy="#{c.total}"  headerText="Total">
-                                            <h:outputLabel value="#{c.total}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:panel>
                             </div>
                         </div>
 

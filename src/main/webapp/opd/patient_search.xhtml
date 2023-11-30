@@ -75,13 +75,22 @@
                             </div>
                             <div class="col-md-9">
                                 <div class="mb-3">
-                                    <p:commandButton value="New" styleClass="btn btn-warning"
-                                                     action="#{patientController.navigateToAddNewPatientForOpd()}" ajax="false" />
-                                    <p:commandButton id="btnSearch" value="Search" styleClass="btn btn-primary ms-2"
-                                                     action="#{patientController.searchPatientForOpd()}" ajax="false" />
+                                    <p:commandButton value="New"
+                                                     action="#{patientController.navigateToAddNewPatientForOpd()}" 
+                                                     ajax="false"
+                                                     class="mx-1"/>
+                                    
+                                    <p:commandButton id="btnSearch"
+                                                     value="Search"
+                                                     action="#{patientController.searchPatientForOpd()}" ajax="false" 
+                                                     class="mx-1"/>
+                                    
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
-                                    <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
-                                                     action="#{patientController.clearSearchDetails()}" ajax="false" />
+                                    
+                                    <p:commandButton value="Clear" 
+                                                     action="#{patientController.clearSearchDetails()}"
+                                                     ajax="false" 
+                                                     class="mx-1"/>
                                 </div>
 
                                 <p:dataTable value="#{patientController.searchedPatients}" var="p" 

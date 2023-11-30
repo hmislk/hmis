@@ -20,40 +20,50 @@
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
                             <p:panel class="m-2 p-2">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Edit Patient Demographic Details" />
-                                    <p:spacer width="10" />
-                                    <p:commandButton value="Save" 
-                                                     action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                     ajax="false" 
-                                                     icon="pi pi-check" 
-                                                     iconPos="right" 
-                                                     class="ui-button-warning m-1" />
+                                <f:facet name="header" >
+                                    <div class=" d-flex justify-content-between">
+                                        <div class="m-2  align-items-center">
+                                            <i class="fa fa-pencil m-2" aria-hidden="true"/>
+                                            <p:outputLabel value="Edit Patient Demographic Details" />
+                                        </div>
+                                        
 
-                                    <p:commandButton 
-                                        value="Patient Profile" 
-                                        disabled="#{patientController.current eq null}" 
-                                        action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                        ajax="false" 
-                                        icon="pi pi-check"
-                                        iconPos="right" 
-                                        class="ui-button-warning m-1" />
+                                        <div class="">
+                                            <p:commandButton 
+                                                value="Save" 
+                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                ajax="false" 
+                                                icon="pi pi-check" 
+                                                iconPos="left" 
+                                                class="ui-button-success m-1 " />
 
-                                    <p:commandButton
-                                        value="Patient Lookup" 
-                                        action="#{opdBillController.navigateToSearchPatients()}"
-                                        ajax="false" 
-                                        icon="pi pi-check" 
-                                        iconPos="right" 
-                                        class="ui-button-warning m-1" 
-                                        immediate="true" />
+                                            <p:commandButton 
+                                                value="Patient Profile" 
+                                                disabled="#{patientController.current eq null}" 
+                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                ajax="false" 
+                                                icon="fa fa-user"
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " />
+
+                                            <p:commandButton
+                                                value="Patient Lookup" 
+                                                action="#{opdBillController.navigateToSearchPatients()}"
+                                                ajax="false" 
+                                                icon="fa fa-search" 
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " 
+                                                immediate="true" />
+
+                                        </div>
+                                    </div>
 
                                 </f:facet>
                                 <div class="container-fluid">
                                     <div class="row form-group">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Title:"  class="form-label" />
-                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Pleace Select a title">
+                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                                itemValue="#{i}" />
@@ -65,7 +75,7 @@
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Pleace Enter a name" />
+                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Please Enter a name" />
                                         </div>
                                     </div>
                                     <div class="row form-group">
@@ -77,7 +87,7 @@
                                             </p:selectOneMenu>
                                         </div>
                                         <div class="col-md-4">
-                                            <p:outputLabel value="Age :"  class="form-label" />
+                                            <p:outputLabel value="Age:"  class="form-label" />
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <p:inputText autocomplete="off" id="year" placeholder="Years"
@@ -140,7 +150,7 @@
                                             <p:inputText value="#{patientController.current.phn}" class="form-control" />
                                         </div>
                                         <div class="col-md-6">
-                                            <h:outputLabel class="form-label" value="MRN No"  />
+                                            <h:outputLabel class="form-label" value="MRN No:"  />
                                             <h:panelGroup>
                                                 <p:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
                                             </h:panelGroup>
@@ -156,12 +166,12 @@
                                         <div class="col-md-6">
                                             <p:outputLabel value="Patient Account:"  class="form-label w-100" />
                                             <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
-                                                                   offLabel="Patient has NO Account"
-                                                                   class="w-100 form-control"
-                                                                   onLabel="Patient has an account" ></p:selectBooleanButton>
+                                                                   offLabel="Patient has No Account"
+                                                                   class="w-100"
+                                                                   onLabel="Patient has An account" ></p:selectBooleanButton>
                                         </div>
                                         <div class="col-md-6" >
-                                            <h:outputLabel class="form-label" value="Credit Limit" rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                            <h:outputLabel class="form-label" value="Credit Limit:" rendered="#{webUserController.hasPrivilege('Admin')}" />
                                             <h:panelGroup>
                                                 <p:inputText autocomplete="off" id="txtCreditLimit"
                                                              value="#{patientController.current.creditLimit}"

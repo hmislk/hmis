@@ -16,22 +16,22 @@
                     <div class="row m-0 p-0" >
                         <div class="col-2">
                             <div class="mb-3">
-                                <p:outputLabel value="Date of Admission from " styleClass="form-label"></p:outputLabel>
-                                <p:datePicker 
+                                <p:outputLabel value="Date of Admission from" styleClass="form-label"></p:outputLabel>
+                                <p:calendar
                                     value="#{admissionController.fromDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
-                                    showTime="true"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:datePicker>
-                                <p:outputLabel value="Date of Admission to " styleClass="form-label"></p:outputLabel>
-                                <p:datePicker 
+                                </p:calendar>
+                                <p:outputLabel value="Date of Admission to" styleClass="form-label"></p:outputLabel>
+                                <p:calendar 
                                     value="#{admissionController.toDate}" 
                                     class="w-100"
                                     inputStyleClass="form-control"
-                                    showTime="true"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                                </p:datePicker>
+                                </p:calendar>
                             </div>
                             <div class="mb-3">
                                 <p:outputLabel value="BHT Number" styleClass="form-label"></p:outputLabel>
@@ -91,51 +91,89 @@
                                 <p:commandButton ajax="false"
                                                  value="Search"
                                                  action="#{admissionController.searchAdmissions}"
-                                                 styleClass="btn btn-primary"></p:commandButton>
+                                                 class="w-100"></p:commandButton>
                             </div>
                         </div>
 
                         <div class="col-10" >
-                            <p:dataTable value="#{admissionController.items}" var="a" rowKey="#{a.id}" paginator="true" rows="10"
+                            <p:dataTable value="#{admissionController.items}" 
+                                         var="a" 
+                                         rowKey="#{a.id}" 
+                                         paginator="true" rows="10"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15">
 
-                                <p:column headerText="BHT No" filterBy="#{a.bhtNo}" filterMatchMode="contains">
-                                    <h:outputText value="#{a.bhtNo}" ></h:outputText>
+                                <p:column headerText="BHT No" filterBy="#{a.bhtNo}" filterMatchMode="contains" >
+                                    <h:outputText value="#{a.bhtNo}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Patient Name" filterBy="#{a.patient.person.name}" filterMatchMode="contains">
                                     <h:outputText value="#{a.patient.person.name}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Phone/Mobile" filterBy="#{a.patient.person.phone}, #{a.patient.person.mobile}" filterMatchMode="contains">
                                     <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
-                                    <h:outputText value="#{a.patient.person.mobile}" ></h:outputText>
+                                    <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
+                                    <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Address" filterBy="#{a.patient.person.address}" filterMatchMode="contains">
+                                <p:column headerText="Address" filterBy="#{a.patient.person.address}" filterMatchMode="contains" >
                                     <h:outputText value="#{a.patient.person.address}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="PHN" filterBy="#{a.patient.phn}" filterMatchMode="contains">
-                                    <h:outputText value="#{a.patient.phn}" ></h:outputText>
-                                </p:column>
                                 <p:column headerText="Status" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
-                                    <h:outputText value="Discharged - #{a.discharged}" ></h:outputText><br/>
-                                    <h:outputText value="Bill Finalized - #{a.paymentFinalized}" ></h:outputText>
+                                    <h:panelGroup>
+                                        <!-- Discharge Status -->
+                                        <h:panelGroup rendered="#{a.discharged}">
+                                            <i class="fa fa-fw fa-bed" title="Discharged"></i>
+                                            <i class="fa fa-check" title="Discharged"></i>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not a.discharged}">
+                                            <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
+                                            <i class="fa fa-times" title="Not Discharged"></i>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <p:spacer width="20" ></p:spacer>
+                                    <h:panelGroup>
+                                        <!-- Bill Status -->
+                                        <h:panelGroup rendered="#{a.billSession}">
+                                            <i class="fa fa-fw fa-money" title="Payment Finalized"></i>
+                                            <i class="fa fa-check" title="Payment Finalized"></i>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not a.paymentFinalized}">
+                                            <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
+                                            <i class="fa fa-times" title="Payment Pending"></i>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </p:column>
+
                                 <p:column headerText="Current Room" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
                                     <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Admission Date" filterBy="#{a.dateOfAdmission}" filterMatchMode="contains">
-                                    <h:outputText value="#{a.dateOfAdmission}" ></h:outputText>
+                                    <h:outputLabel value="#{a.dateOfAdmission}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discharge Date" filterBy="#{a.dateOfDischarge}" filterMatchMode="contains">
-                                    <h:outputText value="#{a.dateOfDischarge}" ></h:outputText>
+                                    <h:outputText value="#{a.dateOfDischarge}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Actions">
+                                <p:column headerText="Actions" >
+                                    <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
                                     <p:commandButton ajax="false" 
-                                                     value="Inpatient Care Dashboard" 
-                                                     action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                        <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                                     class="m-1"
+                                                     icon="fa fa-fw fa-bed" 
+                                                     action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                     </p:commandButton>
+
+                                    <p:commandButton ajax="false" 
+                                                     class="m-1"
+                                                     icon="fa fa-user-md" 
+                                                     action="#{patientController.navigateToOpdPatientProfile()}">
+                                        <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
+                                    </p:commandButton>
+
                                 </p:column>
+
                             </p:dataTable>
 
                         </div>

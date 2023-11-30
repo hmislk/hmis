@@ -17,6 +17,8 @@
                 </h:panelGroup>
 
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
+                    
+                    <p:growl id="msg" ></p:growl>
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-circle-plus" />
@@ -24,11 +26,11 @@
                         </f:facet>
                         <p:focus id="focusIx" for="acIx" />
 
-                        <div class="row" >
+<!--                        <div class="row" >
                             <div class="col-md-12 text-center p-1" >
                                 <p:messages id="messages" ></p:messages>
                             </div>
-                        </div>
+                        </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
                                 <common:patient_details patient="#{opdBillController.patient}"/>
@@ -85,7 +87,7 @@
                                                              class="w-100 mx-1 ui-button-success"
                                                              action="#{opdBillController.addToBill()}"  
                                                              process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
+                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -264,14 +266,14 @@
                                 </p:panel>
                             </div>
                             <div class="col-md-6" >
-                                <div class="row m-1"  >
-                                    <p:panel >
+                                
+                                <p:panel class="m-1">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                             <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row my-1"  >
-                                            <div class="col-3" >
+                                            <div class="col-2" >
                                                 <p:selectOneMenu   
                                                     id="pay" 
                                                     style="max-width: 100%;"
@@ -418,7 +420,7 @@
 
                                         </div>
                                     </p:panel>
-                                </div>
+                                
                                 <div class="row m-1" >
                                     <p:panel id="panelBillReferrals" >
                                         <f:facet name="header" >
