@@ -13,6 +13,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
@@ -50,8 +51,8 @@ import org.apache.commons.beanutils.BeanUtils;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -290,7 +291,7 @@ public class InwardTimedItemController implements Serializable {
                 UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
-            if (bf.getPatientItem().getToTime().getTime()==bf.getPatientItem().getFromTime().getTime()) {
+            if (bf.getPatientItem().getToTime().getTime() == bf.getPatientItem().getFromTime().getTime()) {
                 UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }
@@ -515,6 +516,25 @@ public class InwardTimedItemController implements Serializable {
 
     }
 
+    public String navigateToAddInwardTimedServicesFromMenu() {
+        makeNull();
+        return "/inward/inward_timed_service_consume";
+    }
+
+    public String navigateToAddInwardTimedServicesFromInpatientProfile() {
+        return "/inward/inward_timed_service_consume";
+    }
+
+    public String navigateToAddInwardTimedServiceForTheatreFromMenu() {
+        makeNull();
+        return "/theater/inward_timed_service_consume_surgery";
+    }
+
+    public String navigateToAddInwardTimedServiceForTheatreFromInpatientProfile() {
+        makeNull();
+        return "/theater/inward_timed_service_consume_surgery";
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             UtilityController.addErrorMessage("Please Select BHT");
@@ -558,7 +578,7 @@ public class InwardTimedItemController implements Serializable {
                 UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
-            if (pic.getToTime().getTime()==pic.getFromTime().getTime()) {
+            if (pic.getToTime().getTime() == pic.getFromTime().getTime()) {
                 UtilityController.addErrorMessage("Service Start Time & End Time Can't Be Equal");
                 return;
             }

@@ -17,7 +17,37 @@
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
                         <p:outputLabel value="Add Outside Charge" class="m-2"/>
                     </f:facet>
-
+                    <div class="row" >
+                        <div class="col-12 text-al" >
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning " 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{admissionController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary " 
+                                action="/inward/admission_profile.xhtml" 
+                                >
+                            </p:commandButton>
+                        </div>
+                    </div>
                     <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
                         <div class="row">
                             <div class="col-12" >
