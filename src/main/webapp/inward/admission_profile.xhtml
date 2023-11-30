@@ -71,7 +71,6 @@
                             <p:commandButton 
                                 value="Room Change" 
                                 action="#{admissionController.navigateToRoomChange}" 
-                                actionListener="#{roomChangeController.recreate}"
                                 icon="fa fa-exchange-alt"
                                  class="w-100">
                                 <f:setPropertyActionListener 
@@ -82,12 +81,12 @@
                             <p:commandButton 
                                 value="Guardian Room Change" 
                                 action="#{admissionController.navigateToGuardianRoomChange}" 
-                                actionListener="#{guardianRoomChangeController.recreate}"
+                                actionListener="#{roomChangeController.recreate}"
                                 icon="fa fa-users"
                                 class="w-100">
                                 <f:setPropertyActionListener 
                                     value="#{admissionController.current}" 
-                                    target="#{guardianRoomChangeController.current}" />
+                                    target="#{roomChangeController.current}" />
                             </p:commandButton>
 
                             <p:commandButton 

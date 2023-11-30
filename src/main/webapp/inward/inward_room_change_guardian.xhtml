@@ -9,7 +9,7 @@
 
 
     <ui:define name="content">
-        
+
         <h:form>
 
             <p:panel header="Guardian Room Change" rendered="#{roomChangeController.current eq null}">
@@ -18,7 +18,7 @@
                     <p:outputLabel value="Guardian Room Change" class="m-2"/>
                 </f:facet>
                 <h:panelGrid id="gpSelectText" columns="4" >
-                    
+
                     <h:outputLabel value="Type Patinet Name or BHT"/>
                     <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                      value="#{roomChangeController.current}"
@@ -36,8 +36,8 @@
                         </p:column>
                     </p:autoComplete>   
                     <p:commandButton value="Select"  class="mx-3" ajax="false"   />
-                    
-                    
+
+
                 </h:panelGrid>
 
             </p:panel>
@@ -80,11 +80,11 @@
                     </h:panelGrid>
                 </div>
                 <h:panelGrid columns="2" class="mb-2 d-flex justify-content-end">
-<!--                    <p:commandButton value="Change"  class="mx-3"
+                    <p:commandButton value="Change"  class="mx-3"
                                      action="#{roomChangeController.changeGurdianRoom()}" ajax="false"   />
                     <p:commandButton value="Clear"  class="mx-3"
                                      action="#{roomChangeController.recreate()}"
-                                     ajax="false"   />-->
+                                     ajax="false"   />
                 </h:panelGrid>
                 <div class="row mt-3">
                     <div class="col-6">
@@ -93,7 +93,7 @@
                                 <h:outputText styleClass="fas fa-id-card-alt" />
                                 <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-                                
+
 
                             <p:tabView >
                                 <p:tab title="Patient Details" >
