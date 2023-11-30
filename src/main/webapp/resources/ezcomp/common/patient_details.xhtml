@@ -72,7 +72,7 @@
                             value="#{cc.attrs.patient.person.name}"
                             validatorMessage="Please enter only letters and spaces."
                             class="form-control" >
-                            <f:validateRegex pattern="^[a-zA-Z\s]*$" />
+                            <f:validateRegex pattern="^[a-zA-Z.\s]*$" />
                             
                         </p:inputText>
                     </div>
@@ -147,7 +147,7 @@
                             value="#{cc.attrs.patient.person.mobile}"
                             class="form-control" 
                             validatorMessage="Please enter valid Number">
-                            <f:validateRegex pattern="^[0-9\s\+]*$"/>
+                            <f:validateRegex pattern="^[0-9\s\+-]*$" />
                         </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
@@ -158,7 +158,7 @@
                             placeholder="Phone Number"
                             value="#{cc.attrs.patient.person.phone}"
                             class="form-control" validatorMessage="Please enter valid Number">
-                            <f:validateRegex pattern="^[0-9\s\+]*$"/>
+                            <f:validateRegex pattern="^[0-9\s\+-]*$" />
                         </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
