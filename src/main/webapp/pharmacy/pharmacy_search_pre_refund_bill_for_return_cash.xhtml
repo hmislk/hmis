@@ -12,32 +12,33 @@
                 <h:form>
                     <p:panel header="Search Purchase Orders" >
                         <f:facet name="header" >
-                            <h:outputLabel value="SEARCH BILLS FOR REFUND"/>                           
-                            <h:panelGrid columns="5" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"
-                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPreRefundTable}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                            <h:outputLabel value="Search Bills For Refund"/>                           
 
-                                <h:outputLabel value="Bill No"/>
-                                <h:outputLabel value="Patient Name"/>                               
-                                <h:outputLabel value="Total"/>
-                                <h:outputLabel value="Net Total"/>
-                                <h:outputLabel/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel/>
-                            </h:panelGrid>
 
                         </f:facet>
+                        <h:panelGrid columns="5" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"
+                                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPreRefundTable}"/>
+                            <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
+                            <h:outputLabel value="Bill No"/>
+                            <h:outputLabel value="Patient Name"/>                               
+                            <h:outputLabel value="Total"/>
+                            <h:outputLabel value="Net Total"/>
+                            <h:outputLabel/>
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+                            <h:outputLabel/>
+                        </h:panelGrid>
+                        
                         <p:dataTable id="tblBills" 
                                      value="#{searchController.bills}"
                                      var="bill"  
