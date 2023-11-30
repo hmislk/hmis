@@ -1170,11 +1170,13 @@ public class OpdBillController implements Serializable {
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
             if (getPatient().getPerson().getId() != null) {
-                getPatientFacade().edit(getPatient());
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-                getPatientFacade().create(getPatient());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
             }
             try {
                 getPatientFacade().create(getPatient());
@@ -1183,11 +1185,13 @@ public class OpdBillController implements Serializable {
             }
         } else {
             if (getPatient().getPerson().getId() != null) {
-                getPatientFacade().edit(getPatient());
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-                getPatientFacade().create(getPatient());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
             }
         }
     }

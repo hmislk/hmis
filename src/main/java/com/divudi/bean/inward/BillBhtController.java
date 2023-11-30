@@ -67,8 +67,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -132,7 +132,6 @@ public class BillBhtController implements Serializable {
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
-    
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -178,7 +177,56 @@ public class BillBhtController implements Serializable {
         printPreview = false;
         batchBill = null;
         bills = null;
-        referredBy=null;
+        referredBy = null;
+    }
+
+    public String navigateToAddServicesFromAdmissionProfile() {
+        BillBhtController date = null;
+        total = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        cashPaid = 0.0;
+        cashBalance = 0.0;
+        creditCardRefNo = "";
+        chequeRefNo = "";
+        chequeBank = null;
+        currentBillItem = null;
+        index = 0;
+        paymentScheme = null;
+        lstBillComponents = null;
+        lstBillFees = null;
+        lstBillItems = null;
+        lstBillEntries = null;
+        printPreview = false;
+        batchBill = null;
+        bills = null;
+        referredBy = null;
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+    
+    public String navigateToAddServicesFromMenu() {
+        BillBhtController date = null;
+        patientEncounter=null;
+        total = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        cashPaid = 0.0;
+        cashBalance = 0.0;
+        creditCardRefNo = "";
+        chequeRefNo = "";
+        chequeBank = null;
+        currentBillItem = null;
+        index = 0;
+        paymentScheme = null;
+        lstBillComponents = null;
+        lstBillFees = null;
+        lstBillItems = null;
+        lstBillEntries = null;
+        printPreview = false;
+        batchBill = null;
+        bills = null;
+        referredBy = null;
+        return "/inward/inward_bill_service?faces-redirect=true";
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -563,10 +611,10 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (getCurrentBillItem().getQty()==null) {
+        if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
-        
+
         for (int i = 0; i < getCurrentBillItem().getQty(); i++) {
             BillEntry addingEntry = new BillEntry();
             BillItem bItem = new BillItem();
@@ -1058,7 +1106,6 @@ public class BillBhtController implements Serializable {
         this.bills = bills;
     }
 
-
     public BillSearch getBillSearch() {
         return billSearch;
     }
@@ -1091,55 +1138,5 @@ public class BillBhtController implements Serializable {
         this.referredBy = referredBy;
     }
 
-    /**
-     *
-     */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillBhtController controller = (BillBhtController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billBhtController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillBhtController.class.getName());
-            }
-        }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
 
 }

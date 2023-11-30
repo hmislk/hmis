@@ -68,12 +68,12 @@
                     <div class="col-12">
                         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
-                            <p:panel rendered="#{!billBhtController.printPreview}">
-
-                                <div class="d-flex justify-content-end align-items-center gap-3">
+                            <p:panel rendered="#{!billBhtController.printPreview}" >
+                             
+                                <div class="d-flex justify-content-end align-items-center gap-3" >
                                     
 
-                                    <h:panelGrid columns="4" class="m-2">
+                                    <h:panelGrid columns="4" class="m-2" >
                                         <p:commandButton class="w-100 ui-button-success m-3" id="btnSettle" 
                                                          value="Settle" 
                                                          style="float: right"
@@ -132,28 +132,28 @@
 
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4">
-                                        <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1" >
-                                            <p:panel>
+                                    <div class="col-md-5">
+                                        <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1 w-100" >
+                                            <p:panel class="w-100">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                                    <h:outputLabel value="Pateient Details" class="mx-4"></h:outputLabel>
+                                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                                                 </f:facet>
                                                 <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
                                             </p:panel>
 
                                         </h:panelGroup>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-7">
 
                                         <div class="row">
-                                            <p:panel>
+                                            <p:panel class="w-100">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                                     <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
                                                 </f:facet>
                                                 <div class="row">
-                                                    <div class="row m-1">
+<!--                                                    <div class="row m-1">
                                                         <div class="col-4">
                                                             <h:outputLabel value="Category"/>
                                                         </div>
@@ -191,18 +191,18 @@
                                                                 <p:ajax process="@this" update="acIx" event="change"/>
                                                             </p:selectOneMenu>
                                                         </div>
-                                                    </div>
+                                                    </div>-->
 
                                                     <div class="row m-1">
                                                         <div class="col-4">
-                                                            <h:outputLabel value="Investigation"/>
+                                                            <h:outputLabel value="Investigation or Service"/>
                                                         </div>
                                                         <div class="col-8">
                                                             <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
                                                                              value="#{billBhtController.currentBillItem.item}"
                                                                              completeMethod="#{itemController.completeInwardItemsCategoryNew}"
                                                                              var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                                             size="75" >
+                                                                             size="62" >
                                                                 <p:column>
                                                                     <h:outputLabel value="#{ix.name}"/>
                                                                 </p:column>
@@ -215,8 +215,8 @@
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>  
-                                                                <p:ajax event="itemSelect" process="acIx ct" update="gpQtyLbl gpQtyTxt" />
-                                                                <p:ajax event="focus" process="ct"/>
+                                                                <p:ajax event="itemSelect" process="acIx" update="gpQtyLbl gpQtyTxt" />
+<!--                                                                <p:ajax event="focus" process="ct"/>-->
                                                             </p:autoComplete>
                                                         </div>
                                                     </div>

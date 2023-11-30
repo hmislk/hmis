@@ -20,19 +20,23 @@
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
                             <p:panel class="m-2 p-2">
-                                <f:facet name="header">
-                                    <div class="row">
-                                        <div class="col-md-3 m-2 d-flex align-items-center">
+                                <f:facet name="header" >
+                                    <div class=" d-flex justify-content-between">
+                                        <div class="m-2  align-items-center">
+                                            <i class="fa fa-pencil m-2" aria-hidden="true"/>
                                             <p:outputLabel value="Edit Patient Demographic Details" />
-                                            
                                         </div>
-                                        <div class="col-md-6">
-                                            <p:commandButton value="Save" 
-                                                             action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                             ajax="false" 
-                                                             icon="pi pi-check" 
-                                                             iconPos="right" 
-                                                             class="ui-button-warning m-1 w-25" />
+                                        
+
+                                        <div class="">
+                                            
+                                            <p:commandButton 
+                                                value="Save" 
+                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                ajax="false" 
+                                                icon="pi pi-check" 
+                                                iconPos="left" 
+                                                class="ui-button-success m-1 " />
 
                                             <p:commandButton 
                                                 value="Patient Profile" 
@@ -40,23 +44,24 @@
                                                 action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
                                                 ajax="false" 
                                                 icon="fa fa-user"
-                                                iconPos="right" 
-                                                class="ui-button-warning m-1 w-25" />
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " />
 
                                             <p:commandButton
                                                 value="Patient Lookup" 
                                                 action="#{opdBillController.navigateToSearchPatients()}"
                                                 ajax="false" 
                                                 icon="fa fa-search" 
-                                                iconPos="right" 
-                                                class="ui-button-warning m-1 w-25" 
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " 
                                                 immediate="true" />
+
                                         </div>
                                     </div>
 
                                 </f:facet>
                                 <div class="container-fluid">
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Title:"  class="form-label" />
                                             <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
@@ -71,10 +76,19 @@
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Please Enter a name" />
+                                            <p:inputText 
+                                                id="txtName" 
+                                                value="#{patientController.current.person.name}" 
+                                                class="w-100 form-control" 
+                                                required="true" 
+                                                validatorMessage="Please enter only letters and spaces."
+                                                requiredMessage="Please Enter a name" 
+                                                >
+                                                <f:validateRegex pattern="^[a-zA-Z\s'.]+$" />
+                                            </p:inputText>
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Sex:"  class="form-label" />
                                             <p:selectOneMenu id="somSex" value="#{patientController.current.person.sex}" class="form-control" >
@@ -114,18 +128,38 @@
                                             </p:datePicker>
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-3">
                                             <p:outputLabel value="Phone:"  class="form-label" />
-                                            <p:inputText value="#{patientController.current.person.phone}" class="form-control" />
+                                            <p:inputText 
+                                                value="#{patientController.current.person.phone}" 
+                                                class="form-control" 
+                                                validatorMessage="Please enter Valid Phone Number."
+                                                >
+                                                <f:validateRegex pattern="^$|^[0-9+\s-]+$"/>
+                                            </p:inputText>
+                                            
                                         </div>
                                         <div class="col-md-3">
                                             <p:outputLabel value="Mobile:"  class="form-label" />
-                                            <p:inputText value="#{patientController.current.person.mobile}" class="form-control" />
+                                            <p:inputText 
+                                                value="#{patientController.current.person.mobile}" 
+                                                class="form-control" 
+                                                validatorMessage="Please enter Valid Mobile Number."
+                                                >
+                                                <f:validateRegex pattern="^$|^[0-9+\s-]+$"/>
+                                            </p:inputText>
+                                            
                                         </div>
                                         <div class="col-md-3">
                                             <p:outputLabel value="Email:"  class="form-label" />
-                                            <p:inputText value="#{patientController.current.person.email}" class="form-control" />
+                                            <p:inputText 
+                                                value="#{patientController.current.person.email}" 
+                                                class="form-control"
+                                                validatorMessage="Please enter Valid Email."
+                                                >
+                                                <f:validateRegex pattern="^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" />
+                                            </p:inputText>
                                         </div>
                                         <div class="col-md-3">
                                             <h:outputLabel class="form-label" value="NIC No:" />
@@ -134,13 +168,13 @@
                                             </h:panelGroup>
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-12">
                                             <p:outputLabel value="Address:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.person.address}" style="width: 100%;" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-6">
                                             <p:outputLabel value="PHN Number:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.phn}" class="form-control" />
@@ -152,13 +186,13 @@
                                             </h:panelGroup>
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-12">
                                             <p:outputLabel value="Comments:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
                                         </div>
                                     </div>
-                                    <div class="row form-group">
+                                    <div class="row form-group ">
                                         <div class="col-md-6">
                                             <p:outputLabel value="Patient Account:"  class="form-label w-100" />
                                             <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
