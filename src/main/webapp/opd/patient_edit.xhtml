@@ -102,7 +102,7 @@
                                                 <div class="col-md-4">
                                                     <p:inputText autocomplete="off" id="year" placeholder="Years"
                                                                  value="#{patientController.current.person.ageYearsComponent}" class="form-control" >
-                                                        <f:ajax event="blur" execute="@this" render="calNewPtDob" />
+                                                        <p:ajax event="keyup" process="@this" update="calNewPtDob" />
                                                     </p:inputText>
                                                 </div>
                                                 <div class="col-md-4">
@@ -121,11 +121,11 @@
                                         </div>
                                         <div class="col-md-6">
                                             <p:outputLabel value="Date of Birth:"  class="form-label" />
-                                            <p:datePicker value="#{patientController.current.person.dob}" id="calNewPtDob"
-                                                          pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" yearNavigator="true"
+                                            <p:calendar value="#{patientController.current.person.dob}" id="calNewPtDob" navigator="true"
+                                                          pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" 
                                                           maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
                                                 <p:ajax event="dateSelect" process="calNewPtDob" update="year month day" />
-                                            </p:datePicker>
+                                            </p:calendar>
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
