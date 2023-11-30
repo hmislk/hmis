@@ -20,19 +20,22 @@
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
                             <p:panel class="m-2 p-2">
-                                <f:facet name="header">
-                                    <div class="row">
-                                        <div class="col-md-3 m-2 d-flex align-items-center">
+                                <f:facet name="header" >
+                                    <div class=" d-flex justify-content-between">
+                                        <div class="m-2  align-items-center">
+                                            <i class="fa fa-pencil m-2" aria-hidden="true"/>
                                             <p:outputLabel value="Edit Patient Demographic Details" />
-                                            
                                         </div>
-                                        <div class="col-md-6">
-                                            <p:commandButton value="Save" 
-                                                             action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                             ajax="false" 
-                                                             icon="pi pi-check" 
-                                                             iconPos="right" 
-                                                             class="ui-button-warning m-1 w-25" />
+                                        
+
+                                        <div class="">
+                                            <p:commandButton 
+                                                value="Save" 
+                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                ajax="false" 
+                                                icon="pi pi-check" 
+                                                iconPos="left" 
+                                                class="ui-button-success m-1 " />
 
                                             <p:commandButton 
                                                 value="Patient Profile" 
@@ -40,17 +43,18 @@
                                                 action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
                                                 ajax="false" 
                                                 icon="fa fa-user"
-                                                iconPos="right" 
-                                                class="ui-button-warning m-1 w-25" />
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " />
 
                                             <p:commandButton
                                                 value="Patient Lookup" 
                                                 action="#{opdBillController.navigateToSearchPatients()}"
                                                 ajax="false" 
                                                 icon="fa fa-search" 
-                                                iconPos="right" 
-                                                class="ui-button-warning m-1 w-25" 
+                                                iconPos="left" 
+                                                class="ui-button-warning m-1 " 
                                                 immediate="true" />
+
                                         </div>
                                     </div>
 
