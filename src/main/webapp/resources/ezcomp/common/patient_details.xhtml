@@ -15,6 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:panel class="my-1" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
+            <p:growl id="msg"/>
             <f:facet name="header" >
                 <h:panelGroup id="headerFacet">
 
@@ -38,7 +39,7 @@
                                    rendered="#{cc.attrs.patient.editingMode}"
                                    styleClass="btn btn-link p-0 m-0"
                                    process="btnPatientSave gpPatient"
-                                   update="gpPatient"
+                                   update="gpPatient msg"
                                    >
                         <i class="fa fa-save"></i>
                         
