@@ -29,6 +29,7 @@
                                         
 
                                         <div class="">
+                                            
                                             <p:commandButton 
                                                 value="Save" 
                                                 action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
@@ -75,7 +76,16 @@
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Please Enter a name" />
+                                            <p:inputText 
+                                                id="txtName" 
+                                                value="#{patientController.current.person.name}" 
+                                                class="w-100 form-control" 
+                                                required="true" 
+                                                validatorMessage="Please enter only letters and spaces."
+                                                requiredMessage="Please Enter a name" 
+                                                >
+                                                <f:validateRegex pattern="^[a-zA-Z\s]*$" />
+                                            </p:inputText>
                                         </div>
                                     </div>
                                     <div class="row form-group">
