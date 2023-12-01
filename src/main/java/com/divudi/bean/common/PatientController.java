@@ -938,7 +938,14 @@ public class PatientController implements Serializable {
             searchBySample();
         } else if (searchPatientId != null && !searchPatientId.trim().equals("")) {
             searchByPatientId();
-        } else {
+        } else if (searchPhone == null && searchNic == null && searchName != null && !searchName.trim().equals("")) {
+            searchPatientByName();
+        } else if (searchName == null && searchNic == null && searchPhone != null && !searchPhone.trim().equals("")) {
+            searchPatientByPhone();
+        } else if (searchPhone == null && searchName == null && searchNic != null && !searchNic.trim().equals("")) {
+            searchPatientByNic();
+        } 
+        else {
             searchPatientByDetails();
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
@@ -1075,7 +1082,95 @@ public class PatientController implements Serializable {
         searchedPatients = getFacade().findByJpql(j, m);
 
     }
+    
+    public void searchPatientByName() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
 
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        if (searchName != null && !searchName.trim().equals("")) {
+            j += " and (p.person.name) like :name ";
+            m.put("name", "%" + searchName.toLowerCase() + "%");
+            atLeastOneCriteriaIsGiven = true;
+        }
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
+    
+    public void searchPatientByNic() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        if (searchNic != null && !searchNic.trim().equals("")) {
+            j += " and p.person.nic =:nic";
+            m.put("nic", searchNic);
+            atLeastOneCriteriaIsGiven = true;
+        }
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
+
+    public void searchPatientByPhone() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        
+        if (searchPhone != null && !searchPhone.trim().equals("")) {
+            j += " and (p.person.phone =:phone or p.person.mobile =:phone)";
+            m.put("phone", searchPhone);
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
     public void searchByPatientId() {
         String j;
         Map m = new HashMap();
