@@ -709,12 +709,7 @@ public class PatientController implements Serializable {
         setSearchedPatients(null);
         return "/opd/patient_refund_payment";
     }
-
-    public String navigateToPatientLabReports() {
-        setSearchedPatients(null);
-        return "/lab/patient_lab_reports";
-    }
-
+    
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
