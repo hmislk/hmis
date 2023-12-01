@@ -4847,11 +4847,11 @@ public class SearchController implements Serializable {
         String sql = "select pi "
                 + "from PatientInvestigation pi "
                 + "join pi.billItem.bill b "
-                + "where b.patient.person.id =:cp "
+                + "where b.patient=:cp "
                 + "and b.createdAt between :fromDate and :toDate ";
 
         Map temMap = new HashMap();
-        temMap.put("cp", pt.getPerson().getId());
+        temMap.put("cp", pt);
 
         sql += " order by pi.approveAt desc  ";
 
