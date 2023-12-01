@@ -184,6 +184,17 @@ public class SearchController implements Serializable {
     private Department fromDepartment;
     private Department toDepartment;
     private int manageListIndex;
+    private Patient patient;
+
+    public String navigateToPatientLabReports() {
+        fillPatientLabReports(patient);
+        return "/lab/patient_lab_reports";
+    }
+
+    public String navigateToPatientAcceptPayment() {
+        fillPatientPreBills(null, patient, null, true);
+        return "/opd/patient_accept_payment";
+    }
 
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
@@ -853,6 +864,14 @@ public class SearchController implements Serializable {
 
     public void setBillLights(List<BillLight> billLights) {
         this.billLights = billLights;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public class billsWithbill {
@@ -4822,6 +4841,32 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void fillPatientLabReports(Patient pt) {
+        System.out.println(pt.getPerson().getId());
+
+        String sql = "select pi "
+                + "from PatientInvestigation pi "
+                + "join pi.billItem.bill b "
+                + "where b.patient=:cp "
+                + "and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        temMap.put("cp", pt);
+
+        sql += " order by pi.approveAt desc  ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void fillPatientLabreportTable() {
+        fillPatientLabReports(patient);
+    }
+
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
@@ -4860,7 +4905,7 @@ public class SearchController implements Serializable {
         sql += " order by pi.approveAt desc  ";
 //    
 
-        temMap.put("toDate", getToDate()); 
+        temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
@@ -5153,6 +5198,18 @@ public class SearchController implements Serializable {
         createPreTable(BillType.OpdPreBill);
     }
 
+    public void fillPatientBillsToPay() {
+        fillPatientPreBills(null, patient, true, null);
+    }
+
+    public void fillPatientBillsPaid() {
+        fillPatientPreBills(null, patient, null, false);
+    }
+
+    public void fillPatientBillsPaidAndToPay() {
+        fillPatientPreBills(null, patient, null, null);
+    }
+
     public void createOpdPreTableNotPaid() {
         createPreTableNotPaid(BillType.OpdPreBill);
     }
@@ -5180,28 +5237,86 @@ public class SearchController implements Serializable {
     }
 
     public void createPreTable(BillType bt) {
-        bills = null;
-        String sql;
-        Map temMap = new HashMap();
+        createPreTable(bt, null);
+    }
 
-        sql = "select b from PreBill b "
-                + " where b.billType = :billType "
+    public void createPreTable(BillType bt, Patient pt) {
+        bills = null;
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b "
+                + " from PreBill b "
+                + " where b.retired=false "
                 + " and b.institution=:ins"
                 + " and b.billedBill is null "
                 + " and b.createdAt between :fromDate and :toDate"
-                + " and b.retired=false "
                 + " and b.deptId is not null ";
 
-        sql += createPharmacyPayKeyword(temMap);
-        sql += " order by b.createdAt desc  ";
-//    
-        temMap.put("billType", bt);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
+        if (bt != null) {
+            jpql += " and b.billType = :billType ";
+            m.put("billType", bt);
+        }
 
-        //System.err.println("Sql " + sql);
-        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+        if (pt != null) {
+            jpql += " and b.patient=:pt ";
+            m.put("pt", pt);
+        }
+
+        jpql += createPharmacyPayKeyword(m);
+        jpql += " order by b.createdAt desc  ";
+//    
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", getSessionController().getInstitution());
+
+        System.err.println("Sql " + jpql);
+        System.out.println("temMap = " + m);
+        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+
+    }
+
+    public void fillPatientPreBills(BillType bt, Patient pt, Boolean paidOnly, Boolean toPayOnly) {
+        bills = null;
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b "
+                + " from PreBill b "
+                + " where b.retired=false "
+                + " and b.institution=:ins"
+                + " and b.billedBill is null "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.deptId is not null ";
+
+        if (bt != null) {
+            jpql += " and b.billType = :billType ";
+            m.put("billType", bt);
+        }
+
+        if (pt != null) {
+            jpql += " and b.patient=:pt ";
+            m.put("pt", pt);
+        }
+
+        if (paidOnly != null) {
+            jpql += " and b.referenceBill is not null ";
+        }
+
+        if (toPayOnly != null) {
+            jpql += " and b.referenceBill is null ";
+        }
+
+        jpql += " order by b.createdAt desc  ";
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("ins", getSessionController().getInstitution());
+
+        System.err.println("Sql " + jpql);
+        System.out.println("temMap = " + m);
+        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
 
     }
 
@@ -5560,7 +5675,7 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
+
     public void listOpdBatcuBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBathcBill, institution, department);
@@ -5745,9 +5860,46 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-
         billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+    
+     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
+         return fillBills(billType, ins, dep, patient, 10);
+     }
+
+    public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient, Integer maxCount) {
+        List<Bill> bs;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bill"
+                + " from BilledBill bill "
+                + " where bill.retired=:ret ";
+        m.put("ret", false);
+        if (billType != null) {
+            jpql += " and bill.billType=:billType ";
+            m.put("billType", billType);
+        }
+
+        if (ins != null) {
+            jpql += " and bill.institution=:ins ";
+            m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            jpql += " and bill.department=:dep ";
+            m.put("dep", dep);
+        }
+        if (patient != null) {
+            jpql += " and  bill.patient=:pt";
+            m.put("pt", patient);
+        }
+        
+        jpql += " order by bill.id desc  ";
+       
+        bs = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, maxCount);
+
+        return bs;
     }
 
     public List<BillLight> listBillsLights(

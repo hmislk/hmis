@@ -21,10 +21,8 @@
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
                     <p:panel class="w-100" >
                         <f:facet name="header" >
-                            <h:panelGrid columns="17"  >
-                                <h:outputLabel value="OPD Packages" />
-
-                            </h:panelGrid>
+                            
+                            <h:outputLabel value="OPD Packages" />
                         </f:facet>
 
 
@@ -334,7 +332,7 @@
                                         <p:panelGrid columns="2" columnClasses="numberCol, textCol"  class="w-100">
                                             <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel id="tot" value="#{billPackageController.total}" >
-                                                <f:convertNumber pattern="#,##0.00" class="w-100"/>
+                                                <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="Discount" ></h:outputLabel>
                                             <h:outputLabel id="dis" value="#{billPackageController.discount}" >
