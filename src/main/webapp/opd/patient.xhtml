@@ -130,9 +130,11 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Accept Payments" 
-                                    action="#{patientController.navigateToPatientAcceptPayment}" 
+                                    action="#{searchController.navigateToPatientAcceptPayment()}" 
                                     ajax="false" 
                                     styleClass="mx-2">
+                                    <f:setPropertyActionListener value="#{patientController.current}"
+                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Refunds"
@@ -142,10 +144,13 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Lab Reports"
-                                    action="#{patientController.navigateToPatientLabReports}"
+                                    action="#{searchController.navigateToPatientLabReports}"
                                     ajax="false"
                                     styleClass="mx-2">
+                                    <f:setPropertyActionListener value="#{patientController.current}"
+                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
                                 </p:commandButton>
+                               
                                 <p:commandButton value="Inward Appointments"
                                                  action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
                                                  ajax="false"

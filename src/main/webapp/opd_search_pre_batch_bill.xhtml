@@ -20,10 +20,22 @@
                             <div class="col-2">
                                 <h:panelGrid columns="1">
                                     <h:outputLabel class="my-1"  value="From Date"/>
-                                    <p:calendar class="my-1 w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    <p:calendar 
+                                        class="my-1 w-100" 
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}"
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        maxdate="#{commonFunctionsController.endOfDay}">      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar class="my-1 w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    <p:calendar 
+                                        class="my-1 w-100" 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        maxdate="#{commonFunctionsController.endOfDay}">                                                                              
                                     </p:calendar>
                                     <p:commandButton class="my-1 ui-button-success w-100" icon="fas fa-search" id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdBathcBillPreTable}"/>
                                     <p:commandButton class="ui-button-warning w-100" icon="fas fa-search" id="btnSearch2" ajax="false" value="Search Paid Only" action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
@@ -76,7 +88,7 @@
                                     <p:column headerText="Name" >
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
                                     </p:column>   
-                                    <p:column headerText="Billed at"  >
+                                    <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -89,7 +101,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                             
                                     </p:column>                 
-                                    <p:column headerText="Billed by" >
+                                    <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>

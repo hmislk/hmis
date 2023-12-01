@@ -20,13 +20,27 @@
                             <div class="col-2">
                                 <h:panelGrid columns="1" >
                                     <h:outputLabel class="my-1"  value="From Date"/>
-                                    <p:calendar class="my-1" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    <p:calendar 
+                                        class="my-1" 
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}"
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        maxdate="#{commonFunctionsController.endOfDay}">    
+                                       
                                     </p:calendar>
                                     <h:outputLabel class="my-1"  value="To Date"/>
-                                    <p:calendar class="my-1"  id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    <p:calendar 
+                                        class="my-1"  
+                                        id="toDate"
+                                        value="#{searchController.toDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        maxdate="#{commonFunctionsController.endOfDay}">                                                                                
                                     </p:calendar>
+                                    
                                     <p:commandButton  id="btnSearch" class="ui-button-success w-100 my-1" icon="fas fa-search" ajax="false" value="Search All" action="#{searchController.createPharmacyPreTable}"/>
-                                    <p:commandButton ajax="false" class=" ui-button-warning w-100 my-1" icon="fas fa-search" value="Search Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
+                                    <p:commandButton ajax="false" class=" ui-button-warning w-100 " icon="fas fa-search" value="Search Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
                                     <p:commandButton ajax="false" class=" ui-button-warning w-100 my-1" icon="fas fa-search" value="Search Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
                                     <h:outputLabel/>
                                     <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
@@ -75,7 +89,7 @@
                                     <p:column headerText="Department"  style="width: 90px">
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                                     </p:column>   
-                                    <p:column headerText="Billed at"  style="width: 150px">
+                                    <p:column headerText="Billed At"  style="width: 150px">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -88,7 +102,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                             
                                     </p:column>                 
-                                    <p:column headerText="Billed by" style="width: 90px">
+                                    <p:column headerText="Billed By" style="width: 90px">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
@@ -113,7 +127,7 @@
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column>
+                                    <p:column style="width: 650px">
                                         <p:dataTable value="#{bill.cashBillsPre}" var="rb">
                                             <p:column  >                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
