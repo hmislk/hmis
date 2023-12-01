@@ -184,8 +184,12 @@ public class SearchController implements Serializable {
     private Department fromDepartment;
     private Department toDepartment;
     private int manageListIndex;
-
     private Patient patient;
+
+    public String navigateToPatientLabReports() {
+        fillPatientLabReports(patient);
+        return "/lab/patient_lab_reports";
+    }
 
     public String navigateToPatientAcceptPayment() {
         fillPatientPreBills(null, patient, null, true);
@@ -4837,6 +4841,32 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void fillPatientLabReports(Patient pt) {
+        System.out.println(pt.getPerson().getId());
+
+        String sql = "select pi "
+                + "from PatientInvestigation pi "
+                + "join pi.billItem.bill b "
+                + "where b.patient.person.id =:cp "
+                + "and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        temMap.put("cp", pt.getPerson().getId());
+
+        sql += " order by pi.approveAt desc  ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void fillPatientLabreportTable() {
+        fillPatientLabReports(patient);
+    }
+
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
@@ -5175,7 +5205,7 @@ public class SearchController implements Serializable {
     public void fillPatientBillsPaid() {
         fillPatientPreBills(null, patient, null, false);
     }
-    
+
     public void fillPatientBillsPaidAndToPay() {
         fillPatientPreBills(null, patient, null, null);
     }
