@@ -561,6 +561,7 @@ public class PatientController implements Serializable {
         }
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
         return "/emr/patient_profile";
     }
 
