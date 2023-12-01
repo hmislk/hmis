@@ -1057,7 +1057,7 @@ public class PatientEncounterController implements Serializable {
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
         opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient,10);
-
+        channelBills=searchController.fillBills(BillType.Channel, null, null, patient,10);
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
         patientImages = new ArrayList<>();

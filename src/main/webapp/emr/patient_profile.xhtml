@@ -499,6 +499,64 @@
                                                         </p:dataTable>
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblChannelBills" value="#{patientEncounterController.channelBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Channel Bills" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                                                      sortBy="#{bill.id}"
+                                                                      styleClass="alignTop" width="15">
+                                                                <h:outputLabel value="#{bill.id}"/>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                                                <p:commandLink id="billNo" 
+                                                                               ajax="false" 
+                                                                               value="#{bill.insId}" 
+                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                                                <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                                                </h:commandLink>  
+                                                            </p:column>
+                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.discount}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        
+                                                    </div>
+                                                </div>
+                                                
 
                                             </h:form>
 
