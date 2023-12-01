@@ -125,27 +125,6 @@
                             </p:column>
 
 
-                            <p:column  headerText="Patient" styleClass="alignTop" >
-                                <h:commandLink id="colPtDetail" 
-                                               value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                               action="patient" 
-                                               style="text-decoration:underline;"
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
-                                               >
-                                    <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
-                                </h:commandLink>
-                                <p:tooltip for="colPtDetail"  >
-                                    <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.nameWithTitle}" >
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Age : #{pi.billItem.bill.patient.age},&nbsp;#{pi.billItem.bill.patient.person.sex}," >
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel value="Phone : #{pi.billItem.bill.patient.person.phone}" >
-                                    </h:outputLabel>
-                                </p:tooltip>
-                            </p:column>
-
                             <p:column headerText="Investigation"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
