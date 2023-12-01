@@ -15,19 +15,15 @@
 
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">     
-                <p:panel rendered="#{!billBhtController.printPreview}">
-                    <f:facet name="header">
-                        Surgery Service(Theatre)
-                    </f:facet>
 
-                    <p:panel header="Patient Details" rendered="#{billBhtController.batchBill eq null}">
-                        <h:panelGrid columns="3">
+                <p:panel header="Patient Details" rendered="#{billBhtController.batchBill eq null}">
+                    <div class="col-md-12">
                         <h:outputLabel value="Type Surgery Name or BHT : "/>
                         <p:autoComplete forceSelection="true" 
                                         value="#{billBhtController.batchBill}" 
                                         completeMethod="#{billController.completeSurgeryBills}"
                                         var="apt2" itemLabel="#{apt2.patientEncounter.bhtNo}"
-                                        itemValue="#{apt2}" size="30"  style="width: 400px;"
+                                        itemValue="#{apt2}" size="30"  class="mx-2"
                                         >
                             <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2" 
                                     listener="#{billBhtController.selectSurgeryBillListener()}"/>
@@ -46,77 +42,102 @@
                                          id="btSelect"
                                          ajax="falsse"
                                          />
-                        </h:panelGrid>
-                    </p:panel>
+                    </div>
                 </p:panel>
 
+
                 <p:panel rendered="#{billBhtController.batchBill ne null}">
-                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  class="btn-primary mx-1" >
-                    </p:commandButton>
-                    <p:defaultCommand target="btnSettle"/>
+                    <f:facet name="header">
+                        Surgery Service(Theatre)
+                    </f:facet>
+                    <p:panel>
+                        <div class="d-flex justify-content-end align-items-center" >
+                            <h:panelGrid columns="3" class="m-2" >
+                                <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="float: right" class="w-100 ui-button-success m-2" icon="fa fa-check" >
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSettle"/>
 
-                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" class="btn-primary mx-1" />
-
-                    <div class="row my-2">
-                        <div class="col-md-6">
-                            <h:panelGroup id="panSearch1">
-                                <in:bhtDetail admission="#{billBhtController.batchBill.patientEncounter}"/>
-                            </h:panelGroup>
+                                <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" 
+                                                 style="float: right"
+                                                 class="w-100 ui-button-warning m-1" 
+                                                 icon="fa fa-plus"/>
+                            </h:panelGrid>
                         </div>
-                        <div class="col-md-6">
-                            <h:panelGroup id="panSearch2">
-                                <in:surgeryDetail bill="#{billBhtController.batchBill}"/>
-                            </h:panelGroup>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h:panelGroup id="panSearch1">
+                                    <p:panel class="w-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+                                        <in:bhtDetail admission="#{billBhtController.batchBill.patientEncounter}"/>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </div>
+                            <div class="col-md-6">
+                                <h:panelGroup id="panSearch2">
+                                    <p:panel class="w-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-scissors"></h:outputText>
+                                            <h:outputLabel value="Surgery Details" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+                                        <in:surgeryDetail bill="#{billBhtController.batchBill}"/>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="panelIx" >
+
+
+                                    <p:panel id='pIxAdd'>
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                                    <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+                                                </f:facet>
+                                        <p:focus  context="acIx"/>
+                                        <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
+                                                        value="#{billBhtController.currentBillItem.item}"
+                                                        completeMethod="#{itemController.completeTheatreItems}"
+                                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                                                        size="30"  style="width: 400px; padding-bottom: 5px">
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.department.name}"/>
+                                            </p:column>  
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.total}" 
+                                                               rendered="#{ix.chargesVisibleForInward}"/>
+                                            </p:column>  
+                                            <p:ajax event="itemSelect" process="acIx" update="@all" />
+                                        </p:autoComplete>
+
+                                        <p:inputText autocomplete="off" id="txtQty"
+                                                     rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
+                                                     value="#{billBhtController.currentBillItem.qty}" >
+                                        </p:inputText>
+
+
+                                        <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" class="w-100"></p:inputTextarea>
+                                        <div class="col-2">
+                                            <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" class="w-100 mt-2 ui-button-success">
+                                            </p:commandButton> 
+                                        </div>
+
+
+
+                                        <p:watermark for="txtQty" value="Quentity" ></p:watermark>
+                                        <p:watermark for="txtDesc" value="Description" ></p:watermark>
+
+                                    </p:panel>
+                                </h:panelGroup>
+
+
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="row p-1">
-                        <div class="col-md-6">
-
-                            <h:panelGroup id="panelIx" >
-
-
-                                <p:panel id='pIxAdd' header="Items Requests" class="w-100">
-                                    <p:focus  context="acIx"/>
-                                    <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
-                                                    value="#{billBhtController.currentBillItem.item}"
-                                                    completeMethod="#{itemController.completeTheatreItems}"
-                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                    size="30"  style="width: 400px; padding-bottom: 5px">
-                                        <p:column>
-                                            <h:outputLabel value="#{ix.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{ix.department.name}"/>
-                                        </p:column>  
-                                        <p:column>
-                                            <h:outputLabel value="#{ix.total}" 
-                                                           rendered="#{ix.chargesVisibleForInward}"/>
-                                        </p:column>  
-                                        <p:ajax event="itemSelect" process="acIx" update="@all" />
-                                    </p:autoComplete>
-
-                                    <p:inputText autocomplete="off" id="txtQty"
-                                                 rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
-                                                 value="#{billBhtController.currentBillItem.qty}" >
-                                    </p:inputText>
-
-
-                                    <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" class="w-100"></p:inputTextarea>
-                                    <div class="p-1">
-                                        <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" >
-                                        </p:commandButton> 
-                                    </div>
-
-
-
-                                    <p:watermark for="txtQty" value="Quentity" ></p:watermark>
-                                    <p:watermark for="txtDesc" value="Description" ></p:watermark>
-
-                                </p:panel>
-                            </h:panelGroup>
-                        </div>
-                        <div class="col-md-6">
+                        <div class="row">
                             <h:panelGrid columns="1">
                                 <h:panelGroup id="panelBillItems" >
                                     <p:tabView id="tblBillItem" >
@@ -239,17 +260,19 @@
                                 </h:panelGroup>
                             </h:panelGrid>
                         </div>
-                    </div>
 
-                    <!--                    <h:panelGrid columns="2" >
-                                            <h:panelGrid columns="1" >
-                    
+
+
+                        <!--                    <h:panelGrid columns="2" >
+                                                <h:panelGrid columns="1" >
+                        
+                                                    
+                        
+                                                </h:panelGrid>
+                        
                                                 
-                    
-                                            </h:panelGrid>
-                    
-                                            
-                                        </h:panelGrid>-->
+                                            </h:panelGrid>-->
+                    </p:panel>
                 </p:panel>
 
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
