@@ -15,10 +15,9 @@
                             <h:outputText styleClass="fas fas fa-search" />
                             <h:outputText class="mx-4" value="Search Patient Lab reports"/>
                         </f:facet>
-                        
-                        <h:panelGrid columns="1" >
-                            <h:panelGrid columns="7" class="mb-2" >
 
+                        <h:panelGrid columns="2" class="d-flex align-items-center">
+                            <h:panelGrid columns="7" class="mb-2" >
                                 <h:outputLabel value="From Date " class="mx-2"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" class="mx-2" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                                 </p:calendar>
@@ -27,7 +26,35 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search All" icon="fas fas fa-search" class="m-2 ui-button-success" action="#{searchController.fillPatientLabreportTable()}"  />
 
+                                <p:commandButton 
+                                    style="float: right;"
+                                    value="Lookup" 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning mx-1 w-100" 
+                                    action="#{opdBillController.navigateToSearchPatients()}" 
+                                    >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    style="float: right;"
+                                    value="Profile" 
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning  w-100" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{searchController.patient}" 
+                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+
+
                             </h:panelGrid>
+
+
+
+
+
 
                         </h:panelGrid>
 
