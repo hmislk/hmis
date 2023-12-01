@@ -5863,6 +5863,44 @@ public class SearchController implements Serializable {
         billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
+         return fillBills(billType, ins, dep, patient, 10);
+     }
+
+    public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient, Integer maxCount) {
+        List<Bill> bs;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bill"
+                + " from BilledBill bill "
+                + " where bill.retired=:ret ";
+        m.put("ret", false);
+        if (billType != null) {
+            jpql += " and bill.billType=:billType ";
+            m.put("billType", billType);
+        }
+
+        if (ins != null) {
+            jpql += " and bill.institution=:ins ";
+            m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            jpql += " and bill.department=:dep ";
+            m.put("dep", dep);
+        }
+        if (patient != null) {
+            jpql += " and  bill.patient=:pt";
+            m.put("pt", patient);
+        }
+        
+        jpql += " order by bill.id desc  ";
+       
+        bs = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, maxCount);
+
+        return bs;
+    }
 
     public List<BillLight> listBillsLights(
             BillType billType,
