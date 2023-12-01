@@ -11,6 +11,7 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -125,6 +126,8 @@ public class PatientEncounterController implements Serializable {
     CommonController commonController;
     @Inject
     DocumentTemplateController documentTemplateController;
+    @Inject
+    SearchController searchController;
 
     /**
      * Properties
@@ -1049,10 +1052,11 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void fillCurrentPatientLists(Patient patient) {
-        encounters = fillPatientEncounters(patient);
+        encounters = fillPatientEncounters(patient, 10);
 
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
+        opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient,10);
 
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
