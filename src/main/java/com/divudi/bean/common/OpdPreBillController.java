@@ -182,7 +182,6 @@ public class OpdPreBillController implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     //Temprory Variable
-    private Patient tmpPatient;
     List<Bill> bills;
     Bill bill;
     boolean foreigner = false;
@@ -515,10 +514,8 @@ public class OpdPreBillController implements Serializable {
             getPatient().getPerson().setCreatedAt(new Date());
             getPersonFacade().create(getPatient().getPerson());
             getPatientFacade().create(getPatient());
-            tmpPatient = getPatient();
         } else {
             getPatientFacade().edit(getPatient());
-            tmpPatient = getPatient();
         }
     }
 
@@ -609,7 +606,7 @@ public class OpdPreBillController implements Serializable {
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
-
+            
             if (b == null) {
                 return null;
             }
@@ -709,7 +706,7 @@ public class OpdPreBillController implements Serializable {
         PreBill tmp = new PreBill();
         tmp.setBillType(BillType.OpdBathcBillPre);
         tmp.setBillClassType(BillClassType.PreBill);
-        tmp.setPatient(tmpPatient);
+        tmp.setPatient(getPatient());
         tmp.setInstitution(getSessionController().getInstitution());
         tmp.setDepartment(getSessionController().getDepartment());
         tmp.setPaymentScheme(paymentScheme);
@@ -815,9 +812,9 @@ public class OpdPreBillController implements Serializable {
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getPatient());
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
+        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
@@ -1586,14 +1583,6 @@ public class OpdPreBillController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
-    }
-
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
     }
 
     public PatientInvestigationFacade getPatientInvestigationFacade() {
