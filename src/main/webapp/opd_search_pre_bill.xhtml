@@ -26,7 +26,7 @@
                                         value="#{searchController.fromDate}" 
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonFunctionsController.endOfDay}">      
+                                        >      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar
@@ -35,9 +35,15 @@
                                         value="#{searchController.toDate}" 
                                         navigator="false" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonFunctionsController.endOfDay}">                                                                              
+                                        >                                                                              
                                     </p:calendar>
-                                    <p:commandButton  id="btnSearch" icon="fas fa-search" class="ui-button-success w-100" ajax="false" value="Search All" action="#{searchController.createOpdPreTable}"/>
+                                    <p:commandButton  
+                                        id="btnSearch" 
+                                        icon="fas fa-search" 
+                                        class="ui-button-success w-100" 
+                                        ajax="false" 
+                                        value="Search All"
+                                        action="#{searchController.createOpdPreTable}"/>
                                     <p:commandButton class="my-1 ui-button-warning w-100" icon="fas fa-search" ajax="false" value="Search Not Paid Only" action="#{searchController.createOpdPreTableNotPaid}"/>
                                     <p:commandButton  ajax="false" icon="fas fa-search" class="ui-button-warning w-100 " value="Search Paid Only" action="#{searchController.createOpdPreTablePaid}"/>
 
@@ -68,11 +74,16 @@
                                     rowIndexVar="i"
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
-                                    var="bill"   
+                                    var="bill"  
+
+                                    rowKey="#{bill.id}"
+
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
+                                    rows="10"
+
                                     >
 
                                     <p:column headerText="No" styleClass="alignTop">
@@ -81,7 +92,11 @@
 
                                     <p:column headerText="Bill No" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
-                                    </p:column>   
+                                    </p:column>
+
+                                    <p:column headerText="Patient" >
+                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
+                                    </p:column> 
 
                                     <p:column headerText="Department"  >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
