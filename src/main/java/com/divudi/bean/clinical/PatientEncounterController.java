@@ -1057,7 +1057,7 @@ public class PatientEncounterController implements Serializable {
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
         opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient,10);
-
+        channelBills=searchController.fillBills(BillType.Channel, null, null, patient,10);
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
         patientImages = new ArrayList<>();
@@ -1486,7 +1486,7 @@ public class PatientEncounterController implements Serializable {
         m.put("bts", billTypes);
         String sql;
         sql = "Select b from Bill b where b.patient=:p and b.billType in :bts order by b.id desc";
-        return getBillFacade().findByJpql(sql, m);
+        return getBillFacade().findByJpql(sql, m,10);
     }
 
     public List<PatientInvestigation> fillPatientInvestigations(Patient patient) {
@@ -1499,7 +1499,7 @@ public class PatientEncounterController implements Serializable {
                 + " where e.patient=:p "
                 + " and e.retired=:ret "
                 + "order by e.id desc";
-        return getPiFacade().findByJpql(sql, m);
+        return getPiFacade().findByJpql(sql, m,10);
     }
 
     public List<PatientEncounter> fillPatientEncounters(Patient patient, Integer count) {
