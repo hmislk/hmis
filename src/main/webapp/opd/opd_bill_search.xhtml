@@ -12,7 +12,8 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                             <h:outputText styleClass="fas fa-search" />
+                             <h:outputLabel value="Opd Bill Search " class="mx-4"/>                          
                         </f:facet>
 
                         <div class="row">
@@ -60,7 +61,7 @@
                                                      autocomplete="off"
                                                      value="#{searchController.searchKeyword.netTotal}"/>
                                         <p:spacer height="10" width="5" ></p:spacer>
-
+                                        <hr/>
                                         <h:outputLabel value="From Institution" class="w-100"/>
                                         <p:selectOneMenu 
                                             id="cmdFromInstitution"
@@ -126,15 +127,23 @@
 
                                     <div class="d-grid gap-2 mt-2">
                                         <p:commandButton 
+                                            icon="fas fa-search"
                                             id="btnSearch" 
                                             ajax="false" 
                                             value="Search" 
-                                            action="#{searchController.searchOpdBills()}" class="w-100"/>
-                                        <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
+                                            class="ui-button-success"
+                                            action="#{searchController.searchOpdBills()}" />
+                                        <p:commandButton 
+                                            id="btnExcel"
+                                            icon="fas fa-download"
+                                            ajax="false" 
+                                            value="Download"
+                                            class="w-100">
                                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
                                         <p:commandButton 
                                             id="btnClear"
+                                            icon="fas fa-broom"
                                             value="Clear" 
                                             class="my-2 ui-button-warning" 
                                             action="#{searchController.clearOpdBillSearchData}"
@@ -153,6 +162,7 @@
                                              rows ="10"
                                              rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
+                                             paginatorPosition="bottom"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >
