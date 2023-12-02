@@ -12,7 +12,40 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
 
-                <p:panel style="min-height: 600px; position:relative;"  >
+                <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
+                    <f:facet name="header" >
+                                <h:outputLabel value="Add Professional Fee"></h:outputLabel>
+                            </f:facet>
+                    
+                        <h:outputLabel value="Type Surgery Name or BHT : "/>
+                                <p:autoComplete forceSelection="true" 
+                                                value="#{inwardProfessionalBillController.batchBill}" 
+                                                completeMethod="#{billController.completeSurgeryBills}"
+                                                var="apt2" 
+                                                itemLabel="#{amp2.bhtNo}"
+                                                itemValue="#{apt2}" 
+                                                size="30"  
+                                                style="width: 400px;">
+                                    <p:column>
+                                        #{apt2.procedure.item.name}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt2.patientEncounter.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{apt2.patientEncounter.patient.person.name}      
+                                    </p:column>
+                                </p:autoComplete>  
+                        <p:commandButton 
+                            id="btnSelect" 
+                            value="Select" 
+                            ajax="false"/>
+                          
+                </p:panel>
+                    
+                
+                
+                <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}"  >
                     <f:facet name="header" >              
                         <div class="d-flex justify-content-between align-items-center">
                             <span>Surgery Professional (Theatre)</span>
@@ -20,29 +53,13 @@
                         </div>
 
                     </f:facet>
+                    
+                    
 
                     <div class="row">
                         <div class="col-md-6">
                             <p:panel header="Patient Details">
-                                <h:outputLabel value="Type Surgery Name or BHT : "/>
-                                <p:autoComplete forceSelection="true" 
-                                                value="#{inwardProfessionalBillController.batchBill}" 
-                                                completeMethod="#{billController.completeSurgeryBills}"
-                                                var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="@this" update="@all"
-                                            listener="#{inwardProfessionalBillController.selectBatchBillListener}"/>
-                                    <p:column headerText="Surgery Name">
-                                        <h:outputLabel value="#{apt2.procedure.item.name}"/> 
-                                    </p:column>
-                                    <p:column headerText="BHT NO">
-                                        <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
-                                    </p:column>
-                                    <p:column headerText="Patient Name" >
-                                        <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>  
+                                
 
                                 <br/>
                                 <h:panelGroup id="panSearch1">
