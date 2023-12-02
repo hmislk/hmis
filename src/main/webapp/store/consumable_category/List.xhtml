@@ -12,7 +12,7 @@
         
         <ui:define name="subcontent">
             <h:outputStylesheet library="css" name="jsfcrud.css"/>
-            <p:growl id="growl"  ></p:growl>
+            <p:growl id="msg"  ></p:growl>
             <h:form id="ConsumableCategoryListForm">
                 
                 <p:panel header="Manage Comsumable Categories">
@@ -50,7 +50,8 @@
                             <p:commandButton id="createButton" icon="ui-icon-plus"   value="Create new Category" actionListener="#{consumableCategoryController.prepareCreate}" update=":ConsumableCategoryCreateForm" oncomplete="PF('ConsumableCategoryCreateDialog').show()"/>
                             <p:commandButton id="viewButton"   icon="ui-icon-search" value="View Selected Category" update=":ConsumableCategoryViewForm" oncomplete="PF('ConsumableCategoryViewDialog').show()" disabled="#{empty consumableCategoryController.selected}"/>
                             <p:commandButton id="editButton"   icon="ui-icon-pencil" value="Edit Selected Category" update=":ConsumableCategoryEditForm" oncomplete="PF('ConsumableCategoryEditDialog').show()" disabled="#{empty consumableCategoryController.selected}"/>
-                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="Delete Selected Category" actionListener="#{consumableCategoryController.destroy}" update=":growl,datalist" disabled="#{empty consumableCategoryController.selected}"/>
+                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="Delete Selected Category" actionListener="#{consumableCategoryController.destroy}" 
+                                             update="msg datalist" disabled="#{empty consumableCategoryController.selected}"/>
                         </f:facet>
                     </p:dataTable>
                 </p:panel>
