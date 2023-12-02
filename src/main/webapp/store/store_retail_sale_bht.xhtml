@@ -83,7 +83,11 @@
                                 <div class="row mt-3">
                                     <div class="col-md-5">
 
-                                        <p:panel id="gpDetail" header="Patient Details">
+                                        <p:panel id="gpDetail" >
+                                            <f:facet name="header">
+                                                <i class="fa fa-user-circle" aria-hidden="true"/>
+                                                <p:outputLabel value="Patient Details" class="mx-2" ></p:outputLabel>
+                                            </f:facet>
                                             <h:panelGrid class="w-100">
                                                 <in:bhtDetail admission="#{storeSaleBhtController.patientEncounter}"/> 
                                             </h:panelGrid>
@@ -95,7 +99,8 @@
                                         <h:panelGrid class="w-100">
                                             <p:panel class="mb-2">
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="Add Medicines or Devices" ></p:outputLabel>
+                                                    <i class="fa fa-plus" aria-hidden="true"/>
+                                                    <p:outputLabel value="Add Items" class="mx-2" ></p:outputLabel>
                                                 </f:facet>
                                                 <div class="d-flex justify-content-between">
                                                     <div>
@@ -169,7 +174,8 @@
                                         <h:panelGrid class="w-100"> 
                                             <p:panel>
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="Bill Items" ></p:outputLabel>
+                                                    <i class="fa fa-list-alt" aria-hidden="true"/>
+                                                    <p:outputLabel value="Bill Items" class="mx-2" ></p:outputLabel>
                                                 </f:facet>
                                                 <p:dataTable id="tblBillItem" value="#{storeSaleBhtController.preBill.billItems}"
                                                              var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
@@ -231,14 +237,14 @@
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
-                        <div class="nonPrintBlock" >
+                        <div class="nonPrintBlock gap-3 d-flex justify-content-end" >
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue Bill" ajax="false" action="#{storeSaleBhtController.newSaleBill()}" ></p:commandButton>
 
                         </div>
-                        <div >
+                        <div class="mt-2">
                             <h:panelGroup   id="gpBillPreview"> 
                                 <st:issueBill bill="#{storeSaleBhtController.printBill}"/>
                             </h:panelGroup>

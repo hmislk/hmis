@@ -344,7 +344,8 @@ public class StoreSaleBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+//        System.out.println("Items  = " + items);
+//        System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -377,8 +378,8 @@ public class StoreSaleBhtController implements Serializable {
         }
         items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        System.out.println("Items = " + items);
-        System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+//        System.out.println("Items = " + items);
+//        System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
