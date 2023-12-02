@@ -34,7 +34,7 @@
 
 
                     <div class="row">
-                        <div class="col-md-6 p-1" >
+                        <div class="col-6" >
                             <common:patient_details patient="#{collectingCentreBillController.searchedPatient}"/>
 
                             <h:panelGroup id="panelIx" >
@@ -195,11 +195,15 @@
                                         <h:outputText styleClass="pi pi-calendar-plus" />
                                         <h:outputText value="Appointments" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <div class="row">
-
-                                        <p:calendar id="calS" mode="inline" value="#{collectingCentreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
-                                            <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
-                                        </p:calendar>
+                                    <div class="row mb-2">
+                                        <div class="col-5">
+                                            <p:outputLabel class="mt-1" value="Date for appointment"></p:outputLabel>
+                                        </div>
+                                        <div class="col-7">
+                                            <p:calendar id="calS" value="#{collectingCentreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" size="47" >
+                                                <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
+                                            </p:calendar>
+                                        </div>
                                     </div>  
 
                                     <div class="row my-1">
@@ -233,7 +237,7 @@
 
                         </div>
 
-                        <div class="col-md-6 p-1" >
+                        <div class="col-6" >
                             <p:panel class="w-100 form">
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
@@ -282,8 +286,8 @@
 
                                     </div>
 
-                                    <div class="col-md-3 mt-2">
-                                        <p:outputLabel value="Collecting Centre"></p:outputLabel>
+                                    <div class="col-md-3">
+                                        <p:outputLabel class="mt-1" value="Collecting Centre"></p:outputLabel>
                                     </div>
                                     <div class="col-md-9">
                                         <p:autoComplete converter="deal" value="#{collectingCentreBillController.collectingCentre}" 
@@ -378,12 +382,6 @@
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-md-3">
-                                        <p:outputLabel value="Comments"></p:outputLabel>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment" class="w-100 mb-1"/>
-                                    </div>
-                                    <div class="col-md-3">
                                         <h:panelGroup>
                                             <p:outputLabel value="Referring Doctor"></p:outputLabel>
                                             <p:commandLink id="btnAddNewDoc" 
@@ -430,7 +428,7 @@
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-md-3">
-                                        <p:outputLabel value="Refferal Institution"></p:outputLabel>
+                                        <p:outputLabel value="Referring Institution"></p:outputLabel>
                                     </div>
                                     <div class="col-md-9">
                                         <p:autoComplete forceSelection="true" id="cmdIns" 
@@ -447,6 +445,12 @@
                                                 #{refi.institutionType}
                                             </p:column>
                                         </p:autoComplete>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Comments"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment" class="w-100 mb-1"/>
                                     </div>
                                 </div>
                             </p:panel>
