@@ -267,6 +267,10 @@
                             </p:panel>
 
                             <p:panel class="my-1">
+                                <f:facet name="header" >
+                                    <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
+                                    <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
+                                </f:facet>
                                 <h:panelGrid columns="2" class="w-100 ">
                                     <p:dataTable emptyMessage="No Book"  id="tblAgentBooks" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
                                         <p:column>
@@ -411,11 +415,6 @@
                                         <h:outputText id="netTotalVat" value="#{collectingCentreBillController.vat}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <h:outputText value="Tendered" ></h:outputText>
-                                        <p:inputText autocomplete="off"  id="paid" value="#{collectingCentreBillController.strTenderedValue}" >
-                                            <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
-                                            <p:ajax event="keyup" process="netTotal paid" update="balance netTotal" listener="#{opdBillController.calTotals()}"/>
-                                        </p:inputText>
                                         <h:outputText  value="Balance " ></h:outputText>
                                         <h:outputText id="balance" value="#{collectingCentreBillController.cashBalance}" >
                                             <f:convertNumber pattern="#,##0.00" />
