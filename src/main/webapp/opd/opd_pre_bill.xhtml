@@ -260,7 +260,7 @@
                             </div>
                             <div class="col-md-6" >
 
-                                <p:panel class="m-1">
+                                <p:panel class="m-1" id="paymentDetails">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
@@ -301,47 +301,8 @@
                                         </div>
                                         
                                     </div>
-                                    <h:panelGroup 
-                                        id="paymentDetails"  >
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                            <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-
-                                    <div class="row my-1" >
+                                    
+                                    <div class="row my-1 mt-2" >
                                         <div class="col-md-8" >
                                             <p:inputText 
                                                 value="#{opdBillController.comment}" 
