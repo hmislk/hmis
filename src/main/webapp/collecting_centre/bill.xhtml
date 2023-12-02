@@ -24,6 +24,7 @@
 
         <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
             <h:form id="form">
+                <p:growl id="msg" ></p:growl>
 
                 <p:panel  >
                     <f:facet name="header" rendered="#{!collectingCentreBillController.printPreview}">
@@ -71,13 +72,21 @@
                                             </p:autoComplete>
                                         </div>
                                         <div class="col-md-2" >
+                                            <h:panelGrid id="txtQty">
+                                                <h:inputText autocomplete="off" 
+                                                             rendered="#{collectingCentreBillController.currentBillItem.item.requestForQuentity}"
+                                                             value="#{collectingCentreBillController.currentBillItem.qty}" >
+                                                </h:inputText>
+                                            </h:panelGrid>
                                             <p:commandButton 
                                                 id="btnAddIx"
                                                 value="Add" 
                                                 icon="fa fa-plus" 
                                                 action="#{collectingCentreBillController.addToBill()}"  
-                                                class=" mx-1 ui-button-success" >
-                                                <f:ajax execute="acIx btnAddIx panelBillItems :#{p:resolveFirstComponentWithId('acColl',view).clientId}" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd" />
+                                                class=" mx-1 ui-button-success" 
+                                                process="txtQty acIx btnAddIx panelBillItems :#{p:resolveFirstComponentWithId('acColl',view).clientId}"
+                                                update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
                                         </div>
@@ -232,19 +241,48 @@
                                 </f:facet>
 
                                 <div class="row">
-                                    <div class="col-md-12" style="justify-content: space-between">
-                                        <p:spacer width="300"></p:spacer>
-                                        <p:commandButton  value="Settle" action="#{collectingCentreBillController.settleBill}" ajax="false" class="ui-button-success mx-1">
+                                    <div class="col-md-12 mb-2 d-flex justify-content-end">
+                                        <p:commandButton  
+                                            value="Settle" 
+                                            icon="fa fa-check"
+                                            action="#{collectingCentreBillController.settleBill}" 
+                                            ajax="false" 
+                                            class="ui-button-success ">
                                         </p:commandButton>
-                                        <p:commandButton value="New Bill" ajax="false" actionListener="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" action="/collecting_centre/bill" class="ui-button-warning mx-1" >
+                                        <p:commandButton 
+                                            value="New Bill" 
+                                            icon="fa fa-plus" 
+                                            ajax="false" 
+                                            actionListener="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" 
+                                            action="/collecting_centre/bill" 
+                                            class="ui-button-warning mx-1" >
                                         </p:commandButton>
-                                        <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" class="m-1">
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            value="Lookup" 
+                                            ajax="false"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning" 
+                                            action="#{patientController.navigateToSearchPatients()}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            value="Profile" 
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            class="ui-button-warning mx-1 " 
+                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            >
+                                            <f:setPropertyActionListener 
+                                                value="#{collectingCentreBillController.searchedPatient}" 
+                                                target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:focus id="focusIx" for="acIx" />
 
                                     </div>
 
-                                    <div class="col-md-3">
+                                    <div class="col-md-3 mt-2">
                                         <p:outputLabel value="Collecting Centre"></p:outputLabel>
                                     </div>
                                     <div class="col-md-9">
@@ -271,8 +309,41 @@
                                     <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
                                     <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
                                 </f:facet>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:inputText value="#{collectingCentreBillController.referralId}" class="w-100 mb-1">
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel id="ballance" value="Balance" class="my-1"  />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1"  id="ballance2" value="#{collectingCentreBillController.collectingCentre.ballance}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel   id="ballance3" value="Max Credit Limit" class="my-1"/>    
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1" id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:outputLabel id="ballance5" value="Credit Limit"  class="my-1" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h:outputLabel class="my-1" id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
+                                            <f:convertNumber  pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
                                 <h:panelGrid columns="2" class="w-100 ">
-                                    <p:dataTable emptyMessage="No Book"  id="tblAgentBooks" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
+                                    <p:dataTable class="mt-2" emptyMessage="No Book"  id="tblAgentBooks" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
                                         <p:column>
                                             <f:facet name="header">
                                                 <p:outputLabel value="S.R.N." />
@@ -292,6 +363,7 @@
                                             </p:outputLabel>
                                         </p:column>
                                     </p:dataTable>
+
                                 </h:panelGrid>
 
                             </p:panel>
@@ -304,90 +376,79 @@
                                     <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
                                     <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                 </f:facet>
-                                <h:panelGrid columns="2" class="w-100">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Comments"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment" class="w-100 mb-1"/>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h:panelGroup>
+                                            <p:outputLabel value="Referring Doctor"></p:outputLabel>
+                                            <p:commandLink id="btnAddNewDoc" 
+                                                           type="button"  
+                                                           value="&nbsp;(+)" 
+                                                           oncomplete="PF('dlg').show();" 
+                                                           actionListener="#{doctorController.prepareAdd}" 
+                                                           process="btnAddNewDoc" 
+                                                           update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
 
-                                    <p:outputLabel value="Referance No" class="mr-4"></p:outputLabel>
-                                    <p:inputText value="#{collectingCentreBillController.referralId}" class="w-100 mb-1">
-                                    </p:inputText>
+                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
+                                                <h:panelGrid columns="2" style="margin-bottom:10px">  
+                                                    <h:outputText id="lblNameD" value="Name" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
+                                                    <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
+                                                    <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
+                                                    <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
+                                                    <h:outputText id="lblAddressD" value="Address" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
+                                                    <h:outputText value="Speciality" ></h:outputText>                                    
+                                                    <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
+                                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </h:selectOneListbox>
+                                                    <h:outputText id="lblRegD" value="Registration" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
+                                                    <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                    <p:outputLabel value="Comments"></p:outputLabel>
-                                    <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment" class="w-100 mb-1"/>
+                                                    <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                    </p:commandButton>
 
-                                    <h:panelGroup>
-                                        <p:outputLabel value="Referring Doctor"></p:outputLabel>
-                                        <p:commandLink id="btnAddNewDoc" 
-                                                       type="button"  
-                                                       value="&nbsp;(+)" 
-                                                       oncomplete="PF('dlg').show();" 
-                                                       actionListener="#{doctorController.prepareAdd}" 
-                                                       process="btnAddNewDoc" 
-                                                       update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                                </h:panelGrid>  
 
-                                        <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
-                                            <h:panelGrid columns="2" style="margin-bottom:10px">  
-                                                <h:outputText id="lblNameD" value="Name" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
-                                                <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
-                                                <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
-                                                <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
-                                                <h:outputText id="lblAddressD" value="Address" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                                <h:outputText value="Speciality" ></h:outputText>                                    
-                                                <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
-                                                    <f:selectItem itemLabel="Please select a speciality"/>
-                                                    <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </h:selectOneListbox>
-                                                <h:outputText id="lblRegD" value="Registration" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
-                                                <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
-                                                <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
+                                            </p:dialog> 
 
-                                                <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                                                </p:commandButton>
-
-                                            </h:panelGrid>  
-
-                                        </p:dialog> 
-
-                                    </h:panelGroup>
-
-                                    <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="59" class="mb-1">
-                                    </p:autoComplete>
-    <!--                                    <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
-                                    <p:spacer/>-->
-                                    <p:outputLabel value="Refferal Institution"></p:outputLabel>
-                                    <p:autoComplete forceSelection="true" id="cmdIns" 
-                                                    value="#{collectingCentreBillController.referredByInstitution}" 
-                                                    completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                    itemLabel="#{refi.name}" itemValue="#{refi}" size="59" class="mb-1">
-                                        <p:column headerText="Name">
-                                            #{refi.name}
-                                        </p:column>
-                                        <p:column headerText="Code">
-                                            #{refi.institutionCode}
-                                        </p:column>
-                                        <p:column headerText="Institution Type">
-                                            #{refi.institutionType}
-                                        </p:column>
-                                    </p:autoComplete>
-                                    <h:outputLabel id="ballance" value="Ballance" class="my-1"  />
-                                    <h:outputLabel class="my-1"  id="ballance2" value="#{collectingCentreBillController.collectingCentre.ballance}">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel   id="ballance3" value="Max Credit Limit" class="my-1"/>                                          
-                                    <h:outputLabel class="my-1" id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel id="ballance5" value="Credit Limit"  class="my-1" />
-                                    <h:outputLabel class="my-1" id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </h:panelGrid>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="59" class="mb-1">
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <p:outputLabel value="Refferal Institution"></p:outputLabel>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p:autoComplete forceSelection="true" id="cmdIns" 
+                                                        value="#{collectingCentreBillController.referredByInstitution}" 
+                                                        completeMethod="#{institutionController.completeIns}" var="refi" 
+                                                        itemLabel="#{refi.name}" itemValue="#{refi}" size="59" class="mb-1">
+                                            <p:column headerText="Name">
+                                                #{refi.name}
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                #{refi.institutionCode}
+                                            </p:column>
+                                            <p:column headerText="Institution Type">
+                                                #{refi.institutionType}
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
                             </p:panel>
 
                             <div class="row m-1" >
@@ -396,30 +457,48 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <h:panelGrid 
-                                        columns="2" 
-                                        class="w-100 h5" >
-                                        <h:outputText value="Total" ></h:outputText >
-                                        <h:outputText id="tot" value="#{collectingCentreBillController.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Discount" ></h:outputText>
-                                        <h:outputText id="dis" value="#{collectingCentreBillController.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="Net Total" ></h:outputText>
-                                        <h:outputText id="netTotal" value="#{collectingCentreBillController.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="VAT" ></h:outputText>
-                                        <h:outputText id="netTotalVat" value="#{collectingCentreBillController.vat}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText  value="Balance " ></h:outputText>
-                                        <h:outputText id="balance" value="#{collectingCentreBillController.cashBalance}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </h:panelGrid>
+                                    <div class="row h5">
+                                        <div class="col-md-3">
+                                            <h:outputText value="Total" ></h:outputText >
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="tot" value="#{collectingCentreBillController.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="Discount" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="dis" value="#{collectingCentreBillController.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="Net Total" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="netTotal" value="#{collectingCentreBillController.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="VAT" ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="netTotalVat" value="#{collectingCentreBillController.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText  value="Balance " ></h:outputText>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <h:outputText id="balance" value="#{collectingCentreBillController.cashBalance}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </div>
+                                    </div>
                                 </p:panel>
                             </div>
                         </div>
