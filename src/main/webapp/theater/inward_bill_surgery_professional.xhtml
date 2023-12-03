@@ -14,37 +14,37 @@
 
                 <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
                     <f:facet name="header" >
-                                <h:outputLabel value="Add Professional Fee"></h:outputLabel>
-                            </f:facet>
-                    
-                        <h:outputLabel value="Type Surgery Name or BHT : "/>
-                                <p:autoComplete forceSelection="true" 
-                                                value="#{inwardProfessionalBillController.batchBill}" 
-                                                completeMethod="#{billController.completeSurgeryBills}"
-                                                var="apt2" 
-                                                itemLabel="#{apt2.patientEncounter.bhtNo}"
-                                                itemValue="#{apt2}" 
-                                                size="30"  
-                                                style="width: 400px;">
-                                    <p:column>
-                                        #{apt2.procedure.item.name}
-                                    </p:column>
-                                    <p:column>
-                                        #{apt2.patientEncounter.bhtNo}
-                                    </p:column>
-                                    <p:column>
-                                        #{apt2.patientEncounter.patient.person.name}      
-                                    </p:column>
-                                </p:autoComplete>  
-                        <p:commandButton 
-                            id="btnSelect" 
-                            value="Select" 
-                            ajax="false"/>
-                          
+                        <h:outputText styleClass="fas fa-briefcase" />
+                        <h:outputLabel value="Add Professional Fee" class="m-2"></h:outputLabel>
+                    </f:facet>
+
+                    <h:outputLabel value="Type Surgery Name or BHT : "/>
+                    <p:autoComplete forceSelection="true" 
+                                    value="#{inwardProfessionalBillController.batchBill}" 
+                                    completeMethod="#{billController.completeSurgeryBills}"
+                                    var="apt2" 
+                                    itemLabel="#{apt2.patientEncounter.bhtNo}"
+                                    itemValue="#{apt2}" 
+                                    size="40" required="true" class="m-2" requiredMessage="Please enter patient details">
+                        <p:column>
+                            #{apt2.procedure.item.name}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.bhtNo}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.patient.person.name}      
+                        </p:column>
+                    </p:autoComplete>  
+                    <p:commandButton 
+                        id="btnSelect" 
+                        value="Select" 
+                        ajax="false"/>
+
                 </p:panel>
-                    
-                
-                
+
+
+
                 <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}"  >
                     <f:facet name="header" >              
                         <div class="d-flex justify-content-between align-items-center">
@@ -53,13 +53,13 @@
                         </div>
 
                     </f:facet>
-                    
-                    
+
+
 
                     <div class="row">
                         <div class="col-md-6">
                             <p:panel header="Patient Details">
-                                
+
 
                                 <br/>
                                 <h:panelGroup id="panSearch1">
