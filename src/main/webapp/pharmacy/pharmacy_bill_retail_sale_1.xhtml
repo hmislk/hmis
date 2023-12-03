@@ -35,15 +35,16 @@
 
                         <p:panel class="w-100">
                             <f:facet name="header" >
-                                <h:outputText styleClass="fas fa-store" />
+                                <h:outputText styleClass="fas fa-mortar-pestle" />
                                 <h:outputLabel value="Pharmacy Retail Bill(Sale 2)" class="mx-4"></h:outputLabel>
                             </f:facet>
 
                             <div class="row">
                                 <div class="col-6" >
                                     <p:panel header="Add Items" class="my-1">
+
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-store" />
+                                            <h:outputText styleClass="fas fa-cube" />
                                             <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
                                         </f:facet>
 
@@ -135,7 +136,11 @@
                                     </p:panel>
 
 
-                                    <p:panel header="Bill Items" id="pBis" class="w-100">
+                                    <p:panel id="pBis">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fas fa-money-bill" />
+                                            <h:outputLabel value="Bill Items" class="mx-4"></h:outputLabel>
+                                        </f:facet>
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController1.preBill.billItems}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
@@ -191,7 +196,11 @@
 
 
 
-                                    <p:panel header="Availability" id="tabI" class="my-1" >
+                                    <p:panel id="tabI" class="my-1 ">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fas fa-check-circle" />
+                                            <h:outputLabel value="Availability" class="mx-4"></h:outputLabel>
+                                        </f:facet>
 
                                         <p:panelGrid columns="2" style="width: 100%;vertical-align: top;" styleClass="alignTop">
 
@@ -291,7 +300,11 @@
                                     <h:panelGrid id="sale" columns="1" class="alignTop" >
                                         <div class="row">
                                             <div class="col">
-                                                <p:panel header="Payment Details" class="w-100">
+                                                <p:panel class="w-100">
+                                                    <f:facet name="header" >
+                                                        <h:outputText styleClass="fas fa-money-bill-wave" />
+                                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                                    </f:facet>
                                                     <div class="row" >
                                                         <div class="d-flex col">
                                                             <p:selectOneMenu   id="pay"
@@ -386,7 +399,11 @@
 
                                                 </p:panel>
 
-                                                <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
+                                                <p:panel  id="pBillDetails" class="my-1">
+                                                    <f:facet name="header" >
+                                                        <h:outputText styleClass="fas fa-list" />
+                                                        <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                                    </f:facet>
                                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                                         <h:outputLabel value="Total" ></h:outputLabel>
                                                         <h:outputLabel class="mx-4 my-1" id="total" value="#{pharmacySaleController1.preBill.total}" >
@@ -413,7 +430,11 @@
 
                                                 </p:panel>
 
-                                                <p:panel header="Client Detail"> 
+                                                <p:panel  class="my-1"> 
+                                                    <f:facet name="header" >
+                                                        <h:outputText styleClass="fas fa-user-tie" />
+                                                        <h:outputLabel value="Client Details" class="mx-4"></h:outputLabel>
+                                                    </f:facet> 
 
 
                                                     <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacySaleController1.patientSearchTab}" >
