@@ -190,6 +190,7 @@
                                         </p:dataTable>
                                     </p:panel>
 
+
                                     <p:panel header="Availability" id="tabI" >
 
                                         <p:panelGrid columns="2" style="width: 100%;vertical-align: top;" styleClass="alignTop">
@@ -222,7 +223,9 @@
                                                 </b>
                                                 <h:outputLabel value=" for these tiems." escape="false" ></h:outputLabel>
 
+
                                             </h:panelGroup>
+
 
                                             <p:dataTable id="lstReplaceableBatch" 
                                                          selection="#{pharmacySaleController2.replacableStock}"
@@ -357,7 +360,9 @@
                                                             </h:panelGroup>
                                                         </div>
                                                     </div>
+
                                                     <h:panelGrid columns="2" class="my-2">
+
                                                         <p:outputLabel value="Referring Doctor" ></p:outputLabel>
                                                         <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController2.preBill.referredBy}" 
                                                                         completeMethod="#{doctorController.completeDoctor}" 
@@ -370,6 +375,7 @@
                                                         <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController2.comment}" id="comment"/>
                                                     </h:panelGrid>
                                                 </p:panel>
+
                                                 <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
                                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                                         <h:outputLabel value="Total" ></h:outputLabel>
@@ -378,10 +384,12 @@
                                                         </h:outputLabel>
                                                         <h:outputLabel value="Discount" ></h:outputLabel>
                                                         <h:outputLabel class="mx-4 my-1" id="dis" value="#{pharmacySaleController2.preBill.discount}" >
+
                                                             <f:convertNumber pattern="#,##0.00" />
                                                             <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
                                                         </h:outputLabel>
                                                         <h:outputLabel value="Net Total" ></h:outputLabel>
+
                                                         <h:outputLabel class="mx-4 my-1" id="netTotal" value="#{pharmacySaleController2.preBill.netTotal}" >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
@@ -394,6 +402,7 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </h:panelGrid>
+
 
                                                 </p:panel>
 
@@ -462,10 +471,12 @@
                                                         </p:tab>
 
                                                         <p:tab id="tabCredit" title="Credit"  >
+
                                                             <h:panelGrid columns="3" >
                                                                 <p:outputLabel value="Credit Company" ></p:outputLabel>
                                                                 <p:autoComplete  style="width: 400px;" 
                                                                                  class="mx-4"
+
                                                                                  forceSelection="true" 
                                                                                  value="#{pharmacySaleController2.toInstitution}" 
                                                                                  id="scCreditCompany"
@@ -489,7 +500,9 @@
                                                                                  var="mys" 
                                                                                  itemLabel="#{mys.person.nameWithTitle}" 
                                                                                  itemValue="#{mys}"
+
                                                                                  class="mx-4"
+
                                                                                  disabled="#{pharmacySaleController2.paymentMethod ne 'Credit' }">
                                                                     <p:column headerText="Name" >
                                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
@@ -510,7 +523,11 @@
 
                                                                 </p:autoComplete>
                                                                 <p:watermark for="scStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
+
                                                             </h:panelGrid>
+
+                                                           
+
                                                         </p:tab>
                                                     </p:tabView>
                                                 </p:panel>
