@@ -483,9 +483,8 @@
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
-                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
+                    <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
                                  value="Add Surgeries"
-                                 actionListener="#{surgeryBillController.makeNull}"
                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
                     <p:submenu label="Service" rendered="#{webUserController.hasPrivilege('TheatreBilling')}">
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
