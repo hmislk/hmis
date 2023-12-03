@@ -60,6 +60,7 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    
     @Transient
     String age;
     @Transient
@@ -98,7 +99,7 @@ public class Patient implements Serializable {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
-    @Size(max = 10)
+    @Size(max = 15)
     String phn;
 
     private Boolean hasAnAccount;
@@ -168,10 +169,12 @@ public class Patient implements Serializable {
     }
 
     @PostLoad
+    @Deprecated
     private void onLoad() {
         calAgeFromDob();
     }
 
+    @Deprecated
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -213,6 +216,7 @@ public class Patient implements Serializable {
         ageInDays = (long) period.getDays();
     }
 
+    @Deprecated
     public void calAgeFromDob(Date billedDate) {
         this.billedDate = billedDate;
         ageOnBilledDate = "";
@@ -259,6 +263,7 @@ public class Patient implements Serializable {
         return serialVersionUID;
     }
 
+    @Deprecated
     public String getAge() {
         calAgeFromDob();
         return age;
@@ -279,11 +284,13 @@ public class Patient implements Serializable {
         return formatted;
     }
 
+    @Deprecated
     public int getAgeDays() {
         calAgeFromDob();
         return ageDays;
     }
 
+    @Deprecated
     public int getAgeYears() {
         calAgeFromDob();
         return ageYears;
