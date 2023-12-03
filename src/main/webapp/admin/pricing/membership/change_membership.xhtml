@@ -49,8 +49,8 @@
                                         <p:column headerText="Name" sortBy="#{p.person.nameWithTitle}" filterBy="#{p.person.nameWithTitle}">
                                             <p:outputLabel value="#{p.person.nameWithTitle}" ></p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Age" sortBy="#{p.age}" filterBy="#{p.age}">
-                                            <p:outputLabel value="#{p.age}" ></p:outputLabel>
+                                        <p:column headerText="Age" sortBy="#{p.person.ageAsString}" filterBy="#{p.person.ageAsString}">
+                                            <p:outputLabel value="#{p.person.ageAsString}" ></p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Sex" sortBy="#{p.person.sex}" filterBy="#{p.person.sex}">
                                             <p:outputLabel value="#{p.person.sex}" ></p:outputLabel>
