@@ -213,31 +213,6 @@ public class BillBhtController implements Serializable {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
 
-    
-
-    public InwardBeanController getInwardBean() {
-        return inwardBean;
-    }
-
-    public void setInwardBean(InwardBeanController inwardBean) {
-        this.inwardBean = inwardBean;
-    }
-
-    public Date getDate() {
-        if (date == null) {
-            date = new Date();
-        }
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public void selectSurgeryBillListener() {
-        patientEncounter = getBatchBill().getPatientEncounter();
-    }
-
     public String navigateToAddServicesFromAdmissionProfile() {
         BillBhtController date = null;
         total = 0.0;
