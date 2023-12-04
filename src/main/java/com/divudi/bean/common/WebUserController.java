@@ -229,7 +229,13 @@ public class WebUserController implements Serializable {
         if (qry != null) {
             a = getFacade().findByJpql("select c from WebUser c"
                     + " where c.retired=false"
-                    + " and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%')"
+                    + " and  ("
+                    + " c.webUserPerson.name like '%" + qry.toUpperCase() + "%'"
+                    + " or "
+                    + " c.code like '%" + qry.toUpperCase() + "%'"
+                    + " or"
+                    + " c.name like '%" + qry.toUpperCase() + "%'"
+                    + " )"
                     + " order by c.webUserPerson.name");
         }
         if (a == null) {
