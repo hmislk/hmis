@@ -150,17 +150,23 @@
                                     <f:setPropertyActionListener value="#{patientController.current}"
                                                                  target="#{searchController.patient}" ></f:setPropertyActionListener>
                                 </p:commandButton>
-                               
-                                <p:commandButton value="Inward Appointments"
-                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                                 ajax="false"
-                                                 styleClass="mx-2">
-                                </p:commandButton>
-                                <p:commandButton value="Receive Deposits"
-                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
-                                                 ajax="false"
-                                                 styleClass="mx-2">
 
+                                <p:commandButton 
+                                    value="Inward Appointments"
+                                    action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                    ajax="false"
+                                    styleClass="mx-2">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Receive Deposits"
+                                    action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
+                                    ajax="false"
+                                    styleClass="mx-2"></p:commandButton>
+                                <p:commandButton 
+                                    value="Clinical Dashboard"
+                                    action="#{patientController.toEmrPatientProfile}"
+                                    ajax="false"
+                                    styleClass="mx-2">
                                 </p:commandButton>
                                 <p:messages ></p:messages>
                             </div>
