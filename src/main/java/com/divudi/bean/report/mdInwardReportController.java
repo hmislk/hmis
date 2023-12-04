@@ -84,7 +84,7 @@ public class mdInwardReportController implements Serializable {
     List<BillFee> billfees;
     Bill bill;
     ReportKeyWord reportKeyWord;
-    private int managaeInwardReportIndex;
+    private int managaeInwardReportIndex = -1;
     
     ////////////////////////////////////
     @EJB
