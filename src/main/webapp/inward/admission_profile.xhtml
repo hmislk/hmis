@@ -142,17 +142,16 @@
                         
 
                     </div>
-                    <div class="col-4">
+                    <div class="col-4"> 
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
-                            <div class="d-grid gap-3">
+                            <div class="d-grid gap-3"> 
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
                                     action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
-                                    
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
@@ -160,16 +159,14 @@
                                     />
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Add Professional Fees" 
+                                    value="Add Services" 
                                     icon="fa fa-briefcase"
-                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
-                                    
+                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{billBhtController.batchBill.patientEncounter}"
                                     />
-                                    
                                 </p:commandButton>
                             </div>
                                 
