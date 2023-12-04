@@ -12,123 +12,144 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                             <h:outputText styleClass="fas fa-search" />
+                             <h:outputLabel value="Opd Bill Search " class="mx-4"/>                          
                         </f:facet>
-                        
+
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" 
-                                                value="#{opdBillController.fromDate}" 
-                                                navigator="false" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                styleClass="dateTimePicker" 
-                                                class="w-100" 
-                                                inputStyleClass="form-control">      
-                                    </p:calendar>
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                    <h:panelGroup id="searchKeyword">
+                                        <h:outputLabel value="From Date"/>
+                                        <p:calendar id="fromDate" 
+                                                    value="#{opdBillController.fromDate}" 
+                                                    navigator="false" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    styleClass="dateTimePicker" 
+                                                    class="w-100" 
+                                                    inputStyleClass="form-control">      
+                                        </p:calendar>
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
-                                    </p:calendar>
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                        <h:outputLabel value="To Date"/>
+                                        <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
+                                        </p:calendar>
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                    <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
-                                                 value="#{searchController.searchKeyword.billNo}" />
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                        <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
+                                                     value="#{searchController.searchKeyword.billNo}" />
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                    <p:inputText placeholder="Name" class="form-control"
-                                                 autocomplete="off" 
-                                                 value="#{searchController.searchKeyword.patientName}" />
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                        <p:inputText placeholder="Name" class="form-control"
+                                                     autocomplete="off" 
+                                                     value="#{searchController.searchKeyword.patientName}" />
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                    <p:inputText placeholder="Phone" class="form-control"
-                                                 autocomplete="off"  
-                                                 value="#{searchController.searchKeyword.patientPhone}" />
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                        <p:inputText placeholder="Phone" class="form-control"
+                                                     autocomplete="off"  
+                                                     value="#{searchController.searchKeyword.patientPhone}" />
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
-                                    <p:inputText placeholder="Total" class="form-control"
-                                                 autocomplete="off"  
-                                                 value="#{searchController.searchKeyword.total}"
-                                                 />
-                                    <p:spacer height="10" width="5" ></p:spacer>
-
-
-                                    <p:inputText placeholder="Net Total"   class="form-control"
-                                                 autocomplete="off"
-                                                 value="#{searchController.searchKeyword.netTotal}"/>
-                                    <p:spacer height="10" width="5" ></p:spacer>
+                                        <p:inputText placeholder="Total" class="form-control"
+                                                     autocomplete="off"  
+                                                     value="#{searchController.searchKeyword.total}"
+                                                     />
+                                        <p:spacer height="10" width="5" ></p:spacer>
 
 
+                                        <p:inputText placeholder="Net Total"   class="form-control"
+                                                     autocomplete="off"
+                                                     value="#{searchController.searchKeyword.netTotal}"/>
+                                        <p:spacer height="10" width="5" ></p:spacer>
+                                        <hr/>
+                                        <h:outputLabel value="From Institution" class="w-100"/>
+                                        <p:selectOneMenu 
+                                            id="cmdFromInstitution"
+                                            value="#{searchController.fromInstitution}"
+                                            filter="true"
+                                            placeholder="Ordering Institution"
+                                            style="width: 230px"
+                                            >
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
+                                            <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                           var="i"
+                                                           itemLabel="#{i.name}"
+                                                           itemValue="#{i}" ></f:selectItems>
+                                            <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="From Department"/><br/>
+                                        <p:selectOneMenu 
+                                            id="cmdFromDepartment"
+                                            placeholder="Ordering Department"
+                                            value="#{searchController.fromDepartment}" 
+                                            filter="true"
+                                            class="w-100">
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
+                                            <f:selectItems value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
+                                                           var="d"
+                                                           itemLabel="#{d.name}"
+                                                           itemValue="#{d}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="To Institution"/>
+                                        <p:selectOneMenu 
+                                            id="cmdToInstitution"
+                                            value="#{searchController.toInstitution}"
+                                            filter="true"
+                                            placeholder="To Institution"
+                                            style="width: 230px"
+                                            >
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
+                                            <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                           var="i"
+                                                           itemLabel="#{i.name}"
+                                                           itemValue="#{i}" ></f:selectItems>
+                                            <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="To Department"/><br/>
+                                        <p:selectOneMenu 
+                                            id="cmdToDepartment"
+                                            placeholder="Peforming Department"
+                                            value="#{searchController.toDepartment}" 
+                                            filter="true"
+                                            class="w-100">
+                                            <f:selectItem itemLabel="All" ></f:selectItem>
+                                            <f:selectItems value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
+                                                           var="d"
+                                                           itemLabel="#{d.name}"
+                                                           itemValue="#{d}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
 
+                                    </h:panelGroup>
 
-                                    <div class="d-grid gap-2">
+                                    <div class="d-grid gap-2 mt-2">
                                         <p:commandButton 
+                                            icon="fas fa-search"
                                             id="btnSearch" 
                                             ajax="false" 
                                             value="Search" 
-                                            action="#{searchController.searchOpdBills()}" class="w-100"/>
-                                        <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
+                                            class="ui-button-success"
+                                            action="#{searchController.searchOpdBills()}" />
+                                        <p:commandButton 
+                                            id="btnExcel"
+                                            icon="fas fa-download"
+                                            ajax="false" 
+                                            value="Download"
+                                            class="w-100">
                                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnClear"
+                                            icon="fas fa-broom"
+                                            value="Clear" 
+                                            class="my-2 ui-button-warning" 
+                                            action="#{searchController.clearOpdBillSearchData}"
+                                            process="btnClear"
+                                            update="searchKeyword"/>
                                     </div>
-
-
-                                    <p:selectOneMenu 
-                                        id="cmdFromInstitution"
-                                        value="#{reportController.fromInstitution}"
-                                        filter="true"
-                                        placeholder="Ordering Institution"
-                                        >
-                                        <f:selectItem itemLabel="All" ></f:selectItem>
-                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                       var="i"
-                                                       itemLabel="#{i.name}"
-                                                       itemValue="#{i}" ></f:selectItems>
-                                        <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
-                                    </p:selectOneMenu>
-
-                                    <p:selectOneMenu 
-                                        id="cmdFromDepartment"
-                                        placeholder="Ordering Department"
-                                        value="#{reportController.fromDepartment}" 
-                                        filter="true">
-                                        <f:selectItem itemLabel="All" ></f:selectItem>
-                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                                       var="d"
-                                                       itemLabel="#{d.name}"
-                                                       itemValue="#{d}" ></f:selectItems>
-                                    </p:selectOneMenu>
-                                    
-                                    <p:selectOneMenu 
-                                        id="cmdToInstitution"
-                                        value="#{reportController.fromInstitution}"
-                                        filter="true"
-                                        placeholder="Peforming Institution"
-                                        >
-                                        <f:selectItem itemLabel="All" ></f:selectItem>
-                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                       var="i"
-                                                       itemLabel="#{i.name}"
-                                                       itemValue="#{i}" ></f:selectItems>
-                                        <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
-                                    </p:selectOneMenu>
-
-                                    <p:selectOneMenu 
-                                        id="cmdToDepartment"
-                                        placeholder="Peforming Department"
-                                        value="#{reportController.fromDepartment}" 
-                                        filter="true">
-                                        <f:selectItem itemLabel="All" ></f:selectItem>
-                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                                       var="d"
-                                                       itemLabel="#{d.name}"
-                                                       itemValue="#{d}" ></f:selectItems>
-                                    </p:selectOneMenu>
-
-
 
                                 </div>
                             </div>
@@ -141,6 +162,7 @@
                                              rows ="10"
                                              rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
+                                             paginatorPosition="bottom"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >

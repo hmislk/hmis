@@ -183,26 +183,7 @@
                     <p:menuitem ajax="false" 
                                 action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
                                 value="Analytics" icon="fa fa-list-alt"></p:menuitem>
-                    <p:submenu 
-                        id="smOpdManager"
-                        label="Manager"
-                        rendered="#{webUserController.hasPrivilege('Opd')}"
-                        icon="fa fa-user-tie">
-
-                        <p:menuitem 
-                            ajax="false" 
-                            action="/opd_search_bill_change_payment" 
-                            actionListener="#{searchController.makeListNull}"  
-                            value="Change Payment Method" 
-                            icon="fa fa-exchange-alt"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
-                        <p:menuitem 
-                            ajax="false" 
-                            action="/opd_bill_awaiting_cancellation" 
-                            value="Bill Awaiting For Cancel" 
-                            icon="fa fa-times-circle"
-                            rendered="#{webUserController.hasPrivilege('OpdCancel')}" ></p:menuitem>
-                    </p:submenu>
+                    
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
@@ -502,9 +483,8 @@
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
-                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
+                    <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
                                  value="Add Surgeries"
-                                 actionListener="#{surgeryBillController.makeNull}"
                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
                     <p:submenu label="Service" rendered="#{webUserController.hasPrivilege('TheatreBilling')}">
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"

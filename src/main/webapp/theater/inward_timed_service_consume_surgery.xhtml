@@ -8,40 +8,53 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://java.sun.com/jsf/composite/inward">
     <ui:define name="content">
-        <h:panelGroup >
-            <h:form  >
-                <p:panel >
-                    <f:facet name="header" >
-                        <h:panelGrid columns="10"  >
-                            <h:outputLabel value="Inward Timed Service" />
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}"   />
 
-                        </h:panelGrid>
-                    </f:facet>    
-                    <div class="row">
+        <h:form  >
+            <h:panelGroup rendered="#{inwardTimedItemController.batchBill eq null}">
+                <p:panel class="col-12 ">
+                    <f:facet name="header">
+                        <h:outputLabel value="Inward Timed Service" />
+                    </f:facet>
+
+                    <h:outputLabel value="Type Surgery Name or BHT : "/>
+                    <p:autoComplete 
+                        forceSelection="true"
+                        value="#{inwardTimedItemController.batchBill}" 
+                        completeMethod="#{billController.completeSurgeryBills}"
+                        var="apt2" 
+                        itemLabel="#{apt2.patientEncounter.bhtNo}"
+                        itemValue="#{apt2}" 
+                        widgetVar="aPt2"
+                        size="30"  
+                        class="mx-3"
+                        style="width: 400px;">
+
+                        <p:column headerText="BHT NO">
+                            <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
+                        </p:column>
+                        <p:column headerText="Surgery Name">
+                            <h:outputLabel value="#{apt2.procedure.item.name}"/> 
+                        </p:column>
+                        <p:column headerText="Patient Name" >
+                            <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
+                            </h:outputLabel>
+                        </p:column>
+                    </p:autoComplete>
+                    <p:commandButton value="Select" ajax="false" ></p:commandButton>
+                </p:panel>
+
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{inwardTimedItemController.batchBill ne null}">
+                <p:panel>
+                    <f:facet name="header" class="row ">  
+                        <p:outputLabel value="Inward Timed Service" />
+                        <p:commandButton ajax="false" value="Clear" class="mx-5" action="#{inwardTimedItemController.makeNull}"   />
+                    </f:facet>
+                    <div class="row mb-2" >
                         <div class="col-md-6">
                             <p:panel header="Patient Details">
-                                <h:outputLabel value="Type Surgery Name or BHT : "/>&nbsp;
-                                <p:autoComplete forceSelection="true"
-                                                value="#{inwardTimedItemController.batchBill}" 
-                                                completeMethod="#{billController.completeSurgeryBills}"
-                                                var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
-                                            listener="#{inwardTimedItemController.selectSurgeryBillListener()}"/>
-                                    <p:column headerText="Surgery Name">
-                                        <h:outputLabel value="#{apt2.procedure.item.name}"/> 
-                                    </p:column>
-                                    <p:column headerText="BHT NO">
-                                        <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
-                                    </p:column>
-                                    <p:column headerText="Patient Name" >
-                                        <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>  
 
-                                <br/>
                                 <h:panelGroup id="panSearch1">
                                     <in:bhtDetail admission="#{inwardTimedItemController.batchBill.patientEncounter}"/>
                                 </h:panelGroup>    <br/>                                
@@ -50,14 +63,21 @@
                                 </h:panelGroup>
                             </p:panel>
                         </div>
-                        <div class="col-md-6 p-1">
+                        <div class="col-md-6 ">
                             <p:panel header="Timed Item">
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Timed Item"/>
-                                    <p:autoComplete  forceSelection="false" 
-                                                     value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.item}"
-                                                     completeMethod="#{timedItemController.completeTimedService}" var="ix" 
-                                                     itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  class="w-100">                              
+                                    <p:autoComplete  
+                                        forceSelection="false" 
+                                        value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.item}"
+                                        completeMethod="#{timedItemController.completeTimedService}" 
+                                        var="ix" 
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        size="30"  
+                                        
+                                        class="mb-1">   
+
                                         <p:column>
                                             #{ix.name}
                                         </p:column>
@@ -66,18 +86,19 @@
                                         </p:column>
                                     </p:autoComplete>
 
-                                    <p:outputLabel value="StartTime:"/>
-                                    <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100">                             
+                                    <p:outputLabel value="Start Time "/>
+                                    <p:calendar 
+                                        id="startTime"  
+                                        value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        class="w-100 mb-2">                             
                                     </p:calendar>                                                                      
-
-
-                                    <p:commandButton value="Add Time Service" ajax="false"
-                                                     action="#{inwardTimedItemController.addTimedService()}"
-                                                     disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
-
-
-
+                                    <p:commandButton 
+                                        value="Add Time Service" 
+                                        ajax="false"
+                                        action="#{inwardTimedItemController.addTimedService()}"
+                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" 
+                                        class="mx-3 mt-2"/>
                                 </h:panelGrid>   
 
                             </p:panel> 
@@ -140,14 +161,8 @@
                             </p:column>
                         </p:dataTable>
                     </p:panel>
-
-
-
                 </p:panel>
-            </h:form>
-
-        </h:panelGroup>
-
+            </h:panelGroup>
+        </h:form>
     </ui:define>
-
 </ui:composition>

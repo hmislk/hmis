@@ -183,6 +183,8 @@ public class SearchController implements Serializable {
     List<Bill> prescreptionBills;
     private Department fromDepartment;
     private Department toDepartment;
+    private Institution fromInstitution;
+    private Institution toInstitution;
     private int manageListIndex;
     private Patient patient;
 
@@ -872,6 +874,22 @@ public class SearchController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
     }
 
     public class billsWithbill {
@@ -5671,10 +5689,12 @@ public class SearchController implements Serializable {
 
     public void searchOpdBills() {
         Date startTime = new Date();
-        createTableByKeyword(BillType.OpdBill, institution, department);
+        createTableByKeyword(BillType.OpdBill, institution, department,fromInstitution,fromDepartment,toInstitution,toDepartment);
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+   
 
     public void listOpdBatcuBills() {
         Date startTime = new Date();
@@ -5952,7 +5972,15 @@ public class SearchController implements Serializable {
     }
 
     @Deprecated
-    public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
+    public void createTableByKeyword(BillType billType, Institution ins, Department dep){
+        
+        createTableByKeyword(billType,ins,dep,null,null,null,null);
+        
+    }
+    
+    
+    public void createTableByKeyword(BillType billType, Institution ins, Department dep,Institution fromIns, Department fromDep,Institution toIns, Department toDep ) {
+        System.out.println(toDep);
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -5972,7 +6000,27 @@ public class SearchController implements Serializable {
             sql += " and b.department=:dep ";
             temMap.put("dep", dep);
         }
-
+        
+        if (toDep != null) {
+            sql += " and b.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+        
+        if (fromDep != null) {
+            sql += " and b.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+        
+        if (fromIns != null) {
+            sql += " and b.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+        
+        if (toIns != null) {
+            sql += " and b.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+        
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -6007,6 +6055,19 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+    
+     public void clearOpdBillSearchData(){
+        getSearchKeyword().setPatientName(null);
+        getSearchKeyword().setPatientPhone(null);
+        getSearchKeyword().setTotal(null);
+        getSearchKeyword().setNetTotal(null);
+        getSearchKeyword().setBillNo(null);
+        fromInstitution=null;
+        fromDepartment=null;
+        toInstitution=null;
+        toDepartment=null;
+        
     }
 
     public void fillAllBills() {
@@ -8274,7 +8335,9 @@ public class SearchController implements Serializable {
             this.adjusetedVal = adjusetedVal;
         }
     }
-
+    
+    
+    
     public Date getToDate() {
         if (toDate == null) {
             toDate = getCommonFunctions().getEndOfDay(new Date());
@@ -8744,5 +8807,7 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
+    
+    
 
 }

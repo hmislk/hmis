@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -97,6 +98,9 @@ public class PharmacySaleController1 implements Serializable {
 
     @Inject
     SessionController sessionController;
+    
+    @Inject
+    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -1271,15 +1275,27 @@ public class PharmacySaleController1 implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBillWithPay() {
+        Date startTime = new Date();
+
+        Date fromDate = null;
+        Date toDate = null;
 
         editingQty = null;
 
+        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
+            if (getPaymentScheme() == null) {
+                UtilityController.addErrorMessage("Please select Payment Scheme");
+                return;
+            }
+        }
+
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Scheme");
+            UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
 
         if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
 
@@ -1294,13 +1310,13 @@ public class PharmacySaleController1 implements Serializable {
                 }
             }
         }
-
+        Patient pt = savePatient();
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
                 return;
             }
-            if (toStaff != null && toInstitution != null) {
+            if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return;
             }
@@ -1309,6 +1325,39 @@ public class PharmacySaleController1 implements Serializable {
                     UtilityController.addErrorMessage("No enough walfare credit.");
                     return;
                 }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            if (pt == null) {
+                UtilityController.addErrorMessage("Need a Peation");
+                return;
+            }
+
+            if (pt.getHasAnAccount() == false) {
+                UtilityController.addErrorMessage("Peation have not account");
+                return;
+            }
+
+            double runningBalance;
+            double creditLimit;
+            double availableValue;
+
+            if (pt.getRunningBalance() != null) {
+                runningBalance = pt.getRunningBalance();
+            } else {
+                runningBalance = 0;
+            }
+
+            if (pt.getCreditLimit() != null) {
+                creditLimit = pt.getCreditLimit();
+            } else {
+                creditLimit = 0;
+            }
+
+            availableValue = runningBalance + creditLimit;
+
+            if (availableValue < netTotal) {
+                UtilityController.addErrorMessage("No sufficient balance");
+                return;
             }
         }
 
@@ -1321,7 +1370,6 @@ public class PharmacySaleController1 implements Serializable {
 
         calculateAllRates();
 
-        Patient pt = savePatient();
         getPreBill().setPaidAmount(getPreBill().getTotal());
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
@@ -1344,10 +1392,24 @@ public class PharmacySaleController1 implements Serializable {
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             UtilityController.addSuccessMessage("User Credit Updated");
+        } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            double runningBalance;
+            if (pt != null) {
+                if(pt.getRunningBalance()!=null){
+                 runningBalance=pt.getRunningBalance();
+                }else{
+                    runningBalance=0.0;
+                }
+                runningBalance+=netTotal;
+                pt.setRunningBalance(runningBalance);
+            }
+
         }
 
         resetAll();
+        
         billPreview = true;
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
 
     }
 

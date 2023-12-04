@@ -107,9 +107,24 @@ public class SurgeryBillController implements Serializable {
 
         updateBillFee(bf);
     }
+    
+    public String navigateToAddSurgeriesFromAdmissionProfile(){
+        PatientEncounter pe1 = getBatchBill().getPatientEncounter();
+        makeNull();
+        getBatchBill().setPatientEncounter(pe1);
+        
+        return "/theater/inward_bill_surgery";
+    }
+    
+    public String navigateToAddSurgeriesFromMenu(){
+        makeNull();
+        return "/theater/inward_bill_surgery";
+    }
 
     @Inject
     private BillBeanController billBean;
+    
+    
 
     private void updateBillFee(BillFee bf) {
         getBillFeeFacade().edit(bf);
@@ -773,6 +788,8 @@ public class SurgeryBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
+    
+    
 
     
 }
