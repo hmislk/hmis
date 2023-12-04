@@ -7,7 +7,7 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
-        <title>Patient Search</title>
+        <title>Person Search</title>
         <h:outputStylesheet library="css" name="styles.css" ></h:outputStylesheet>
     </h:head>
     <h:body>
@@ -41,7 +41,6 @@
                                 </div>
 
                                 <div class="mb-3">
-
                                     <h:outputLabel class="form form-label" value="Patient Code" ></h:outputLabel>
                                     <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPatientCode}"></p:inputText>
                                 </div>
@@ -73,42 +72,45 @@
                                         id="btnSearch" 
                                         styleClass="btn btn-primary ms-2"
                                         ajax="false"
-                                        action="#{patientController.searchPatient()}" />
+                                        action="#{patientController.searchPersons}" />
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
-                                    <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
-                                                     action="#{patientController.clearSearchDetails()}" />
+                                    <p:commandButton 
+                                        value="Clear" 
+                                        styleClass="btn btn-danger ms-2"
+                                        action="#{patientController.clearSearchDetails()}" />
                                 </div>
 
-                                <p:dataTable value="#{patientController.searchedPatients}" var="p" 
-                                             class="w-100 table table-sm table-striped"
-                                             paginatorAlwaysVisible="false"
-                                             paginator="true"
-                                             rows="10"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             rowsPerPageTemplate="5,10,20"
-                                             >
+                                <p:dataTable 
+                                    value="#{patientController.searchedPersons}"
+                                    var="p" 
+                                    class="w-100 table table-sm table-striped"
+                                    paginatorAlwaysVisible="false"
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,20"
+                                    >
                                     <p:column headerText="Name" >
-                                        <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
-
-
-                                        <p:outputLabel rendered="#{p.person.sex == 'Male'}">
+                                        <p:outputLabel value="#{p.name}" ></p:outputLabel>
+                                        <p:outputLabel rendered="#{p.sex == 'Male'}">
                                             <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
                                         </p:outputLabel>
-
-
-                                        <p:outputLabel rendered="#{p.person.sex == 'Female'}">
+                                        <p:outputLabel rendered="#{p.sex == 'Female'}">
                                             <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
                                         </p:outputLabel>
                                         <br/>
-
-                                        <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
+                                        <p:outputLabel value="#{p.ageAsString}"></p:outputLabel>
                                         <br/>
-                                        <p:outputLabel value="#{p.person.phone}">
+                                        <p:outputLabel value="#{p.phone}">
                                         </p:outputLabel>
                                         <br/>
-<!--                                            <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
-                                        <br/>-->
-                                        <p:outputLabel value="#{p.person.address}"></p:outputLabel>
+                                        <p:outputLabel value="#{p.mobile}">
+                                        </p:outputLabel>
+                                        <br/>
+                                        <p:outputLabel 
+                                            rendered="#{not empty p.phone and p.phone ne ''}"></p:outputLabel>
+                                        <br/>
+                                        <p:outputLabel value="#{p.address}"></p:outputLabel>
                                         <br/>
                                     </p:column>
 
@@ -120,21 +122,21 @@
                                                     value="Profile" 
                                                     action="#{patientController.toEmrPatientProfile()}" 
                                                     ajax="false" styleClass="mx-2 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.currentPerson}" />
                                                 </p:commandButton>
+                                                
                                                 <p:commandButton 
                                                     value="OPD Visit" 
                                                     action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.currentPerson}" />
                                                 </p:commandButton>
-
 
                                                 <p:commandButton value="Data Entry" 
                                                                  action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.currentPerson}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.currentPerson}" />
                                                 </p:commandButton>
 
                                             </div>

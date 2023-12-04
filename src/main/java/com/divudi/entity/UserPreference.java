@@ -196,6 +196,10 @@ public class UserPreference implements Serializable {
     private String longTimeFormat;
     private String shortTimeFormat;
     private String encrptionKey;
+    
+    private String nameRegex;
+    private String mobileRegex;
+    private String emailRegex;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
@@ -1026,6 +1030,30 @@ public class UserPreference implements Serializable {
 
     public void setOpdItemListingStrategy(ItemListingStrategy opdItemListingStrategy) {
         this.opdItemListingStrategy = opdItemListingStrategy;
+    }
+
+    public String getNameRegex() {
+        return nameRegex;
+    }
+
+    public void setNameRegex(String nameRegex) {
+        this.nameRegex = nameRegex;
+    }
+
+    public String getMobileRegex() {
+        return mobileRegex;
+    }
+
+    public void setMobileRegex(String mobileRegex) {
+        this.mobileRegex = mobileRegex;
+    }
+
+    public String getEmailRegex() {
+        return emailRegex;
+    }
+
+    public void setEmailRegex(String emailRegex) {
+        this.emailRegex = emailRegex;
     }
 
 }

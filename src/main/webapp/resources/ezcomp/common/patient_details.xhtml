@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,7 +15,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel class="my-1" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
+        <p:panel class="mb-1" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
             <p:growl id="msg"/>
             <f:facet name="header" >
                 <h:panelGroup id="headerFacet">
@@ -42,12 +43,11 @@
                                    update="gpPatient msg"
                                    >
                         <i class="fa fa-save"></i>
-                        
+
                     </p:commandLink>
-                    
+
                 </h:panelGroup>
             </f:facet>
-
             <h:panelGroup id="gpPatient" >
                 <div class="row">
                     <div class="col-md-3 p-1">
@@ -70,7 +70,13 @@
                             id="txtNewPtName" 
                             placeholder="Enter the Name of the patient"
                             value="#{cc.attrs.patient.person.name}"
-                            class="form-control" />
+                            validatorMessage="Please enter only letters and spaces."
+                            class="form-control" >
+                            <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                            </c:if>
+
+                        </p:inputText>
                     </div>
                 </div>
 
@@ -141,7 +147,12 @@
                             autocomplete="off" 
                             placeholder="Mobile Number"
                             value="#{cc.attrs.patient.person.mobile}"
-                            class="form-control" />
+                            class="form-control" 
+                            validatorMessage="Please enter valid Number">
+                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                            </c:if>
+                        </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
@@ -150,21 +161,30 @@
                             autocomplete="off" 
                             placeholder="Phone Number"
                             value="#{cc.attrs.patient.person.phone}"
-                            class="form-control" />
+                            class="form-control" validatorMessage="Please enter valid Number">
+                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                            </c:if>
+                        </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
                             disabled="#{!cc.attrs.patient.editingMode}"
                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                             value="#{cc.attrs.patient.person.email}"
-                            class="form-control">
+                            class="form-control"
+                            >
+                            <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                            </c:if>
+
                         </p:inputText>
                     </div>
                     <div class="col-md-3 p-1">
                         <p:inputText 
                             id="txtNic"
                             disabled="#{!cc.attrs.patient.editingMode}"
-                            placeholder="National ID No."
+                            placeholder="National ID Number"
                             value="#{cc.attrs.patient.person.nic}"
                             class="form-control"/>
                     </div>
@@ -202,6 +222,8 @@
                 <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
                 <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
                 <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
 
 
             </h:panelGroup>

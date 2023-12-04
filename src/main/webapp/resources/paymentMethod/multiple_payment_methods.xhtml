@@ -17,17 +17,17 @@
     <cc:implementation>
         <div class="col-12" >
             <p:dataTable class="w-100"
-                id="tblMultiplePayments"
-                value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
-                var="pm" >
-                <p:column headerText="Multiple Payments">
-                    <f:facet name="header" >
+                         id="tblMultiplePayments"
+                         value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
+                         var="pm" >
+                <p:column headerText="Multiple Payments" class="w-100">
+                    <f:facet name="header" class="d-flex justify-content-center" >
                         <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
-                        <p:commandButton value="Add Another" process="@this" update="tblMultiplePayments" action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" ></p:commandButton>
+                        <p:commandButton value="Add Another" class="mx-2" process="@this" update="tblMultiplePayments" action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" ></p:commandButton>
                     </f:facet>
                     <div class="row" >
 
-                        <div class="col-3" >
+                        <div class="col-4" >
 
                             <p:selectOneMenu   
                                 id="pay" 
@@ -44,34 +44,39 @@
                                         event="change"/>
                             </p:selectOneMenu>
                         </div>
-
-                        <h:panelGroup layout="block" class="col-9"  id="paymentDetails"  >
-
-                            <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
-                                <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" layout="block" class="row" >
-                                <pa:creditCard valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}"  layout="block" class="row" >
-                                <pa:ewallet valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}"  layout="block" class="row" >
-                                <pa:cheque valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
-                                <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
-                                <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
-                            </h:panelGroup>
-
-
-                        </h:panelGroup>
-
-
-
                     </div>
+
+                    <div class="row mt-2" >
+
+                        <div class="col-12" >
+
+                            <h:panelGroup layout="block" class="col-9"  id="paymentDetails"  >
+
+                                <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
+                                    <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" layout="block" class="row" >
+                                    <pa:creditCard valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}"  layout="block" class="row" >
+                                    <pa:ewallet valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}"  layout="block" class="row" >
+                                    <pa:cheque valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
+                                    <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
+                                    <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
+
+
+                            </h:panelGroup>
+
+                        </div></div>
+
+                 
 
                 </p:column>
             </p:dataTable>

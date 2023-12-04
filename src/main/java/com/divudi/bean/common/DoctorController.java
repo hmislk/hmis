@@ -231,11 +231,11 @@ public class DoctorController implements Serializable {
             return;
         }
         if (current.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            UtilityController.addErrorMessage("Please enter a doctor name");
             return;
         }
         if (current.getSpeciality() == null) {
-            UtilityController.addErrorMessage("Please Select Speciality.");
+            UtilityController.addErrorMessage("Please Select Speciality for Doctor");
             return;
         }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {

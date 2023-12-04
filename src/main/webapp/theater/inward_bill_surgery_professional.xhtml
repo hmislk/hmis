@@ -12,7 +12,40 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
 
-                <p:panel style="min-height: 600px; position:relative;"  >
+                <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fas fa-briefcase" />
+                        <h:outputLabel value="Add Professional Fee" class="m-2"></h:outputLabel>
+                    </f:facet>
+
+                    <h:outputLabel value="Type Surgery Name or BHT : "/>
+                    <p:autoComplete forceSelection="true" 
+                                    value="#{inwardProfessionalBillController.batchBill}" 
+                                    completeMethod="#{billController.completeSurgeryBills}"
+                                    var="apt2" 
+                                    itemLabel="#{apt2.patientEncounter.bhtNo}"
+                                    itemValue="#{apt2}" 
+                                    size="40" required="true" class="m-2" requiredMessage="Please enter patient details">
+                        <p:column>
+                            #{apt2.procedure.item.name}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.bhtNo}
+                        </p:column>
+                        <p:column>
+                            #{apt2.patientEncounter.patient.person.name}      
+                        </p:column>
+                    </p:autoComplete>  
+                    <p:commandButton 
+                        id="btnSelect" 
+                        value="Select" 
+                        ajax="false"/>
+
+                </p:panel>
+
+
+
+                <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}"  >
                     <f:facet name="header" >              
                         <div class="d-flex justify-content-between align-items-center">
                             <span>Surgery Professional (Theatre)</span>
@@ -21,28 +54,12 @@
 
                     </f:facet>
 
+
+
                     <div class="row">
                         <div class="col-md-6">
                             <p:panel header="Patient Details">
-                                <h:outputLabel value="Type Surgery Name or BHT : "/>
-                                <p:autoComplete forceSelection="true" 
-                                                value="#{inwardProfessionalBillController.batchBill}" 
-                                                completeMethod="#{billController.completeSurgeryBills}"
-                                                var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="@this" update="@all"
-                                            listener="#{inwardProfessionalBillController.selectBatchBillListener}"/>
-                                    <p:column headerText="Surgery Name">
-                                        <h:outputLabel value="#{apt2.procedure.item.name}"/> 
-                                    </p:column>
-                                    <p:column headerText="BHT NO">
-                                        <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
-                                    </p:column>
-                                    <p:column headerText="Patient Name" >
-                                        <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>  
+
 
                                 <br/>
                                 <h:panelGroup id="panSearch1">
@@ -52,26 +69,30 @@
                                     <in:surgeryDetail procedure="#{inwardProfessionalBillController.batchBill.procedure}"/>
                                 </h:panelGroup>
                             </p:panel>
-
+                            
+                            
+                        </div>
+                        <div class="col-md-6">
+                            
                             <h:panelGroup id="panelIx" >
 
 
                                 <p:panel id='pIxAdd' header="Professional Fee" style="min-height: 350px;"  >
-                                    <p:panelGrid columns="2" id="profPanel">
+                                    <h:panelGrid columns="2" id="profPanel">
                                         <h:outputLabel value="Perfomance"/>
-                                        <p:selectOneMenu  value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}" >
+                                        <p:selectOneMenu class="mx-4 my-1" style="width: 565px" value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}" >
                                             <f:selectItem itemLabel="Please select Perfomance"/>
                                             <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
                                         </p:selectOneMenu>
-                                        <h:outputLabel value="Discreption"/>
-                                        <p:inputText autocomplete="off" id="txtDes" value="#{inwardProfessionalBillController.proEncounterComponent.description}" ></p:inputText>
+                                        <h:outputLabel value="Description"/>
+                                        <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="txtDes" value="#{inwardProfessionalBillController.proEncounterComponent.description}" ></p:inputText>
 
                                         <h:outputText value="Speciality"/>
                                         <p:autoComplete    forceSelection="true" id="cmbSpe" 
                                                            value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}" 
                                                            completeMethod="#{specialityController.completeSpeciality}" var="sp" 
                                                            itemLabel="#{sp.name}" 
-                                                           itemValue="#{sp}" size="30"  style="width: 400px;">
+                                                           itemValue="#{sp}" size="70"  style="width: 400px;" class="mx-4 my-1">
                                             <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc pIxAdd" />
                                         </p:autoComplete>
 
@@ -80,14 +101,14 @@
                                         <p:autoComplete   forceSelection="true" id="cmbDoc" 
                                                           value="#{inwardProfessionalBillController.proEncounterComponent.billFee.staff}" 
                                                           completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
-                                                          itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
-                                                          style="width: 400px;">
+                                                          itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="70" 
+                                                          style="width: 400px;" class="mx-4 my-1">
                                             <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"  />
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Fee"/>
-                                        <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
-                                    </p:panelGrid><br/>
+                                        <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
+                                    </h:panelGrid><br/>
                                     <p:commandButton ajax="false" update="surgery"  
                                                      value="Add Professional Fee"  
                                                      action="#{inwardProfessionalBillController.addProfessionalFee()}"
@@ -96,26 +117,40 @@
                                 </p:panel>
 
                             </h:panelGroup>
+                            <h:panelGroup id="panelBillTotals" >
+
+                                <p:panel header="Bill Details" id="pBillDetails" class="w-100 my-1" >
+                                    <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel class="mx-4 my-1" id="tot" value="#{inwardProfessionalBillController.current.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>                                       
+                                    </h:panelGrid>
+
+                                </p:panel>
+                            </h:panelGroup>
+                            
+
                         </div>
-                        <div class="col-md-6">
-                            <h:panelGroup id="panelBillItems" >
+                    </div>
+                    <h:panelGroup id="panelBillItems" >
                                 <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
-                                    <p:column>
+                                    <p:column headerText="">
                                         <h:outputLabel value="#{c.id}"></h:outputLabel>
                                     </p:column>
-                                    <p:column>
+                                    <p:column headerText="Bill Id">
                                         <h:outputLabel value="#{c.billFee.id}"></h:outputLabel>
                                     </p:column>
-                                    <p:column>
+                                    <p:column headerText="Performance">
                                         <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
                                     </p:column>
-                                    <p:column>
+                                    <p:column headerText="Name">
                                         <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"></h:outputLabel>
                                     </p:column>
-                                    <p:column>
-                                        <p:inputText autocomplete="off" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
+                                    <p:column headerText="Fee">
+                                        <p:inputText autocomplete="off" style="width: 130px" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
                                     </p:column>
-                                    <p:column >
+                                    <p:column headerText="Date Added" >
                                         <h:outputLabel value="#{c.billFee.createdAt}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>                                                   
@@ -127,7 +162,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column >
+                                    <p:column headerText="Added By" >
                                         <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>     
                                         <br/>
                                         <h:panelGroup rendered="#{c.billFee.retired}" >
@@ -154,22 +189,6 @@
                                     </p:column>
                                 </p:dataTable>
                             </h:panelGroup>
-
-                            <h:panelGroup id="panelBillTotals" >
-
-                                <p:panel header="Bill Details" id="pBillDetails" class="w-100" >
-                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel id="tot" value="#{inwardProfessionalBillController.current.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                       
-                                    </p:panelGrid>
-
-                                </p:panel>
-                            </h:panelGroup>
-
-                        </div>
-                    </div>
 
                 </p:panel>
 

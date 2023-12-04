@@ -180,6 +180,7 @@ public class PatientController implements Serializable {
     Date toDate;
     private static final long serialVersionUID = 1L;
     private Patient current;
+    private Person currentPerson;
     Long patientId;
     private Person familyMember;
     private List<Person> familyMembers;
@@ -214,6 +215,7 @@ public class PatientController implements Serializable {
     private String searchBillId;
     private String searchSampleId;
     private List<Patient> searchedPatients;
+    private List<Person> searchedPersons;
 
     private Integer ageYearComponant;
     private Integer ageMonthComponant;
@@ -225,7 +227,7 @@ public class PatientController implements Serializable {
     private PaymentMethodData paymentMethodData;
 
     private boolean printPreview = false;
-    
+
     private List<PatientInvestigation> patientInvestigations;
 
     public void downloadAllPatients() {
@@ -269,7 +271,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -387,7 +389,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -561,6 +563,7 @@ public class PatientController implements Serializable {
         }
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
         return "/emr/patient_profile";
     }
 
@@ -710,11 +713,6 @@ public class PatientController implements Serializable {
         return "/opd/patient_refund_payment";
     }
 
-    public String navigateToPatientLabReports() {
-        setSearchedPatients(null);
-        return "/lab/patient_lab_reports";
-    }
-
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
@@ -728,11 +726,8 @@ public class PatientController implements Serializable {
 
         //System.err.println("Sql " + sql);
 //        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-       // patientInvestigations=
-
+        // patientInvestigations=
     }
-     
-     
 
     public void settlePatientDepositReceive() {
         Date startTime = new Date();
@@ -943,6 +938,12 @@ public class PatientController implements Serializable {
             searchBySample();
         } else if (searchPatientId != null && !searchPatientId.trim().equals("")) {
             searchByPatientId();
+        } else if (searchPhone == null && searchNic == null && searchName != null && !searchName.trim().equals("")) {
+            searchPatientByName();
+        } else if (searchName == null && searchNic == null && searchPhone != null && !searchPhone.trim().equals("")) {
+            searchPatientByPhone();
+        } else if (searchPhone == null && searchName == null && searchNic != null && !searchNic.trim().equals("")) {
+            searchPatientByNic();
         } else {
             searchPatientByDetails();
         }
@@ -1068,6 +1069,94 @@ public class PatientController implements Serializable {
         if (searchPhn != null && !searchPhn.trim().equals("")) {
             j += " and p.phn =:phn";
             m.put("phn", searchPhn);
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
+
+    public void searchPatientByName() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        if (searchName != null && !searchName.trim().equals("")) {
+            j += " and (p.person.name) like :name ";
+            m.put("name", "%" + searchName.toLowerCase() + "%");
+            atLeastOneCriteriaIsGiven = true;
+        }
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
+
+    public void searchPatientByNic() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        if (searchNic != null && !searchNic.trim().equals("")) {
+            j += " and p.person.nic =:nic";
+            m.put("nic", searchNic);
+            atLeastOneCriteriaIsGiven = true;
+        }
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+        searchedPatients = getFacade().findByJpql(j, m);
+
+    }
+
+    public void searchPatientByPhone() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false ";
+
+        if (searchPhone != null && !searchPhone.trim().equals("")) {
+            j += " and (p.person.phone =:phone or p.person.mobile =:phone)";
+            m.put("phone", searchPhone);
             atLeastOneCriteriaIsGiven = true;
         }
 
@@ -1402,8 +1491,10 @@ public class PatientController implements Serializable {
         this.commonFunctions = commonFunctions;
     }
 
+    @Deprecated
     private YearMonthDay yearMonthDay;
 
+    @Deprecated
     public YearMonthDay getYearMonthDay() {
         if (yearMonthDay == null) {
             yearMonthDay = new YearMonthDay();
@@ -1411,14 +1502,17 @@ public class PatientController implements Serializable {
         return yearMonthDay;
     }
 
+    @Deprecated
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
 
+    @Deprecated
     public void dateChangeListen() {
         getCurrent().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
     }
 
+    @Deprecated
     public void dobChangeListen() {
         yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
     }
@@ -1656,17 +1750,17 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
             return;
         }
-        
+
         if (p.getPerson() == null) {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
-        
+
         if (p.getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
-        
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -1674,7 +1768,7 @@ public class PatientController implements Serializable {
         } else {
             getPersonFacade().edit(p.getPerson());
         }
-        
+
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
@@ -2060,6 +2154,254 @@ public class PatientController implements Serializable {
 
     public PersonFacade getPersonFacade() {
         return personFacade;
+    }
+
+    public void searchPatients() {
+        int criteriaCount = countNonEmptyCriteria();
+
+        if (criteriaCount == 1) {
+            if (searchName != null && !searchName.isEmpty()) {
+                searchByName(searchName);
+            } else if (searchPhone != null && !searchPhone.isEmpty()) {
+                searchByPhone(searchPhone);
+            } else if (searchNic != null && !searchNic.isEmpty()) {
+                searchByNic(searchNic);
+            } else if (searchPhn != null && !searchPhn.isEmpty()) {
+                searchByPhn(searchPhn);
+            } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
+                searchByPatientCode(searchPatientCode);
+            } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
+                searchByPatientId(searchPatientId);
+            } else if (searchBillId != null && !searchBillId.isEmpty()) {
+                searchByBillId(searchBillId);
+            } else if (searchSampleId != null && !searchSampleId.isEmpty()) {
+                searchBySampleId(searchSampleId);
+            }
+        } else if (criteriaCount > 1) {
+            searchByMultipleCriteria();
+        }
+    }
+
+    public void searchPersons() {
+        int criteriaCount = countNonEmptyCriteria();
+
+        if (criteriaCount == 1) {
+            if (searchName != null && !searchName.isEmpty()) {
+                searchByName(searchName);
+            } else if (searchPhone != null && !searchPhone.isEmpty()) {
+                searchByPhone(searchPhone);
+            } else if (searchNic != null && !searchNic.isEmpty()) {
+                searchByNic(searchNic);
+            } else if (searchPhn != null && !searchPhn.isEmpty()) {
+                searchByPhn(searchPhn);
+            } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
+                searchByPatientCode(searchPatientCode);
+            } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
+                searchByPatientId(searchPatientId);
+            } else if (searchBillId != null && !searchBillId.isEmpty()) {
+                searchByBillId(searchBillId);
+            } else if (searchSampleId != null && !searchSampleId.isEmpty()) {
+                searchBySampleId(searchSampleId);
+            }
+        } else if (criteriaCount > 1) {
+            searchByMultipleCriteria();
+        }
+    }
+
+    private int countNonEmptyCriteria() {
+        int count = 0;
+        if (searchName != null && !searchName.isEmpty()) {
+            count++;
+        }
+        if (searchPhone != null && !searchPhone.isEmpty()) {
+            count++;
+        }
+        if (searchNic != null && !searchNic.isEmpty()) {
+            count++;
+        }
+        if (searchPhn != null && !searchPhn.isEmpty()) {
+            count++;
+        }
+        if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
+            count++;
+        }
+        if (searchPatientId != null && !searchPatientId.isEmpty()) {
+            count++;
+        }
+        if (searchBillId != null && !searchBillId.isEmpty()) {
+            count++;
+        }
+        if (searchSampleId != null && !searchSampleId.isEmpty()) {
+            count++;
+        }
+        return count;
+    }
+
+    
+    
+    
+    // Placeholder for the common search method
+    private void searchByMultipleCriteria() {
+        // Logic for searching by multiple criteria
+    }
+
+    // Placeholder methods for individual search criteria
+    private void searchByName(String name) {
+        String j1 = "Select p "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and p.name like :name";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("name", "%" + name + "%");
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+
+    public void searchByName1() {
+        Long start = new Date().getTime();
+        String j1 = "Select p.id "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and p.name like :name";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("name", "%" + searchName + "%");
+        List<Long> pids = personFacade.findLongList(j1, m1);
+
+        String j2 = "Select pt "
+                + " from Patient pt "
+                + " where pt.retired=:ret "
+                + " and pt.person.id in :ids";
+        Map m2 = new HashMap();
+        m2.put("ret", false);
+        m2.put("ids", pids);
+        searchedPatients = getFacade().findByJpql(j2, m2);
+        Long end = new Date().getTime();
+        Long duration = end - start;
+        System.out.println("Duration of Method 1 = " + duration + "ms");
+    }
+
+    public void searchByName2() {
+        Long start = new Date().getTime();
+        String j1 = "Select p "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and p.name like :name";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("name", "%" + searchName + "%");
+        List<Person> pids = personFacade.findByJpql(j1, m1);
+
+        String j2 = "Select pt "
+                + " from Patient pt "
+                + " where pt.retired=:ret "
+                + " and pt.person in :ps";
+        Map m2 = new HashMap();
+        m2.put("ret", false);
+        m2.put("ps", pids);
+        searchedPatients = getFacade().findByJpql(j2, m2);
+        Long end = new Date().getTime();
+        Long duration = end - start;
+        System.out.println("Duration of Method 2 = " + duration + "ms");
+    }
+
+    public void searchByName3() {
+        Long start = new Date().getTime();
+        String j1 = "Select p "
+                + " from Patient p"
+                + " where p.retired=:ret"
+                + " and p.person.name like :name";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("name", "%" + searchName + "%");
+        searchedPatients = getFacade().findByJpql(j1, m1);
+        Long end = new Date().getTime();
+        Long duration = end - start;
+        System.out.println("Duration of Method 3 = " + duration + "ms");
+    }
+
+    public void searchPersons1() {
+        Long start = new Date().getTime();
+        String j1 = "Select p "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and p.name like :name";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("name", "%" + searchName + "%");
+        List<Person> pids = personFacade.findByJpql(j1, m1);
+        Long end = new Date().getTime();
+        Long duration = end - start;
+        System.out.println("Duration of Persons = " + duration + "ms");
+    }
+
+    public void searchByNameOptimized() {
+        Long start = new Date().getTime();
+
+        // JPQL query with an explicit join
+        String jpql = "SELECT pt FROM Patient pt JOIN pt.person p "
+                + "WHERE pt.retired = :ret "
+                + "AND p.name LIKE :name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        parameters.put("name", "%" + searchName + "%");
+
+        // Execute the query and measure duration
+        searchedPatients = getFacade().findByJpql(jpql, parameters);
+
+        Long end = new Date().getTime();
+        Long duration = end - start;
+        System.out.println("Duration of Optimized Search = " + duration + "ms");
+    }
+
+    private void searchByPhone(String phone) {
+        String j1 = "Select p "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and (p.phone=:phone or p.mobile=:phone) ";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("phone", phone);
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+
+    private void searchByNic(String nic) {
+        String j1 = "Select p "
+                + " from Person p"
+                + " where p.retired=:ret"
+                + " and p.nic=:nic ";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("nic", nic);
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+
+    private void searchByPhn(String phn) {
+         String j1 = "Select p.person "
+                + " from Patient p"
+                + " where p.retired=:ret"
+                + " and p.phn=:phn ";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("phn", phn);
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+
+    private void searchByPatientCode(String patientCode) {
+        // Logic to search by patient code
+    }
+
+    private void searchByPatientId(String patientId) {
+        // Logic to search by patient ID
+    }
+
+    private void searchByBillId(String billId) {
+        // Logic to search by bill ID
+    }
+
+    private void searchBySampleId(String sampleId) {
+        // Logic to search by sample ID
     }
 
     public void setPersonFacade(PersonFacade personFacade) {
@@ -2459,6 +2801,37 @@ public class PatientController implements Serializable {
         this.patientInvestigationFacade = patientInvestigationFacade;
     }
 
+    public List<Person> getSearchedPersons() {
+        return searchedPersons;
+    }
+
+    public void setSearchedPersons(List<Person> searchedPersons) {
+        this.searchedPersons = searchedPersons;
+    }
+
+    public Person getCurrentPerson() {
+        return currentPerson;
+    }
+
+    public void setCurrentPerson(Person currentPerson) {
+        this.currentPerson = currentPerson;
+        if(currentPerson!=null){
+            current = findPatientOfAPerson(currentPerson);
+        }
+    }
+
+    
+    public Patient findPatientOfAPerson(Person p){
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p "
+                + " from Patient p "
+                + " where p.person=:person "
+                + " order by p.id";
+        m.put("person", p);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
     /**
      *
      * Set all Patients to null
