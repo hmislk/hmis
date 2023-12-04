@@ -27,12 +27,20 @@
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                                     styleClass="dateTimePicker" 
                                                     class="w-100" 
-                                                    inputStyleClass="form-control">      
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonController.currentDateTime}">      
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <h:outputLabel value="To Date"/>
-                                        <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
+                                        <p:calendar id="toDate"
+                                                    value="#{opdBillController.toDate}"
+                                                    navigator="false" 
+                                                    styleClass="dateTimePicker"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonController.currentDateTime}">                                                                              
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
