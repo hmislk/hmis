@@ -18,10 +18,11 @@
                     <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
                 </f:facet>
                 <div class="row" >
-                    <div class="col-8" >
+                    <div class="col-4" >
                         <common:patient_details patient="#{admissionController.current.patient}"/>
                         <common:admission_details admission="#{admissionController.current}" ></common:admission_details>
                     </div>
+                    
                     <div class="col-4" >
                         <p:panel header="Admission &amp; Billing">
                             <div class="d-grid gap-3">
@@ -138,6 +139,43 @@
                             </div>
                         </p:panel>
 
+                        
+
+                    </div>
+                    <div class="col-4">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Surgeries"></h:outputText>
+                            </f:facet>
+                            <div class="d-grid gap-3">
+                                <p:commandButton 
+                                    value="Add Surgeries" 
+                                    icon="fa fa-clock"
+                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
+                                    
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                    />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Add Professional Fees" 
+                                    icon="fa fa-briefcase"
+                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
+                                    
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                    />
+                                    
+                                </p:commandButton>
+                            </div>
+                                
+                            
+                        </p:panel>
+                        
                         <p:panel header="Pharmaceuticals &amp; Consumables">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
@@ -152,7 +190,7 @@
                                 </p:commandButton>
                             </div>
                         </p:panel>
-
+                        
                     </div>
                 </div>
             </p:panel>
