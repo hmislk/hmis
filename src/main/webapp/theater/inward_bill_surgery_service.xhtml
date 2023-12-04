@@ -16,7 +16,7 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">     
 
-                <p:panel header="Patient Details" rendered="#{billBhtController.batchBill eq null}">
+                <p:panel header="Patient Details" rendered="#{billBhtController.batchBill eq null and billBhtController.bills eq null}">
                     <div class="col-md-12">
                         <h:outputLabel value="Type Surgery Name or BHT : "/>
                         <p:autoComplete forceSelection="true" 
@@ -40,6 +40,31 @@
                         </p:autoComplete>  
                         <p:commandButton value="Select"
                                          id="btSelect"
+                                         ajax="falsse"
+                                         />
+                    </div>
+                </p:panel>
+
+                <p:panel header="Patient Details" rendered="#{billBhtController.batchBill eq null and billBhtController.bills ne null}">
+                    <div class="col-md-12">
+                        <h:outputLabel value="Type Surgery Name or BHT : "/>
+                        <p:selectOneMenu value="#{billBhtController.batchBill}" var="sx">
+                            <f:selectItem itemLabel="Select Surgery" ></f:selectItem>
+                            <f:selectItems value="#{billBhtController.bills}"  var="sb" itemLabel="#{sb.patientEncounter.bhtNo}"
+                                           itemValue="#{sb}" ></f:selectItems>
+                            <p:column headerText="Surgery Name">
+                                <h:outputLabel value="#{sx.procedure.item.name}"/> 
+                            </p:column>
+                            <p:column headerText="BHT NO">
+                                <h:outputLabel value="#{sx.patientEncounter.bhtNo}"/> 
+                            </p:column>
+                            <p:column headerText="Patient Name" >
+                                <h:outputLabel value="#{sx.patientEncounter.patient.person.name}">                                                
+                                </h:outputLabel>
+                            </p:column> 
+                        </p:selectOneMenu>
+                        <p:commandButton value="Select"
+                                         id="btSelectSingleEncounter"
                                          ajax="falsse"
                                          />
                     </div>
@@ -91,10 +116,10 @@
 
 
                                     <p:panel id='pIxAdd'>
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                                    <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
-                                                </f:facet>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Item Requests" class="mx-2"></h:outputLabel>
+                                        </f:facet>
                                         <p:focus  context="acIx"/>
                                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                                         value="#{billBhtController.currentBillItem.item}"

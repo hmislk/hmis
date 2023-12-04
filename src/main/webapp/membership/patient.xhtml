@@ -34,9 +34,9 @@
                                         action="#{patientController.saveSelectedAndToFamily()}"></p:commandButton>
 
                                     <p:commandButton   ajax="false"
-                                                      value="Clear For New Aptient" 
-                                                      
-                                                      action="#{patientController.prepareAddReg()}"></p:commandButton>
+                                                       value="Clear For New Aptient" 
+
+                                                       action="#{patientController.prepareAddReg()}"></p:commandButton>
 
 
                                 </p:panelGrid>
@@ -54,7 +54,7 @@
                                                     <f:ajax event="change" execute="@this" render="txtCode" listener="#{patientController.membershipChangeListner}" />
                                                 </p:selectOneMenu>
 
-                                                
+
                                                 <h:outputLabel value="Title"/>
                                                 <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}" style="width: 290px;" >
                                                     <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
@@ -69,7 +69,24 @@
                                                 <p:inputText id="txtCode" value="#{patientController.current.code}" maxlength="8" style="width: 280px;" disabled="#{!webUserController.hasPrivilege('Developers') and patientController.current.person.membershipScheme ne null}"/>
 
                                                 <h:outputLabel  value="PHN"/>
-                                                <p:inputText  id="phn"  autocomplete="off"  value="#{patientController.current.phn}" style="width: 280px;"/>
+                                                <h:panelGroup layout="block" class="input-group">
+                                                    <p:inputText
+                                                        id="txtPhn"
+                                                        value="#{patientController.current.phn}" class="form-control" />
+
+                                                    <span class="input-group-btn">
+                                                        <p:commandButton
+                                                            id="btnPhn"
+                                                            value="Generate" 
+                                                            process="btnPhn" 
+                                                            update="txtPhn" 
+                                                            action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                                            class="mx-1" />
+                                                    </span>
+                                                </h:panelGroup>
+
+
+
                                                 <h:outputLabel value="Sex"/>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
                                                 <p:selectOneMenu rendered="#{patientController.current.person ne null}" id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 290px;">
@@ -133,13 +150,13 @@
 
                                                 <h:outputLabel for="wu" value="Username"/>
                                                 <p:inputText required="true" id="wu"
-                                                    autocomplete="off" value="#{patientController.current.person.webUser.name}" style="width: 280px;"/>
-                                               
-<!--                                                <h:outputLabel value="Password"
-                                                               for="wp"/>
-                                                <p:inputText id="wp" required="true" autocomplete="off" value="#{patientController.password}" style="width: 280px;"/>
-                                               -->
-                                                
+                                                             autocomplete="off" value="#{patientController.current.person.webUser.name}" style="width: 280px;"/>
+
+                                                <!--                                                <h:outputLabel value="Password"
+                                                                                                               for="wp"/>
+                                                                                                <p:inputText id="wp" required="true" autocomplete="off" value="#{patientController.password}" style="width: 280px;"/>
+                                                -->
+
                                             </h:panelGrid>
 
                                         </h:panelGrid>

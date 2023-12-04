@@ -230,6 +230,15 @@ public class PatientController implements Serializable {
 
     private List<PatientInvestigation> patientInvestigations;
 
+    public void generateNewPhnAndAssignToCurrentPatient(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No patient selected");
+            return ;
+        }
+        current.setPhn(applicationController.createNewPersonalHealthNumber(sessionController.getInstitution()));
+    }
+    
+    
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
         String j = "select p "
@@ -323,7 +332,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient");
             return "";
         }
-        return "/emr/patient_photo_capture";
+        return "/emr/patient_photo_capture?faces-redirect=true;";
     }
 
     public StreamedContent getImage() throws IOException {
@@ -515,7 +524,7 @@ public class PatientController implements Serializable {
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
-        return "/emr/select_data_entry_form";
+        return "/emr/select_data_entry_form?faces-redirect=true;";
     }
 
     public void generateNewPhn() {
@@ -564,7 +573,7 @@ public class PatientController implements Serializable {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/emr/patient_profile";
+        return "/emr/patient_profile?faces-redirect=true;";
     }
 
     public String navigateToEmrEditPatient() {
@@ -572,7 +581,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/emr/patient";
+        return "/emr/patient?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -590,7 +599,7 @@ public class PatientController implements Serializable {
         }
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
-        return "/inward/inward_admission";
+        return "/inward/inward_admission?faces-redirect=true;";
     }
 
     public String navigateToInwardAppointmentFromPatientProfile() {
@@ -602,7 +611,7 @@ public class PatientController implements Serializable {
         appointmentController.setSearchedPatient(getCurrent());
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/inward/inward_appointment";
+        return "/inward/inward_appointment?faces-redirect=true;";
     }
 
     public String navigateToMedicalPakageBillingFromPatientProfile() {
@@ -616,7 +625,7 @@ public class PatientController implements Serializable {
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
 //        appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/opd_bill_package_medical";
+        return "/opd_bill_package_medical?faces-redirect=true;";
     }
 
     public String navigateToBillingForCashierFromPatientProfile() {
@@ -626,7 +635,7 @@ public class PatientController implements Serializable {
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
-        return "/opd/opd_pre_bill";
+        return "/opd/opd_pre_bill?faces-redirect=true;";
     }
 
     public String navigateToReceiveDepositsFromPatientProfile() {
@@ -639,7 +648,7 @@ public class PatientController implements Serializable {
         billItem = new BillItem();
         billItems = new ArrayList<>();
         printPreview = false;
-        return "/payments/patient/receive";
+        return "/payments/patient/receive?faces-redirect=true;";
     }
 
     public String navigateToCollectingCenterBillingFromPatientProfile() {
@@ -650,7 +659,7 @@ public class PatientController implements Serializable {
 
         collectingCentreBillController.prepareNewBill();
         collectingCentreBillController.setSearchedPatient(getCurrent());
-        return "/collecting_centre/bill";
+        return "/collecting_centre/bill?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientEdit() {
@@ -658,7 +667,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/patient_edit";
+        return "/opd/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientEditFromId() {
@@ -671,7 +680,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/patient_edit";
+        return "/opd/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToOpdBillFromOpdPatient() {
@@ -695,22 +704,22 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/opd_bill";
+        return "/opd/opd_bill?faces-redirect=true;";
     }
 
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
-        return "/opd/patient_search";
+        return "/opd/patient_search?faces-redirect=true;";
     }
 
     public String navigateToPatientAcceptPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_accept_payment";
+        return "/opd/patient_accept_payment?faces-redirect=true;";
     }
 
     public String navigateToPatientRefundPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_refund_payment";
+        return "/opd/patient_refund_payment?faces-redirect=true;";
     }
 
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
@@ -840,7 +849,7 @@ public class PatientController implements Serializable {
     }
 
     public String toSearchPatient() {
-        return "/emr/patient_search";
+        return "/emr/patient_search?faces-redirect=true;";
     }
 
     public void generateNewCode() {
@@ -853,7 +862,7 @@ public class PatientController implements Serializable {
 
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
-        return "/membership/change_membership";
+        return "/membership/change_membership?faces-redirect=true;";
     }
 
     public String toAddToQueueFromSearchPatients() {
@@ -862,7 +871,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/emr/patient_add_to_queue";
+        return "/emr/patient_add_to_queue?faces-redirect=true;";
     }
 
     public void patientSelected() {
@@ -1232,11 +1241,11 @@ public class PatientController implements Serializable {
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
             searchText = "";
-            return "/membership/add_family";
+            return "/membership/add_family?faces-redirect=true;";
         } else {
             families = fs;
             searchText = "";
-            return "/membership/search_family";
+            return "/membership/search_family?faces-redirect=true;";
         }
     }
 
@@ -1271,12 +1280,12 @@ public class PatientController implements Serializable {
     }
 
     public String toFamily() {
-        return "/membership/add_family";
+        return "/membership/add_family?faces-redirect=true;";
     }
 
     public String toNewPatient() {
         prepareAdd();
-        return "/membership/patient";
+        return "/membership/patient?faces-redirect=true;";
     }
 
     public void addNewMemberToFamily() {
@@ -1385,7 +1394,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/emr/patient_basic_info";
+        return "/emr/patient_basic_info?faces-redirect=true;";
     }
 
     public String toPatientFromSearchPatientsProfile() {
@@ -1394,7 +1403,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/emr/patient_profile";
+        return "/emr/patient_profile?faces-redirect=true;";
     }
 
     public void createPatientBarcode() {
@@ -1567,13 +1576,13 @@ public class PatientController implements Serializable {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/emr/patient";
+        return "/emr/patient?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
-        return "/opd/patient_edit";
+        return "/opd/patient_edit?faces-redirect=true;";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
@@ -1583,12 +1592,12 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/opd/patient_edit";
+        return "/opd/patient_edit?faces-redirect=true;";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/emr/patient_profile";
+        return "/emr/patient_profile?faces-redirect=true;";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
@@ -1693,7 +1702,7 @@ public class PatientController implements Serializable {
 
     public String saveSelectedAndToFamily() {
         saveSelected(current);
-        return "/membership/add_family";
+        return "/membership/add_family?faces-redirect=true;";
     }
 
     public String saveAndNavigateToOpdPatientProfile() {
@@ -1709,9 +1718,9 @@ public class PatientController implements Serializable {
         if ("".equals(current.getPerson().getName())) {
             JsfUtil.addErrorMessage("Nothing selected");
 
-            return "/opd/patient_search";
+            return "/opd/patient_search?faces-redirect=true;";
         }
-        return "/opd/patient";
+        return "/opd/patient?faces-redirect=true;";
 
     }
 
@@ -1778,6 +1787,10 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
+         if(p.getPhn()==null||p.getPhn().trim().equals("")){
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getEjbFacade().edit(p);
+        }
         p.setEditingMode(false);
     }
 
@@ -1839,6 +1852,10 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
+        }
+        if(getCurrent().getPhn()==null||getCurrent().getPhn().trim().equals("")){
+            getCurrent().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getEjbFacade().edit(getCurrent());
         }
 //        getPersonFacade().flush();
 //        getFacade().flush();

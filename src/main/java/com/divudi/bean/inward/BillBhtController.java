@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -50,6 +51,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -100,15 +102,17 @@ public class BillBhtController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    CommonFunctions commonFunctions;
     ///////////////////
     @Inject
     InwardBeanController inwardBean;
     @Inject
     private BillBeanController billBean;
     @EJB
-    CommonFunctions commonFunctions;
-    @EJB
     private BillNumberGenerator billNumberBean;
+    @Inject
+    BillController billController;
     ///////////////////
     private double total;
     private double discount;
@@ -133,6 +137,59 @@ public class BillBhtController implements Serializable {
     private Doctor referredBy;
     Date date;
 
+
+    public String navigateToAddServiceFromAdmissionProfile() {
+        List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
+        if (patientSurgeries == null) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+        if (patientSurgeries.isEmpty()) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+
+        makeNull();
+        if (patientSurgeries.size() == 1) {
+            bills = null;
+            setBatchBill(patientSurgeries.get(0));
+        } else if (patientSurgeries.size() > 1) {
+            setBatchBill(null);
+            bills = patientSurgeries;
+        }
+
+        return "/theater/inward_bill_surgery_service";
+    }
+
+    public String navigateToAddServiceFromMenu() {
+        makeNull();
+        return "/theater/inward_bill_surgery_service";
+    }
+    
+    public void makeNull() {
+        date = null;
+        total = 0.0;
+        discount = 0.0;
+        netTotal = 0.0;
+        cashPaid = 0.0;
+        cashBalance = 0.0;
+        creditCardRefNo = "";
+        chequeRefNo = "";
+        chequeBank = null;
+        currentBillItem = null;
+        index = 0;
+        patientEncounter = null;
+        paymentScheme = null;
+        lstBillComponents = null;
+        lstBillFees = null;
+        lstBillItems = null;
+        lstBillEntries = null;
+        printPreview = false;
+        batchBill = null;
+        bills = null;
+        referredBy = null;
+    }
+    
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -156,28 +213,29 @@ public class BillBhtController implements Serializable {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
 
-    public void makeNull() {
-        date = null;
-        total = 0.0;
-        discount = 0.0;
-        netTotal = 0.0;
-        cashPaid = 0.0;
-        cashBalance = 0.0;
-        creditCardRefNo = "";
-        chequeRefNo = "";
-        chequeBank = null;
-        currentBillItem = null;
-        index = 0;
-        patientEncounter = null;
-        paymentScheme = null;
-        lstBillComponents = null;
-        lstBillFees = null;
-        lstBillItems = null;
-        lstBillEntries = null;
-        printPreview = false;
-        batchBill = null;
-        bills = null;
-        referredBy = null;
+    
+
+    public InwardBeanController getInwardBean() {
+        return inwardBean;
+    }
+
+    public void setInwardBean(InwardBeanController inwardBean) {
+        this.inwardBean = inwardBean;
+    }
+
+    public Date getDate() {
+        if (date == null) {
+            date = new Date();
+        }
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void selectSurgeryBillListener() {
+        patientEncounter = getBatchBill().getPatientEncounter();
     }
 
     public String navigateToAddServicesFromAdmissionProfile() {
@@ -203,10 +261,10 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         return "/inward/inward_bill_service?faces-redirect=true";
     }
-    
+
     public String navigateToAddServicesFromMenu() {
         BillBhtController date = null;
-        patientEncounter=null;
+        patientEncounter = null;
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
@@ -1137,6 +1195,5 @@ public class BillBhtController implements Serializable {
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
     }
-
 
 }
