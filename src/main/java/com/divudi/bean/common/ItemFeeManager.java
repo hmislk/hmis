@@ -61,11 +61,10 @@ public class ItemFeeManager implements Serializable {
     List<Department> departments;
     List<Staff> staffs;
 
-    
-    public void fixIssueToReferralFees(){
+    public void fixIssueToReferralFees() {
         List<ItemFee> ifs = itemFeeFacade.findAll();
-        for(ItemFee f:ifs){
-            if(f.getFeeType()==FeeType.Issue){
+        for (ItemFee f : ifs) {
+            if (f.getFeeType() == FeeType.Issue) {
                 f.setFeeType(FeeType.Referral);
                 f.setInstitution(f.getItem().getInstitution());
                 f.setDepartment(f.getItem().getDepartment());
@@ -73,7 +72,7 @@ public class ItemFeeManager implements Serializable {
             }
         }
     }
-    
+
     public ItemFee getRemovingFee() {
         return removingFee;
     }
@@ -147,6 +146,13 @@ public class ItemFeeManager implements Serializable {
         return departmentFacade.findByJpql(jpql, m);
     }
 
+    public String navigateToItemFees() {
+        item = null;
+        itemFees = null;
+        removingFee = null;
+        return "/admin/pricing/manage_item_fees";
+    }
+
     public Item getItem() {
         return item;
     }
@@ -178,15 +184,15 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    public String toManageItemFees(){
-        if(item==null){
+    public String toManageItemFees() {
+        if (item == null) {
             JsfUtil.addErrorMessage("Nothing Selected to Edit");
             return "";
         }
         fillFees();
         return "/common/manage_item_fees";
     }
-    
+
     public List<ItemFee> fillFees(Item i) {
         String jpql;
         Map m = new HashMap();
@@ -224,27 +230,26 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         double t = 0.0;
-        double tf =0.0;
+        double tf = 0.0;
         for (ItemFee f : itemFees) {
             t += f.getFee();
-            tf+=f.getFfee();
+            tf += f.getFfee();
             itemFeeFacade.edit(f);
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(getItem());
     }
-    
-    
+
     public void updateTotal() {
         if (item == null) {
             return;
         }
         double t = 0.0;
-        double tf =0.0;
+        double tf = 0.0;
         for (ItemFee f : itemFees) {
             t += f.getFee();
-            tf+=f.getFfee();
+            tf += f.getFfee();
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
