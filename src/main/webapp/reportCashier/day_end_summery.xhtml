@@ -29,17 +29,21 @@
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name or User Code"/>
                         <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{channelReportController.webUser}" >
-                            <p:column>
-                                    #{w.webUserPerson.name}
-                                </p:column>
-                                <p:column>
-                                    #{w.webUserPerson.code}
-                                </p:column>
+                                         forceSelection="true"
+                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                         value="#{channelReportController.webUser}" >
+
+                            <p:column headerText="Username">
+                                #{w.name}
+                            </p:column>
+                            <p:column headerText="Name">
+                                #{w.webUserPerson.name}
+                            </p:column>
+                            <p:column headerText="Code">
+                                #{w.webUserPerson.code}
+                            </p:column>
                         </p:autoComplete>
-                         
+
                     </h:panelGrid>
                     <h:panelGrid columns="5">
                         <p:spacer width="70" height="1"/>
