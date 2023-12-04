@@ -84,6 +84,8 @@ public class mdInwardReportController implements Serializable {
     List<BillFee> billfees;
     Bill bill;
     ReportKeyWord reportKeyWord;
+    private int managaeInwardReportIndex;
+    
     ////////////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -122,6 +124,8 @@ public class mdInwardReportController implements Serializable {
 
         return PaymentMethod.values();
     }
+    
+    
 
     public void makeNull() {
         fromDate = null;
@@ -2930,6 +2934,14 @@ public class mdInwardReportController implements Serializable {
 
     public void setPurchaseValue(double purchaseValue) {
         this.purchaseValue = purchaseValue;
+    }
+
+    public int getManagaeInwardReportIndex() {
+        return managaeInwardReportIndex;
+    }
+
+    public void setManagaeInwardReportIndex(int managaeInwardReportIndex) {
+        this.managaeInwardReportIndex = managaeInwardReportIndex;
     }
 
     //619

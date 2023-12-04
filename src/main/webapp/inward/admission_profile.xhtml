@@ -161,14 +161,18 @@
                                     />
                                 </p:commandButton>
                                 <p:commandButton 
+
                                     ajax="false"
                                     value="Add Services for Surgeries" 
+
                                     icon="fa fa-briefcase"
                                     action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
+
                                         target="#{billBhtController.patientEncounter}"
+
                                     />
                                 </p:commandButton>
                             </div>

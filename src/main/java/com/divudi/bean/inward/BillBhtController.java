@@ -137,6 +137,7 @@ public class BillBhtController implements Serializable {
     private Doctor referredBy;
     Date date;
 
+
     public String navigateToAddServiceFromAdmissionProfile() {
         List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
         if (patientSurgeries == null) {
@@ -156,6 +157,7 @@ public class BillBhtController implements Serializable {
             setBatchBill(null);
             bills = patientSurgeries;
         }
+
         return "/theater/inward_bill_surgery_service";
     }
 
@@ -163,7 +165,7 @@ public class BillBhtController implements Serializable {
         makeNull();
         return "/theater/inward_bill_surgery_service";
     }
-
+    
     public void makeNull() {
         date = null;
         total = 0.0;
@@ -187,6 +189,31 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
     }
+    
+    public InwardBeanController getInwardBean() {
+        return inwardBean;
+    }
+
+    public void setInwardBean(InwardBeanController inwardBean) {
+        this.inwardBean = inwardBean;
+    }
+
+    public Date getDate() {
+        if (date == null) {
+            date = new Date();
+        }
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void selectSurgeryBillListener() {
+        patientEncounter = getBatchBill().getPatientEncounter();
+    }
+
+    
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
