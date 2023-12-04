@@ -132,30 +132,19 @@ public class BillBhtController implements Serializable {
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
-
-    public InwardBeanController getInwardBean() {
-        return inwardBean;
+  
+    public String navigateToAddServiceFromAdmissionProfile() {
+        PatientEncounter pe1 = getBatchBill().getPatientEncounter();
+        makeNull();
+        getBatchBill().setPatientEncounter(pe1);
+        return "/theater/inward_bill_surgery_service";
     }
 
-    public void setInwardBean(InwardBeanController inwardBean) {
-        this.inwardBean = inwardBean;
+    public String navigateToAddServiceFromMenu() {
+        makeNull();
+        return "/theater/inward_bill_surgery_service";
     }
-
-    public Date getDate() {
-        if (date == null) {
-            date = new Date();
-        }
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public void selectSurgeryBillListener() {
-        patientEncounter = getBatchBill().getPatientEncounter();
-    }
-
+    
     public void makeNull() {
         date = null;
         total = 0.0;
@@ -179,6 +168,31 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
     }
+    
+    public InwardBeanController getInwardBean() {
+        return inwardBean;
+    }
+
+    public void setInwardBean(InwardBeanController inwardBean) {
+        this.inwardBean = inwardBean;
+    }
+
+    public Date getDate() {
+        if (date == null) {
+            date = new Date();
+        }
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void selectSurgeryBillListener() {
+        patientEncounter = getBatchBill().getPatientEncounter();
+    }
+
+    
 
     public String navigateToAddServicesFromAdmissionProfile() {
         BillBhtController date = null;
@@ -203,10 +217,10 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         return "/inward/inward_bill_service?faces-redirect=true";
     }
-    
+
     public String navigateToAddServicesFromMenu() {
         BillBhtController date = null;
-        patientEncounter=null;
+        patientEncounter = null;
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
@@ -1137,6 +1151,5 @@ public class BillBhtController implements Serializable {
     public void setReferredBy(Doctor referredBy) {
         this.referredBy = referredBy;
     }
-
 
 }

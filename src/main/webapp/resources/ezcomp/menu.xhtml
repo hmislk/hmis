@@ -487,11 +487,15 @@
                                  value="Add Surgeries"
                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
                     <p:submenu label="Service" rendered="#{webUserController.hasPrivilege('TheatreBilling')}">
-                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
+                        
+                        <p:menuitem  ajax="false"  
+                                     action="#{billBhtController.navigateToAddServiceFromMenu()}"
                                      value="Add Service"
-                                     actionListener="#{billBhtController.makeNull()}"
                                      rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
-                        <p:menuitem  ajax="false"  action="/inward/inward_search_service" value="Search Bill"
+                        
+                        <p:menuitem  ajax="false"  
+                                     action="/inward/inward_search_service" 
+                                     value="Search Bill"
                                      actionListener="#{searchController.makeListNull}" 
                                      rendered="#{webUserController.hasPrivilege('TheatreBilling')}" ></p:menuitem>  
 
