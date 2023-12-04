@@ -91,8 +91,21 @@
 
 
                                 <h:outputLabel value="PHN No"/>
-                                <p:inputText autocomplete="off"  id="txtNewPtName1" value="#{patientController.current.phn}" style="width: 200px;text-transform:capitalize;">
-                                </p:inputText>
+                                <h:panelGroup layout="block" class="input-group">
+                                    <p:inputText
+                                        id="txtPhn"
+                                        value="#{patientController.current.phn}" class="form-control" />
+
+                                    <span class="input-group-btn">
+                                        <p:commandButton
+                                            id="btnPhn"
+                                            value="Generate" 
+                                            process="btnPhn" 
+                                            update="txtPhn" 
+                                            action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                            class="mx-1" />
+                                    </span>
+                                </h:panelGroup>
 
 
 
@@ -112,7 +125,7 @@
 
                             <p:commandButton value="Update" action="#{patientController.saveSelectedPatient()}"
                                              ajax="false" onclick="if (!confirm('Are you sure you want to save this record?'))
-                                                      return false;"></p:commandButton>
+                                                         return false;"></p:commandButton>
 
                         </p:panel>
 

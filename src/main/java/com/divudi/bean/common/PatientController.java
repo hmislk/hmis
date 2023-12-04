@@ -230,6 +230,15 @@ public class PatientController implements Serializable {
 
     private List<PatientInvestigation> patientInvestigations;
 
+    public void generateNewPhnAndAssignToCurrentPatient(){
+        if(current==null){
+            JsfUtil.addErrorMessage("No patient selected");
+            return ;
+        }
+        current.setPhn(applicationController.createNewPersonalHealthNumber(sessionController.getInstitution()));
+    }
+    
+    
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
         String j = "select p "
@@ -1778,6 +1787,10 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
+         if(p.getPhn()==null||p.getPhn().trim().equals("")){
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getEjbFacade().edit(p);
+        }
         p.setEditingMode(false);
     }
 
@@ -1839,6 +1852,10 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
+        }
+        if(getCurrent().getPhn()==null||getCurrent().getPhn().trim().equals("")){
+            getCurrent().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getEjbFacade().edit(getCurrent());
         }
 //        getPersonFacade().flush();
 //        getFacade().flush();
