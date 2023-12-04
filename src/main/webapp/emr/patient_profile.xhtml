@@ -83,6 +83,14 @@
                                                 styleClass="mx-1">
                                                 <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                             </p:commandButton>
+                                            <p:commandButton 
+                                                value="Patient Dashboard" 
+                                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 style="float: right;"
