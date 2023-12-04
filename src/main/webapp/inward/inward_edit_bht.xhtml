@@ -164,7 +164,7 @@
                                     <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
                                     <h:outputLabel value="Select  Admission Paymentmethod"/>
                                     <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}"  >
-                                        <f:selectItem itemLabel="#{bhtEditController.current.paymentMethod}" />                           
+                                        <f:selectItem itemLabel="Select Payment Method" />                           
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         <p:ajax process="@this" update="crd" event="change" />
                                     </p:selectOneMenu>
