@@ -9,7 +9,7 @@
                 xmlns:in="http://java.sun.com/jsf/composite/inward">
     <ui:define name="content">
 
-        <h:form  >
+        <h:form>
             <h:panelGroup rendered="#{inwardTimedItemController.batchBill eq null}">
                 <p:panel class="col-12 ">
                     <f:facet name="header">
@@ -25,9 +25,10 @@
                         itemLabel="#{apt2.patientEncounter.bhtNo}"
                         itemValue="#{apt2}" 
                         widgetVar="aPt2"
-                        size="30"  
+                        size="40"  
                         class="mx-3"
-                        style="width: 400px;">
+                        required="true"
+                        requiredMessage="Enter Patient Details">
 
                         <p:column headerText="BHT NO">
                             <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
@@ -49,12 +50,50 @@
                 <p:panel>
                     <f:facet name="header" class="row ">  
                         <p:outputLabel value="Inward Timed Service" />
-                        <p:commandButton ajax="false" value="Clear" class="mx-5" action="#{inwardTimedItemController.makeNull}"   />
+                        
                     </f:facet>
+                    
+                    <div class="d-flex justify-content-end align-items-center gap-3" >
+                                    
+
+                                    
+                                        
+                                    
+                                    
+                                    <h:panelGrid columns="3" class="m-4">
+                                        <p:commandButton ajax="false" value="Clear" class="ui-button-danger mx-1" icon="fa fa-ban" action="#{inwardTimedItemController.makeNull}"   />
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            icon="fa fa-search"
+                                            value="Patient Lookup"
+                                            class="ui-button-warning " 
+                                            action="#{patientController.navigateToSearchPatients()}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            icon="fa fa-user"
+                                            value="Profile"
+                                            class="ui-button-warning mx-1" 
+                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            >
+                                            <f:setPropertyActionListener 
+                                                value="#{admissionController.current.patient}" 
+                                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        
+                                    </h:panelGrid>
+
+                                </div>
                     <div class="row mb-2" >
                         <div class="col-md-6">
-                            <p:panel header="Patient Details">
-
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <h:panelGroup id="panSearch1">
                                     <in:bhtDetail admission="#{inwardTimedItemController.batchBill.patientEncounter}"/>
                                 </h:panelGroup>    <br/>                                
@@ -65,6 +104,10 @@
                         </div>
                         <div class="col-md-6 ">
                             <p:panel header="Timed Item">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-regular fa-clock"></h:outputText>
+                                    <h:outputLabel value="Timed Item" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Timed Item"/>
                                     <p:autoComplete  
@@ -75,7 +118,7 @@
                                         itemLabel="#{ix.name}" 
                                         itemValue="#{ix}" 
                                         size="30"  
-                                        
+
                                         class="mb-1">   
 
                                         <p:column>
@@ -98,7 +141,7 @@
                                         ajax="false"
                                         action="#{inwardTimedItemController.addTimedService()}"
                                         disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" 
-                                        class="mx-3 mt-2"/>
+                                        class="w-100 mt-2 ui-button-success" />
                                 </h:panelGrid>   
 
                             </p:panel> 

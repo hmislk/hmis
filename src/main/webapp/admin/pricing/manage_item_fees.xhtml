@@ -19,7 +19,7 @@
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
                             <p:outputLabel class="m-2">Manage Items Fees</p:outputLabel>
-                            
+
                         </f:facet>
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Select Item" />
@@ -65,6 +65,11 @@
                             <div class="col-md-2">
                                 <p:commandButton value="Add New Fee" process="acIx" 
                                                  onclick="PF('dlg').show();" class="w-100 mt-2 ui-button-success" icon="fa fa-plus">   
+                                </p:commandButton>
+                            </div>
+                            <div class="col-md-2">
+                                <p:commandButton value="Clear" ajax="false"
+                                                 actionListener="#{itemFeeManager.clearItemFees()}" class="w-100 mt-2 ui-button-danger" icon="fa-solid fa-ban">   
                                 </p:commandButton>
                             </div>
                             <div class="col-md-2">

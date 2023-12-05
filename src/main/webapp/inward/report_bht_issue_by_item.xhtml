@@ -21,21 +21,24 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}"  >
+                                            value="#{reportsTransfer.fromDepartment}"
+                                            class="mx-2">
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar  id="frmDate"  value="#{reportsTransfer.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="mx-2" id="frmDate"  value="#{reportsTransfer.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar id="toDate" value="#{reportsTransfer.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="mx-2" id="toDate" value="#{reportsTransfer.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
 
-                        <p:commandButton ajax="false" value="Fill" 
-                                         action="#{reportsTransfer.fillItemCountsBht()}" />
+                        <div class="my-2">
+                            <p:commandButton ajax="false" value="Fill" 
+                                             action="#{reportsTransfer.fillItemCountsBht()}" />
 
-                        <p:commandButton actionListener="#{reportsTransfer.fillItemCountsBht()}" ajax="false" value="Excel" styleClass="noPrintButton">
-                            <p:dataExporter type="xlsx" target="tbl" fileName="BHT_Issue_by_Item"  />
-                        </p:commandButton>
+                            <p:commandButton class="mx-2" actionListener="#{reportsTransfer.fillItemCountsBht()}" ajax="false" value="Excel">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="BHT_Issue_by_Item"  />
+                            </p:commandButton>
+                        </div>
 
 
                         <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i" styleClass="noBorder normalFont" >

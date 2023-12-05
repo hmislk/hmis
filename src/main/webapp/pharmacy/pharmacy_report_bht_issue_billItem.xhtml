@@ -20,12 +20,15 @@
                             <h:outputLabel value="BHT Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}"  >
+                                            value="#{reportsTransfer.fromDepartment}" 
+                                            class="mx-2">
                             </p:autoComplete>
+                             <h:outputLabel value="Item" ></h:outputLabel>
                             <p:autoComplete id="exItem" value="#{reportsTransfer.item}"
                                             forceSelection="true"
                                             completeMethod="#{itemController.completeAmpItem}" var="vt"
-                                            itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                            itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                            class="mx-2">
                                 <p:column headerText="Item" >
                                     <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                 </p:column>
@@ -34,15 +37,15 @@
                                 </p:column>                         
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="mx-2" value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="mx-2" value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="3" class="my-2">
                             <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentBHTIssueByBillItems}" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton value="Print" ajax="false" action="#" class="mx-1" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
