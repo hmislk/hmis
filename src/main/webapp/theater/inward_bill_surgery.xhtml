@@ -26,7 +26,7 @@
                                      completeMethod="#{admissionController.completePatient}"
                                      var="apt2" itemLabel="#{apt2.patient.person.name}"
                                      itemValue="#{apt2}" size="40"  required="true" class="m-2" requiredMessage="Please enter patient details">
-                        <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
+                        
                         <p:column >
                             #{apt2.bhtNo} 
                         </p:column>
