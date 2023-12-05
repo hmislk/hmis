@@ -4,9 +4,12 @@ import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.AtmController;
@@ -17,11 +20,14 @@ import com.divudi.data.EncounterType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Service;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
@@ -82,6 +88,12 @@ public class DataUploadBean {
     PatientController patientController;
     @Inject
     PatientEncounterController patientEncounterController;
+    @Inject
+    ServiceController serviceController;
+    @Inject
+    DepartmentController departmentController;
+    @Inject 
+    EnumController enumController;
 
     @EJB
     PatientFacade patientFacade;
@@ -133,6 +145,7 @@ public class DataUploadBean {
         return "/pharmacy/admin/upload_vmps";
     }
 
+  
     public void uploadPatients() {
         List<Patient> patients;
 
@@ -195,6 +208,17 @@ public class DataUploadBean {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadServices() {
+        List<Amp> amps;
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                readServicesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -594,6 +618,127 @@ public class DataUploadBean {
         return dxx;
     }
 
+    private List<Service> readServicesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Service> services = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Category cat = null;
+            Institution institution=null;
+            Department department=null;
+            InwardChargeType iwct=null;
+
+            String name = null;
+            String printingName = null;
+            String fullName = null;
+            String code = null;
+            String categoryName = null;
+            String institutionName = null;
+            String departmentName = null;
+            String inwardName = null;
+
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().equals("")) {
+                    continue;
+                }
+
+            }
+
+            Cell printingNameCell = row.getCell(1);
+            if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
+                printingName = printingNameCell.getStringCellValue();
+
+            }
+            if (printingName == null || printingName.trim().equals("")) {
+                printingName = name;
+            }
+
+            Cell fullNameCell = row.getCell(2);
+            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
+                fullName = fullNameCell.getStringCellValue();
+            }
+            if (fullName == null || fullName.trim().equals("")) {
+                fullName = name;
+            }
+
+            Cell codeCell = row.getCell(3);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+            if (code == null || code.trim().equals("")) {
+                code = serviceController.generateShortCode(name);
+            }
+
+            Cell categoryCell = row.getCell(4);
+            if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
+                categoryName = categoryCell.getStringCellValue();
+            }
+            if (categoryName == null && categoryName.trim().equals("")) {
+                continue;
+            }
+            cat = categoryController.findAndCreateCategoryByName(categoryName);
+
+            Cell insCell = row.getCell(5);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+            }
+            if (institutionName != null && !institutionName.trim().equals("")) {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            }
+
+            Cell deptCell = row.getCell(6);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+            if (departmentName != null && !departmentName.trim().equals("")) {
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
+            }
+            
+            Cell inwardCcCell = row.getCell(7);
+            if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
+                inwardName = inwardCcCell.getStringCellValue();
+            }
+            if (inwardName != null && !inwardName.trim().equals("")) {
+                iwct = enumController.getInaChargeType(inwardName);
+            }
+            if(iwct==null){
+                iwct = InwardChargeType.OtherCharges;
+            }
+
+            Service service = new Service();
+            service.setName(name);
+            service.setPrintName(printingName);
+            service.setFullName(fullName);
+            service.setCode(code);
+            service.setCategory(cat);
+            service.setInstitution(institution);
+            service.setDepartment(department);
+            service.setInwardChargeType(iwct);
+
+            service.setCreater(sessionController.getLoggedUser());
+            service.setCreatedAt(new Date());
+            
+            serviceController.save(service);
+
+            services.add(service);
+
+        }
+
+        return services;
+    }
+
     private List<Amp> readAmpsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -610,7 +755,7 @@ public class DataUploadBean {
             Row row = rowIterator.next();
             Amp amp = new Amp();
             Atm atm = null;
-            Vmp vmp=null;
+            Vmp vmp = null;
 
             Long id;
             String ampName;
@@ -669,7 +814,7 @@ public class DataUploadBean {
                     System.out.println("This VMP Name not found :  " + vmpName);
                     continue;
                 }
-            }else{
+            } else {
                 System.out.println("VMP cell type is NOT a String = ");
             }
 
@@ -691,7 +836,7 @@ public class DataUploadBean {
 //            amp = new Amp();
             amp.setName(ampName);
             amp.setCode("amp_" + CommonController.nameToCode(ampName));
-            
+
             System.out.println("vmp = " + vmp);
             if (vmp != null) {
                 amp.setVmp(vmp);

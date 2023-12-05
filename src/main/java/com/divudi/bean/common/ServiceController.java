@@ -116,10 +116,10 @@ public class ServiceController implements Serializable {
         this.itemsToRemove = itemsToRemove;
     }
 
-    public String navigateToDownloadItems(){
+    public String navigateToDownloadItems() {
         return "/admin/items/downloads";
     }
-    
+
     // Created by Dr M H B Ariyaratne with the help of ChatGPT by OpenAI
     public void downloadServicesAsExcel() {
         getItems();
@@ -205,7 +205,7 @@ public class ServiceController implements Serializable {
                 int feeColumnIndex = 19;
                 for (ItemFee f : sym.getItemFeesAuto()) {
                     row.createCell(feeColumnIndex++).setCellValue(f.getName());
-                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType()!= null ? f.getFeeType().getLabel() : "");
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType() != null ? f.getFeeType().getLabel() : "");
                     row.createCell(feeColumnIndex++).setCellValue(f.getFee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getFfee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getDepartment() != null ? f.getDepartment().getName() : "");
@@ -402,7 +402,7 @@ public class ServiceController implements Serializable {
      * @param name The full name of the service, item, or product.
      * @return A shortened code for the name.
      */
-    private String generateShortCode(String name) {
+    public String generateShortCode(String name) {
         // Initialize the code as an empty string.
         String code = "";
 
@@ -490,6 +490,68 @@ public class ServiceController implements Serializable {
         getItems();
     }
 
+    public void save(Service service) {
+        if (service == null) {
+            return;
+        }
+        if (service.getInwardChargeType() == null) {
+            return;
+        }
+        if (service == null || service.getName().isEmpty()) {
+            UtilityController.addErrorMessage("Please Enter a name");
+        } else {
+            if (service.getFullName() == null) {
+                service.setFullName(service.getName());
+            }
+            if (service.getPrintName() == null) {
+                service.setPrintName(service.getName());
+            }
+            if (service.getCode() == null || service.getCode().isEmpty()) {
+                service.setCode(generateShortCode(service.getName()));
+            }
+        }
+
+//        if (errorCheck()) {
+//            return;
+//        }
+//        if (getServiceSubCategoryController().getParentCategory() != null) {
+//            service.setCategory(getServiceSubCategoryController().getParentCategory());
+//        }
+        ////// // System.out.println("service.getId() = " + service);
+        ////// // System.out.println("service.getId() = " + service.getId());
+        if (service.getId() != null && service.getId() > 0) {
+            //////// // System.out.println("1");
+            if (billedAs == false) {
+                //////// // System.out.println("2");
+                service.setBilledAs(service);
+
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("3");
+                service.setReportedAs(service);
+            }
+            getFacade().edit(service);
+            UtilityController.addSuccessMessage("Saved Old Successfully");
+        } else {
+            //////// // System.out.println("4");
+            service.setCreatedAt(new Date());
+            service.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(service);
+            if (billedAs == false) {
+                //////// // System.out.println("5");
+                service.setBilledAs(service);
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("6");
+                service.setReportedAs(service);
+            }
+            getFacade().edit(service);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        getItems();
+    }
+
     public void setSelectText(String selectText) {
         recreateModel();
         this.selectText = selectText;
@@ -539,7 +601,6 @@ public class ServiceController implements Serializable {
 
     public void delete() {
 
-        
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
