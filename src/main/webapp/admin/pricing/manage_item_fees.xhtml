@@ -68,6 +68,11 @@
                                 </p:commandButton>
                             </div>
                             <div class="col-md-2">
+                                <p:commandButton value="Clear" ajax="false"
+                                                 actionListener="#{itemFeeManager.clearItemFees()}" class="w-100 mt-2 ui-button-danger" icon="fa-solid fa-ban">   
+                                </p:commandButton>
+                            </div>
+                            <div class="col-md-2">
 
                                 <p:commandButton value="Back" ajax="false"
                                                  action="#{itemFeeManager.navigateToItemFees()}" icon="fa fa-arrow-right" class="w-100 ui-button-warning mt-2">   
