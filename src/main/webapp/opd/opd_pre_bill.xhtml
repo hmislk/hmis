@@ -75,15 +75,16 @@
                                         <div class="row">
                                             <p:focus  context="acIx"/>
                                             <div class="col-md-10">
-                                                <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
-                                                                value="#{opdPreBillController.currentBillItem.item}" 
-                                                                completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
-                                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                                class="w-100"
-                                                                size="10"  
-                                                                maxResults="10"
-                                                                placeholder="Enter first few letters of the service or item to add"
-                                                                inputStyleClass="form-control">
+                                                <p:autoComplete 
+                                                    widgetVar="aIx" id="acIx" forceSelection="true"
+                                                    value="#{opdPreBillController.currentBillItem.item}" 
+                                                    completeMethod="#{opdPreBillController.completeOpdItems}"
+                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                    class="w-100"
+                                                    size="10"  
+                                                    maxResults="10"
+                                                    placeholder="Enter first few letters of the service or item to add"
+                                                    inputStyleClass="form-control">
                                                     <p:column>
                                                         #{ix.name}
                                                     </p:column>
@@ -299,9 +300,9 @@
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
                                         </div>
-                                        
+
                                     </div>
-                                    
+
                                     <div class="row my-1 mt-2" >
                                         <div class="col-md-8" >
                                             <p:inputText 
@@ -334,41 +335,41 @@
                                         </h:panelGroup>
                                         <div class="row mt-2">
                                             <div class="col-12" >
-                                            <h:panelGrid columns="3" >
+                                                <h:panelGrid columns="3" >
 
-                                                <p:commandButton  
-                                                    value="Settle"
-                                                    style="float: right;"
-                                                    ajax="false"
-                                                    icon="fa fa-check"              
-                                                    action="#{opdPreBillController.settleBill}" 
-                                                    class="ui-button-success mx-1"
-                                                    >
-                                                </p:commandButton>
-                                                <p:commandButton 
-                                                    style="float: right;"
-                                                    value="Lookup" 
-                                                    ajax="false"
-                                                    icon="fa fa-search"
-                                                    class="ui-button-warning mx-1" 
-                                                    action="#{patientController.navigateToSearchPatients()}" 
-                                                    >
-                                                </p:commandButton>
-                                                <p:commandButton 
-                                                    style="float: right;"
-                                                    value="Profile" 
-                                                    ajax="false"
-                                                    icon="fa fa-user"
-                                                    class="ui-button-warning mx-1" 
-                                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                                    >
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdBillController.patient}" 
-                                                        target="#{patientController.current}" ></f:setPropertyActionListener>
-                                                </p:commandButton>
-                                            </h:panelGrid>
-                                        </div>
-                                            
+                                                    <p:commandButton  
+                                                        value="Settle"
+                                                        style="float: right;"
+                                                        ajax="false"
+                                                        icon="fa fa-check"              
+                                                        action="#{opdPreBillController.settleBill}" 
+                                                        class="ui-button-success mx-1"
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        style="float: right;"
+                                                        value="Lookup" 
+                                                        ajax="false"
+                                                        icon="fa fa-search"
+                                                        class="ui-button-warning mx-1" 
+                                                        action="#{patientController.navigateToSearchPatients()}" 
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        style="float: right;"
+                                                        value="Profile" 
+                                                        ajax="false"
+                                                        icon="fa fa-user"
+                                                        class="ui-button-warning mx-1" 
+                                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                        >
+                                                        <f:setPropertyActionListener 
+                                                            value="#{opdBillController.patient}" 
+                                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </h:panelGrid>
+                                            </div>
+
                                         </div>
 
 
@@ -563,31 +564,31 @@
                                 </p:panel>
 
 
-                                
-                                        <p:panel  id="pBillDetails" class=" m-1"  >
-                                            <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                <h:outputText value="Bill Details" class="mx-4"></h:outputText>
-                                            </f:facet>
-                                            <h:panelGrid
-                                                columns="2" 
-                                                class="w-100 h5" >
-                                                <h:outputLabel value="Total" ></h:outputLabel >
-                                                <h:outputLabel id="tot" value="#{opdPreBillController.total}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                                <h:outputLabel value="Discount" ></h:outputLabel>
-                                                <h:outputLabel id="dis" value="#{opdPreBillController.discount}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                                <h:outputLabel value="Net Total" ></h:outputLabel>
-                                                <h:outputLabel id="netTotal" value="#{opdPreBillController.netTotal}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </h:panelGrid>
 
-                                        </p:panel>
-                                    
+                                <p:panel  id="pBillDetails" class=" m-1"  >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <h:panelGrid
+                                        columns="2" 
+                                        class="w-100 h5" >
+                                        <h:outputLabel value="Total" ></h:outputLabel >
+                                        <h:outputLabel id="tot" value="#{opdPreBillController.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount" ></h:outputLabel>
+                                        <h:outputLabel id="dis" value="#{opdPreBillController.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total" ></h:outputLabel>
+                                        <h:outputLabel id="netTotal" value="#{opdPreBillController.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+
+                                </p:panel>
+
                             </div>
                         </div>
                     </h:form>

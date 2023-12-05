@@ -225,7 +225,7 @@ public class ItemMappingController implements Serializable {
         }
         String jpql = "SELECT im "
                 + "FROM ItemMapping im "
-                + "WHERE i.retired=false "
+                + "WHERE im.retired=false "
                 + "AND im.department = :dep";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("dep", department);
