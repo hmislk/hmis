@@ -167,10 +167,11 @@
                                         <h:panelGrid columns="2">
                                             <p:outputLabel value="Discharge Time"/>
 
-                                            <p:calendar value="#{bhtSummeryController.date}"
-                                                        id="dischargeTimeStamp"
-                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                        class="mx-2">                               
+                                            <p:calendar 
+                                                value="#{bhtSummeryController.date}"
+                                                id="dischargeTimeStamp"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                class="mx-2">                               
                                                 <f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
                                             </p:calendar> 
                                         </h:panelGrid>
@@ -240,14 +241,14 @@
                                             <p:calendar navigator="true"  
                                                         id="roomAdmittedTimeStamp"
                                                         value="#{rm.admittedAt}" 
-                                                        pattern="dd MMM yyyy - hh:mm:ss a"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                         size="8"/>     
                                         </p:column>
                                         <p:column headerText="Discharged At" >                                      
                                             <p:calendar navigator="true"  
                                                         id="roomDischargeTimeStamp"
                                                         value="#{rm.dischargedAt}" 
-                                                        pattern="dd MMM yyyy - hh:mm:ss a"
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                         size="8"/> 
                                         </p:column>
                                         <p:column headerText="Room Charge"  >
