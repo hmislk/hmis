@@ -18,15 +18,15 @@
 
                         <h:panelGrid columns="8" >
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{searchController.fromDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar class="mx-2" value="#{searchController.fromDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{searchController.toDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar class="mx-2" value="#{searchController.toDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="3" class="my-2">
                             <p:commandButton ajax="false" value="Fill" action="#{searchController.createPharmacyStaffBill()}" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="mx-1" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
