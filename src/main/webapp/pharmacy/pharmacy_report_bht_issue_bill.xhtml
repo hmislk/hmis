@@ -20,22 +20,41 @@
                             <h:outputLabel value="BHT Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}"  >
+                                            value="#{reportsTransfer.fromDepartment}" 
+                                            class="mx-4">
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar 
+                                value="#{reportsTransfer.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                class="mx-4"></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar 
+                                value="#{reportsTransfer.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                class="mx-4"></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillDepartmentBHTIssueByBill}" ></p:commandButton>
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill"
+                                action="#{reportsTransfer.fillDepartmentBHTIssueByBill}" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton 
+                                value="Print"
+                                ajax="false" 
+                                action="#" 
+                                class="mx-1">
+                                
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton
+                                ajax="false" 
+                                value="Excel"
+                                styleClass="noPrintButton" 
+                                style="float: right;" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="BHT_Pharmacy_Issue_Report"  />
                             </p:commandButton>  
                         </h:panelGrid>
