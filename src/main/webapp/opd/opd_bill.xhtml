@@ -44,17 +44,18 @@
                                     <div class="row" >
                                         <p:focus context="acIx"/>
                                         <div class="col-md-10" >
-                                            <p:autoComplete widgetVar="aIx" 
-                                                            id="acIx" 
-                                                            forceSelection="true"
-                                                            value="#{opdBillController.currentBillItem.item}" 
-                                                            completeMethod="#{opdBillController.completeOpdItems}"
-                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                            size="10"  
-                                                            maxResults="10"
-                                                            class="w-100"
-                                                            placeholder="Enter first few letters of the service or item to add"
-                                                            inputStyleClass="form-control">
+                                            <p:autoComplete 
+                                                widgetVar="aIx" 
+                                                id="acIx" 
+                                                forceSelection="true"
+                                                value="#{opdBillController.currentBillItem.item}" 
+                                                completeMethod="#{opdBillController.completeOpdItems}"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                size="10"  
+                                                maxResults="10"
+                                                class="w-100"
+                                                placeholder="Enter first few letters of the service or item to add"
+                                                inputStyleClass="form-control">
                                                 <p:column  headerText="Name">
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                     <h:panelGroup rendered="#{ix.name ne ix.fullName}" >

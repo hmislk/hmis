@@ -66,8 +66,8 @@ public class EnumController implements Serializable {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
     }
-    
-    public ItemListingStrategy[] getItemListingStrategys(){
+
+    public ItemListingStrategy[] getItemListingStrategys() {
         return ItemListingStrategy.values();
     }
 
@@ -446,7 +446,16 @@ public class EnumController implements Serializable {
             PaymentMethod.PatientDeposit};
         return p;
     }
-    
+
+    public InwardChargeType getInaChargeType(String name) {
+        for (InwardChargeType chargeType : InwardChargeType.values()) {
+            if (chargeType.getLabel().equalsIgnoreCase(name)) {
+                return chargeType;
+            }
+        }
+        return null; // or throw an exception if an unknown name is not acceptable
+    }
+
     public PaymentMethod[] getPaymentMethodsNonCreditExceptMultiple() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
