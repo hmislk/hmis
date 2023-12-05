@@ -159,7 +159,11 @@ public class BhtSummeryController implements Serializable {
 
     public String navigateToIntrimBillEstimate() {
         createTablesWithEstimatedProfessionalFees();
-        return "/inward/inward_bill_intrim_estimate";
+        return "/inward/inward_bill_intrim_estimate?faces-redirect=true";
+    }
+
+    public String navigateToInpatientProfile() {
+        return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
 
     public List<PatientRoom> getPatientRooms() {
@@ -1782,7 +1786,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void setPatientEncounter(Admission patientEncounter) {
-        makeNull();
+//        makeNull();
         this.patientEncounter = patientEncounter;
     }
 
