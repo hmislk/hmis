@@ -149,8 +149,8 @@ public class ItemFeeManager implements Serializable {
     public String navigateToItemFees() {
         return "/admin/pricing/manage_item_fees";
     }
-    
-    public void clearItemFees(){
+
+    public void clearItemFees() {
         item = null;
         itemFees = null;
         removingFee = null;
