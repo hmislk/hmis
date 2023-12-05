@@ -74,7 +74,7 @@
                             ajax="false"
                             icon="fas fa-id-card"
                             class="ui-button-secondary " 
-                            action="/inward/admission_profile.xhtml" 
+                            action="#{bhtSummeryController.navigateToInpatientProfile()}"
                             />
                     </div>
 
@@ -111,17 +111,32 @@
                                 </h:panelGrid>
 
                             </p:panel>
-                            <p:panel id="dis" header="Discharge">
+                            <p:panel 
+                                id="dis" 
+                                header="Discharge">
 
                                 <h:panelGrid columns="2">
                                     <p:outputLabel value="Discharge Time"/>
                                     <p:calendar value="#{bhtSummeryController.date}"
                                                 id="dischargeTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
-                                        <f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
+                                        <!--<f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />-->
                                     </p:calendar> 
-                                    <p:commandButton ajax="false" style="float: right;" value="Disharge" action="#{bhtSummeryController.discharge}"  />
-                                    <p:commandButton ajax="false" style="float: right;" value="Disharge Cancel" action="#{bhtSummeryController.dischargeCancel}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        style="float: right;"
+                                        value="Recalculate" 
+                                        action="#{bhtSummeryController.createTables()}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        style="float: right;"
+                                        value="Disharge" 
+                                        action="#{bhtSummeryController.discharge}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        style="float: right;" 
+                                        value="Disharge Cancel" 
+                                        action="#{bhtSummeryController.dischargeCancel}"  />
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGroup>
