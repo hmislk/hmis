@@ -73,12 +73,12 @@ public class AgentReferenceBookController implements Serializable {
 
         return suggestions;
     }
-    
-    public void saveLabBook(){
+
+    public void saveLabBook() {
         saveAgentBook(ReferenceBookEnum.LabBook);
     }
-    
-    public void saveChannelBook(){
+
+    public void saveChannelBook() {
         saveAgentBook(ReferenceBookEnum.ChannelBook);
     }
 
@@ -87,7 +87,7 @@ public class AgentReferenceBookController implements Serializable {
             UtilityController.addErrorMessage("Please Select Institution.");
             return;
         }
-        if (agentReferenceBook.getBookNumber() == 0.0) {
+        if (agentReferenceBook.getStrbookNumber().trim().equals("")) {
             UtilityController.addErrorMessage("please Enter Book Number.");
             return;
         }
@@ -100,45 +100,25 @@ public class AgentReferenceBookController implements Serializable {
             return;
         }
 
-        HashMap hm= new  HashMap();
+        HashMap hm = new HashMap();
         String sql;
         sql = "select a from AgentReferenceBook a where "
                 + " a.retired=false "
                 + " and a.deactivate=false "
                 + " and a.referenceBookEnum=:rfe ";
-        
+
         hm.put("rfe", bookEnum);
 
         agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, hm);
 
         for (AgentReferenceBook arb : agentReferenceBooks) {
-            if (arb.getBookNumber() == agentReferenceBook.getBookNumber()) {
+            if (arb.getStrbookNumber() == agentReferenceBook.getStrbookNumber()) {
                 UtilityController.addErrorMessage("Book Number Is Alredy Given");
                 commonErrorMessageForSaveChannelBook(arb);
                 return;
             }
-            if (arb.getStartingReferenceNumber() == agentReferenceBook.getStartingReferenceNumber()) {
-                UtilityController.addErrorMessage("Starting Reference Number Is Alredy Given");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if (arb.getEndingReferenceNumber() == agentReferenceBook.getEndingReferenceNumber()) {
-                UtilityController.addErrorMessage("Ending Reference Number Is Alredy Given");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getStartingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getStartingReferenceNumber())) {
-                UtilityController.addErrorMessage("Starting Reference Number Is In Given Book Range");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getEndingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getEndingReferenceNumber())) {
-                UtilityController.addErrorMessage("Ending Reference Number Is In Given Book Range");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
         }
-        
+
         getAgentReferenceBook().setReferenceBookEnum(bookEnum);
         getAgentReferenceBook().setCreatedAt(new Date());
         getAgentReferenceBook().setCreater(getSessionController().getLoggedUser());
@@ -208,11 +188,23 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public Boolean checkAgentReferenceNumber(Institution institution, String refNumber) {
-
+        System.out.println("checkAgentReferenceNumber");
+        System.out.println("refNumber = " + refNumber);
+        System.out.println("institution = " + institution);
         Double dbl = null;
-        try {
-            dbl = Double.parseDouble(refNumber);
-        } catch (Exception e) {
+        String bookNumber = null;
+
+        if (refNumber != null && refNumber.length() >= 2) {
+            try {
+                String lastTwoChars = refNumber.substring(refNumber.length() - 2);
+                dbl = Double.parseDouble(lastTwoChars);
+                bookNumber = refNumber.substring(0, refNumber.length() - 2);
+            } catch (NumberFormatException e) {
+                // Handle the exception if the last two characters are not a valid double
+                return false;
+            }
+        } else {
+            // The string is either null or not long enough to have two characters
             return false;
         }
 
@@ -222,16 +214,21 @@ public class AgentReferenceBookController implements Serializable {
         sql = "select a from AgentReferenceBook a where "
                 + " a.startingReferenceNumber<= :ag "
                 + " and a.endingReferenceNumber>= :ag "
+                + " and a.strbookNumber=:bookNumber "
                 + " and a.retired=false "
                 + " and a.deactivate=false "
                 + " and a.institution=:ins";
 
         m.put("ins", institution);
         m.put("ag", dbl);
+        m.put("bookNumber", bookNumber);
+        
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
 
-        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
+        AgentReferenceBook book = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
 
-        if (agentReferenceBook == null) {
+        if (book == null) {
             return true;
         } else {
             return false;
@@ -282,16 +279,16 @@ public class AgentReferenceBookController implements Serializable {
         }
 
     }
-    
-    public void listnerChannelAgentSelect(){
+
+    public void listnerChannelAgentSelect() {
         listnerAgentSelect(ReferenceBookEnum.ChannelBook);
     }
-    
-    private void listnerAgentSelect(ReferenceBookEnum bookEnum){
-        agentReferenceBooks=new ArrayList<>();
+
+    private void listnerAgentSelect(ReferenceBookEnum bookEnum) {
+        agentReferenceBooks = new ArrayList<>();
         String sql;
-        Map m=new HashMap();
-        
+        Map m = new HashMap();
+
         sql = " select a from AgentReferenceBook a where "
                 + " a.retired=false "
                 + " and a.institution=:ins "
@@ -300,8 +297,8 @@ public class AgentReferenceBookController implements Serializable {
 
         m.put("rb", bookEnum);
         m.put("ins", getAgentReferenceBook().getInstitution());
-        
-        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP,10);
+
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 10);
     }
 
     public AgentReferenceBook getAgentReferenceBook() {
@@ -332,8 +329,8 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
-        if (agentReferenceBooks==null) {
-            agentReferenceBooks=new ArrayList<>();
+        if (agentReferenceBooks == null) {
+            agentReferenceBooks = new ArrayList<>();
         }
         return agentReferenceBooks;
     }

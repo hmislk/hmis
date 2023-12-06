@@ -1029,10 +1029,10 @@ public class CollectingCentreBillController implements Serializable {
             return true;
         }
 
-        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
-            UtilityController.addErrorMessage("Invaild Reference Number.");
-            return true;
-        }
+//        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
+//            UtilityController.addErrorMessage("Invaild Reference Number.");
+//            return true;
+//        }
 
         if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
             UtilityController.addErrorMessage("This Reference Number is alredy Given.");
