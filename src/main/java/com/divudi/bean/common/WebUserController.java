@@ -227,7 +227,16 @@ public class WebUserController implements Serializable {
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
-            a = getFacade().findByJpql("select c from WebUser c where c.retired=false and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
+            a = getFacade().findByJpql("select c from WebUser c"
+                    + " where c.retired=false"
+                    + " and  ("
+                    + " c.webUserPerson.name like '%" + qry.toUpperCase() + "%'"
+                    + " or "
+                    + " c.code like '%" + qry.toUpperCase() + "%'"
+                    + " or"
+                    + " c.name like '%" + qry.toUpperCase() + "%'"
+                    + " )"
+                    + " order by c.webUserPerson.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -750,7 +759,7 @@ public class WebUserController implements Serializable {
         }
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().init();
-        getUserPrivilageController().createSelectedPrivilegesForUser();
+        getUserPrivilageController().setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_privileges";
     }
 
@@ -787,6 +796,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserDepartmentController().setSelectedUser(selected);
+        getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_department";
     }
 

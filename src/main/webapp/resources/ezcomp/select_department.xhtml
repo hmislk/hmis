@@ -11,22 +11,22 @@
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
-    <cc:implementation>
-        <div class="d-flex justify-content-center align-items-center mt-5">
+    <cc:implementation class="w-100">
+        <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh;">
 
-            <h:form id="formDept" class="my-5 p-4">
+            <h:form id="formDept" class="my-5 p-5">
 
 
-                <div class="card shadow-lg p-5 " style="width: 350px">
+                <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9);">
 
-                    <div class="text-black text-center" style="font-size: 16pt;font-weight: bolder" >
-                        <div class=" w-100 d-flex justify-content-center align-items-center my-2">
+                    <div class="text-black text-center p-3 w-100" style="font-size: 16pt;font-weight: bolder" >
+                        <div class=" w-100 d-flex justify-content-center align-items-center my-2 p-1">
                             <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" style="width: 100px;"/>
                         </div>
                         <p>Select Department</p>
                     </div>
                     <div>
-                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" class="w-100 form-select form-select-lg">
+                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" class="w-100 form-select form-select-lg p-1">
                             <f:selectItems value="#{sessionController.departments}"
                                            var="dept"
                                            itemLabel="#{dept.name}"
@@ -51,7 +51,7 @@
                     <div class="mt-4">
                         <p:commandButton ajax="false"
                                          value="Select"
-                                         action="#{sessionController.selectDepartment()}" class="w-100"/>
+                                         action="#{sessionController.selectDepartment()}" class="w-100 p-1"/>
                     </div>
                 </div>
 

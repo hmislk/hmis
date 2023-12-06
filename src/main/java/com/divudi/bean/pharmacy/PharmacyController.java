@@ -30,6 +30,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Atm;
+import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.Vmp;
@@ -82,6 +83,8 @@ public class PharmacyController implements Serializable {
     CommonController commonController;
     @Inject
     private AmpController ampController;
+    @Inject
+    VtmController vtmController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -166,6 +169,8 @@ public class PharmacyController implements Serializable {
     private Amp amp;
     private Vmpp vmpp;
     private Ampp ampp;
+
+    private MeasurementUnit issueUnit;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
@@ -236,6 +241,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/dosage_forms";
     }
 
+    public String navigateToPharmaceuticalItemCategories() {
+        return "/pharmacy/admin/pharmaceutical_item_category";
+    }
+
     public String navigateToAtc() {
         return "/pharmacy/admin/atc";
     }
@@ -257,6 +266,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVtm() {
+        vtmController.fillItems();
         return "/pharmacy/admin/vtm";
     }
 
@@ -398,6 +408,27 @@ public class PharmacyController implements Serializable {
         fillVmps();
     }
 
+    public void assignIssueUnitToMultipleVmps() {
+        if (issueUnit == null) {
+            JsfUtil.addErrorMessage("No Issue Unit Selected");
+            return;
+        }
+        if (vmpsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmpsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmp i : vmpsSelected) {
+            i.setIssueUnit(issueUnit);
+            //TODO: Write to AuditEvent
+        }
+        vmpFacade.batchEdit(vmpsSelected);
+        fillVmps();
+    }
+
     public void deleteMultipleVmpps() {
         if (vmppsSelected == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -500,8 +531,9 @@ public class PharmacyController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("ret", Boolean.TRUE);
 //        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
-        System.out.println("itemFacade = " + itemFacade);
-        System.out.println("jpql = " + jpql);
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
         allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql);
 
     }
@@ -2541,6 +2573,14 @@ public class PharmacyController implements Serializable {
 
     public void setAmpps(List<Ampp> ampps) {
         this.ampps = ampps;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
     }
 
 }

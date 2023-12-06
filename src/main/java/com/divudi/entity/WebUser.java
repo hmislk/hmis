@@ -167,11 +167,13 @@ public class WebUser implements Serializable {
                 "primeone-dim-outlined",
                 "primeone-dim-filled",
                 "primeone-dark-outlined",
-                "primeone-dark-filled"
+                "primeone-dark-filled",
+                "saga",
+                "vela",
+                "arya"
         );
 
-        System.out.println("validThemes = " + validThemes);
-        System.out.println("primeTheme = " + primeTheme);
+        
         if (validThemes.contains(primeTheme)) {
             return primeTheme;
         } else {

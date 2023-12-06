@@ -13,7 +13,7 @@
                 <p:growl ></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
-                        <p:outputLabel value="Patient Details" ></p:outputLabel>
+                        <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
                     </f:facet>
                     <div class="row" >
                         <div class="col-md-4 " >
@@ -33,7 +33,7 @@
                                 <p:graphicImage  class="w-75 img-thumbnail" 
                                                  id="photos" cache="false"
                                                  rendered="#{patientController.current.baImage ne null}"    
-                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
+                                                 value="#{patientController.image}"  >
                                 </p:graphicImage>
 
                             </p:outputPanel>
@@ -44,19 +44,64 @@
                             <div class="row" >
                                 <div class="col-12 p-2" >
                                     <h:form >
-                                        <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
-                                        <p:commandButton value="OPD Visit" 
-                                                         action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
+                                        <div class="d-flex justify-content-end">
+                                            <p:commandButton 
+                                                value="Edit" 
+                                                action="#{patientController.navigateToEmrEditPatient()}" 
+                                                ajax="false" 
+                                                icon="fa fa-pencil"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="OPD Visit" 
+                                                action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                                ajax="false" 
+                                                icon="fa fa-stethoscope"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Profile Picture" 
+                                                action="#{patientController.navigateToCapturePatientPhoto()}"
+                                                ajax="false" 
+                                                icon="fa fa-user"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
 
 
-                                        <p:commandButton value="Data Entry" 
-                                                         action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2">
-                                        </p:commandButton>
-                                        <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
-                                            <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                        </p:commandButton>
+                                            <p:commandButton 
+                                                value="Data Entry" 
+                                                action="#{patientController.navigateToNewDataEntryForm}" 
+                                                ajax="false" 
+                                                icon="fa fa-keyboard"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Billing" 
+                                                action="#{patientController.toEmrPatientProfile()}" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                value="Patient Dashboard" 
+                                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                style="float: right;"
+                                                value="Lookup" 
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning mx-1" 
+                                                action="#{opdBillController.navigateToSearchPatients()}" 
+                                                >
+                                            </p:commandButton>
+                                        </div>
                                     </h:form>
 
 
@@ -99,7 +144,8 @@
                                                     <div class="col-md-3" >
                                                         <p:commandButton value="Add"
                                                                          id="btnAddDx"
-                                                                         class="w-100"
+                                                                         icon="fa fa-plus"
+                                                                         class="mx-1 ui-button-success"
                                                                          process="btnAddDx acDx txtDx"
                                                                          update="tblDxx acDx txtDx"
                                                                          action="#{patientEncounterController.addPatientDiagnosis()}"
@@ -145,51 +191,96 @@
                                         <p:tab title="Medications" >
                                             <h:form>
                                                 <div class="container-fluid m-2 w-100">
-                                                    <div class="d-flex w-100">
+                                                    <div class="d-flex flex-wrap w-100">
 
-                                                        <p:autoComplete 
-                                                            id="acMedicine"
-                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                                            value="#{patientEncounterController.patientMedicine.prescription.item}"
-                                                            var="item"
-                                                            itemLabel="#{item}"
-                                                            itemValue="#{item}"
-                                                            placeholder="Select Medicine"
-                                                            />
-                                                        <p:inputText style="width: 6em;"
-                                                                     id="txtDose"
-                                                                     value="#{patientEncounterController.patientMedicine.prescription.dose}"
-                                                                     placeholder="Dose"/>
-                                                        <p:selectOneMenu id="cmbDose" value="#{patientEncounterController.patientMedicine.prescription.doseUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.doseUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                        <p:selectOneMenu id="cmbFrequency" value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
-                                                                           var="du" 
-                                                                           itemLabel="#{du.name}"
-                                                                           itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                        <p:inputText style="width: 6em;"
-                                                                     id="txtDuration"
-                                                                     value="#{patientEncounterController.patientMedicine.prescription.duration}"
-                                                                     placeholder="Duration"/>
-                                                        <p:selectOneMenu id="cmbDuration" 
-                                                                         value="#{patientEncounterController.patientMedicine.prescription.durationUnit}" >
-                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                            <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
-                                                        </p:selectOneMenu>
+                                                        <!-- Medicine Selection -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label for="acMedicine" class="w-100">Medicine:</label>
+                                                            <p:autoComplete id="acMedicine"
+                                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                            value="#{patientEncounterController.patientMedicine.prescription.item}"
+                                                                            var="item"
+                                                                            class="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            itemLabel="#{item}"
+                                                                            itemValue="#{item}"
+                                                                            maxResults="10"
+                                                                            minQueryLength="3"
+                                                                            placeholder="Medicine">
+                                                                <p:ajax process="acMedicine" update="cmbDose" />
+                                                            </p:autoComplete>
+                                                        </div>
 
-                                                        <p:commandButton value="Add"
-                                                                         id="btnAddRx"
-                                                                         process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                         update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                         action="#{patientEncounterController.addPatientMedicine}"
-                                                                         />
+                                                        <!-- Dose Group -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label class="w-100">Dose:</label>
+                                                            <div class="d-flex w-100">
+                                                                <p:inputText id="txtDose"
+                                                                             class="flex-grow-1"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                                             placeholder="Dose"/>
+                                                                <p:selectOneMenu id="cmbDose" 
+                                                                                 class="flex-grow-1"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.doseUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.patientMedicine.prescription.item)}" 
+                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Frequency Selection -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label for="cmbFrequency" class="w-100">Frequency:</label>
+                                                            <p:selectOneMenu id="cmbFrequency" 
+                                                                             class="w-100"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}">
+                                                                <f:selectItem itemLabel="Select" />
+                                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                               var="du" 
+                                                                               itemLabel="#{du.name}"
+                                                                               itemValue="#{du}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+
+                                                        <!-- Duration Group -->
+                                                        <div class="mx-1 flex-fill">
+                                                            <label class="w-100">Duration:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText id="txtDuration"
+                                                                             style="width: 6em;"
+                                                                             value="#{patientEncounterController.patientMedicine.prescription.duration}"
+                                                                             placeholder="Duration"/>
+                                                                <p:selectOneMenu id="cmbDuration" 
+                                                                                 class="flex-grow-1"
+                                                                                 value="#{patientEncounterController.patientMedicine.prescription.durationUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                                   var="du" 
+                                                                                   itemLabel="#{du.name}" 
+                                                                                   itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Add Prescription Button -->
+                                                        <div class="mx-1">
+                                                            <label class="w-100"></label>
+                                                            <p:commandButton value="Add"
+                                                                             id="btnAddRx"
+                                                                             icon="fa fa-plus"
+                                                                             class="mx-1 ui-button-success"
+                                                                             process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             action="#{patientEncounterController.addPatientMedicine}" />
+                                                            <p:defaultCommand target="btnAddRx" ></p:defaultCommand>
+                                                        </div>
 
                                                     </div>
+
                                                 </div>
+
+
                                                 <div class="row m-2">
                                                     <div class="row m-2" >
                                                         <div class="col-md-12" >
@@ -205,9 +296,9 @@
                                                                                    id="btnDeleteRx"
                                                                                    process="btnDeleteRx"
                                                                                    update="tblRxx"
-                                                                                   onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                                   onclick="if (!confirm('Are you sure you want to remove this medicine?'))
                                                                                                return false;"
-                                                                                   action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                                                   action="#{patientEncounterController.removePatientMedicine()}"
                                                                                    >
                                                                         <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
                                                                     </p:commandLink>
@@ -261,7 +352,8 @@
                                                         <p:commandButton 
                                                             value="Add Allergy"
                                                             id="btnAddAllergy"
-                                                            class="w-100"
+                                                            icon="fa fa-plus"
+                                                            class="mx-1 ui-button-success"
                                                             process="btnAddAllergy acAllergy txtAllergy"
                                                             update="tblAllergies acAllergy txtAllergy"
                                                             action="#{patientEncounterController.addPatientAllergy()}"
@@ -303,68 +395,310 @@
                                                 </div>
                                             </h:form>
                                         </p:tab>
-                                        <p:tab title="Visits" >
+                                        <p:tab title="Past Date" >
                                             <h:form>
-                                                <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                                    <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="Date / Time" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.encounterDate}" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                                        </h:outputText>
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="Comments" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.comments}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="VisitWeight" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.visitWeight}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="BP" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.sbp}" />
-                                                        <h:outputText value="/" />
-                                                        <h:outputText value="#{visit.dbp}" />
-                                                        <h:outputText value=" mmHg" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="BMI" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.bmi}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="PR" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.pr}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="PR" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.pr}" />
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:commandButton value="View" 
-                                                                         ajax="false"
-                                                                         action="#{viewEncounterController.navigateToNewEncounter}" 
-                                                                         onclick="this.form.target = '_blank'">
-                                                            <f:setPropertyActionListener value="#{visit}" 
-                                                                                         target="#{viewEncounterController.encounter}" >
-                                                            </f:setPropertyActionListener>
-                                                        </p:commandButton>
+                                                <div class="row" >
+                                                    <div class="col-6" >
+                                                        <p:dataTable 
+                                                            id="tblVisits" 
+                                                            value="#{patientEncounterController.encounters}" 
+                                                            var="visit" 
+                                                            rowKey="#{visit.id}"
+                                                            >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Visits" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="Date / Time" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{visit.encounterDate}" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                            <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="Comments" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{visit.comments}" />
+                                                            </p:column>
+                                                            <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="VisitWeight" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{visit.visitWeight}" />
+                                                            </p:column>
+                                                            <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="BP" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{visit.bp}" />
+                                                            </p:column>
+                                                            <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
+                                                                <f:facet name="header">
+                                                                    <h:outputText value="BMI" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{visit.bmiFormatted}" />
+                                                            </p:column>
+                                                            <p:column >
+                                                                <p:commandButton value="View" 
+                                                                                 ajax="false"
+                                                                                 action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" 
+                                                                                 onclick="this.form.target = '_blank'">
+                                                                    <f:setPropertyActionListener value="#{visit}" 
+                                                                                                 target="#{pastPatientEncounterController.current}" >
+                                                                    </f:setPropertyActionListener>
+                                                                </p:commandButton>
 
-                                                    </p:column>
-                                                </p:dataTable>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+
+                                                    <div class="col-6" >
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblBills" value="#{patientEncounterController.opdBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Bills" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                                                      sortBy="#{bill.id}"
+                                                                      styleClass="alignTop" width="15">
+                                                                <h:outputLabel value="#{bill.id}"/>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                                                <p:commandLink id="billNo" 
+                                                                               ajax="false" 
+                                                                               value="#{bill.insId}" 
+                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                                                <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                                                </h:commandLink>  
+                                                            </p:column>
+                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.discount}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblChannelBills" value="#{patientEncounterController.channelBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Channel Bills" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                                                      sortBy="#{bill.id}"
+                                                                      styleClass="alignTop" width="15">
+                                                                <h:outputLabel value="#{bill.id}"/>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                                                <p:commandLink id="billNo" 
+                                                                               ajax="false" 
+                                                                               value="#{bill.insId}" 
+                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                                                <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                                                </h:commandLink>  
+                                                            </p:column>
+                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Gross Value" sortBy="#{bill.total}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.total}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.discount}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+
+                                                    <div class="col-6">
+                                                        <p:dataTable 
+                                                            id="tblInves"
+                                                            value="#{patientEncounterController.investigations}" 
+                                                            var="pi" 
+                                                            rowIndexVar="#{pi.id}" >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Patient Investigation" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column  headerText="No" styleClass="alignTop" >
+                                                                <p:outputLabel value="#{i+1}" />
+                                                            </p:column>
+                                                            <p:column  headerText="Bill" styleClass="alignTop" >
+                                                                <h:outputLabel id="lblBillNo" 
+                                                                               value="#{pi.billItem.bill.insId}" 
+                                                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                                                                <p:tooltip for="lblBillNo"  >
+                                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Sampled : " />
+                                                                    <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                    </h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Received : " />
+                                                                    <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                    </h:outputLabel>
+                                                                    <br/>
+                                                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                                                        <h:outputLabel style="color: red;" value="Cancelled : " />
+                                                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                                                        <h:outputLabel style="color: red;" value="Refunded : " />
+                                                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+
+
+                                                                </p:tooltip>
+                                                            </p:column>
+
+                                                            <p:column  headerText="Dep ID" styleClass="alignTop" >
+                                                                <h:outputLabel id="lblInvNo" 
+                                                                               value="#{pi.billItem.bill.deptId}" 
+                                                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                                                                <p:tooltip for="lblBillNo"  >
+                                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Sampled : " />
+                                                                    <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputLabel>
+                                                                    <br/>
+                                                                    <h:outputLabel value="Received : " />
+                                                                    <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                    </h:outputLabel>
+                                                                    <br/>
+                                                                    <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                                                        <h:outputLabel style="color: red;" value="Cancelled : " />
+                                                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{pi.billItem.refunded eq true}" >
+                                                                        <h:outputLabel style="color: red;" value="Refunded : " />
+                                                                        <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded eq true}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+                                                                </p:tooltip>
+                                                            </p:column>
+
+
+                                                            <p:column headerText="Investigation"  styleClass="alignTop" >
+                                                                <h:outputLabel value="#{pi.billItem.item.name}" >
+                                                                </h:outputLabel>
+
+                                                            </p:column>
+
+                                                            <p:column headerText="Billed for"  styleClass="alignTop">
+                                                                <h:outputLabel value="#{pi.billItem.bill.toDepartment.name}" >
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
+
+                                                                <h:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" >
+                                                                    <h:column >
+
+                                                                        <h:panelGrid columns="6" styleClass="noBorderGrid">
+
+                                                                            <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
+                                                                                <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                            </p:commandLink>
+
+                                                                            <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
+                                                                                            style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                                                            <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
+                                                                                            style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                                                        </h:panelGrid>
+
+
+                                                                        <p:tooltip for="imgApproved" >
+                                                                            <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                            </h:outputLabel>
+                                                                        </p:tooltip>
+                                                                        <p:tooltip for="imgPrinted" >
+                                                                            <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                            </h:outputLabel>
+                                                                        </p:tooltip>
+                                                                        <p:tooltip for="cmdOldReportPrint" >
+                                                                            <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                            </h:outputLabel>
+                                                                        </p:tooltip>
+
+
+
+                                                                    </h:column>
+                                                                </h:dataTable>
+
+
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+
+
                                             </h:form>
 
                                         </p:tab>

@@ -9,6 +9,10 @@
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
+                <h:form >
+                    <p:poll ></p:poll>
+                </h:form>
+                
                 <div class="container-fluid" >
                     <div class="card" >
                         <div class="card-header" >
@@ -22,6 +26,7 @@
                                 <p:commandButton value="Upload"
                                                  action="#{dataUploadBean.uploadAmps()}"
                                                  ajax="false"/>
+                                
                             </h:form>
 
                             <table class="table">
@@ -34,37 +39,37 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>1</td>
+                                        <td>A</td>
                                         <td>ID</td>
                                         <td>Unique identifier. Optional.</td>
                                     </tr>
                                     <tr>
-                                        <td>2</td>
+                                        <td>B</td>
                                         <td>AMP</td>
                                         <td>AMP name. (Trade Name) Required.</td>
                                     </tr>
                                     <tr>
-                                        <td>3</td>
+                                        <td>C</td>
                                         <td>Code</td>
                                         <td>Code</td>
                                     </tr>
                                     <tr>
-                                        <td>4</td>
-                                        <td>ATM</td>
-                                        <td>ATM name. (Generic Name) Required.</td>
+                                        <td>D</td>
+                                        <td>Barcode</td>
+                                        <td>Barcode Optional</td>
                                     </tr>
                                     <tr>
-                                        <td>3</td>
+                                        <td>E</td>
                                         <td>VMP</td>
                                         <td>VMP name. (Generic Name) Required.</td>
                                     </tr>
                                     <tr>
-                                        <td>2</td>
+                                        <td>F</td>
                                         <td>Manufacturer</td>
                                         <td>Manufacturer. Optional.</td>
                                     </tr>
                                     <tr>
-                                        <td>3</td>
+                                        <td>G</td>
                                         <td>Importer</td>
                                         <td>Importer. Optional.</td>
                                     </tr>

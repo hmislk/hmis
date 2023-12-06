@@ -15,102 +15,116 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
+                <p:panel header="Patient Search" style="height: 100vh;" >
+                    <h:form>
+                        <div class="row">
+                            <div class="col-md-3">
 
-                <h:form>
-                    <div class="card" >
-                        <div class="card-header" >
-                            <h4>Patient Search</h4>
-                        </div>
-                        <div class="card-body" >
-                            <div class="row">
-                                <div class="col-md-3">
-
-                                    <div class="mb-3">
-                                        <h:outputLabel value="Name" class="form-label" />
-                                        <p:inputText class="form-control" value="#{patientController.searchName}" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel value="Phone Number" class="form-label" />
-                                        <p:inputText class="form-control" value="#{patientController.searchPhone}" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel class="form form-label" value="NIC" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchNic}"></p:inputText>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel class="form form-label" value="PHN" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPhn}"></p:inputText>
-                                    </div>
-
-                                    <div class="mb-3">
-
-                                        <h:outputLabel class="form form-label" value="Patient Code" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPatientCode}"></p:inputText>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel class="form form-label" value="Patient ID" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPatientId}"></p:inputText>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel class="form form-label" value="Bill ID" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchBillId}"></p:inputText>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <h:outputLabel class="form form-label" value="Sample ID" ></h:outputLabel>
-                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchSampleId}"></p:inputText>
-
-                                    </div>
+                                <div class="mb-3">
+                                    <h:outputLabel value="Name" class="form-label" />
+                                    <p:inputText class="form-control" value="#{patientController.searchName}" />
                                 </div>
-                                <div class="col-md-9">
-                                    <div class="mb-3">
-                                        <h:commandButton value="New" styleClass="btn btn-warning"
-                                                         action="#{patientController.toAddNewPatient()}" />
-                                        <h:commandButton value="Search" styleClass="btn btn-primary ms-2"
-                                                         action="#{patientController.searchPatient()}" />
-                                        <h:commandButton value="Clear" styleClass="btn btn-danger ms-2"
-                                                         action="#{patientController.clearSearchDetails()}" />
-                                    </div>
 
-                                    <p:dataTable value="#{patientController.searchedPatients}" var="p" 
-                                                 class="w-100 table table-sm table-striped"
-                                                 paginatorAlwaysVisible="false"
-                                                 paginator="true"
-                                                 rows="10"
-                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                 rowsPerPageTemplate="5,10,20"
-                                                 >
-                                        <p:column headerText="Name, Age &amp; Sex" >
-                                            <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
-                                            <p:outputLabel value="&nbsp;,&nbsp;" ></p:outputLabel>
-                                            <p:outputLabel rendered="#{p.person.sex == 'Male'}">
-                                                <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
-                                            </p:outputLabel>
-                                            <p:outputLabel value="&nbsp;,&nbsp;" ></p:outputLabel>
-                                            <p:outputLabel rendered="#{p.person.sex == 'Female'}">
-                                                <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
-                                            </p:outputLabel>
-                                            <p:outputLabel value=" "></p:outputLabel>
-                                            <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Phone &amp; Address" >
-                                            <p:outputLabel value="#{p.person.phone}">
-                                            </p:outputLabel>
-                                            <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
-                                            <p:outputLabel value="#{p.person.address}"></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Actions">
-                                            <div class="d-flex justify-content-between">
-                                                <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2 mb-2">
+                                <div class="mb-3">
+                                    <h:outputLabel value="Phone Number" class="form-label" />
+                                    <p:inputText class="form-control" value="#{patientController.searchPhone}" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel class="form form-label" value="NIC" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchNic}"></p:inputText>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel class="form form-label" value="PHN" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPhn}"></p:inputText>
+                                </div>
+
+                                <div class="mb-3">
+
+                                    <h:outputLabel class="form form-label" value="Patient Code" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPatientCode}"></p:inputText>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel class="form form-label" value="Patient ID" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchPatientId}"></p:inputText>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel class="form form-label" value="Bill ID" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchBillId}"></p:inputText>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel class="form form-label" value="Sample ID" ></h:outputLabel>
+                                    <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchSampleId}"></p:inputText>
+
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    <p:commandButton 
+                                        value="New"
+                                        styleClass="btn btn-warning"
+                                        action="#{patientController.toAddNewPatient()}" />
+                                    <p:commandButton 
+                                        value="Search" 
+                                        id="btnSearch" 
+                                        styleClass="btn btn-primary ms-2"
+                                        ajax="false"
+                                        action="#{patientController.searchPatient()}" />
+                                    <p:defaultCommand target="btnSearch"> </p:defaultCommand>
+                                    <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
+                                                     action="#{patientController.clearSearchDetails()}" />
+                                </div>
+
+                                <p:dataTable value="#{patientController.searchedPatients}" var="p" 
+                                             class="w-100 table table-sm table-striped"
+                                             paginatorAlwaysVisible="false"
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,20"
+                                             >
+                                    <p:column headerText="Name" >
+                                        <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
+
+
+                                        <p:outputLabel rendered="#{p.person.sex == 'Male'}">
+                                            <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
+                                        </p:outputLabel>
+
+
+                                        <p:outputLabel rendered="#{p.person.sex == 'Female'}">
+                                            <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
+                                        </p:outputLabel>
+                                        <br/>
+
+                                        <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
+                                        <br/>
+                                        <p:outputLabel value="#{p.person.phone}">
+                                        </p:outputLabel>
+                                        <br/>
+<!--                                            <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
+                                        <br/>-->
+                                        <p:outputLabel value="#{p.person.address}"></p:outputLabel>
+                                        <br/>
+                                    </p:column>
+
+                                    <p:column headerText="Actions">
+                                        <div class="row g-2">
+                                            <!-- Your p:commandButton elements here wrapped in col divs -->
+                                            <div class="col-auto m-2 ">
+                                                <p:commandButton 
+                                                    value="Profile" 
+                                                    action="#{patientController.toEmrPatientProfile()}" 
+                                                    ajax="false" styleClass="mx-2 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Visit" 
-                                                                 action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2 mb-2">
+                                                <p:commandButton 
+                                                    value="OPD Visit" 
+                                                    action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
 
@@ -123,25 +137,24 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
 
-
-
-
                                             </div>
-                                        </p:column>
+                                        </div>
+
+                                    </p:column>
 
 
-                                    </p:dataTable>
+                                </p:dataTable>
 
 
-                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="container">
 
-                    </div>
-                </h:form>
+                        <div class="container">
+
+                        </div>
+                    </h:form>
+                </p:panel>
             </ui:define>
 
         </ui:composition>

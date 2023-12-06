@@ -19,7 +19,7 @@
     </context-param>
     <context-param>
         <param-name>primefaces.THEME</param-name>
-        <param-value>none</param-value>
+        <param-value>#{sessionController.primeTheme}</param-value>
     </context-param> 
     <context-param>
         <param-name>FacesServletMapping</param-name>
@@ -64,7 +64,8 @@
     <!-- Error Handling -->
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/home.xhtml</location>
-    </error-page>    
+        <location>/faces/timeout.xhtml</location>
+    </error-page> 
+       
 
 </web-app>

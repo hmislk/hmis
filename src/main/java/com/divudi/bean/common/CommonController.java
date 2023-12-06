@@ -49,14 +49,18 @@ public class CommonController implements Serializable {
     public void increment() {
         number++;
     }
-    
-    public static String formatNumber(double number, String format) {
+
+    public static String formatNumber(Double number, String format) {
+        if (number == null) {
+            return "";
+        }
         DecimalFormat decimalFormat = new DecimalFormat(format);
         return decimalFormat.format(number);
     }
 
     /**
-     * Formats a Double value according to the given format string and returns it as a double.
+     * Formats a Double value according to the given format string and returns
+     * it as a double.
      *
      * @param number The Double value to be formatted.
      * @param format The format string specifying the desired format.
@@ -64,25 +68,20 @@ public class CommonController implements Serializable {
      */
     public static double formatDouble(Double number, String format) {
         System.out.println("formatDouble");
-        System.out.println("format = " + format);
-        System.out.println("number = " + number);
         if (number == null) {
             return 0.0; // Handle null input gracefully by returning 0.0
         }
 
         DecimalFormat decimalFormat = new DecimalFormat(format);
-        System.out.println("decimalFormat = " + decimalFormat);
         try {
             String formattedValue = decimalFormat.format(number);
-            System.out.println("formattedValue = " + formattedValue);
             Double returningDbl = decimalFormat.parse(formattedValue).doubleValue();
-            System.out.println("returningDbl = " + returningDbl);
             return returningDbl;
         } catch (ParseException e) {
             return 0.0; // Handle any parsing errors gracefully by returning 0.0
         }
     }
-    
+
     public String getBaseUrl() {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String url = req.getRequestURL().toString();

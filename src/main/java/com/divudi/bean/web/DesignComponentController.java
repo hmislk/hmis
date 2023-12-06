@@ -29,7 +29,7 @@ public class DesignComponentController implements Serializable {
 
     @EJB
     DesignComponentFacade facade;
-    
+    private int manageEmrIndex;
     private DesignComponent current;
     private List<DesignComponent> list;
     
@@ -196,6 +196,14 @@ public class DesignComponentController implements Serializable {
          designComponents = facade.findByJpql(jpql,m);
          
         return designComponents; 
+    }
+
+    public int getManageEmrIndex() {
+        return manageEmrIndex;
+    }
+
+    public void setManageEmrIndex(int manageEmrIndex) {
+        this.manageEmrIndex = manageEmrIndex;
     }
     
     @FacesConverter(forClass = DesignComponent.class)

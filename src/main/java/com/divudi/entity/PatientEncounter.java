@@ -13,6 +13,7 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.inward.PatientRoom;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -154,6 +155,23 @@ public class PatientEncounter implements Serializable {
     private Long pr = null;
     private Double height;
 
+    // Transient method for BP
+    public String getBp() {
+        if (sbp != null && dbp != null) {
+            return sbp + "/" + dbp + " mmHg";
+        }
+        return ""; // or some default value
+    }
+
+    // Transient method for BMI
+    public String getBmiFormatted() {
+        if (bmi != null) {
+            DecimalFormat df = new DecimalFormat("#.0");
+            return df.format(bmi) + " kg/m²";
+        }
+        return ""; // or some default value
+    }
+
     public double getTransPaidByCompany() {
         return transPaidByCompany;
     }
@@ -290,7 +308,7 @@ public class PatientEncounter implements Serializable {
         if (diagnosis == null) {
             diagnosis = new ArrayList<>();
             for (ClinicalFindingValue v : clinicalFindingValues) {
-                
+
                 if (v.getClinicalFindingItem().getSymanticType() == SymanticType.Disease_or_Syndrome) {
                     diagnosis.add(v);
                 }
@@ -410,7 +428,7 @@ public class PatientEncounter implements Serializable {
     }
 
     public List<ClinicalFindingValue> getClinicalFindingValues() {
-        if(clinicalFindingValues==null){
+        if (clinicalFindingValues == null) {
             clinicalFindingValues = new ArrayList<>();
         }
         return clinicalFindingValues;
@@ -906,6 +924,7 @@ public class PatientEncounter implements Serializable {
 
     public void setHeight(Double height) {
         this.height = height;
+        calculateBmi();
     }
 
     public Double getWeight() {
@@ -914,6 +933,18 @@ public class PatientEncounter implements Serializable {
 
     public void setWeight(Double weight) {
         this.weight = weight;
+        calculateBmi();
+    }
+
+    private void calculateBmi() {
+        if (this.height == null || this.weight == null) {
+            return;
+        }
+
+        double heightInMeters = this.height / 100;
+        if (heightInMeters > 0) {
+            this.bmi = this.weight / Math.pow(heightInMeters, 2);
+        }
     }
 
 }

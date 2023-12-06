@@ -7,7 +7,7 @@
     <h:head>
     </h:head>
     <h:body>
-      <ui:composition template="/pharmacy/admin/index.xhtml">
+        <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
 
                 <div class="container-fluid" >
@@ -24,52 +24,42 @@
                                                  action="#{dataUploadBean.uploadVmps()}"
                                                  ajax="false"/>
 
-                                <h5>Output</h5>
-                                <h6><h:outputText value="#{dataUploadBean.outputString}" ></h:outputText></h6>
+
 
                             </h:form>
 
-                            <table>
+                            <table class="table table-striped">
                                 <tr>
-                                    <th>ID</th>
+                                    <th>A - ID (Optional)</th>
                                 </tr>
                                 <tr>
-                                    <th>VMP Name</th>
+                                    <th>B - VMP Name</th>
                                 </tr>
                                 <tr>
-                                    <th>VTM Name</th>
+                                    <th>C - VTM Name</th>
                                 </tr>
                                 <tr>
-                                    <th>Dosage Form</th>
+                                    <th>D - Dosage Form</th>
                                 </tr>
                                 <tr>
-                                    <th>Strength Unit</th>
+                                    <th>E - Strength Unit</th>
                                 </tr>
                                 <tr>
-                                    <th>Issue Unit</th>
+                                    <th>F - Issue Unit</th>
                                 </tr>
                                 <tr>
-                                    <th>Strength Units per Issue Unit</th>
+                                    <th>G - Strength Units per Issue Unit</th>
                                 </tr>
                                 <tr>
-                                    <th>Issue Units Per Pack</th>
+                                    <th>H - Min Issue Quantity</th>
                                 </tr>
                                 <tr>
-                                    <th>Pack Unit</th>
-                                </tr>
-                                <tr>
-                                    <th>Min Issue Quantity</th>
-                                </tr>
-                                <tr>
-                                    <th>Min Issue Unit</th>
-                                </tr>
-                                <tr>
-                                    <th>Issue Multiplies Quantity</th>
-                                </tr>
-                                <tr>
-                                    <th>Issue Multiplies Unit</th>
+                                    <th>I - Issue Multiplies Quantity</th>
                                 </tr>
                             </table>
+
+                            <h5>Output</h5>
+                            <h6><h:outputText value="#{dataUploadBean.outputString}" ></h:outputText></h6>
 
                         </div>
                     </div>

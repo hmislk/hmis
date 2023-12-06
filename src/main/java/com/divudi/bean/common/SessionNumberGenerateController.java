@@ -95,10 +95,8 @@ public class SessionNumberGenerateController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            System.out.println("value = " + value);
             java.lang.Long key;
             key = Long.valueOf(value);
-            System.out.println("key = " + key);
             return key;
         }
 

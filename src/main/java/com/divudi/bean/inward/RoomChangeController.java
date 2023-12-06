@@ -160,6 +160,7 @@ public class RoomChangeController implements Serializable {
         pR.setDischarged(false);
         pR.setDischargedBy(null);
         getPatientRoomFacade().edit(pR);
+        
     }
 
     public void removeGuardianRoom(PatientRoom pR) {

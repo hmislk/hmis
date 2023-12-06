@@ -8,6 +8,7 @@ import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -70,8 +72,6 @@ public class ApplicationController {
         }
     }
 
-    
-    
     public Date getStartTime() {
         return startTime;
     }
@@ -102,10 +102,15 @@ public class ApplicationController {
     }
 
     public Logins isLogged(WebUser u) {
+        if (u == null) {
+            return null;
+        }
         Logins tl = null;
         for (Logins l : getLoggins()) {
-            if (l.getWebUser().equals(u)) {
-                tl = l;
+            if (l.getWebUser() != null) {
+                if (l.getWebUser().equals(u)) {
+                    tl = l;
+                }
             }
         }
         return tl;
@@ -157,7 +162,7 @@ public class ApplicationController {
         this.storesExpiery = storesExpiery;
     }
 
-    public String createNewPersonalHealthNumber(Institution ins) {
+    public String createNewPersonalHealthNumber(Institution ins, boolean old) {
         InstitutionLastPhn iln = null;
         for (InstitutionLastPhn p : getInsPhns()) {
             if (p.institution.equals(ins)) {
@@ -179,6 +184,50 @@ public class ApplicationController {
         String checkDigit = calculateCheckDigit(poi + num);
         String phn = poi + num + checkDigit;
         return phn;
+    }
+
+    public String createNewPersonalHealthNumber(Institution ins) {
+        if (ins == null) {
+            return null;
+        }
+        String alpha = "BCDFGHJKMPQRTVWXY";
+        String numeric = "23456789";
+        String alphanum = alpha + numeric;
+        Random random = new Random();
+        int length = 6;
+        String poi = ins.getPointOfIssueNo();
+
+        for (int attempt = 0; attempt < 5; attempt++) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < length; i++) {
+                int index = random.nextInt(alphanum.length());
+                char randomChar = alphanum.charAt(index);
+                sb.append(randomChar);
+            }
+            String randomString = sb.toString();
+            String checkDigit = calculateCheckDigit(poi + randomString);
+            String phn = poi + randomString + checkDigit;
+
+            if (!thePhnNumberAlreadyExsists(phn)) {
+                return phn;
+            }
+        }
+        return null;
+    }
+
+    public boolean thePhnNumberAlreadyExsists(String phn) {
+        String jpql = "select p "
+                + " from Patient p "
+                + " where p.retired=:ret "
+                + " and p.phn=:phn";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("phn", phn);
+        Patient p = patientFacade.findFirstByJpql(jpql, m);
+        if (p != null) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -286,7 +335,7 @@ public class ApplicationController {
 
     public boolean isHasAwebsiteAsFrontEnd() {
         boolean w = getApplicationPreference().isHasAwebsiteAsFrontEnd();
-        hasAwebsiteAsFrontEnd=w;
+        hasAwebsiteAsFrontEnd = w;
         return hasAwebsiteAsFrontEnd;
     }
 
@@ -316,7 +365,7 @@ public class ApplicationController {
 
     public String getThemeName() {
         String w = getApplicationPreference().getThemeName();
-        themeName=w;
+        themeName = w;
         return themeName;
     }
 
@@ -357,7 +406,5 @@ public class ApplicationController {
     public void setInsPhns(List<InstitutionLastPhn> insPhns) {
         this.insPhns = insPhns;
     }
-    
-    
 
 }

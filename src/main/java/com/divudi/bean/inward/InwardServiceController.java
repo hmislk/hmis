@@ -309,12 +309,6 @@ public class InwardServiceController implements Serializable {
 
     public void delete() {
 
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(new Date());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
 
         if (current != null) {
             current.setRetired(true);
@@ -326,6 +320,9 @@ public class InwardServiceController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
 
     }
 
@@ -523,9 +520,9 @@ public class InwardServiceController implements Serializable {
      *
      */
     @FacesConverter(forClass = InwardService.class)
-    public static class ServiceControllerConverter implements Converter {
+    public static class InwardServiceControllerConverter implements Converter {
 
-        public ServiceControllerConverter() {
+        public InwardServiceControllerConverter() {
         }
 
         @Override
@@ -533,7 +530,7 @@ public class InwardServiceController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
+            InwardServiceController controller = (InwardServiceController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "inwardServiceController");
             return controller.getEjbFacade().find(getKey(value));
         }

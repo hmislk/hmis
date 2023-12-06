@@ -75,13 +75,22 @@
                             </div>
                             <div class="col-md-9">
                                 <div class="mb-3">
-                                    <p:commandButton value="New" styleClass="btn btn-warning"
-                                                     action="#{patientController.navigateToAddNewPatientForOpd()}" ajax="false" />
-                                    <p:commandButton id="btnSearch" value="Search" styleClass="btn btn-primary ms-2"
-                                                     action="#{patientController.searchPatientForOpd()}" ajax="false" />
+                                    <p:commandButton value="New"
+                                                     action="#{patientController.navigateToAddNewPatientForOpd()}" 
+                                                     ajax="false"
+                                                     class="mx-1"/>
+
+                                    <p:commandButton id="btnSearch"
+                                                     value="Search"
+                                                     action="#{patientController.searchPatientForOpd()}" ajax="false" 
+                                                     class="mx-1"/>
+
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
-                                    <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
-                                                     action="#{patientController.clearSearchDetails()}" ajax="false" />
+
+                                    <p:commandButton value="Clear" 
+                                                     action="#{patientController.clearSearchDetails()}"
+                                                     ajax="false" 
+                                                     class="mx-1"/>
                                 </div>
 
                                 <p:dataTable value="#{patientController.searchedPatients}" var="p" 
@@ -141,7 +150,7 @@
                                                                  styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Bill for Cashier" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton value="OPD Bill for Cashier" action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
@@ -150,8 +159,9 @@
                                                 <p:commandButton value="Refunds" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Lab Reports" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                <p:commandButton value="Lab Reports" action="#{searchController.navigateToPatientLabReports}" ajax="false" styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}"
+                                                                                 target="#{searchController.patient}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                                 <p:commandButton value="Inward Appointments"
                                                                  action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
@@ -181,6 +191,13 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
 
+                                                <p:commandButton value="Collecting Center Billing"
+                                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
+                                                                 ajax="false"
+                                                                 styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
+
                                             </div>
                                         </div>
                                     </p:column>
@@ -193,7 +210,7 @@
                         </div>
                     </p:panel>
 
-                    
+
 
                     <div class="container">
 

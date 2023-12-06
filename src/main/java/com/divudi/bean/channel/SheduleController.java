@@ -608,11 +608,8 @@ public class SheduleController implements Serializable {
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             List<Long> serviceSessionIds = new ArrayList<>();
-            System.err.println("Time stage 2.1 = " + new Date());
             serviceSessionIds = serviceSessionFacade.findLongList(sql, m);
-            System.err.println("Time stage 2.2 = " + new Date());
 
-            System.err.println("Fetch Original Sessions = " + serviceSessionIds.size());
             if (serviceSessionIds.isEmpty()) {
                 return;
             }

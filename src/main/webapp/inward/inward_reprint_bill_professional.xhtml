@@ -13,31 +13,46 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Payment Reprint" >
-                        <h:panelGrid columns="2">
-                            <p:panel>
-                                <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_professional" 
+                    <p:panel header="Payment Reprint">
+                        <div class="row">
+                            <div class="justify-content-center col-md-6">
+                                <p:commandButton ajax="false" value="Cancel" 
+                                                 class="ui-button-danger mx-1"
+                                                 action="inward_cancel_bill_professional"  
                                                  disabled="#{inwardSearch.bill.cancelled}"  >                           
                                 </p:commandButton>
+                            </div>
+                                
 
-                            </p:panel>
-                            <p:panel>
+                           
+                            <div class="justify-content-end d-flex col-md-6">
                                 <p:commandButton ajax="false" value="Mark As Checked"
                                                 action="#{inwardSearch.markAsChecked()}"
+                                                class="ui-button-success mx-1"
+                                                icon="fas fa-check"
                                                  rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
                                 <p:commandButton ajax="false" value="Mark As Un Check"
                                                 action="#{inwardSearch.markAsUnChecked()}"
+                                                class="ui-button-warning mx-1" 
+                                                icon="fas fa-times"
                                                  rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                                <p:commandButton ajax="false" value="Back To Interim" action="/inward/inward_bill_intrim"
+                                <p:commandButton ajax="false" value="Back To Interim"
+                                                 action="/inward/inward_bill_intrim"
+                                                 class="mx-1 ui-button-info"
+                                                 icon="fas fa-arrow-left"
                                                 actionListener="#{bhtSummeryController.createTables()}"
                                                   />
-                            </p:panel>
+                            </div>
 
 
-                        </h:panelGrid>
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
                                 <p:panel header="Patient Detail">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Patient Detail" class="mx-4"></h:outputLabel>
+                                    </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
@@ -55,7 +70,13 @@
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Detail" class="mx-4"></h:outputLabel>
+                                    </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
@@ -68,6 +89,12 @@
 
                                     </p:panelGrid>
                                 </p:panel>
+                            </div>
+                        </div>
+                        <p:panel>
+                            <p:panelGrid columns="2" style="width: 100%;">
+                                
+                                
                             </p:panelGrid>
 
 

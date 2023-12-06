@@ -60,6 +60,7 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    
     @Transient
     String age;
     @Transient
@@ -70,6 +71,8 @@ public class Patient implements Serializable {
     private Long ageInDaysOnBilledDate;
     @Transient
     private Date billedDate;
+    @Transient
+    private boolean editingMode;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     @Basic(fetch = FetchType.LAZY)
@@ -96,9 +99,9 @@ public class Patient implements Serializable {
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date toDate;
-    @Size(max = 10)
+    @Size(max = 15)
     String phn;
-    
+
     private Boolean hasAnAccount;
     private Double runningBalance;
     private Double creditLimit;
@@ -113,8 +116,16 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
 
+    public Patient() {
+        editingMode=true;
+    }
+
     
     
+    public void toggleEditMode() {
+        editingMode = !editingMode;
+    }
+
     public Institution getCreatedInstitution() {
         return createdInstitution;
     }
@@ -158,10 +169,12 @@ public class Patient implements Serializable {
     }
 
     @PostLoad
+    @Deprecated
     private void onLoad() {
         calAgeFromDob();
     }
-    
+
+    @Deprecated
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -203,6 +216,7 @@ public class Patient implements Serializable {
         ageInDays = (long) period.getDays();
     }
 
+    @Deprecated
     public void calAgeFromDob(Date billedDate) {
         this.billedDate = billedDate;
         ageOnBilledDate = "";
@@ -249,6 +263,7 @@ public class Patient implements Serializable {
         return serialVersionUID;
     }
 
+    @Deprecated
     public String getAge() {
         calAgeFromDob();
         return age;
@@ -263,16 +278,19 @@ public class Patient implements Serializable {
         calAgeFromDob();
         return ageMonths;
     }
+
     public String getIdStr() {
         String formatted = String.format("%07d", id);
         return formatted;
     }
 
+    @Deprecated
     public int getAgeDays() {
         calAgeFromDob();
         return ageDays;
     }
 
+    @Deprecated
     public int getAgeYears() {
         calAgeFromDob();
         return ageYears;
@@ -285,8 +303,6 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
 
     @Override
     public int hashCode() {
@@ -371,6 +387,7 @@ public class Patient implements Serializable {
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
     }
+
     public boolean isRetired() {
         return retired;
     }
@@ -544,6 +561,14 @@ public class Patient implements Serializable {
 
     public void setCreditLimit(Double creditLimit) {
         this.creditLimit = creditLimit;
+    }
+
+    public boolean isEditingMode() {
+        return editingMode;
+    }
+
+    public void setEditingMode(boolean editingMode) {
+        this.editingMode = editingMode;
     }
 
 }

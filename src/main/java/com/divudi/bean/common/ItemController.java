@@ -16,6 +16,7 @@ import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
@@ -78,6 +79,8 @@ public class ItemController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    ItemMappingController itemMappingController;
+    @Inject
     ItemFeeManager itemFeeManager;
     @Inject
     DepartmentController departmentController;
@@ -136,8 +139,6 @@ public class ItemController implements Serializable {
         m.put("scs", it);
         allItems = getFacade().findByJpql(jpql, m);
     }
-
-   
 
     public String toManageItemdIndex() {
         return "/admin/items/index";
@@ -286,6 +287,8 @@ public class ItemController implements Serializable {
         return item;
     }
 
+    
+    
     public void fillInvestigationSampleComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select an investigation");
@@ -495,6 +498,8 @@ public class ItemController implements Serializable {
             i.getItemFeesAuto();
         }
     }
+    
+    
 
     public void createItemFessForItemsWithoutFee() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1109,7 +1114,7 @@ public class ItemController implements Serializable {
         List<Item> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<>();    
+            suggestions = new ArrayList<>();
         } else {
             sql = "select c from Item c where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
@@ -1361,7 +1366,52 @@ public class ItemController implements Serializable {
         return mySuggestions;
     }
 
-    public List<Item> completeOpdItems(String query) {
+
+    public List<Item> completeItemsByDepartment(String query, Department department) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department=:department "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("department", department);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+    
+    public List<Item> completeItemsByDepartment(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department.institution=:ins "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("ins", institution);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    public List<Item> completeServicesPlusInvestigationsAll(String query) {
         List<Item> mySuggestions;
         HashMap m = new HashMap();
         String sql;
@@ -1370,16 +1420,64 @@ public class ItemController implements Serializable {
         } else {
             sql = "select c from Item c "
                     + " where c.retired=false "
+                    + " and (type(c)=:ser or type(c)=:inv)  "
+                    + " and (c.name) like :q"
+                    + " order by c.name";
+            m.put("ser", Service.class);
+            m.put("inv", Investigation.class);
+            m.put("q", "%" + query.toUpperCase() + "%");
+            //    //////// // System.out.println(sql);
+            mySuggestions = getFacade().findByJpql(sql, m, 20);
+        }
+        return mySuggestions;
+    }
+
+    public List<Item> completeItemsByInstitution(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (LOWER(c.name) LIKE :q) "
+                    + "AND c.institution = :institution "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("institution", institution);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    @Deprecated
+    public List<Item> completeOpdItemsForItemListringStrategyLoggedInstitution(String query) {
+        List<Item> mySuggestions;
+        HashMap m = new HashMap();
+        String sql;
+        if (query == null) {
+            mySuggestions = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false "
                     + " and type(c)!=:pac "
                     + " and type(c)!=:inw "
                     + " and (type(c)=:ser "
                     + " or type(c)=:inv)  "
-                    + " and (c.name) like :q"
+                    + " and (c.name) like :q "
+                    + " and c.institution=:ins "
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("inw", InwardService.class);
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
+            m.put("ins", sessionController.getInstitution());
+
             m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
             mySuggestions = getFacade().findByJpql(sql, m, 20);
@@ -1906,5 +2004,4 @@ public class ItemController implements Serializable {
     /**
      *
      */
-   
 }

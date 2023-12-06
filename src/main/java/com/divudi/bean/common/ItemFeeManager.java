@@ -60,12 +60,39 @@ public class ItemFeeManager implements Serializable {
 
     List<Department> departments;
     List<Staff> staffs;
+    private List<Item> selectedList;
 
-    
-    public void fixIssueToReferralFees(){
+    public void createItemFessForSelectedItems() {
+        System.out.println("createItemFessForSelectedItems" + this);
+        System.out.println("selectedList = " + selectedList);
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        System.out.println("itemFee = " + itemFee);
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("No Item Fee");
+            return;
+        }
+        ItemFee baseItemFee = itemFee;
+        for (Item i : selectedList) {
+            ItemFee itf = new ItemFee();
+            itf.setName(baseItemFee.getName());
+            itf.setItem(i);
+            itf.setInstitution(baseItemFee.getInstitution());
+            itf.setDepartment(baseItemFee.getDepartment());
+            itf.setFeeType(baseItemFee.getFeeType());
+            itf.setFee(baseItemFee.getFee());
+            itf.setFfee(baseItemFee.getFfee());
+            addNewFeeForItem(i, itf);
+        }
+        itemFee = baseItemFee;
+    }
+
+    public void fixIssueToReferralFees() {
         List<ItemFee> ifs = itemFeeFacade.findAll();
-        for(ItemFee f:ifs){
-            if(f.getFeeType()==FeeType.Issue){
+        for (ItemFee f : ifs) {
+            if (f.getFeeType() == FeeType.Issue) {
                 f.setFeeType(FeeType.Referral);
                 f.setInstitution(f.getItem().getInstitution());
                 f.setDepartment(f.getItem().getDepartment());
@@ -73,7 +100,7 @@ public class ItemFeeManager implements Serializable {
             }
         }
     }
-    
+
     public ItemFee getRemovingFee() {
         return removingFee;
     }
@@ -147,6 +174,24 @@ public class ItemFeeManager implements Serializable {
         return departmentFacade.findByJpql(jpql, m);
     }
 
+    public String navigateToItemFees() {
+        return "/admin/pricing/manage_item_fees?faces-redirect=true";
+    }
+
+    public String navigateToItemFeesMultiple() {
+        return "/admin/pricing/manage_item_fees_multiple?faces-redirect=true";
+    }
+
+    public void clearItemFees() {
+        item = null;
+        itemFees = null;
+        removingFee = null;
+    }
+
+    public void clearSelectedItems() {
+        selectedList = new ArrayList<>();
+    }
+
     public Item getItem() {
         return item;
     }
@@ -178,15 +223,15 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    public String toManageItemFees(){
-        if(item==null){
+    public String toManageItemFees() {
+        if (item == null) {
             JsfUtil.addErrorMessage("Nothing Selected to Edit");
             return "";
         }
         fillFees();
         return "/common/manage_item_fees";
     }
-    
+
     public List<ItemFee> fillFees(Item i) {
         String jpql;
         Map m = new HashMap();
@@ -214,6 +259,26 @@ public class ItemFeeManager implements Serializable {
         JsfUtil.addSuccessMessage("New Fee Added");
     }
 
+    public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
+        System.out.println("addNewFeeForItem");
+        System.out.println("inputItem = " + inputItem);
+        System.out.println("inputFee = " + inputFee);
+        if (inputItem == null) {
+            JsfUtil.addErrorMessage("Select Item ?");
+            return;
+        }
+        inputFee.setCreatedAt(new Date());
+        inputFee.setCreater(sessionController.getLoggedUser());
+        itemFeeFacade.create(inputFee);
+
+        inputFee.setItem(inputItem);
+        itemFeeFacade.edit(inputFee);
+
+        List<ItemFee> inputFees = fillFees(inputItem);
+        updateTotal(inputItem, inputFees);
+
+    }
+
     public void updateFee(ItemFee f) {
         itemFeeFacade.edit(f);
         updateTotal();
@@ -224,30 +289,58 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         double t = 0.0;
-        double tf =0.0;
+        double tf = 0.0;
         for (ItemFee f : itemFees) {
             t += f.getFee();
-            tf+=f.getFfee();
+            tf += f.getFfee();
             itemFeeFacade.edit(f);
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(getItem());
     }
-    
-    
+
+    public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {
+        System.out.println("updateTotal");
+        System.out.println("inputItemFees = " + inputItemFees);
+        System.out.println("inputItem = " + inputItem);
+        if (inputItem == null) {
+            return;
+        }
+        double t = 0.0;
+        double tf = 0.0;
+        for (ItemFee f : inputItemFees) {
+            t += f.getFee();
+            tf += f.getFfee();
+        }
+        inputItem.setTotal(t);
+        inputItem.setTotalForForeigner(tf);
+        itemFacade.edit(inputItem);
+    }
+
     public void updateTotal() {
         if (item == null) {
             return;
         }
         double t = 0.0;
-        double tf =0.0;
+        double tf = 0.0;
         for (ItemFee f : itemFees) {
             t += f.getFee();
-            tf+=f.getFfee();
+            tf += f.getFfee();
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(item);
+    }
+
+    public List<Item> getSelectedList() {
+        if (selectedList == null) {
+            selectedList = new ArrayList<>();
+        }
+        return selectedList;
+    }
+
+    public void setSelectedList(List<Item> selectedList) {
+        this.selectedList = selectedList;
     }
 }

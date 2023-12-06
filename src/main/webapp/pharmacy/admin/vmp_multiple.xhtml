@@ -26,22 +26,23 @@
                 <f:facet name="header">
                     <div class="d-flex align-items-center justify-content-between">
                         <h:outputText value="VMPs" />
-                    <div class="d-flex justify-content-end align-items-center">
-                        <h:commandButton
-                            class="btn btn-success mx-2"
-                            value="Download">
-                            <p:dataExporter type="xlsx" target="tblvmp" fileName="vmp_list"/> 
-                        </h:commandButton>
-                        <h:commandButton 
-                            value="Remove Selected" 
-                            class="btn btn-danger"
-                            action="#{pharmacyController.deleteMultipleVmps()}"
-                            onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" 
-                            />
-                    </div>
+                        <div class="d-flex justify-content-end align-items-center">
+                            <h:commandButton
+                                class="btn btn-success mx-2"
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="tblvmp" fileName="vmp_list"/> 
+                            </h:commandButton>
+                            <h:commandButton 
+                                value="Remove Selected" 
+                                class="btn btn-danger"
+                                action="#{pharmacyController.deleteMultipleVmps()}"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                />
+                        </div>
                     </div>
                 </f:facet>
+
                 <p:column 
                     selectionMode="multiple" width="50" >
                 </p:column>
@@ -53,16 +54,14 @@
                     <h:outputText value="#{i.id}" ></h:outputText>
                 </p:column>
                 <p:column 
+                    headerText="Name (VMP)" 
                     sortBy="#{i.name}"
                     filterBy="#{i.name}"
                     filterMatchMode="contains">
-                    <f:facet name="header">
-                        <h:outputText value="VMP Name"></h:outputText>
-                    </f:facet>
                     <h:outputText value="#{i.name}" ></h:outputText>
                 </p:column>
                 <p:column 
-                    headerText="VTM Name" 
+                    headerText="Generic (VTM)" 
                     sortBy="#{i.vtm.name}"
                     filterBy="#{i.vtm.name}"
                     filterMatchMode="contains">
@@ -97,46 +96,19 @@
                     <h:outputText value="#{i.strengthOfAnIssueUnit}" ></h:outputText>
                 </p:column>
                 <p:column 
-                    headerText="Issue Units Per Pack" 
-                    sortBy="#{i.issueUnitsPerPackUnit}"
-                    filterBy="#{i.issueUnitsPerPackUnit}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.issueUnitsPerPackUnit}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Pack Unit" 
-                    sortBy="#{i.packUnit.name}"
-                    filterBy="#{i.packUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.packUnit.name}" ></h:outputText>
-                </p:column>
-                <p:column 
                     headerText="Min Issue Quantity" 
                     sortBy="#{i.minimumIssueQuantity}"
                     filterBy="#{i.minimumIssueQuantity}"
                     filterMatchMode="contains">
                     <h:outputText value="#{i.minimumIssueQuantity}" ></h:outputText>
                 </p:column>
-                <p:column 
-                    headerText="Min Issue Unit" 
-                    sortBy="#{i.minimumIssueQuantityUnit.name}"
-                    filterBy="#{i.minimumIssueQuantityUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.minimumIssueQuantityUnit.name}" ></h:outputText>
-                </p:column>
+
                 <p:column 
                     headerText="Issue Multiplies Quantity" 
                     sortBy="#{i.issueMultipliesQuantity}"
                     filterBy="#{i.issueMultipliesQuantity}"
                     filterMatchMode="contains">
                     <h:outputText value="#{i.issueMultipliesQuantity}" ></h:outputText>
-                </p:column>
-                <p:column 
-                    headerText="Issue Multiplies Unit" 
-                    sortBy="#{i.issueMultipliesUnit.name}"
-                    filterBy="#{i.issueMultipliesUnit.name}"
-                    filterMatchMode="contains">
-                    <h:outputText value="#{i.issueMultipliesUnit.name}" ></h:outputText>
                 </p:column>
                 <p:column headerText="Actions" exportable="false" >
                     <h:commandButton
@@ -150,8 +122,37 @@
                 </p:column>
             </p:dataTable>
 
-            
-            
+
+            <p:panel header="Assign Issue Units" >
+
+                <p:outputLabel value="Issue Unit" ></p:outputLabel>
+                <p:selectOneMenu 
+                    required="true"
+                    requiredMessage="Issue Unit Required"
+                    value="#{pharmacyController.issueUnit}"
+                    filter="true"             
+                    class="w-100">
+                    <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
+                    <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                </p:selectOneMenu> 
+
+                <h:commandButton 
+                    value="Assign Issue Unit Selected" 
+                    class="btn btn-danger"
+                    action="#{pharmacyController.assignIssueUnitToMultipleVmps()}"
+                    onclick="if (!confirm('Are you sure you want to assign Issue Units to these VMPs?'))
+                                return false;" 
+                    />
+                
+                <h:commandButton 
+                    value="Fill Units" 
+                    class="btn btn-danger"
+                    action="#{measurementUnitController.fillAllUnits()}"
+                    />
+
+            </p:panel>
+
+
         </h:form>
     </ui:define>
 </ui:composition>

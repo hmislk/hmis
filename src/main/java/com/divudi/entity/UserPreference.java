@@ -6,10 +6,12 @@
 package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.RestAuthenticationType;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -85,9 +87,12 @@ public class UserPreference implements Serializable {
     @Lob
     private String smsTemplateForOpdBillSetting;
 
+    @Deprecated
     boolean institutionSpecificItems = false;
+
     @Lob
     private String opdBillTemplate;
+    @Deprecated
     private boolean institutionRestrictedBilling = false;
     private boolean opdSettleWithoutReferralDetails;
     private boolean partialPaymentOfOpdBillsAllowed;
@@ -129,6 +134,7 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
+    @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
     @Enumerated(EnumType.STRING)
@@ -139,15 +145,34 @@ public class UserPreference implements Serializable {
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
+
+    @Column(length = 255) // Adjust the length as needed
     private String smsUrl;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsUsername;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsPassword;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsUserAlias;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsUsernameParameterName;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsPasswordParameterName;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsUserAliasParameterName;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsPhoneNumberParameterName;
+
+    @Column(length = 100) // Adjust the length as needed
     private String smsMessageParameterName;
+
     @Enumerated
     private RestAuthenticationType smsAuthenticationType;
 
@@ -172,9 +197,16 @@ public class UserPreference implements Serializable {
     private String shortTimeFormat;
     private String encrptionKey;
 
-    
-    
-    
+    private String nameRegex;
+    private String mobileRegex;
+    private String emailRegex;
+
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy opdItemListingStrategy;
+
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy ccItemListingStrategy;
+
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -931,7 +963,7 @@ public class UserPreference implements Serializable {
 
     public String getShortDateFormat() {
         if (shortDateFormat == null || shortDateFormat.trim().equals("")) {
-            shortDateFormat = "dd MM yy";
+            shortDateFormat = "dd MMM yy";
         }
         return shortDateFormat;
     }
@@ -942,7 +974,7 @@ public class UserPreference implements Serializable {
 
     public String getLongDateTimeFormat() {
         if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
-            longDateTimeFormat = "dd MMMM yyyy hh:mm:ss";
+            longDateTimeFormat = "dd MMM yyyy HH:mm:ss";
         }
         return longDateTimeFormat;
     }
@@ -953,7 +985,7 @@ public class UserPreference implements Serializable {
 
     public String getShortDateTimeFormat() {
         if (shortDateTimeFormat == null || shortDateTimeFormat.trim().equals("")) {
-            shortDateTimeFormat = "dd MM yy hh:mm a";
+            shortDateTimeFormat = "dd MMM yy HH:mm";
         }
         return shortDateTimeFormat;
     }
@@ -964,7 +996,7 @@ public class UserPreference implements Serializable {
 
     public String getLongTimeFormat() {
         if (longTimeFormat == null || longTimeFormat.trim().equals("")) {
-            longTimeFormat = "hh:mm:ss a";
+            longTimeFormat = "HH:mm:ss";
         }
         return longTimeFormat;
     }
@@ -975,7 +1007,7 @@ public class UserPreference implements Serializable {
 
     public String getShortTimeFormat() {
         if (shortTimeFormat == null || shortTimeFormat.trim().equals("")) {
-            shortTimeFormat = "hh:mm a";
+            shortTimeFormat = "HH:mm";
         }
         return shortTimeFormat;
     }
@@ -990,6 +1022,52 @@ public class UserPreference implements Serializable {
 
     public void setEncrptionKey(String encrptionKey) {
         this.encrptionKey = encrptionKey;
+    }
+
+    public ItemListingStrategy getOpdItemListingStrategy() {
+        if (opdItemListingStrategy == null) {
+            opdItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return opdItemListingStrategy;
+    }
+
+    public void setOpdItemListingStrategy(ItemListingStrategy opdItemListingStrategy) {
+        this.opdItemListingStrategy = opdItemListingStrategy;
+    }
+
+    public String getNameRegex() {
+        return nameRegex;
+    }
+
+    public void setNameRegex(String nameRegex) {
+        this.nameRegex = nameRegex;
+    }
+
+    public String getMobileRegex() {
+        return mobileRegex;
+    }
+
+    public void setMobileRegex(String mobileRegex) {
+        this.mobileRegex = mobileRegex;
+    }
+
+    public String getEmailRegex() {
+        return emailRegex;
+    }
+
+    public void setEmailRegex(String emailRegex) {
+        this.emailRegex = emailRegex;
+    }
+
+    public ItemListingStrategy getCcItemListingStrategy() {
+        if (ccItemListingStrategy == null) {
+            ccItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return ccItemListingStrategy;
+    }
+
+    public void setCcItemListingStrategy(ItemListingStrategy ccItemListingStrategy) {
+        this.ccItemListingStrategy = ccItemListingStrategy;
     }
 
 }

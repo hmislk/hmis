@@ -49,6 +49,8 @@
                                     <p:commandButton id="btnNew"
                                                    ajax="false"
                                                      value="Add New"
+                                                     icon="fa fa-plus"
+                                                     class="ui-button-success mx-2"
                                                      process="btnNew txtNewName" 
                                                      update="repeatCats"
                                                     action="#{categoryController.addReligion()}">
@@ -66,6 +68,7 @@
 
                             <ui:repeat id="repeatCats" value="#{categoryController.religions}"
                                        var="cat"
+                                       class="mt-2"
                                        >
                                 <tr>
                                     <td>

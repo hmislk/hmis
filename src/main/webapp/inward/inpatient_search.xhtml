@@ -1,168 +1,182 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head >
+    </h:head>
+    <h:body>
 
-    <ui:define name="content">
-        <h:form id="form">
+        <ui:composition template="/resources/template/template.xhtml">
 
-            <div class="row" >
-                <div class="col-2">
-                    <div class="mb-3">
-                        <p:outputLabel value="BHT Number" styleClass="form-label"></p:outputLabel>
-                        <p:inputText value="#{admissionController.bhtNumberForSearch}" styleClass="form-control"></p:inputText>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Patient Name" styleClass="form-label"></p:outputLabel>
-                        <p:inputText value="#{admissionController.patientNameForSearch}" styleClass="form-control"></p:inputText>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Patient Phone Number" styleClass="form-label"></p:outputLabel>
-                        <p:inputText value="#{admissionController.patientPhoneNumberForSearch}" styleClass="form-control"></p:inputText>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Patient Identity Card Number" styleClass="form-label"></p:outputLabel>
-                        <p:inputText value="#{admissionController.patientIdentityNumberForSearch}" styleClass="form-control"></p:inputText>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Referring Doctor" styleClass="form-label"></p:outputLabel>
-                        <p:autoComplete forceSelection="true"
-                                        id="cmbDoc"
-                                        value="#{admissionController.referringDoctorForSearch}"
-                                        completeMethod="#{doctorController.completeDoctor}"
-                                        var="ix"
-                                        styleClass="w-100"
-                                        inputStyleClass="form-control">
-                            <p:column headerText="Name">
-                                <h:outputLabel value="#{ix.person.nameWithTitle}"></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Speciality">
-                                <h:outputLabel value="#{ix.speciality.name}"></h:outputLabel>
-                            </p:column>
-                        </p:autoComplete>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Status" styleClass="form-label"></p:outputLabel>
-                        <p:selectOneMenu value="#{admissionController.admissionStatusForSearch}" 
-                                         style="width: 100%;"
-                                         styleClass="form-control">
-                            <f:selectItems value="#{enumController.admissionStatuses}" var="status" itemValue="#{status}" itemLabel="#{status}" />
-                        </p:selectOneMenu>
-                    </div>
-                    <div class="mb-3">
-                        <p:outputLabel value="Institution" styleClass="form-label"></p:outputLabel>
-                        <p:selectOneMenu id="cmbFromInstitution"
-                                         value="#{admissionController.institutionForSearch}"
-                                         filter="true"
-                                         styleClass="form-select w-100">
-                            <f:selectItem itemLabel="All"></f:selectItem>
-                            <f:selectItems value="#{institutionController.managaeInstitutionIndex}"
-                                           var="i"
-                                           itemLabel="#{i.name}"
-                                           itemValue="#{i}"></f:selectItems>
-                        </p:selectOneMenu>
-                    </div>
-                    <div class="mb-3">
-                        <p:commandButton ajax="false"
-                                         value="Search"
-                                         action="#{admissionController.searchAdmissions}"
-                                         styleClass="btn btn-primary"></p:commandButton>
-                    </div>
-                </div>
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:panel header="Admissions" style="height: 100vh" >
+                        <div class="d-flex">
+                            <h:panelGrid columns="1">
+                                <p:outputLabel value="From Date"></p:outputLabel>
+                                <p:calendar
+                                    value="#{admissionController.fromDate}" 
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                </p:calendar>
+                                <p:outputLabel value="To Date"></p:outputLabel>
+                                <p:calendar 
+                                    value="#{admissionController.toDate}"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                </p:calendar>
 
-                <div class="col-10" >
-                    <p:dataTable value="#{admissionController.items}" var="a" rowKey="#{a.id}" paginator="true" rows="10"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
+                                <p:commandButton ajax="false"
+                                                 value="Search"
+                                                 action="#{admissionController.searchAdmissions}"
+                                                 class="mt-2 w-100 mb-3"></p:commandButton>
 
-                        <p:column headerText="BHT No" filterBy="#{a.bhtNo}" filterMatchMode="contains">
-                            <h:outputText value="#{a.bhtNo}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Patient Name" filterBy="#{a.patient.person.name}" filterMatchMode="contains">
-                            <h:outputText value="#{a.patient.person.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Phone/Mobile" filterBy="#{a.patient.person.phone}, #{a.patient.person.mobile}" filterMatchMode="contains">
-                            <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
-                            <h:outputText value="#{a.patient.person.mobile}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Address" filterBy="#{a.patient.person.address}" filterMatchMode="contains">
-                            <h:outputText value="#{a.patient.person.address}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="PHN" filterBy="#{a.patient.phn}" filterMatchMode="contains">
-                            <h:outputText value="#{a.patient.phn}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Status" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
-                            <h:outputText value="#{a.discharged}" ></h:outputText>
-                            <h:outputText value="#{a.paymentFinalized}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Current Room" filterBy="#{a.currentPatientRoom.name}" filterMatchMode="contains">
-                            <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Admission Date" filterBy="#{a.dateOfAdmission}" filterMatchMode="contains">
-                            <h:outputText value="#{a.dateOfAdmission}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Discharge Date" filterBy="#{a.dateOfDischarge}" filterMatchMode="contains">
-                            <h:outputText value="#{a.dateOfDischarge}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Actions">
-                            <p:commandButton ajax="false" value="Details" action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
 
-                </div>
-            </div>
 
-            <h:panelGroup class="row" >
-                <div class="col-12">
-                    <h:panelGroup id="panelPatient" >
-                        <p:panel header="Patient Details">
-                            <div class="row">
-                                <div class="row d-flex justify-content-center align-items-center mt-2">
-                                    <div class="col-5">
-                                        <h:outputLabel value="Referring Doctor : "/>
-                                    </div>
-                                    <div class="col-7">
+                                <p:outputLabel value="BHT No" ></p:outputLabel>
+                                <p:inputText value="#{admissionController.bhtNumberForSearch}" ></p:inputText>
 
-                                    </div>
-                                </div>
+                                <p:outputLabel value="Patient Name" ></p:outputLabel>
+                                <p:inputText value="#{admissionController.patientNameForSearch}" ></p:inputText>
 
-                                <div class="row  d-flex justify-content-center align-items-center mt-2">
-                                    <div class="col-5">
-                                        <h:outputLabel value="Type Patient Name or BHT : "/>
-                                    </div>
-                                    <div class="col-7">
-                                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                        value="#{billBhtController.patientEncounter}" 
-                                                        completeMethod="#{admissionController.completePatient}"
-                                                        var="apt2" itemLabel="#{apt2.bhtNo}"
-                                                        itemValue="#{apt2}" size="30"  style="width: 400px;" >
-                                            <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
-                                            <p:column >
-                                                <h:outputLabel value="#{apt2.bhtNo}"/> 
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputLabel value="#{apt2.patient.person.name}"/> 
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                            </p:column>
-                                        </p:autoComplete>  
-                                    </div>
-                                </div>
+                                <p:outputLabel value="Patient Phone" ></p:outputLabel>
+                                <p:inputText value="#{admissionController.patientPhoneNumberForSearch}" ></p:inputText>
+
+                                <p:outputLabel value="Patient NIC" ></p:outputLabel>
+                                <p:inputText value="#{admissionController.patientIdentityNumberForSearch}" ></p:inputText>
+
+                                <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                <p:autoComplete forceSelection="true"
+                                                id="cmbDoc"
+                                                value="#{admissionController.referringDoctorForSearch}"
+                                                completeMethod="#{doctorController.completeDoctor}"
+                                                var="ix"
+                                                inputStyleClass="form-control">
+                                    <p:column headerText="Name">
+                                        <h:outputLabel value="#{ix.person.nameWithTitle}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <h:outputLabel value="#{ix.speciality.name}"></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <p:outputLabel value="Status" ></p:outputLabel>
+                                <p:selectOneMenu value="#{admissionController.admissionStatusForSearch}" style="width: 200px">
+                                    <f:selectItems value="#{enumController.admissionStatuses}" var="status" itemValue="#{status}" itemLabel="#{status}" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Institution"></p:outputLabel>
+                                <p:selectOneMenu id="cmbFromInstitution"
+                                                 value="#{admissionController.institutionForSearch}"
+                                                 filter="true"
+                                                 style="width: 200px">
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.managaeInstitutionIndex}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}"></f:selectItems>
+                                </p:selectOneMenu>
+
+                            </h:panelGrid> 
+
+
+                            <div class="p-1" >
+                                <p:dataTable id="tblBills" 
+                                             value="#{admissionController.items}" 
+                                             var="a"
+                                             emptyMessage="No records found"
+                                             rowKey="#{a.id}"
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorAlwaysVisible="false"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                             rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                             >  
+
+
+                                    <p:column headerText="BHT No" >
+                                        <h:outputText value="#{a.bhtNo}"></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient Name"  >
+                                        <h:outputText value="#{a.patient.person.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Phone/Mobile" >
+                                        <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
+                                        <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
+                                        <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Address" >
+                                        <h:outputText value="#{a.patient.person.address}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Status" >
+                                        <h:panelGroup>
+                                            <!-- Discharge Status -->
+                                            <h:panelGroup rendered="#{a.discharged}">
+                                                <i class="fa fa-fw fa-bed" title="Discharged"></i>
+                                                <i class="fa fa-check" title="Discharged"></i>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not a.discharged}">
+                                                <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
+                                                <i class="fa fa-times" title="Not Discharged"></i>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                        <p:spacer width="20" ></p:spacer>
+                                        <h:panelGroup>
+                                            <!-- Bill Status -->
+                                            <h:panelGroup rendered="#{a.billSession}">
+                                                <i class="fa fa-fw fa-money" title="Payment Finalized"></i>
+                                                <i class="fa fa-check" title="Payment Finalized"></i>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not a.paymentFinalized}">
+                                                <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
+                                                <i class="fa fa-times" title="Payment Pending"></i>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Current Room" >
+                                        <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Admission Date" >
+                                        <h:outputLabel value="#{a.dateOfAdmission}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Discharge Date" >
+                                        <h:outputText value="#{a.dateOfDischarge}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Actions" >
+                                        <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
+                                        <p:commandButton ajax="false" 
+                                                         class="m-1"
+                                                         icon="fa fa-fw fa-bed" 
+                                                         action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
+                                        </p:commandButton>
+
+                                        <p:commandButton ajax="false" 
+                                                         class="m-1"
+                                                         icon="fa fa-user-md" 
+                                                         action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
+                                        </p:commandButton>
+
+                                    </p:column>
+
+                                </p:dataTable>
+
                             </div>
-                            <p:commandButton class="mt-2" value="Select" ajax="false" ></p:commandButton>
-                        </p:panel>
-                    </h:panelGroup>
-                </div>
-            </h:panelGroup>
-        </h:form>
-    </ui:define>
-</ui:composition>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

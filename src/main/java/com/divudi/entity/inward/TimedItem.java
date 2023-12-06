@@ -14,11 +14,5 @@ import javax.persistence.Entity;
  */
 @Entity
 public class TimedItem extends Item implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-
-   
-    
-    
     
 }

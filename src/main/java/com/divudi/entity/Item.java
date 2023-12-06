@@ -59,13 +59,11 @@ import javax.persistence.Transient;
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
-
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
-
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
@@ -74,11 +72,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
+
     Long id;
     int orderNo;
 
     private Long itemId;
+
+    private boolean isMasterItem;
+    private boolean hasReportFormat;
 
     @ManyToOne
     Category category;
@@ -92,22 +93,21 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     Speciality speciality;
     @ManyToOne
-    @JsonIgnore
+
     Staff staff;
     @ManyToOne
-    @JsonIgnore
+
     Institution forInstitution;
     @ManyToOne
-    @JsonIgnore
+
     Department forDepartment;
     @Enumerated(EnumType.STRING)
     BillType forBillType;
     @ManyToOne
-    @JsonIgnore
     Item billedAs;
     @ManyToOne
-    @JsonIgnore
     Item reportedAs;
+    private Item masterItemReference;
     String name;
     String sname;
     String tname;
@@ -118,31 +118,31 @@ public class Item implements Serializable, Comparable<Item> {
     String fullName;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+
     Date createdAt;
     //Retairing properties 
-//    @JsonIgnore
+//    
     boolean retired;
     @ManyToOne
-    @JsonIgnore
+
     WebUser retirer;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
-    @JsonIgnore
+
     String retireComments;
     //Editer Properties
     @ManyToOne
-    @JsonIgnore
+
     WebUser editer;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
     @ManyToOne
-    @JsonIgnore
+
     Item parentItem;
     boolean userChangable;
     @Enumerated(EnumType.STRING)
@@ -245,9 +245,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
-    
-    
-    
+
     public double getVatPercentage() {
         return 0;
     }
@@ -1195,7 +1193,7 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getTransCodeFromName() {
-        if(name==null){
+        if (name == null) {
             name = "";
         }
         transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
@@ -1269,6 +1267,33 @@ public class Item implements Serializable, Comparable<Item> {
     public void setClazz(String clazz) {
         this.clazz = clazz;
     }
+
+    public boolean isIsMasterItem() {
+        return isMasterItem;
+    }
+
+    public void setIsMasterItem(boolean isMasterItem) {
+        this.isMasterItem = isMasterItem;
+    }
+
+    public boolean isHasReportFormat() {
+        return hasReportFormat;
+    }
+
+    public void setHasReportFormat(boolean hasReportFormat) {
+        this.hasReportFormat = hasReportFormat;
+    }
+
+    public Item getMasterItemReference() {
+        return masterItemReference;
+    }
+
+    public void setMasterItemReference(Item masterItemReference) {
+        this.masterItemReference = masterItemReference;
+    }
+    
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

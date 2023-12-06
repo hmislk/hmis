@@ -17,89 +17,139 @@
 
         <h:outputStylesheet library="css" name="printing.css" />
 
-        <h:panelGroup styleClass="opdPanel" >
+        <h:panelGroup styleClass="opdPanel"  >
             <h:form id="form">
 
                 <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
-                    <p:panel header="Inward Appointments">
+                    <p:panel header="Inward Appointments" style="height: 100vh"> 
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-12 d-flex justify-content-end align-items-center">
 
-                                <p:selectOneMenu   
-                                    id="cmbPs" 
-                                    value="#{appointmentController.currentBill.paymentMethod}">                                                                     
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                    <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
-                                </p:selectOneMenu>
 
-                                <h:panelGroup 
-                                    id="creditCard" 
-                                    style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                    <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="cheque" style="display: #{appointmentController.currentBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                    <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup id="slip" style="display: #{appointmentController.currentBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                    <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
-                                </h:panelGroup>
 
                                 <p:commandButton  
-                                    value="Settle" 
+                                    value="Make Appointment" 
                                     action="#{appointmentController.settleBill}" 
-                                    ajax="false"   
-                                    class="m-1">
+                                    ajax="false"
+                                    icon="fa fa-check"
+                                    class="ui-button-success mx-1 "
+                                    >
                                 </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="#{appointmentController.prepareNewBill()}" >
+                                <p:commandButton 
+                                    value="Patient Lookup"
+                                    ajax="false" 
+                                    icon="fa fa-search"
+                                    action="#{opdBillController.navigateToSearchPatients()}"
+                                    class="ui-button-warning mx-1 ">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Profile"
+                                    ajax="false" 
+                                    icon="fa fa-user"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    class="ui-button-secondary mx-1 ">
+                                    <f:setPropertyActionListener 
+                                        target="#{patientController.current}" 
+                                        value="#{appointmentController.searchedPatient}">
+                                        
+                                    </f:setPropertyActionListener>
                                 </p:commandButton>
 
                             </div>
+
                         </div>
 
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <h:panelGroup id="panelPatient" >
-                                    <p:panel header="Patient Details">
+                                    <p:panel>
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fa fa-user-circle" />
+                                            <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+
                                         <ez:patientDetail   patient="#{appointmentController.searchedPatient}"/>
+
                                     </p:panel>
                                 </h:panelGroup>
                             </div>
+
                             <div class="col-md-6">
-                                <p:panelGrid columns="2" class="w-100"  id="refferingDr">
-                                    <p:outputLabel value="Referring Doctor" 
-                                                   class="form-label"/>
-                                    <p:autoComplete forceSelection="true"
-                                                    class="w-100"
+                                <p:panel class="mb-3">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa-solid fa-money-bill-1-wave" />
+                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <div class="d-flex justify-content-between align-items-center my-2">
+                                        <div>
+                                            <p:selectOneMenu   
+                                                id="cmbPs" 
+                                                style="width: 10em;"
+                                                class="mx-0"
+                                                value="#{appointmentController.currentBill.paymentMethod}">                                                                     
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                                                <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div>
+                                            <h:panelGroup 
+                                                id="creditCard" 
+                                                style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                                    inputStyleClass="w-100"
-                                                    id="cmbDoc" 
-                                                    value="#{appointmentController.currentBill.referredBy}"
-                                                    completeMethod="#{doctorController.completeDoctor}" 
-                                                    var="doc" 
-                                                    itemLabel="#{doc.person.name}" 
-                                                    itemValue="#{doc}" 
-                                                    size="30"  >
-                                    </p:autoComplete>
+                                            <h:panelGroup id="cheque" style="display: #{appointmentController.currentBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                    <p:outputLabel value="Appointment Date"/>
-                                    <p:calendar 
-                                        inputStyleClass="w-100"
-                                        class="w-100"
-                                        value="#{appointmentController.currentAppointment.appointmentDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                        >                            
-                                    </p:calendar>
-                                    <h:outputLabel value="Amount" ></h:outputLabel>
-                                    <p:inputText autocomplete="off"
-                                                 id="pBillDetails"
-                                                 class="w-100"
-                                                 value="#{appointmentController.currentBill.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:inputText>
-                                </p:panelGrid>
+                                            <h:panelGroup id="slip" style="display: #{appointmentController.currentBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+
+                                    </div>
+                                </p:panel>
+
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-info-circle" />
+                                        <h:outputLabel value="Referring Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGrid columns="2" class="w-100"  id="refferingDr">
+                                        <p:outputLabel value="Referring Doctor" 
+                                                       class="form-label"/>
+                                        <p:autoComplete forceSelection="true"
+                                                        class="w-100 my-1"
+                                                        inputStyleClass="w-100"
+                                                        id="cmbDoc" 
+                                                        value="#{appointmentController.currentBill.referredBy}"
+                                                        completeMethod="#{doctorController.completeDoctor}" 
+                                                        var="doc" 
+                                                        itemLabel="#{doc.person.name}" 
+                                                        itemValue="#{doc}" 
+                                                        size="30"  >
+                                        </p:autoComplete>
+
+                                        <p:outputLabel value="Appointment Date"/>
+                                        <p:calendar 
+                                            inputStyleClass="w-100"
+                                            class="w-100 my-1"
+                                            value="#{appointmentController.currentAppointment.appointmentDate}" 
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            >                            
+                                        </p:calendar>
+                                        <h:outputLabel value="Amount" ></h:outputLabel>
+                                        <p:inputText autocomplete="off"
+                                                     id="pBillDetails"
+                                                     class="w-100 my-1"
+                                                     value="#{appointmentController.currentBill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </h:panelGrid>
+                                </p:panel>
 
                             </div>
                         </div>

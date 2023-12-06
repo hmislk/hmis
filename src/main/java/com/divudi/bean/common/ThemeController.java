@@ -66,6 +66,9 @@ public class ThemeController implements Serializable {
             case "primeone-dim-filled":
             case "primeone-dark-outlined":
             case "primeone-dark-filled":
+            case "saga":
+            case "vela":
+            case "arya":
                 return theme;
             default:
                 theme = "material-light-outlined"; // Default theme
@@ -100,6 +103,9 @@ public class ThemeController implements Serializable {
     @PostConstruct
     public void init() {
         themes = new TreeMap<String, String>();
+        themes.put("saga", "saga");
+        themes.put("vela", "vela");
+        themes.put("arya", "arya");
         themes.put("material-light-outlined", "Material Light Outlined");
         themes.put("material-light-filled", "Material Light Filled");
         themes.put("material-dark-outlined", "Material Dark Outlined");

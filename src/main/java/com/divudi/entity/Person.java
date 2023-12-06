@@ -9,27 +9,21 @@ package com.divudi.entity;
 
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
-import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.membership.MembershipScheme;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlTransient;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -43,12 +37,7 @@ import org.joda.time.PeriodType;
 public class Person implements Serializable {
 
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
-
     private WebUser webUser;
-
-    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
-    @Deprecated
-    private List<ClinicalFindingValue> clinicalFindingValues;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -71,6 +60,8 @@ public class Person implements Serializable {
     String surName;
     String lastName;
     String zoneCode;
+                
+
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
@@ -420,7 +411,7 @@ public class Person implements Serializable {
     }
 
     public void setAddress(String address) {
-        this.address = address.toUpperCase();
+        this.address = address;
     }
 
     public String getFax() {
@@ -556,15 +547,6 @@ public class Person implements Serializable {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    @XmlTransient
-    public List<ClinicalFindingValue> getClinicalFindingValues() {
-        return clinicalFindingValues;
-    }
-
-    public void setClinicalFindingValues(List<ClinicalFindingValue> clinicalFindingValues) {
-        this.clinicalFindingValues = clinicalFindingValues;
     }
 
     public MembershipScheme getMembershipScheme() {

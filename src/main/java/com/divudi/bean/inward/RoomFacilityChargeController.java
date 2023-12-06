@@ -69,6 +69,8 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " AND (rm.name) LIKE :q"
 //                    + " ORDER BY rm.name";
     public List<RoomFacilityCharge> completeRoom(String query) {
+        System.out.println("completeRoom");
+        
         List<RoomFacilityCharge> suggestions;
         String sql;
         HashMap hm = new HashMap();
@@ -88,6 +90,8 @@ public class RoomFacilityChargeController implements Serializable {
                     + " AND (rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
+            System.out.println("hm = " + hm);
+            System.out.println("sql = " + sql);
             suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
