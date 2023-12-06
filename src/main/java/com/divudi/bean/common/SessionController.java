@@ -1536,6 +1536,21 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return userPrivilages;
     }
+    
+    public void fillCurrentPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.department=:dep order by p.id desc";
+        m.put("dep", getDepartment());
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setDepartment(loggedUser.getDepartment());
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setInstitution(null);
+        
+    }
 
     public String getBillNo() {
         return billNo;

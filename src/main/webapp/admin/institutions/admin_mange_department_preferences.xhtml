@@ -12,8 +12,26 @@
             <ui:define name="admin">
                 <h:form >
                     <p:panel>
+                        <p:outputLabel  value="Department" ></p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmbDepartment"
+                                placeholder="Department"
+                                value="#{sessionController.department}"
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableDepartments}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
                         <p:commandButton id="btnSave" ajax="false" value="Save" class="m-1"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                        
+                        <p:commandButton value="List prefernces"
+                                                 process="cmbInstitution cmbDepartment"
+                                                 class="ui-button-warning mx-1"
+                                                 ajax="false"
+                                                 action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
 
                         <p:tabView orientation="left" >
                             <p:tab title="Pharmacy" >
