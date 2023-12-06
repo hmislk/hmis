@@ -117,26 +117,6 @@ public class AgentReferenceBookController implements Serializable {
                 commonErrorMessageForSaveChannelBook(arb);
                 return;
             }
-            if (arb.getStartingReferenceNumber() == agentReferenceBook.getStartingReferenceNumber()) {
-                UtilityController.addErrorMessage("Starting Reference Number Is Alredy Given");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if (arb.getEndingReferenceNumber() == agentReferenceBook.getEndingReferenceNumber()) {
-                UtilityController.addErrorMessage("Ending Reference Number Is Alredy Given");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getStartingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getStartingReferenceNumber())) {
-                UtilityController.addErrorMessage("Starting Reference Number Is In Given Book Range");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
-            if ((arb.getStartingReferenceNumber() <= agentReferenceBook.getEndingReferenceNumber()) && (arb.getEndingReferenceNumber() >= agentReferenceBook.getEndingReferenceNumber())) {
-                UtilityController.addErrorMessage("Ending Reference Number Is In Given Book Range");
-                commonErrorMessageForSaveChannelBook(arb);
-                return;
-            }
         }
 
         getAgentReferenceBook().setReferenceBookEnum(bookEnum);

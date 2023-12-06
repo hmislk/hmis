@@ -522,9 +522,7 @@
                     <h:panelGroup rendered="#{collectingCentreBillController.printPreview}" >
                         <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false 
-                                                      and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
-                                                      and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
+                            <h:panelGroup >
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" 
                                                      process="@this" 
@@ -566,7 +564,7 @@
                                 </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq true}">
+                            <h:panelGroup >
 
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
