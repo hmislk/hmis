@@ -54,6 +54,7 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
+
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
@@ -107,6 +108,8 @@ public class Item implements Serializable, Comparable<Item> {
     Item billedAs;
     @ManyToOne
     Item reportedAs;
+    
+    @ManyToOne
     private Item masterItemReference;
     String name;
     String sname;

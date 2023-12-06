@@ -33,7 +33,7 @@ public class AgentReferenceBook implements Serializable {
     private double startingReferenceNumber=0.0;
     private double endingReferenceNumber=0.0;
     private double bookNumber=0.0;
-    private String StrbookNumber;
+    private String strbookNumber;
     private boolean deactivate=false;
 
     @ManyToOne
@@ -229,11 +229,11 @@ public class AgentReferenceBook implements Serializable {
     }
 
     public String getStrbookNumber() {
-        return StrbookNumber;
+        return strbookNumber;
     }
 
     public void setStrbookNumber(String StrbookNumber) {
-        this.StrbookNumber = StrbookNumber;
+        this.strbookNumber = StrbookNumber;
     }
     
     
