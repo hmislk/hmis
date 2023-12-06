@@ -87,7 +87,7 @@ public class AgentReferenceBookController implements Serializable {
             UtilityController.addErrorMessage("Please Select Institution.");
             return;
         }
-        if (agentReferenceBook.getBookNumber() == 0.0) {
+        if (agentReferenceBook.getStrbookNumber()== "") {
             UtilityController.addErrorMessage("please Enter Book Number.");
             return;
         }
