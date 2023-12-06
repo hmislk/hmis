@@ -111,6 +111,8 @@ public class ItemController implements Serializable {
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
 
+    boolean masterItem;
+
     ReportKeyWord reportKeyWord;
 
     public String navigateToListAllItems() {
@@ -287,8 +289,6 @@ public class ItemController implements Serializable {
         return item;
     }
 
-    
-    
     public void fillInvestigationSampleComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select an investigation");
@@ -498,8 +498,6 @@ public class ItemController implements Serializable {
             i.getItemFeesAuto();
         }
     }
-    
-    
 
     public void createItemFessForItemsWithoutFee() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -788,6 +786,24 @@ public class ItemController implements Serializable {
             }
         }
         return lst;
+    }
+
+    public List<Item> completeMasterItems(String query) {
+        String jpql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        jpql = "select damith "
+                + " from Item damith "
+                + " where damith.retired=:ret ";
+        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+        jpql += " and damith.isMasterItem=:mi ";
+        tmpMap.put("q", "%" + query + "%");
+        tmpMap.put("mi", true);
+        tmpMap.put("ret", false);
+        jpql += " order by c.name";
+        System.out.println("tmpMap = " + tmpMap);
+        System.out.println("jpql = " + jpql);
+        return getFacade().findByJpql(jpql, tmpMap) ;
     }
 
     public List<Item> completeItem(String query) {
@@ -1366,7 +1382,6 @@ public class ItemController implements Serializable {
         return mySuggestions;
     }
 
-
     public List<Item> completeItemsByDepartment(String query, Department department) {
         List<Item> suggestions;
         HashMap<String, Object> parameters = new HashMap<>();
@@ -1388,7 +1403,7 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Item> completeItemsByDepartment(String query, Institution institution) {
         List<Item> suggestions;
         HashMap<String, Object> parameters = new HashMap<>();
@@ -1940,6 +1955,14 @@ public class ItemController implements Serializable {
 
     public void setSampleComponent(Item sampleComponent) {
         this.sampleComponent = sampleComponent;
+    }
+
+    public boolean isMasterItem() {
+        return masterItem;
+    }
+
+    public void setMasterItem(boolean masterItem) {
+        this.masterItem = masterItem;
     }
 
     @FacesConverter(forClass = Item.class)
