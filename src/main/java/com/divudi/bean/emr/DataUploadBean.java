@@ -2,6 +2,7 @@ package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
+import com.divudi.bean.common.AnalysisController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
@@ -11,6 +12,11 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.InvestigationCategoryController;
+import com.divudi.bean.lab.InvestigationController;
+import com.divudi.bean.lab.InvestigationTubeController;
+import com.divudi.bean.lab.MachineController;
+import com.divudi.bean.lab.SampleController;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
@@ -29,6 +35,10 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Service;
 import com.divudi.entity.clinical.ClinicalEntity;
+import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.InvestigationTube;
+import com.divudi.entity.lab.Machine;
+import com.divudi.entity.lab.Sample;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -94,6 +104,16 @@ public class DataUploadBean {
     DepartmentController departmentController;
     @Inject 
     EnumController enumController;
+    @Inject
+    InvestigationController investigationController;
+    @Inject
+    SampleController sampleController;
+    @Inject
+    InvestigationTubeController investigationTubeController;
+    @Inject
+    MachineController machineController;
+    @Inject
+    InvestigationCategoryController investigationCategoryController;
 
     @EJB
     PatientFacade patientFacade;
@@ -221,6 +241,18 @@ public class DataUploadBean {
                 readServicesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadInvestigations() {
+        List<Investigation> investigations;
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                readInvestigationsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("e");
             }
         }
     }
@@ -737,6 +769,175 @@ public class DataUploadBean {
         }
 
         return services;
+    }
+    
+    private List<Investigation> readInvestigationsFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Investigation> investigations = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Category cat = null;
+            Institution institution=null;
+            Department department=null;
+            InwardChargeType iwct=null;
+            Sample sample = null;
+            InvestigationTube investigationTube = null;
+            Machine analyser = null;
+
+            String name = null;
+            String printingName = null;
+            String fullName = null;
+            String code = null;
+            String categoryName = null;
+            String institutionName = null;
+            String departmentName = null;
+            String inwardName = null;
+            String sampleName = null;
+            String containerName = null;
+            String analyserName = null;
+
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().equals("")) {
+                    continue;
+                }
+
+            }
+
+            Cell printingNameCell = row.getCell(1);
+            if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
+                printingName = printingNameCell.getStringCellValue();
+
+            }
+            if (printingName == null || printingName.trim().equals("")) {
+                printingName = name;
+            }
+
+            Cell fullNameCell = row.getCell(2);
+            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
+                fullName = fullNameCell.getStringCellValue();
+            }
+            if (fullName == null || fullName.trim().equals("")) {
+                fullName = name;
+            }
+            
+
+            Cell codeCell = row.getCell(3);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+            if (code == null || code.trim().equals("")) {
+                continue;
+            }
+            System.out.println(code);
+            Cell categoryCell = row.getCell(4);
+            if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
+                categoryName = categoryCell.getStringCellValue();
+                cat = investigationCategoryController.findAndCreateCategoryByName(categoryName);
+            }
+            if (categoryName == null || categoryName.trim().equals("")) {
+                continue;
+            }
+           
+           
+            
+
+            Cell insCell = row.getCell(5);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            }
+           
+
+            Cell deptCell = row.getCell(6);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+            if (departmentName != null && !departmentName.trim().equals("")) {
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
+            }
+            
+            
+            Cell inwardCcCell = row.getCell(7);
+            if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
+                inwardName = inwardCcCell.getStringCellValue();
+            }
+            if (inwardName != null && !inwardName.trim().equals("")) {
+                iwct = enumController.getInaChargeType(inwardName);
+            }
+            if(iwct==null){
+                iwct = InwardChargeType.OtherCharges;
+            }
+           
+            
+            Cell sampleCell = row.getCell(8);
+            if (sampleCell != null && sampleCell.getCellType() == CellType.STRING) {
+                sampleName = sampleCell.getStringCellValue();
+                sample = sampleController.findAndCreateSampleByName(sampleName);
+            }
+            
+            if (sampleName == null || sampleName.trim().equals("")){
+                continue;
+            }
+            
+            System.out.println("s"+sampleName);
+            
+            Cell containerCell = row.getCell(9);
+            if (containerCell != null && containerCell.getCellType() == CellType.STRING){
+                containerName = containerCell.getStringCellValue();
+                investigationTube = investigationTubeController.findAndCreateInvestigationTubeByName(containerName);
+            }
+            
+            if (containerName==null || containerName.trim().equals("")){
+                continue;
+            }
+            System.out.println("i"+containerName);
+            
+            
+            Cell analyserCell = row.getCell(10);
+            if (analyserCell != null && analyserCell.getCellType() == CellType.STRING){
+                analyserName = analyserCell.getStringCellValue();
+                analyser = machineController.findAndCreateAnalyserByName(analyserName);
+            }
+            
+            if (analyserName==null || analyserName.trim().equals("")){
+                continue;
+            }
+            
+            
+            Investigation investigation = new Investigation();
+            investigation.setName(name);
+            investigation.setPrintName(printingName);
+            investigation.setFullName(fullName);
+            investigation.setCode(code);
+            investigation.setCategory(cat);
+            investigation.setInstitution(institution);
+            investigation.setDepartment(department);
+            investigation.setInwardChargeType(iwct);
+            investigation.setSample(sample);
+            investigation.setInvestigationTube(investigationTube);
+            investigation.setMachine(analyser);
+
+            investigation.setCreater(sessionController.getLoggedUser());
+            investigation.setCreatedAt(new Date());
+            System.out.println(investigation.getName());
+            investigationController.save(investigation);
+            investigations.add(investigation);
+
+        }
+
+        return investigations;
     }
 
     private List<Amp> readAmpsFromExcel(InputStream inputStream) throws IOException {
