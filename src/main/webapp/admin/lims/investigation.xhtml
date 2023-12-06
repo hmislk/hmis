@@ -105,6 +105,24 @@
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                     </p:selectOneMenu>
+                                    
+                                    <p:selectBooleanCheckbox   id="chkMasterItem" itemLabel="Master Item Reference" value="#{itemController.masterItem}" >
+                                        <p:ajax event="change" process="@this" update="itemAsIx" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:autoComplete 
+                                        disabled="#{!itemController.masterItem}"
+                                        converter="ixcon"  
+                                        widgetVar="aIx1" 
+                                        forceSelection="true" 
+                                        id="itemAsIx"
+                                        var="ix1"
+                                        value="#{itemController.current.isMasterItem}"
+                                        autocomplete="#{itemController.allItems}"
+                                        itemLabel="#{ix1.name}" 
+                                        itemValue="#{ix1}" 
+                                        size="30"  
+                                        style="width: 400px;">
+                                    </p:autoComplete>
 
                                     <p:selectBooleanCheckbox   id="chkBilledAs" value="#{investigationController.billedAs}" itemLabel="Billed as a seperate investigation"  >
                                         <p:ajax event="change" process="@this" update="billedAsIx" />

@@ -110,6 +110,7 @@ public class ItemController implements Serializable {
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
+    public boolean masterItem;
 
     ReportKeyWord reportKeyWord;
 
@@ -1940,6 +1941,14 @@ public class ItemController implements Serializable {
 
     public void setSampleComponent(Item sampleComponent) {
         this.sampleComponent = sampleComponent;
+    }
+
+    public boolean isMasterItem() {
+        return masterItem;
+    }
+
+    public void setMasterItem(boolean masterItem) {
+        this.masterItem = masterItem;
     }
 
     @FacesConverter(forClass = Item.class)
