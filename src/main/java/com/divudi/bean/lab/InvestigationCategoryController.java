@@ -67,7 +67,7 @@ public class InvestigationCategoryController implements Serializable {
     private List<Machine> machines;
     private UploadedFile file;
     String selectText = "";
-    int manageItemIndex;
+    int manageItemIndex=-1;
 
     public List<InvestigationCategory> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from InvestigationCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
