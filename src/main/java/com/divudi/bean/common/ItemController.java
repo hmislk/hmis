@@ -795,13 +795,15 @@ public class ItemController implements Serializable {
         jpql = "select damith "
                 + " from Item damith "
                 + " where damith.retired=:ret ";
-        jpql += " and ((damith.name) like :q or (damith.code) like :q or (damith.barcode) like :q  ) ";
+        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
         jpql += " and damith.isMasterItem=:mi ";
-        tmpMap.put("q", "%" + query.toUpperCase() + "%");
+        tmpMap.put("q", "%" + query + "%");
         tmpMap.put("mi", true);
         tmpMap.put("ret", false);
         jpql += " order by c.name";
-        return lst = getFacade().findByJpql(jpql, tmpMap) ;
+        System.out.println("tmpMap = " + tmpMap);
+        System.out.println("jpql = " + jpql);
+        return getFacade().findByJpql(jpql, tmpMap) ;
     }
 
     public List<Item> completeItem(String query) {
