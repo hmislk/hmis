@@ -11,6 +11,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Category;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.InvestigationCategoryFacade;
@@ -170,6 +171,28 @@ public class InvestigationCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
+    }
+    
+    public InvestigationCategory findAndCreateCategoryByName(String qry) {
+        InvestigationCategory c;
+        String jpql;
+        jpql = "select c from "
+                + " InvestigationCategory c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        c = getFacade().findFirstByJpql(jpql, m);
+        if(c==null){
+            c = new InvestigationCategory();
+            c.setName(qry);
+            c.setCreatedAt(new Date());
+            c.setCreater(sessionController.getLoggedUser());
+            getFacade().create(c);
+        }
+        return c;
     }
 
     public List<Machine> getMachines() {

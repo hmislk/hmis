@@ -89,6 +89,28 @@ public class InvestigationTubeController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public InvestigationTube findAndCreateInvestigationTubeByName(String qry) {
+        InvestigationTube i;
+        String jpql;
+        jpql = "select i from "
+                + " InvestigationTube i "
+                + " where i.retired=:ret "
+                + " and i.name=:name "
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        i = getFacade().findFirstByJpql(jpql, m);
+        if(i==null){
+            i = new InvestigationTube();
+            i.setName(qry);
+            i.setCreatedAt(new Date());
+            i.setCreater(sessionController.getLoggedUser());
+            getFacade().create(i);
+        }
+        return i;
+    }
 
     public InvestigationTubeFacade getEjbFacade() {
         return ejbFacade;
