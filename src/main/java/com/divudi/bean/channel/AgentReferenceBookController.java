@@ -47,7 +47,7 @@ public class AgentReferenceBookController implements Serializable {
     @EJB
     InstitutionFacade institutionFacade;
     @EJB
-    AgentHistoryFacade agentHistoryFacade;
+    private AgentHistoryFacade agentHistoryFacade;
     @EJB
     CommonFunctions commonFunctions;
     @Inject
@@ -55,6 +55,7 @@ public class AgentReferenceBookController implements Serializable {
 
     List<AgentReferenceBook> agentReferenceBooks;
     List<AgentReferenceBook> selectedList;
+    private List<AgentReferenceBook> agentRefBookList;
     Date frmDate;
     Date toDate;
 
@@ -142,6 +143,56 @@ public class AgentReferenceBookController implements Serializable {
         UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
     }
 
+    public void searchReferenceBooks() {
+        createAllBookTable1();
+        createAllBookTable2();
+        createAllBookTable3();
+    }
+    
+     public void createAllBookTable1() {
+         System.out.println("method 1");
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a";
+
+//        m.put("fd", frmDate);
+//        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql);
+    }
+     
+      public void createAllBookTable2() {
+          System.out.println("method 2");
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a";
+
+//        m.put("fd", frmDate);
+//        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql);
+    }
+    
+    public void createAllBookTable3() {
+        System.out.println("method 3");
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a where "
+                + " a.createdAt between :fd and :td "
+                + " and a.retired=false ";
+
+        m.put("fd", frmDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql,m,TemporalType.TIMESTAMP);
+    }
+
     public void createAllBooks() {
         String sql;
         HashMap m = new HashMap();
@@ -222,7 +273,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("ins", institution);
         m.put("ag", dbl);
         m.put("bookNumber", bookNumber);
-        
+
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
 
@@ -383,6 +434,22 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setSelectedList(List<AgentReferenceBook> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public AgentHistoryFacade getAgentHistoryFacade() {
+        return agentHistoryFacade;
+    }
+
+    public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
+        this.agentHistoryFacade = agentHistoryFacade;
+    }
+
+    public List<AgentReferenceBook> getAgentRefBookList() {
+        return agentRefBookList;
+    }
+
+    public void setAgentRefBookList(List<AgentReferenceBook> agentRefBookList) {
+        this.agentRefBookList = agentRefBookList;
     }
 
 }
