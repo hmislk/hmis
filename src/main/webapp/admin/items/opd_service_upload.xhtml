@@ -10,6 +10,84 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="item">
 
+        <h:form >
+            <p:poll ></p:poll>
+        </h:form>
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    <h2>Upload AMPs</h2>
+                </div>
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadBean.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         action="#{dataUploadBean.uploadServices()}"
+                                         ajax="false"/>
+
+                    </h:form>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Name</td>
+                                <td>Name. Required</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Printing Name</td>
+                                <td>Printing Name name. (Trade Name) Required.</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Full Name</td>
+                                <td>Full Name</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Item Code</td>
+                                <td>Item Code  Optional</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Category</td>
+                                <td>Category name.  Required.</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Institution</td>
+                                <td>Institution. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Department</td>
+                                <td>Department. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Inward Charge Category</td>
+                                <td>Inward Charge Category. Optional.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+
         <h:panelGroup>
             <h:form id="form" enctype="multipart/form-data">
                 <p:growl />

@@ -5979,7 +5979,12 @@ public class SearchController implements Serializable {
     }
     
     
-    public void createTableByKeyword(BillType billType, Institution ins, Department dep,Institution fromIns, Department fromDep,Institution toIns, Department toDep ) {
+    public void createTableByKeyword(BillType billType, 
+            Institution ins, Department dep,
+            Institution fromIns, 
+            Department fromDep,
+            Institution toIns, 
+            Department toDep ) {
         System.out.println(toDep);
         bills = null;
         String sql;
@@ -6052,7 +6057,8 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        //System.err.println("Sql " + sql);
+        System.err.println("Sql " + sql);
+        System.out.println("temMap = " + temMap);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }

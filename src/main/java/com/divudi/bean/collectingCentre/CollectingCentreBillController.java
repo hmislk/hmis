@@ -43,11 +43,13 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -117,6 +119,10 @@ public class CollectingCentreBillController implements Serializable {
     /**
      * Controllers
      */
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemMappingController itemMappingController;
     @Inject
     ApplicationController applicationController;
     @Inject
@@ -580,7 +586,7 @@ public class CollectingCentreBillController implements Serializable {
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
     }
-    
+
     private boolean checkPatientAgeSex() {
         if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("") || getSearchedPatient().getPerson().getSex() == null || getSearchedPatient().getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
@@ -615,7 +621,7 @@ public class CollectingCentreBillController implements Serializable {
             getPatientFacade().edit(getSearchedPatient());
         }
     }
-    
+
 //    private void savePatient() {
 //        switch (getPatientTabId()) {
 //            case "tabNewPt":
@@ -632,7 +638,6 @@ public class CollectingCentreBillController implements Serializable {
 //                break;
 //        }
 //    }
-
     public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -1280,6 +1285,42 @@ public class CollectingCentreBillController implements Serializable {
         collectingCentre = null;
     }
 
+    public void prepareNewBillKeepingCollectingCenter() {
+        clearBillItemValues();
+        clearBillValues();
+        setPrintPreview(true);
+        printPreview = false;
+        paymentMethodData = null;
+        paymentScheme = null;
+        paymentMethod = PaymentMethod.Agent;
+    }
+
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, collectingCentre);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, collectingCentre);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, collectingCentre);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, collectingCentre);
+            default:
+                throw new AssertionError();
+        }
+    }
+
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
@@ -1338,8 +1379,13 @@ public class CollectingCentreBillController implements Serializable {
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
         setSearchedPatient(getNewPatient());
-        return "/collecting_centre/bill";
+        return "/collecting_centre/bill?faces-redirect=true";
+    }
 
+    public String navigateToCollectingCenterBillingromCollectingCenterBilling() {
+        prepareNewBillKeepingCollectingCenter();
+        setSearchedPatient(getNewPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {

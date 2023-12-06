@@ -89,7 +89,7 @@ public class UserPreference implements Serializable {
 
     @Deprecated
     boolean institutionSpecificItems = false;
-    
+
     @Lob
     private String opdBillTemplate;
     @Deprecated
@@ -134,6 +134,7 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
+    @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
     @Enumerated(EnumType.STRING)
@@ -144,8 +145,8 @@ public class UserPreference implements Serializable {
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
-    
-        @Column(length = 255) // Adjust the length as needed
+
+    @Column(length = 255) // Adjust the length as needed
     private String smsUrl;
 
     @Column(length = 100) // Adjust the length as needed
@@ -171,8 +172,7 @@ public class UserPreference implements Serializable {
 
     @Column(length = 100) // Adjust the length as needed
     private String smsMessageParameterName;
-    
-    
+
     @Enumerated
     private RestAuthenticationType smsAuthenticationType;
 
@@ -196,13 +196,16 @@ public class UserPreference implements Serializable {
     private String longTimeFormat;
     private String shortTimeFormat;
     private String encrptionKey;
-    
+
     private String nameRegex;
     private String mobileRegex;
     private String emailRegex;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
+
+    @Enumerated(value = EnumType.STRING)
+    private ItemListingStrategy ccItemListingStrategy;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1054,6 +1057,17 @@ public class UserPreference implements Serializable {
 
     public void setEmailRegex(String emailRegex) {
         this.emailRegex = emailRegex;
+    }
+
+    public ItemListingStrategy getCcItemListingStrategy() {
+        if (ccItemListingStrategy == null) {
+            ccItemListingStrategy = ItemListingStrategy.ALL_ITEMS;
+        }
+        return ccItemListingStrategy;
+    }
+
+    public void setCcItemListingStrategy(ItemListingStrategy ccItemListingStrategy) {
+        this.ccItemListingStrategy = ccItemListingStrategy;
     }
 
 }
