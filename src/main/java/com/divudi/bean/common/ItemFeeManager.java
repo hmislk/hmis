@@ -60,6 +60,34 @@ public class ItemFeeManager implements Serializable {
 
     List<Department> departments;
     List<Staff> staffs;
+    private List<Item> selectedList;
+
+    public void createItemFessForSelectedItems() {
+        System.out.println("createItemFessForSelectedItems" + this);
+        System.out.println("selectedList = " + selectedList);
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        System.out.println("itemFee = " + itemFee);
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("No Item Fee");
+            return;
+        }
+        ItemFee baseItemFee = itemFee;
+        for (Item i : selectedList) {
+            ItemFee itf = new ItemFee();
+            itf.setName(baseItemFee.getName());
+            itf.setItem(i);
+            itf.setInstitution(baseItemFee.getInstitution());
+            itf.setDepartment(baseItemFee.getDepartment());
+            itf.setFeeType(baseItemFee.getFeeType());
+            itf.setFee(baseItemFee.getFee());
+            itf.setFfee(baseItemFee.getFfee());
+            addNewFeeForItem(i, itf);
+        }
+        itemFee = baseItemFee;
+    }
 
     public void fixIssueToReferralFees() {
         List<ItemFee> ifs = itemFeeFacade.findAll();
@@ -147,13 +175,21 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToItemFees() {
-        return "/admin/pricing/manage_item_fees";
+        return "/admin/pricing/manage_item_fees?faces-redirect=true";
+    }
+
+    public String navigateToItemFeesMultiple() {
+        return "/admin/pricing/manage_item_fees_multiple?faces-redirect=true";
     }
 
     public void clearItemFees() {
         item = null;
         itemFees = null;
         removingFee = null;
+    }
+
+    public void clearSelectedItems() {
+        selectedList = new ArrayList<>();
     }
 
     public Item getItem() {
@@ -223,6 +259,26 @@ public class ItemFeeManager implements Serializable {
         JsfUtil.addSuccessMessage("New Fee Added");
     }
 
+    public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
+        System.out.println("addNewFeeForItem");
+        System.out.println("inputItem = " + inputItem);
+        System.out.println("inputFee = " + inputFee);
+        if (inputItem == null) {
+            JsfUtil.addErrorMessage("Select Item ?");
+            return;
+        }
+        inputFee.setCreatedAt(new Date());
+        inputFee.setCreater(sessionController.getLoggedUser());
+        itemFeeFacade.create(inputFee);
+
+        inputFee.setItem(inputItem);
+        itemFeeFacade.edit(inputFee);
+
+        List<ItemFee> inputFees = fillFees(inputItem);
+        updateTotal(inputItem, inputFees);
+
+    }
+
     public void updateFee(ItemFee f) {
         itemFeeFacade.edit(f);
         updateTotal();
@@ -244,6 +300,24 @@ public class ItemFeeManager implements Serializable {
         itemFacade.edit(getItem());
     }
 
+    public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {
+        System.out.println("updateTotal");
+        System.out.println("inputItemFees = " + inputItemFees);
+        System.out.println("inputItem = " + inputItem);
+        if (inputItem == null) {
+            return;
+        }
+        double t = 0.0;
+        double tf = 0.0;
+        for (ItemFee f : inputItemFees) {
+            t += f.getFee();
+            tf += f.getFfee();
+        }
+        inputItem.setTotal(t);
+        inputItem.setTotalForForeigner(tf);
+        itemFacade.edit(inputItem);
+    }
+
     public void updateTotal() {
         if (item == null) {
             return;
@@ -257,5 +331,16 @@ public class ItemFeeManager implements Serializable {
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);
         itemFacade.edit(item);
+    }
+
+    public List<Item> getSelectedList() {
+        if (selectedList == null) {
+            selectedList = new ArrayList<>();
+        }
+        return selectedList;
+    }
+
+    public void setSelectedList(List<Item> selectedList) {
+        this.selectedList = selectedList;
     }
 }

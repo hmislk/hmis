@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                
+                <p:growl ></p:growl>
+
+                <p:dialog id="dlg"  header="Adding New Fee" widgetVar="dlg" modal="true" height="400" >
+                    <f:facet name="header" >
+                        <p:commandButton 
+                            value="Add Fee to all Selected Items" 
+                            action="#{itemFeeManager.createItemFessForSelectedItems()}" 
+                            style="margin-left: 30px;" 
+                            update="gpDetail" 
+                            process="tblItems @this" 
+                            oncomplete="PF('dlg').hide();">
+                        </p:commandButton>
+                    </f:facet>
+                    <p:panel  id="gpDetail" >
+                        <p:panelGrid columns="2" >
+                            <h:outputLabel value="Fee Name" ></h:outputLabel>
+                            <h:inputText value="#{itemFeeManager.itemFee.name}" >
+                                <f:ajax event="keyup" execute="@this" ></f:ajax>
+                            </h:inputText>
+
+                            <h:outputLabel value="Fee Type" ></h:outputLabel>
+                            <p:selectOneMenu value="#{itemFeeManager.itemFee.feeType}" >
+                                <f:selectItem itemLabel="Select Fee Type" ></f:selectItem>
+                                <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
+                                <p:ajax process="@this" update="gpDetail" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Discounts Allowed" ></h:outputLabel>
+                            <p:selectBooleanButton value="#{itemFeeManager.itemFee.discountAllowed}" offLabel="Discounts NOT Allowed" onLabel="Discounts Allowed" >
+                            </p:selectBooleanButton>
+
+                            <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
+                                <h:outputLabel value="Institution" ></h:outputLabel>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpAcIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
+                                <p:autoComplete id="acIns" value="#{itemFeeManager.itemFee.institution}" 
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="ins" 
+                                                itemLabel="#{ins.name}" 
+                                                itemValue="#{ins}" 
+                                                >
+                                    <p:ajax event="itemSelect" process="acIns" update="gpSomDepartment" listener="#{itemFeeManager.fillDepartments()}" ></p:ajax>
+                                </p:autoComplete>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpLblDep" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
+                                <h:outputLabel value="Department" ></h:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
+                                <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
+                                    <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpLblSpe" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                <h:outputLabel value="Speciality" ></h:outputLabel>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpAcSpe" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff' }" >
+                                <p:autoComplete value="#{itemFeeManager.itemFee.speciality}" 
+                                                completeMethod="#{specialityController.completeSpeciality}"
+                                                var="spe" 
+                                                itemLabel="#{spe.name}" 
+                                                itemValue="#{spe}" 
+                                                >
+                                    <p:ajax event="itemSelect" process="@this" update="somEmployee" listener="#{itemFeeManager.fillStaff()}" ></p:ajax>
+                                </p:autoComplete>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpLblEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                <h:outputLabel value="Doctor/Staff" ></h:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpSomEmp" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                <p:selectOneMenu id="somEmployee" value="#{itemFeeManager.itemFee.staff}" >
+                                    <f:selectItems value="#{itemFeeManager.staffs}" var="staff" itemLabel="#{staff.person.nameWithTitle}" itemValue="#{staff}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Fee" ></h:outputLabel>
+                            <h:inputText value="#{itemFeeManager.itemFee.fee}" ></h:inputText>
+
+                            <h:outputLabel value="Foreigner Fee" ></h:outputLabel>
+                            <h:inputText value="#{itemFeeManager.itemFee.ffee}" ></h:inputText>
+
+
+
+
+                        </p:panelGrid>
+
+                    </p:panel>
+
+                </p:dialog>
+
+
+
+
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Items and Services"></h:outputLabel>
+                    </f:facet>
+
+                    <h:panelGrid columns="1" styleClass="alignTop" >
+                        <h:panelGrid columns="4" >
+
+                            <p:commandButton 
+                                id="btnToAddNewFees"
+                                value="Add New Fees for Selected" 
+                                process="btnToAddNewFees tblItems" 
+                                onclick="PF('dlg').show();" 
+                                class="w-100 mt-2 ui-button-success" 
+                                icon="fa fa-plus">   
+                            </p:commandButton>
+
+                            
+                            <p:commandButton ajax="false" 
+                                             value="Clear Selected Items" 
+                                             action="#{itemFeeManager.clearItemFees()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" 
+                                             value="Add Fees For Selected Items" 
+                                             action="#{itemController.createItemFessForItemsWithoutFee}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" value="Fix Items Totals" action="#{itemController.updateSelectedItemFees}" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" value="Fix Discount Allowed Property" action="#{itemController.updateSelectedFeesForDiscountAllow}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" value="Refresh Items" action="#{itemController.refreshInvestigationsAndServices}" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <p:panel >
+                            <p:dataTable 
+                                id="tblItems"
+                                value="#{itemController.investigationsAndServices}" 
+                                var="i"   
+                                rowKey="#{i.id}" 
+                                selection="#{itemFeeManager.selectedList}" 
+                                rowIndexVar="s"
+                                rows="20"
+                                paginator="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20,50,100,500,1000,1500"
+                                >
+
+                                <p:column  selectionMode="multiple" style="width: 10px;">                            
+                                </p:column>
+
+                                <p:column   sortBy="#{i.name}" width="200"
+                                            filterMatchMode="contains" filterBy="#{i.name}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}"/>
+                                </p:column>
+
+                                <p:column sortBy="#{i.institution.name}" width="200"
+                                          filterMatchMode="contains" filterBy="#{i.institution.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.department.name}" width="120"
+                                          filterMatchMode="contains" filterBy="#{i.department.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column sortBy="#{i.dblValue}" width="80"
+                                          filterMatchMode="contains" filterBy="#{i.dblValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total Fee" >
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fees" />
+                                    </f:facet>
+
+                                    <p:dataTable  value="#{i.itemFeesActive}" var="itfe" >
+                                        <p:column headerText="Name">
+                                            <p:outputLabel value="#{itfe.name}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Type">
+                                            <p:outputLabel value="#{itfe.feeType}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Discount">
+                                            <p:outputLabel value="#{itfe.discountAllowed?'Allowed':'Not Allowed'}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Fee">
+                                            <p:outputLabel value="#{itfe.fee}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Foreigner">
+                                            <p:outputLabel value="#{itfe.ffee}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>  
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+
+                                </p:column>
+
+                                <p:column headerText="Actions" width="60">
+                                    <p:commandButton ajax="false" value="Edit" action="${itemFeeManager.toManageItemFees()}"  actionListener="#{viewController.makeBulkFeesAsPreviousPage()}">
+                                        <f:setPropertyActionListener value="#{i}" target="#{itemFeeManager.item}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+
+
+
+
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

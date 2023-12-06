@@ -287,6 +287,8 @@ public class ItemController implements Serializable {
         return item;
     }
 
+    
+    
     public void fillInvestigationSampleComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select an investigation");
@@ -496,6 +498,8 @@ public class ItemController implements Serializable {
             i.getItemFeesAuto();
         }
     }
+    
+    
 
     public void createItemFessForItemsWithoutFee() {
         if (selectedList == null || selectedList.isEmpty()) {
