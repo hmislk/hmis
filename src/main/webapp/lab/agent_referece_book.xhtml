@@ -24,11 +24,18 @@
                         <p:column>#{vt.name}</p:column>
                     </p:autoComplete>
                     <p:outputLabel value="Book Number" />
-                    <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.strbookNumber}" />
+                    
                     <p:outputLabel value="Strarting Reference Number" />
-                    <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}">
+                        <f:convertNumber pattern="00" />
+                    </p:inputText>
+                    
+                    
                     <p:outputLabel value="Ending Reference Number" />
-                    <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
+                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}">
+                        <f:convertNumber pattern="00" />
+                    </p:inputText>
                     
                     <p:commandButton action="#{agentReferenceBookController.saveLabBook}" value="Save" ajax="false" ></p:commandButton> 
                     <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
