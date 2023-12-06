@@ -1297,7 +1297,7 @@ public class CollectingCentreBillController implements Serializable {
 
     public List<Item> completeOpdItems(String query) {
         UserPreference up = sessionController.getDepartmentPreference();
-        switch (up.getOpdItemListingStrategy()) {
+        switch (up.getCcItemListingStrategy()) {
             case ALL_ITEMS:
                 return itemController.completeServicesPlusInvestigationsAll(query);
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
