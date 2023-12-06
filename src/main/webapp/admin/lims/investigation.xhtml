@@ -106,28 +106,41 @@
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                     </p:selectOneMenu>
                                     
-                                    <p:selectBooleanCheckbox   id="chkMasterItem" itemLabel="Master Item Reference" value="#{itemController.masterItem}" >
-                                        <p:ajax event="change" process="@this" update="itemAsIx" />
+                                    <h:outputText value="Is a Master Item" ></h:outputText>
+                                    <p:selectBooleanCheckbox  
+                                        id="chkMasterItem" 
+                                        itemLabel="Master Item Reference" 
+                                        value="#{itemController.current.isMasterItem}" >
                                     </p:selectBooleanCheckbox>
+                                    
+                                    
+                                    <h:outputText value="Has a Report Format" ></h:outputText>
+                                    <p:selectBooleanCheckbox  
+                                        id="chkMasterItem" 
+                                        itemLabel="Master Item Reference" 
+                                        value="#{itemController.current.hasReportFormat}" >
+                                    </p:selectBooleanCheckbox>
+                                    
+                                    <h:outputText value="Master Item Reference" ></h:outputText>
                                     <p:autoComplete 
-                                        
+                                        value="#{itemController.current.masterItemReference}"
                                         converter="ixcon"  
                                         widgetVar="aIx1" 
                                         forceSelection="true" 
                                         id="itemAsIx"
                                         var="ix1"
-                                        
-                                        completeMethod="#{itemController.allItems}"
+                                        class="w-100"
+                                        completeMethod="#{itemController.completeMasterItems}"
                                         itemLabel="#{ix1}" 
                                         itemValue="#{ix1}" 
                                         size="30"  
-                                        style="width: 400px;">
+                                        >
                                     </p:autoComplete>
 
                                     <p:selectBooleanCheckbox   id="chkBilledAs" value="#{investigationController.billedAs}" itemLabel="Billed as a seperate investigation"  >
                                         <p:ajax event="change" process="@this" update="billedAsIx" />
                                     </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="ixcon"  disabled="#{!investigationController.billedAs}" widgetVar="aIx1" id="billedAsIx" forceSelection="true" value="#{investigationController.current.billedAs}" completeMethod="#{investigationController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  style="width: 400px;">
+                                    <p:autoComplete converter="ixcon"  disabled="#{!investigationController.billedAs}" widgetVar="aIx1" id="billedAsIx" forceSelection="true" value="#{investigationController.current.billedAs}" completeMethod="#{investigationController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  >
                                     </p:autoComplete>
 
                                     <p:selectBooleanCheckbox  id="chkReportedAs" value="#{investigationController.reportedAs}" itemLabel="Reported as a seperate investigation" >
@@ -140,7 +153,7 @@
                                                         forceSelection="true"
                                                         value="#{investigationController.current.reportedAs}" 
                                                         completeMethod="#{investigationController.completeItem}" 
-                                                        var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                                        var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
                                             <p:column >
                                                 <h:outputText value="#{ix2.name}" ></h:outputText>
                                             </p:column>
