@@ -47,15 +47,18 @@
                                     <p:focus  context="acIx"/>
                                     <div class="row">
                                         <div class="col-md-10" >
-                                            <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
-                                                            value="#{collectingCentreBillController.currentBillItem.item}" 
-                                                            completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
-                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                            size="10"  
-                                                            maxResults="10"
-                                                            class="w-100"
-                                                            inputStyleClass="form-control"
-                                                            placeholder="Enter first few letters of the service or item to add">
+                                            <p:autoComplete 
+                                                widgetVar="aIx" 
+                                                id="acIx" 
+                                                forceSelection="true"
+                                                value="#{collectingCentreBillController.currentBillItem.item}" 
+                                                completeMethod="#{collectingCentreBillController.completeOpdItems}"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                size="10"  
+                                                maxResults="10"
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                placeholder="Enter first few letters of the service or item to add">
                                                 <p:column style="max-width: 200px;" headerText="Name">
                                                     <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                                     <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
@@ -101,7 +104,10 @@
                                     <h:panelGroup id="panelBillItems" >
                                         <p:tabView id="tblBillItem" >
                                             <p:tab id="tabBillItems" title="Bill Items" >
-                                                <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
+                                                <p:dataTable 
+                                                    id="tblRequests" 
+                                                    rowIndexVar="rowIndex" 
+                                                    value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
 
                                                     <p:column>
                                                         <f:facet name="header">No</f:facet>
@@ -257,8 +263,7 @@
                                             value="New Bill" 
                                             icon="fa fa-plus" 
                                             ajax="false" 
-                                            actionListener="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" 
-                                            action="/collecting_centre/bill" 
+                                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromCollectingCenterBilling}" 
                                             class="ui-button-warning mx-1" >
                                         </p:commandButton>
                                         <p:commandButton 
@@ -290,17 +295,20 @@
                                         <p:outputLabel class="mt-1" value="Collecting Centre"></p:outputLabel>
                                     </div>
                                     <div class="col-md-9">
-                                        <p:autoComplete converter="deal" value="#{collectingCentreBillController.collectingCentre}" 
-                                                        forceSelection="true" id="acColl"
-                                                        completeMethod="#{institutionController.completeCollectingCenter}" 
-                                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
-
-                                                        maxResults="10"
-                                                        class="w-100 mb-1"
-
-                                                        inputStyleClass="form-control">
-
-                                            <f:ajax event="itemSelect" execute="@this" render="tblAgentBooks tblAgentBooks2 ballance2 ballance4 ballance6" listener="#{collectingCentreBillController.listnerSelectLabBooks()}" />
+                                        <p:autoComplete 
+                                            converter="deal" 
+                                            value="#{collectingCentreBillController.collectingCentre}" 
+                                            forceSelection="true" id="acColl"
+                                            completeMethod="#{institutionController.completeCollectingCenter}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" 
+                                            maxResults="10"
+                                            class="w-100 mb-1"
+                                            inputStyleClass="form-control">
+                                            <f:ajax 
+                                                event="itemSelect" 
+                                                execute="@this" 
+                                                render="acIx tblAgentBooks tblAgentBooks2 ballance2 ballance4 ballance6" 
+                                                listener="#{collectingCentreBillController.listnerSelectLabBooks()}" />
                                             <p:column>#{vt.institutionCode}</p:column>
                                             <p:column>#{vt.name}</p:column>
                                         </p:autoComplete>
@@ -533,11 +541,18 @@
                                         <p:printer target="gpBillPreview2" ></p:printer>
                                     </p:commandButton>
 
-                                    <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                    <p:commandButton 
+                                        value="New Bill"
+                                        ajax="false" 
+                                        action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Batch Cancel" 
+                                        action="#{collectingCentreBillController.cancellAll}" 
+                                        style="float: right;"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
                                 </div>
                                 <h:panelGroup id="gpBillPreview">
                                     <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">

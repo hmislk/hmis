@@ -286,6 +286,20 @@ public class ItemMappingController implements Serializable {
         results = itemFacade.findByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
+    
+    public List<Item> completeItemByDepartment(String qry, Institution institution) {
+        List<Item> results;
+        String jpql = "SELECT im.item FROM ItemMapping im "
+                + "WHERE (im.item.name LIKE :qry OR im.item.fullName LIKE :qry OR im.item.code LIKE :qry) "
+                + "AND im.department.institution = :ins "
+                + "AND im.retired = false "
+                + "ORDER BY im.item.name";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("qry", "%" + qry.toLowerCase() + "%");
+        parameters.put("ins", institution);
+        results = itemFacade.findByJpql(jpql, parameters);
+        return results != null ? results : new ArrayList<>();
+    }
 
     public List<ItemMapping> completeItemMapping(String qry) {
         List<ItemMapping> list;

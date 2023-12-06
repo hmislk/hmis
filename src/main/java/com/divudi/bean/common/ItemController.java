@@ -1373,13 +1373,35 @@ public class ItemController implements Serializable {
             jpql = "SELECT c FROM Item c "
                     + "WHERE c.retired = false "
                     + "AND (type(c)=:ser OR type(c)=:inv) "
-                    + "AND (LOWER(c.name) LIKE :q) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
                     + "AND c.department=:department "
                     + "ORDER BY c.name";
             parameters.put("ser", Service.class);
             parameters.put("inv", Investigation.class);
             parameters.put("q", "%" + query.toLowerCase() + "%");
             parameters.put("department", department);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+    
+    public List<Item> completeItemsByDepartment(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department.institution=:ins "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("ins", institution);
             suggestions = getFacade().findByJpql(jpql, parameters, 20);
         }
         return suggestions;
