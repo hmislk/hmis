@@ -17,7 +17,7 @@ import javax.inject.Named;
 public class ViewController  implements Serializable {
     
     private String previousPage;
-    private int manageFeeIndex;
+    private int manageFeeIndex=-1;
 
     /**
      * Creates a new instance of ViewController
