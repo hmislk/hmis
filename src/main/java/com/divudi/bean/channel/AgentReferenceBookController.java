@@ -229,9 +229,9 @@ public class AgentReferenceBookController implements Serializable {
         AgentReferenceBook book = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
 
         if (book == null) {
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
 
     }

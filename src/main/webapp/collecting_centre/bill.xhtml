@@ -27,13 +27,13 @@
                 <p:growl id="msg" ></p:growl>
 
                 <p:panel  >
-                    <f:facet name="header" rendered="#{!collectingCentreBillController.printPreview}">
+                    <f:facet name="header" >
                         <h:outputText styleClass="pi pi-search-plus" />
                         <h:outputLabel  class="mx-4" value="Collecting Centre Billing"/>
                     </f:facet>
 
 
-                    <div class="row">
+                    <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">
                         <div class="col-6" >
                             <common:patient_details patient="#{collectingCentreBillController.searchedPatient}"/>
 
@@ -514,7 +514,7 @@
                                 </p:panel>
                             </div>
                         </div>
-                    </div>
+                    </h:panelGroup>
 
 
 
