@@ -44,66 +44,7 @@
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <hr/>
-                                        <!--                                        <h:outputLabel value="From Institution" class="w-100"/>
-                                                                                <p:selectOneMenu 
-                                                                                    id="cmdFromInstitution"
-                                                                                    value="#{searchController.fromInstitution}"
-                                                                                    filter="true"
-                                                                                    placeholder="Ordering Institution"
-                                                                                    style="width: 230px"
-                                                                                    >
-                                                                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                                                                    <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                                                                   var="i"
-                                                                                                   itemLabel="#{i.name}"
-                                                                                                   itemValue="#{i}" ></f:selectItems>
-                                                                                    <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
-                                                                                </p:selectOneMenu>
                                         
-                                                                                <h:outputLabel value="From Department"/><br/>
-                                                                                <p:selectOneMenu 
-                                                                                    id="cmdFromDepartment"
-                                                                                    placeholder="Ordering Department"
-                                                                                    value="#{searchController.fromDepartment}" 
-                                                                                    filter="true"
-                                                                                    class="w-100">
-                                                                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                                                                    <f:selectItems value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
-                                                                                                   var="d"
-                                                                                                   itemLabel="#{d.name}"
-                                                                                                   itemValue="#{d}" ></f:selectItems>
-                                                                                </p:selectOneMenu>
-                                        
-                                                                                <h:outputLabel value="To Institution"/>
-                                                                                <p:selectOneMenu 
-                                                                                    id="cmdToInstitution"
-                                                                                    value="#{searchController.toInstitution}"
-                                                                                    filter="true"
-                                                                                    placeholder="To Institution"
-                                                                                    style="width: 230px"
-                                                                                    >
-                                                                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                                                                    <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                                                                                   var="i"
-                                                                                                   itemLabel="#{i.name}"
-                                                                                                   itemValue="#{i}" ></f:selectItems>
-                                                                                    <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
-                                                                                </p:selectOneMenu>
-                                        
-                                                                                <h:outputLabel value="To Department"/><br/>
-                                                                                <p:selectOneMenu 
-                                                                                    id="cmdToDepartment"
-                                                                                    placeholder="Peforming Department"
-                                                                                    value="#{searchController.toDepartment}" 
-                                                                                    filter="true"
-                                                                                    class="w-100">
-                                                                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                                                                    <f:selectItems value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
-                                                                                                   var="d"
-                                                                                                   itemLabel="#{d.name}"
-                                                                                                   itemValue="#{d}" ></f:selectItems>
-                                                                                </p:selectOneMenu>-->
-
 
                                     </h:panelGroup>
 
@@ -115,27 +56,7 @@
                                             value="Search" 
                                             class="ui-button-success"
                                             action="#{agentReferenceBookController.searchReferenceBooks()}" />
-                                        <p:commandButton 
-                                            icon="fas fa-search"
-                                            
-                                            ajax="false" 
-                                            value="Search 1" 
-                                            class="ui-button-success"
-                                            action="#{agentReferenceBookController.createAllBookTable1()}" />
-                                        <p:commandButton 
-                                            icon="fas fa-search"
-                                            
-                                            ajax="false" 
-                                            value="Search 2" 
-                                            class="ui-button-success"
-                                            action="#{agentReferenceBookController.createAllBookTable2()}" />
-                                        <p:commandButton 
-                                            icon="fas fa-search"
-                                            
-                                            ajax="false" 
-                                            value="Search 3" 
-                                            class="ui-button-success"
-                                            action="#{agentReferenceBookController.createAllBookTable3()}" />
+                                        
                                     </div>
 
                                 </div>
