@@ -144,43 +144,11 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public void searchReferenceBooks() {
-        createAllBookTable1();
-        createAllBookTable2();
-        createAllBookTable3();
+        createAllBookTable();
+      
     }
-
-    public void createAllBookTable1() {
-        System.out.println("method 1");
-        String sql;
-        HashMap m = new HashMap();
-
-        sql = "select a from AgentReferenceBook a";
-
-//        m.put("fd", frmDate);
-//        m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql);
-    }
-
-    public void createAllBookTable2() {
-        System.out.println("method 2");
-        String sql;
-        HashMap m = new HashMap();
-
-        sql = "select a "
-                + " from AgentReferenceBook a "
-                + " where a.retired !=:ret";
-        m.put("ret", true);
-//        m.put("fd", frmDate);
-//        m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql,m);
-    }
-
-    public void createAllBookTable3() {
-        System.out.println("method 3");
+    
+    public void createAllBookTable() {
         String sql;
         HashMap m = new HashMap();
         sql = "select a from AgentReferenceBook a where "
