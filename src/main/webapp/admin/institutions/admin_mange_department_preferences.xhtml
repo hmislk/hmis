@@ -94,7 +94,16 @@
                                     <p:selectOneMenu 
                                         value="#{sessionController.currentPreference.opdItemListingStrategy}"
                                         class="form-control">
-                                        <f:selectItems value="#{enumController.itemListingStrategys}"></f:selectItems>
+                                        <f:selectItems value="#{enumController.opdItemListingStrategys}"></f:selectItems>
+                                    </p:selectOneMenu>
+                                    
+                                     <h:outputLabel 
+                                        class="form-label"
+                                        value="Collecting Centre Item Listing Strategy" ></h:outputLabel>
+                                    <p:selectOneMenu 
+                                        value="#{sessionController.currentPreference.ccItemListingStrategy}"
+                                        class="form-control">
+                                        <f:selectItems value="#{enumController.ccItemListingStrategys}"></f:selectItems>
                                     </p:selectOneMenu>
 
                                     
