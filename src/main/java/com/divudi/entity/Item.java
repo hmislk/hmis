@@ -54,6 +54,7 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
+
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")

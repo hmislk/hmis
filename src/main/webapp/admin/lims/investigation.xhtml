@@ -110,15 +110,15 @@
                                         <p:ajax event="change" process="@this" update="itemAsIx" />
                                     </p:selectBooleanCheckbox>
                                     <p:autoComplete 
-                                        disabled="#{!itemController.masterItem}"
+                                        
                                         converter="ixcon"  
                                         widgetVar="aIx1" 
                                         forceSelection="true" 
                                         id="itemAsIx"
                                         var="ix1"
-                                        value="#{itemController.current.isMasterItem}"
-                                        autocomplete="#{itemController.allItems}"
-                                        itemLabel="#{ix1.name}" 
+                                        
+                                        completeMethod="#{itemController.allItems}"
+                                        itemLabel="#{ix1}" 
                                         itemValue="#{ix1}" 
                                         size="30"  
                                         style="width: 400px;">
