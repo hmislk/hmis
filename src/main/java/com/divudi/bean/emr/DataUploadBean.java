@@ -764,7 +764,10 @@ public class DataUploadBean {
 
             Cell itemTypeCell = row.getCell(8);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
-                itemType = inwardCcCell.getStringCellValue();
+                itemType = itemTypeCell.getStringCellValue();
+            }
+            if(itemType==null||itemType.trim().equals("")){
+                itemType = "Investigation";
             }
             if (itemType.equals("Service")) {
                 if (masterItem == null) {
