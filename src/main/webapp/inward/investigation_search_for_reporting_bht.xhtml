@@ -16,8 +16,8 @@
                             <h:outputLabel value="Inward Investigation Search"/> 
                         </f:facet>
                         <h:panelGroup class="d-flex gap-2">
-                            <h:panelGrid class="col-1 mx-1">
-                                <h:panelGrid columns="1" class="mt-1">
+                            <h:panelGrid class="col-1 mx-1 mb-auto">
+                                <h:panelGrid columns="1" class="">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar class="w-100" id="fromDate" 
                                                 value="#{inwardReportController.fromDate}" 
@@ -28,16 +28,7 @@
                                     <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" 
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                     </p:calendar>                                
-                                    
-                                      
-                                    <p:commandButton id="btnSearch" ajax="false" 
-                                                     value="Search All" onclick="onSubmitButton();"
-                                                     action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
-                                                     class="w-100 mt-2"/>
-                                    <p:defaultCommand target="btnSearch" />
-                                </h:panelGrid>
 
-                                <h:panelGrid columns="1" class="mt-2">
                                     <h:outputLabel value="BHT No"/>
                                     <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                                      value="#{inwardReportController.patientEncounter}"
@@ -57,8 +48,13 @@
                                         <p:column>
                                             <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                                         </p:column>
-
                                     </p:autoComplete>
+                                    
+                                    <p:commandButton id="btnSearch" ajax="false" 
+                                                         value="Search All" onclick="onSubmitButton();"
+                                                         action="#{inwardReportController.createPatientInvestigationsTableAll()}" 
+                                                         class="w-100 mt-2"/>
+                                        <p:defaultCommand target="btnSearch" />
                                 </h:panelGrid>
                             </h:panelGrid>
 
