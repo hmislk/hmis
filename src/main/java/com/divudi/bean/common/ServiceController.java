@@ -438,13 +438,15 @@ public class ServiceController implements Serializable {
     }
 
     public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
-        List<ItemFee> temp;
+        List<Service> temp;
         HashMap hash = new HashMap();
         String sql = "select c from Service c "
                 + "where c.retired = false "
-                + "and c.code = :sCode ";
+                + "and c.code = :sCode "
+                + "and c.id != :id ";
 
         hash.put("sCode", genaratedServiceCode);
+        hash.put("id", getCurrent().getId());
         temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
         if (temp.size() != 0) {
             System.out.println("list is full");
@@ -499,7 +501,7 @@ public class ServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
 
-            if (!checkServiceCodeDuplicate(getCurrent().getCode()).equals(true)) {
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
                 UtilityController.addErrorMessage("Service code is alredy used");
                 return;
             } else {
@@ -512,7 +514,7 @@ public class ServiceController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
-            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+            if (!checkServiceCodeDuplicate(getCurrent().getCode()) ) {
                 UtilityController.addErrorMessage("Service code is alredy used");
                 return;
             } else {
