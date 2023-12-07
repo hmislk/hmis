@@ -80,25 +80,36 @@
                                 <h:panelGrid id="gpDetail" columns="1" class="w-100">
                                     <p:tabView >
                                         <p:tab id="gpDetails" title="Basic Details" >
-                                            <h:panelGrid columns="2" class="w-100">
-
+                                            <h:panelGrid columns="2">
                                                 <h:outputText id="lblName" value="Name" ></h:outputText>
+
                                                 <p:inputText 
                                                     autocomplete="off" 
                                                     id="txtName" 
                                                     value="#{serviceController.current.name}" 
                                                     required="true" 
                                                     requiredMessage="Please enter a name to register"
-                                                    class="w-100"></p:inputText>
+                                                    class="w-100 mx-2"></p:inputText>
+                                                    
                                                 <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
                                                 <p:inputText autocomplete="off" id="txtAddress"   
                                                              value="#{serviceController.current.printName}" 
-                                                             class="w-100" ></p:inputText>
+                                                             class="w-100 mx-2" ></p:inputText>
                                                 <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                                <p:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}" class="w-100" ></p:inputText>
+                                                <p:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}" class="w-100 mx-2" ></p:inputText>
                                                 <p:outputLabel value="Item Code"/>
-                                                <p:inputText autocomplete="off" value="#{serviceController.current.code}" class="form-control"/>
-
+                                                <p:inputText id="ServiceCode" autocomplete="off" value="#{serviceController.current.code}" class="form-control mx-2"/>
+                                                 <h:outputText></h:outputText>
+                                                <p:commandButton 
+                                                    class="ui-button-warning my-2 mx-2"
+                                                    id="btnGenarate" 
+                                                    icon="fas fa-redo-alt"
+                                                    update="ServiceCode"
+                                                    process="btnGenarate" 
+                                                    value="Genarate Item Code"          
+                                                    action="#{serviceController.genarateServiceCode()}">
+                                                </p:commandButton> 
+                                           
                                                 <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                                 <p:autoComplete 
                                                     completeMethod="#{categoryController.completeServiceCategory}" 
@@ -107,21 +118,21 @@
                                                     itemValue="#{pta}" 
                                                     forceSelection="true" 
                                                     value="#{serviceController.current.category}"
+                                                    size="45"
+                                                    class="mx-2"
                                                     >                                    
                                                     <p:column>#{pta.name}</p:column>
                                                     <p:column>#{pta.parentCategory}</p:column>                                        
                                                 </p:autoComplete>
 
-
-
                                                 <h:outputText value="Institution" ></h:outputText>
-                                                <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" class="form-control">
+                                                <p:selectOneMenu id="cmbIns" value="#{serviceController.current.institution}" class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select a Institution"/>
                                                     <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                                 </p:selectOneMenu>
                                                 <h:outputText value="Department" ></h:outputText>
-                                                <p:selectOneMenu id="cmbDep" value="#{serviceController.current.department}" class="form-control">
+                                                <p:selectOneMenu id="cmbDep" value="#{serviceController.current.department}" class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select a Department"/>
                                                     <f:selectItems value="#{serviceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 </p:selectOneMenu>
@@ -131,7 +142,7 @@
                                                     filterMatchMode="contains"
                                                     id="cmbInward" 
                                                     value="#{serviceController.current.inwardChargeType}" 
-                                                    class="form-control">
+                                                    class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
@@ -197,20 +208,11 @@
                                             <p:autoComplete  disabled="#{!serviceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{serviceController.current.reportedAs}" completeMethod="#{serviceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
                                             </p:autoComplete>
                                         </p:tab>
-
                                     </p:tabView>
-
-
-
                                 </h:panelGrid>
                             </p:panel>
                         </div>
                     </div>
-
-
-
-
-
                 </p:panel>
 
                 <!--                <p:panel >
@@ -219,17 +221,8 @@
                                 </p:panel>-->
 
             </h:form>
-
         </h:panelGroup>
-
         <h:form>
-
-
-
-
         </h:form>
-
-
     </ui:define>
-
 </ui:composition>

@@ -13,4 +13,8 @@ import javax.persistence.Entity;
 @Entity
 public class Service extends Item implements Serializable {
 
+    public void getCode(String serviceCode) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 }
