@@ -127,6 +127,7 @@
                                             class="ui-button-secondary " 
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                             >
+                                            <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGrid>
 
