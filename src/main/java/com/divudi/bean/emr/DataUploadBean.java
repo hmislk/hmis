@@ -9,6 +9,7 @@ import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
@@ -23,6 +24,7 @@ import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
 import com.divudi.data.EncounterType;
+import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -31,6 +33,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Service;
@@ -101,11 +104,11 @@ public class DataUploadBean {
     @Inject
     ServiceController serviceController;
     @Inject
-    DepartmentController departmentController;
-    @Inject 
-    EnumController enumController;
-    @Inject
     InvestigationController investigationController;
+    @Inject
+    DepartmentController departmentController;
+    @Inject
+    EnumController enumController;
     @Inject
     SampleController sampleController;
     @Inject
@@ -114,6 +117,8 @@ public class DataUploadBean {
     MachineController machineController;
     @Inject
     InvestigationCategoryController investigationCategoryController;
+    @Inject
+    ItemFeeManager itemFeeManager;
 
     @EJB
     PatientFacade patientFacade;
@@ -124,6 +129,7 @@ public class DataUploadBean {
 
     private UploadedFile file;
     private String outputString;
+    private List<Item> items;
 
     public UploadedFile getFile() {
         return file;
@@ -165,7 +171,6 @@ public class DataUploadBean {
         return "/pharmacy/admin/upload_vmps";
     }
 
-  
     public void uploadPatients() {
         List<Patient> patients;
 
@@ -234,17 +239,17 @@ public class DataUploadBean {
         }
     }
 
-    public void uploadServices() {
-        List<Amp> amps;
+    public void uploadItems() {
+        items = new ArrayList<>();
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
-                readServicesFromExcel(inputStream);
+                items = readItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
@@ -650,12 +655,13 @@ public class DataUploadBean {
         return dxx;
     }
 
-    private List<Service> readServicesFromExcel(InputStream inputStream) throws IOException {
+    private List<Item> readItemsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        List<Service> services = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
+        Item item;
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -665,10 +671,11 @@ public class DataUploadBean {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
 
+            item = null;
             Category cat = null;
-            Institution institution=null;
-            Department department=null;
-            InwardChargeType iwct=null;
+            Institution institution = null;
+            Department department = null;
+            InwardChargeType iwct = null;
 
             String name = null;
             String printingName = null;
@@ -678,6 +685,10 @@ public class DataUploadBean {
             String institutionName = null;
             String departmentName = null;
             String inwardName = null;
+
+            String itemType = "Service";
+            Double hospitalFee = 0.0;
+            Double collectingCentreFee = 0.0;
 
             Cell nameCell = row.getCell(0);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
@@ -737,7 +748,7 @@ public class DataUploadBean {
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
-            
+
             Cell inwardCcCell = row.getCell(7);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
                 inwardName = inwardCcCell.getStringCellValue();
@@ -745,32 +756,85 @@ public class DataUploadBean {
             if (inwardName != null && !inwardName.trim().equals("")) {
                 iwct = enumController.getInaChargeType(inwardName);
             }
-            if(iwct==null){
+            if (iwct == null) {
                 iwct = InwardChargeType.OtherCharges;
             }
 
-            Service service = new Service();
-            service.setName(name);
-            service.setPrintName(printingName);
-            service.setFullName(fullName);
-            service.setCode(code);
-            service.setCategory(cat);
-            service.setInstitution(institution);
-            service.setDepartment(department);
-            service.setInwardChargeType(iwct);
+            Cell itemTypeCell = row.getCell(8);
+            if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
+                itemType = inwardCcCell.getStringCellValue();
+            }
+            if (itemType.equals("Service")) {
+                Service service = new Service();
+                service.setName(name);
+                service.setPrintName(printingName);
+                service.setFullName(fullName);
+                service.setCode(code);
+                service.setCategory(cat);
+                service.setInstitution(institution);
+                service.setDepartment(department);
+                service.setInwardChargeType(iwct);
+                service.setCreater(sessionController.getLoggedUser());
+                service.setCreatedAt(new Date());
+                serviceController.save(service);
+                items.add(service);
+                item = service;
+            } else if (itemType.equals("Investigation")) {
+                Investigation ix = new Investigation();
+                ix.setName(name);
+                ix.setPrintName(printingName);
+                ix.setFullName(fullName);
+                ix.setCode(code);
+                ix.setCategory(cat);
+                ix.setInstitution(institution);
+                ix.setDepartment(department);
+                ix.setInwardChargeType(iwct);
+                ix.setCreater(sessionController.getLoggedUser());
+                ix.setCreatedAt(new Date());
+                investigationController.save(ix);
+                items.add(ix);
+                item = ix;
+            }
 
-            service.setCreater(sessionController.getLoggedUser());
-            service.setCreatedAt(new Date());
-            
-            serviceController.save(service);
+            if (item == null) {
+                continue;
+            }
 
-            services.add(service);
+            Cell hospitalFeeTypeCell = row.getCell(9);
+            if (hospitalFeeTypeCell != null && hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+
+                ItemFee itf = new ItemFee();
+                itf.setName("Hospital Fee");
+                itf.setItem(item);
+                itf.setInstitution(sessionController.getInstitution());
+                itf.setDepartment(sessionController.getDepartment());
+                itf.setFeeType(FeeType.OwnInstitution);
+                itf.setFee(hospitalFee);
+                itf.setFfee(hospitalFee);
+                itemFeeManager.addNewFeeForItem(item, itf);
+
+            }
+
+            Cell collectingCenterFeeTypeCell = row.getCell(10);
+            if (collectingCenterFeeTypeCell != null && collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+                ItemFee itf = new ItemFee();
+                itf.setName("Hospital Fee");
+                itf.setItem(item);
+                itf.setInstitution(institution);
+                itf.setDepartment(department);
+                itf.setFeeType(FeeType.CollectingCentre);
+                itf.setFee(collectingCentreFee);
+                itf.setFfee(collectingCentreFee);
+                itemFeeManager.addNewFeeForItem(item, itf);
+            }
 
         }
 
-        return services;
+        return items;
     }
-    
+
     private List<Investigation> readInvestigationsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -787,9 +851,9 @@ public class DataUploadBean {
             Row row = rowIterator.next();
 
             Category cat = null;
-            Institution institution=null;
-            Department department=null;
-            InwardChargeType iwct=null;
+            Institution institution = null;
+            Department department = null;
+            InwardChargeType iwct = null;
             Sample sample = null;
             InvestigationTube investigationTube = null;
             Machine analyser = null;
@@ -831,7 +895,6 @@ public class DataUploadBean {
             if (fullName == null || fullName.trim().equals("")) {
                 fullName = name;
             }
-            
 
             Cell codeCell = row.getCell(3);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
@@ -849,16 +912,12 @@ public class DataUploadBean {
             if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
-           
-           
-            
 
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
             }
-           
 
             Cell deptCell = row.getCell(6);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
@@ -867,8 +926,7 @@ public class DataUploadBean {
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
-            
-            
+
             Cell inwardCcCell = row.getCell(7);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
                 inwardName = inwardCcCell.getStringCellValue();
@@ -876,46 +934,43 @@ public class DataUploadBean {
             if (inwardName != null && !inwardName.trim().equals("")) {
                 iwct = enumController.getInaChargeType(inwardName);
             }
-            if(iwct==null){
+            if (iwct == null) {
                 iwct = InwardChargeType.OtherCharges;
             }
-           
-            
+
             Cell sampleCell = row.getCell(8);
             if (sampleCell != null && sampleCell.getCellType() == CellType.STRING) {
                 sampleName = sampleCell.getStringCellValue();
                 sample = sampleController.findAndCreateSampleByName(sampleName);
             }
-            
-            if (sampleName == null || sampleName.trim().equals("")){
+
+            if (sampleName == null || sampleName.trim().equals("")) {
                 continue;
             }
-            
-            System.out.println("s"+sampleName);
-            
+
+            System.out.println("s" + sampleName);
+
             Cell containerCell = row.getCell(9);
-            if (containerCell != null && containerCell.getCellType() == CellType.STRING){
+            if (containerCell != null && containerCell.getCellType() == CellType.STRING) {
                 containerName = containerCell.getStringCellValue();
                 investigationTube = investigationTubeController.findAndCreateInvestigationTubeByName(containerName);
             }
-            
-            if (containerName==null || containerName.trim().equals("")){
+
+            if (containerName == null || containerName.trim().equals("")) {
                 continue;
             }
-            System.out.println("i"+containerName);
-            
-            
+            System.out.println("i" + containerName);
+
             Cell analyserCell = row.getCell(10);
-            if (analyserCell != null && analyserCell.getCellType() == CellType.STRING){
+            if (analyserCell != null && analyserCell.getCellType() == CellType.STRING) {
                 analyserName = analyserCell.getStringCellValue();
                 analyser = machineController.findAndCreateAnalyserByName(analyserName);
             }
-            
-            if (analyserName==null || analyserName.trim().equals("")){
+
+            if (analyserName == null || analyserName.trim().equals("")) {
                 continue;
             }
-            
-            
+
             Investigation investigation = new Investigation();
             investigation.setName(name);
             investigation.setPrintName(printingName);
@@ -1062,6 +1117,8 @@ public class DataUploadBean {
 
         return amps;
     }
+    
+    
 
     private List<Vmp> readVmpsFromExcel(InputStream inputStream) throws IOException {
         outputString += "readVmpsFromExcel";
@@ -1197,6 +1254,14 @@ public class DataUploadBean {
 
     public void setOutputString(String outputString) {
         this.outputString = outputString;
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
 }
