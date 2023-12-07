@@ -289,6 +289,20 @@ public class ItemController implements Serializable {
         return item;
     }
 
+    public Item findMasterItemByName(String name) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.isMasterItem=:mi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("mi", true);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     public void fillInvestigationSampleComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select an investigation");
@@ -803,7 +817,7 @@ public class ItemController implements Serializable {
         jpql += " order by c.name";
         System.out.println("tmpMap = " + tmpMap);
         System.out.println("jpql = " + jpql);
-        return getFacade().findByJpql(jpql, tmpMap) ;
+        return getFacade().findByJpql(jpql, tmpMap);
     }
 
     public List<Item> completeItem(String query) {
