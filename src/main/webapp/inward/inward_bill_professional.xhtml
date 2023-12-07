@@ -64,7 +64,7 @@
 
 
                     <h:panelGroup>
-                        
+
                         <div class="d-flex justify-content-end align-items-center mb-3">
                             <p:commandButton 
                                 class="mx-1 ui-button-success"
@@ -99,9 +99,12 @@
                                 class="ui-button-secondary" 
                                 action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                 >
+                                <f:setPropertyActionListener 
+                                    target="#{admissionController.current}" 
+                                    value="#{inwardProfessionalBillController.current.patientEncounter}" ></f:setPropertyActionListener>
                             </p:commandButton>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-6 ">
                                 <h:panelGroup>
@@ -239,9 +242,9 @@
                                 </h:panelGroup>
                             </div>
                         </div>
-                        
+
                     </h:panelGroup>
-                    
+
                 </p:panel>
 
             </h:panelGroup>
