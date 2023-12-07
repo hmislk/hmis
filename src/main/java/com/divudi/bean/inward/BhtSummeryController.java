@@ -117,6 +117,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
+    BhtEditController bhtEditController;
+    @Inject
     PriceMatrixController priceMatrixController;
     @Inject
     CommonController commonController;

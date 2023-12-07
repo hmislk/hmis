@@ -127,6 +127,9 @@
                                             class="ui-button-secondary " 
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                             >
+                                            <f:setPropertyActionListener 
+                                                value="#{billBhtController.patientEncounter}" 
+                                                target="#{admissionController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGrid>
 

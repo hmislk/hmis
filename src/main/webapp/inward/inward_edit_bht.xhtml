@@ -59,39 +59,50 @@
 
 
                 <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
-
-                    <h:panelGrid columns="4" class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-end align-items-center gap-3" >
+                        <h:panelGrid columns="4" class="d-flex justify-content-end">
                         <p:commandButton
                             ajax="false" 
-                            value="Update" 
+                            value="Save" 
+                            icon="fa fa-check"
                             action="#{bhtEditController.save}"  
-                            class="m-1 ui-button-success">
+                            class="m-1 ui-button-success w-100">
                         </p:commandButton>
                         <p:commandButton 
                             ajax="false" 
+                            icon="fa fa-search"
                             value="Patient Lookup" 
-                            class="m-1 ui-button-warning"
+                            class="m-1 ui-button-warning w-100 "
                             action="#{patientController.navigateToSearchPatients()}" />
                         <p:commandButton 
                             ajax="false" 
+                            icon="fa fa-id-card"
                             value="Inpatient Care Dashboard" 
-                            class="m-1 ui-button-primaryy"
+                            class="m-1 ui-button-primary  w-100"
                             action="#{admissionController.navigateToAdmissionProfilePage}" >
                             <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
                         <p:commandButton 
                             ajax="false" 
+                            icon="fa fa-user"
                             value="Patient Profile" 
-                            class="m-1 ui-button-secondary"
+                            class="m-1 ui-button-secondary w-100"
                             action="#{patientController.navigateToOpdPatientProfile()}" >
                             <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
 
                     </h:panelGrid>
+                    </div>
+
+                    
                     <div class="row">
                         <div class="col-6">
 
-                            <p:panel header="Admission">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
+                                    <h:outputLabel value="Admission" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <p:panelGrid columns="2" class="w-100" >
                                     <p:outputLabel  value="Date of Admission"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
@@ -103,7 +114,7 @@
                                     <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
                                     <p:outputLabel  value="Local/Foreigner"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
+                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}" 
                                                              itemLabel="Foreigner"/>
                                     <p:outputLabel  value="Claimable/Non-Claimable"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
@@ -112,7 +123,11 @@
                                 </p:panelGrid>
                             </p:panel>  
 
-                            <p:panel header="Hospital">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-hospital"></h:outputText>
+                                    <h:outputLabel value="Hospital" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <h:panelGrid columns="2" class="w-100">
                                     <!--                                    <h:outputLabel value="OPD Doctor Speciality"/>
                                                                         <p:autoComplete forceSelection="true"
@@ -159,12 +174,11 @@
                                                     itemLabel="#{ix.person.name}" itemValue="#{ix}"  
                                                     class="w-100 mx-2"  >
                                     </p:autoComplete>
-
+                                  
                                     <p:outputLabel value="Admission Type "/>
                                     <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
-                                    <h:outputLabel value="Select  Admission Paymentmethod"/>
-                                    <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}"  >
-                                        <f:selectItem itemLabel="#{bhtEditController.current.paymentMethod}" />                           
+                                    <h:outputLabel value="Select Payment method"/>
+                                    <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">                       
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         <p:ajax process="@this" update="crd" event="change" />
                                     </p:selectOneMenu>
@@ -174,7 +188,6 @@
                                 </h:panelGroup>
 
                             </p:panel>
-
 
                             <common:patient_details patient="#{bhtEditController.current.patient}" ></common:patient_details>
 
@@ -191,7 +204,11 @@
 
                         <div class="col-6">
 
-                            <p:panel header="Room Details">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-person-shelter"></h:outputText>
+                                    <h:outputLabel value="Room Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <p:dataTable value="#{bhtEditController.patientRoom}" var="rm">
                                     <p:column headerText="Room Name">
                                         #{rm.roomFacilityCharge.name}
@@ -211,7 +228,11 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <p:panel header="Guardian Details">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Guardian Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
                                 <h:panelGrid columns="2" class="w-100">
                                     <p:outputLabel   value="Name:" />
                                     <p:inputText class="mx-2 w-100" autocomplete="off"  value="#{bhtEditController.current.guardian.name}" />
@@ -227,6 +248,10 @@
                             </p:panel>
 
                             <p:panel id="panPrint" class="w-100" >
+                                <f:facet name="header">
+                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                    <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
+                                                </f:facet>
                                 <bill:bht admission="#{bhtEditController.current}"/>
                             </p:panel>
                         </div>
