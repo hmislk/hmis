@@ -97,7 +97,17 @@
                                                 <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                                 <p:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}" class="w-100" ></p:inputText>
                                                 <p:outputLabel value="Item Code"/>
-                                                <p:inputText autocomplete="off" value="#{serviceController.current.code}" class="form-control"/>
+                                                <p:inputText id="ServiceCode" autocomplete="off" value="#{serviceController.current.code}" class="form-control"/>
+
+                                                <p:commandButton 
+                                                    style="float: right"
+                                                    class="ui-button-warning"
+                                                    id="btnGenarate" 
+                                                    update="ServiceCode"
+                                                    process="btnGenarate" 
+                                                    value="Genarate"          
+                                                    action="#{serviceController.genarateServiceCode()}">
+                                                </p:commandButton>
 
                                                 <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                                 <p:autoComplete 
