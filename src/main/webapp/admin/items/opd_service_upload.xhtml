@@ -26,7 +26,7 @@
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadBean.uploadServices()}"
+                                         action="#{dataUploadBean.uploadItems()}"
                                          ajax="false"/>
 
                     </h:form>
@@ -92,8 +92,8 @@
                             </tr>
                              <tr>
                                 <td>K</td>
-                                <td>Outside Fee</td>
-                                <td>Optional. Created Column data.</td>
+                                <td>Collecting Centre Fee</td>
+                                <td>Optional. Created for Column data.</td>
                             </tr>
                             
                         </tbody>
@@ -102,6 +102,15 @@
             </div>
         </div>
 
+        <p:dataTable value="#{dataUploadBean.items}" var="item" >
+            <p:column >
+                #{item.name}
+            </p:column>
+             <p:column >
+                #{item.total}
+            </p:column>
+            
+        </p:dataTable>
 
 
 
