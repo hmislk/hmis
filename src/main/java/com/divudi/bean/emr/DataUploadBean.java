@@ -699,6 +699,8 @@ public class DataUploadBean {
 
             }
 
+            Item masterItem = itemController.findMasterItemByName(name);
+
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -762,15 +764,32 @@ public class DataUploadBean {
 
             Cell itemTypeCell = row.getCell(8);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
-                itemType = inwardCcCell.getStringCellValue();
+                itemType = itemTypeCell.getStringCellValue();
+            }
+            if(itemType==null||itemType.trim().equals("")){
+                itemType = "Investigation";
             }
             if (itemType.equals("Service")) {
+                if (masterItem == null) {
+                    masterItem = new Service();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setCategory(cat);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    itemController.saveSelected(masterItem);
+                }
+
                 Service service = new Service();
                 service.setName(name);
                 service.setPrintName(printingName);
                 service.setFullName(fullName);
                 service.setCode(code);
                 service.setCategory(cat);
+                service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
@@ -780,6 +799,19 @@ public class DataUploadBean {
                 items.add(service);
                 item = service;
             } else if (itemType.equals("Investigation")) {
+
+                if (masterItem == null) {
+                    masterItem = new Investigation();
+                    masterItem.setName(name);
+                    masterItem.setPrintName(printingName);
+                    masterItem.setFullName(fullName);
+                    masterItem.setCode(code);
+                    masterItem.setCategory(cat);
+                    masterItem.setInwardChargeType(iwct);
+                    masterItem.setCreater(sessionController.getLoggedUser());
+                    masterItem.setCreatedAt(new Date());
+                    itemController.saveSelected(masterItem);
+                }
                 Investigation ix = new Investigation();
                 ix.setName(name);
                 ix.setPrintName(printingName);
@@ -789,6 +821,7 @@ public class DataUploadBean {
                 ix.setInstitution(institution);
                 ix.setDepartment(department);
                 ix.setInwardChargeType(iwct);
+                ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
                 investigationController.save(ix);
@@ -1117,8 +1150,6 @@ public class DataUploadBean {
 
         return amps;
     }
-    
-    
 
     private List<Vmp> readVmpsFromExcel(InputStream inputStream) throws IOException {
         outputString += "readVmpsFromExcel";
