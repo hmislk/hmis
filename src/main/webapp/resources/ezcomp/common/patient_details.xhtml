@@ -15,7 +15,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel class="mb-1" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
+        <p:panel class="mb-1 w-100" id="panelPatient" rendered="#{cc.attrs.patient.editingMode}">
             <p:growl id="msg"/>
             <f:facet name="header" >
                 <h:panelGroup id="headerFacet">
@@ -259,11 +259,11 @@
                 <h:outputLabel value=" : " class="mx-3"/>
                 <h:outputText value="#{cc.attrs.patient.person.ageAsString}" />
 
-                <h:outputLabel value="Mobile Number " class="mx-3"/>
+                <h:outputLabel value="Mobile No. " class="mx-3"/>
                 <h:outputLabel value=" : " class="mx-3"/>
                 <h:outputText value="#{cc.attrs.patient.person.mobile}" />
 
-                <h:outputLabel value="Phone Number: " class="mx-3"/>
+                <h:outputLabel value="Phone No. " class="mx-3"/>
                 <h:outputLabel value=" : " class="mx-3"/>
                 <h:outputText value="#{cc.attrs.patient.person.phone}" />
 

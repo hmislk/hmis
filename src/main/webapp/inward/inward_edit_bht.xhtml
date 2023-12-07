@@ -103,7 +103,7 @@
                                     <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
                                     <p:outputLabel  value="Local/Foreigner"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
+                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}" 
                                                              itemLabel="Foreigner"/>
                                     <p:outputLabel  value="Claimable/Non-Claimable"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
@@ -163,7 +163,7 @@
                                     <p:outputLabel value="Admission Type "/>
                                     <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
                                     <h:outputLabel value="Select  Admission Paymentmethod"/>
-                                    <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}"  >
+                                    <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
                                         <f:selectItem itemLabel="#{bhtEditController.current.paymentMethod}" />                           
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         <p:ajax process="@this" update="crd" event="change" />
