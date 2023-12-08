@@ -30,9 +30,7 @@
                             <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-4" >
                             </p:calendar>
                         </div>
-                    </div>
-                        <div class="row p-2">
-                            <div class="col-md-4">
+                        <div class="col-md-4">
                                
                                     <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;
                                     <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
@@ -41,7 +39,8 @@
                                                      value="#{channelReportController.webUser}"></p:autoComplete>
 
                             </div>
-                        </div>
+                    </div>
+                        
                    
                     <div class="row">
                         <div class="col-md-12">
@@ -49,7 +48,7 @@
                             <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" />
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton ml-2 mb-2 w-10" >
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton ml-2 mb-2 w-10" class="mx-2" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
@@ -68,12 +67,12 @@
                             <p:dataTable id="tbl"  value="#{channelReportController.billedBillList.bills}" var="b">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Channel Bills &emsp; #{channelReportController.webUser.webUserPerson.name}"/>
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <h:outputLabel style="margin-right: 10px" value="From : "/>
+                                    <h:outputLabel value="#{channelReportController.fromDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <h:outputLabel style="margin-left: 30px; margin-right: 10px" value="To :"/>
+                                    <h:outputLabel value="#{channelReportController.toDate}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>     
@@ -480,9 +479,7 @@
                             <br/>
                             <h:outputLabel value="............................"/>
                         </h:panelGrid>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                        </f:facet>
+                        
                     </p:panel>
 
                 </p:panel>
