@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Random;
 
 /**
  *
@@ -426,7 +427,37 @@ public class ServiceController implements Serializable {
         return code;
     }
 
+    public String genarateServiceCode() {
+        String serviceCode = null;
+        Random random = new Random();
+        int randomNumber = random.nextInt(9000) + 1000;
+        serviceCode = Integer.toString(randomNumber);
+        System.out.println("Service Code : " + serviceCode);
+        getCurrent().setCode(serviceCode);
+        return serviceCode;
+    }
+
+    public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
+        List<Service> temp;
+        HashMap hash = new HashMap();
+        String sql = "select c from Service c "
+                + "where c.retired = false "
+                + "and c.code = :sCode "
+                + "and c.id != :id ";
+
+        hash.put("sCode", genaratedServiceCode);
+        hash.put("id", getCurrent().getId());
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
+        if (temp.size() != 0) {
+            System.out.println("list is full");
+            return false;
+        }
+        return true;
+
+    }
+
     public void saveSelected() {
+
         if (getCurrent().getDepartment() == null) {
             UtilityController.addErrorMessage("Please Select Department");
             return;
@@ -444,9 +475,10 @@ public class ServiceController implements Serializable {
             if (getCurrent().getPrintName() == null) {
                 getCurrent().setPrintName(getCurrent().getName());
             }
-            if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
-                getCurrent().setCode(generateShortCode(getCurrent().getName()));
-            }
+        }
+
+        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
+            getCurrent().setCode(genarateServiceCode());
         }
 
 //        if (errorCheck()) {
@@ -468,13 +500,27 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Old Successfully");
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().edit(getCurrent());
+                UtilityController.addSuccessMessage("Saved Old Successfully");
+            }
+
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-            getFacade().create(getCurrent());
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode()) ) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().create(getCurrent());
+            }
+
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
@@ -483,8 +529,10 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
+
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
+
         }
         recreateModel();
         getItems();
@@ -507,7 +555,7 @@ public class ServiceController implements Serializable {
                 service.setPrintName(service.getName());
             }
             if (service.getCode() == null || service.getCode().isEmpty()) {
-                service.setCode(generateShortCode(service.getName()));
+                service.setCode(genarateServiceCode());
             }
         }
 
@@ -536,7 +584,14 @@ public class ServiceController implements Serializable {
             //////// // System.out.println("4");
             service.setCreatedAt(new Date());
             service.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(service);
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().create(service);
+            }
+
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 service.setBilledAs(service);
@@ -545,8 +600,14 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("6");
                 service.setReportedAs(service);
             }
-            getFacade().edit(service);
-            UtilityController.addSuccessMessage("Saved Successfully");
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().edit(service);
+                UtilityController.addSuccessMessage("Saved Successfully");
+            }
         }
         recreateModel();
         getItems();
@@ -732,7 +793,7 @@ public class ServiceController implements Serializable {
         Map<String, Double> resultMap = new HashMap<>();
 
         if (file != null) {
-            try ( InputStream input = file.getInputStream()) {
+            try (InputStream input = file.getInputStream()) {
                 Workbook workbook = new XSSFWorkbook(input);
                 Sheet sheet = workbook.getSheetAt(0);
                 for (Row row : sheet) {
