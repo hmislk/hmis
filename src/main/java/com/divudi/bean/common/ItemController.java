@@ -110,10 +110,25 @@ public class ItemController implements Serializable {
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
-
+    private List<ItemFee> ItemFeesList;
+ 
+    
     boolean masterItem;
 
     ReportKeyWord reportKeyWord;
+    
+   public List<ItemFee> fetchItemFeeList() {
+        List<ItemFee> itemFees = new ArrayList<>();
+        
+        String sql;
+
+        sql = "select c from ItemFee c "
+                + " where c.retired=false order by c.name ";
+
+        ////// // System.out.println(sql);
+        ItemFeesList = getItemFeeFacade().findByJpql(sql);
+        return ItemFeesList;
+    }
 
     public String navigateToListAllItems() {
         allItems = null;
@@ -1977,6 +1992,14 @@ public class ItemController implements Serializable {
 
     public void setMasterItem(boolean masterItem) {
         this.masterItem = masterItem;
+    }
+
+    public List<ItemFee> getItemFeesList() {
+        return ItemFeesList;
+    }
+
+    public void setItemFeesList(List<ItemFee> ItemFeesList) {
+        this.ItemFeesList = ItemFeesList;
     }
 
     @FacesConverter(forClass = Item.class)
