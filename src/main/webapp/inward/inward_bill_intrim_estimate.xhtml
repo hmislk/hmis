@@ -74,14 +74,22 @@
                             icon="fa fa-user"
                             class="ui-button-plain  mx-1" 
                             action="#{patientController.navigateToOpdPatientProfile()}" 
-                            />
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{bhtSummeryController.patientEncounter.patient}" 
+                                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
 
                         <p:commandButton 
                             ajax="false"
                             icon="fas fa-id-card"
                             class="ui-button-secondary " 
                             action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                            />
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{bhtSummeryController.patientEncounter}" 
+                                                target="#{admissionController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
                     </div>
 
                     <div class="row">
