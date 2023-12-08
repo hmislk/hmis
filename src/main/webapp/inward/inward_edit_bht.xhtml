@@ -65,7 +65,7 @@
                             ajax="false" 
                             value="Save" 
                             icon="fa fa-check"
-                            action="#{bhtEditController.save}"  
+                            action="#{bhtEditController.saveCurrent}"  
                             class="m-1 ui-button-success w-100">
                         </p:commandButton>
                         <p:commandButton 
@@ -189,7 +189,7 @@
 
                             </p:panel>
 
-                            <common:patient_details patient="#{bhtEditController.current.patient}" ></common:patient_details>
+                            <common:patient_details patient="#{bhtEditController.current.patient}"  ></common:patient_details>
 
 
                             <p:panel header="Cancel Admission">
