@@ -8,8 +8,10 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Category;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -73,6 +75,27 @@ public class SampleController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+    
+    public Sample findAndCreateSampleByName(String qry) {
+        Sample s;
+        String jpql;
+        jpql = "select s from "
+                + " Sample s "
+                + " where s.retired=:ret "
+                + " and s.name=:name "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        s = getFacade().findFirstByJpql(jpql, m);
+        if(s==null){
+            s = new Sample();
+            s.setName(qry);
+            s.setCreatedAt(new Date());
+            getFacade().create(s);
+        }
+        return s;
     }
 
     private SampleFacade getEjbFacade() {

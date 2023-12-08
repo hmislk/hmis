@@ -49,7 +49,6 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.light.common.BillLight;
-import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -77,6 +75,8 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class SearchController implements Serializable {
 
+    
+    
     /**
      * EJBs
      */
@@ -98,6 +98,8 @@ public class SearchController implements Serializable {
     StockFacade stockFacade;
     @EJB
     PatientReportFacade patientReportFacade;
+    @EJB
+    private PatientFacade patientFacade;
 
     /**
      * Inject
@@ -116,6 +118,8 @@ public class SearchController implements Serializable {
     SmsController smsController;
     @Inject
     AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    WebUserController webUserController;
 
     /**
      * Properties
@@ -123,6 +127,7 @@ public class SearchController implements Serializable {
     private SearchKeyword searchKeyword;
     Date fromDate;
     Date toDate;
+    
     private int maxResult = 50;
     private BillType billType;
     private PaymentMethod paymentMethod;
@@ -5647,8 +5652,7 @@ public class SearchController implements Serializable {
 
     }
 
-    @Inject
-    WebUserController webUserController;
+    
 
     @Deprecated
     public void searchDepartmentOpdBills() {
@@ -5824,8 +5828,7 @@ public class SearchController implements Serializable {
 
     }
 
-    @EJB
-    private PatientFacade patientFacade;
+    
 
     public void createTableByKeyword(BillType billType) {
         fillBills(billType, null, null);
@@ -7498,7 +7501,7 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Payemnt Search(/faces/inward/inward_search_payment.xhtml)");
 
     }
-
+    
     public void createInwardRefundBills() {
         Date startTime = new Date();
 
@@ -7545,8 +7548,80 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Refund Search(/faces/inward/inward_search_refund.xhtml)");
     }
+    
+    public void searchSurgery() { 
+        Date startTime = new Date();
 
-    public void createInwardSurgeryBills() {
+        if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
+            JsfUtil.addErrorMessage("You Need To select Surgury to Search All");
+            return;
+        }
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where "
+                + " b.billType = :billType and "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false  ";
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  ((b.staff.person.name) like :staffName )";
+            temMap.put("staffName", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null
+                && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  ((b.procedure.item.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItem() != null) {
+            sql += " and b.procedure.item=:item ";
+            temMap.put("item", getSearchKeyword().getItem());
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        temMap.put("billType", BillType.SurgeryBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        if (searchKeyword.isActiveAdvanceOption()) {
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
+
+    }
+
+    public void createInwardSurgeryBills() { 
         Date startTime = new Date();
 
         if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
@@ -8341,8 +8416,6 @@ public class SearchController implements Serializable {
             this.adjusetedVal = adjusetedVal;
         }
     }
-    
-    
     
     public Date getToDate() {
         if (toDate == null) {

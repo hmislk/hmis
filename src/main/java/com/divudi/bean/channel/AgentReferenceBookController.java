@@ -144,53 +144,20 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public void searchReferenceBooks() {
-        createAllBookTable1();
-        createAllBookTable2();
-        createAllBookTable3();
+        createAllBookTable();
+      
     }
     
-     public void createAllBookTable1() {
-         System.out.println("method 1");
+    public void createAllBookTable() {
         String sql;
         HashMap m = new HashMap();
-
-        sql = "select a from AgentReferenceBook a";
-
-//        m.put("fd", frmDate);
-//        m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql);
-    }
-     
-      public void createAllBookTable2() {
-          System.out.println("method 2");
-        String sql;
-        HashMap m = new HashMap();
-
-        sql = "select a from AgentReferenceBook a";
-
-//        m.put("fd", frmDate);
-//        m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql);
-    }
-    
-    public void createAllBookTable3() {
-        System.out.println("method 3");
-        String sql;
-        HashMap m = new HashMap();
-
         sql = "select a from AgentReferenceBook a where "
-                + " a.createdAt between :fd and :td "
-                + " and a.retired=false ";
-
+                + " a.createdAt between :fd and :td ";
         m.put("fd", frmDate);
         m.put("td", toDate);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql,m,TemporalType.TIMESTAMP);
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.DATE);
     }
 
     public void createAllBooks() {
