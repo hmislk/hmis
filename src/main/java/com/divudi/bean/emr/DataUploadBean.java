@@ -777,6 +777,7 @@ public class DataUploadBean {
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
                     masterItem.setCategory(cat);
+                    masterItem.setIsMasterItem(true);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
@@ -806,6 +807,7 @@ public class DataUploadBean {
                     masterItem.setPrintName(printingName);
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
+                    masterItem.setIsMasterItem(true);
                     masterItem.setCategory(cat);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());

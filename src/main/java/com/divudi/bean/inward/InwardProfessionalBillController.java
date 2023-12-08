@@ -730,7 +730,7 @@ public class InwardProfessionalBillController implements Serializable {
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Service & Items/Add Outside Charges(/faces/inward/inward_bill_professional.xhtml)");
     }
-    
+
     public String navigateToAddProfessionalFeesFromMenu() {
         makeNull();
         return "/inward/inward_bill_professional?faces-redirect=true";
