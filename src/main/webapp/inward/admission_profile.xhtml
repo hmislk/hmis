@@ -131,11 +131,11 @@
 
                                 <p:commandButton 
                                     value="Add Timed Services" 
-                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromMenu()}" 
+                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile()}" 
                                     icon="fa fa-clock"
                                     class="w-100">
                                     <f:setPropertyActionListener 
-                                        value="#{timedItemController.current}" 
+                                        value="#{admissionController.current}" 
                                         target="#{inwardTimedItemController.current.patientEncounter}" />
                                 </p:commandButton>
                             </div>
