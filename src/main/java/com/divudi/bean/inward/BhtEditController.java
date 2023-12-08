@@ -284,7 +284,7 @@ public class BhtEditController implements Serializable {
         selectText = "";
         yearMonthDay = new YearMonthDay();
     }
-
+    @Deprecated
     public void save() {
         getPatientFacade().edit(getCurrent().getPatient());
         getPersonFacade().edit(getCurrent().getPatient().getPerson());
@@ -298,6 +298,15 @@ public class BhtEditController implements Serializable {
         UtilityController.addSuccessMessage("Detail Updated");
         prepereForNew();
     }
+    
+    public void saveCurrent() {
+        getPatientFacade().edit(getCurrent().getPatient());
+        getPersonFacade().edit(getCurrent().getPatient().getPerson());
+        getPersonFacade().edit(getCurrent().getGuardian());
+        getEjbFacade().edit(current);
+        UtilityController.addSuccessMessage("Detail Updated");
+    }
+    
 
     public void updateFirstPatientRoomAdmissionTime() {
         HashMap hm = new HashMap();
