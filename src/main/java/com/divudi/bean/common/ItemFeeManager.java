@@ -61,6 +61,14 @@ public class ItemFeeManager implements Serializable {
     List<Department> departments;
     List<Staff> staffs;
     private List<Item> selectedList;
+    
+    public String navigateItemFeeList(){
+        return "/admin/pricing/item_fee_list?faces-redirect=true";
+    }
+    
+    public String navigateItemViseFeeList(){
+        return "/admin/pricing/manage_item_fees_bulk?faces-redirect=true";
+    }
 
     public void createItemFessForSelectedItems() {
         System.out.println("createItemFessForSelectedItems" + this);
