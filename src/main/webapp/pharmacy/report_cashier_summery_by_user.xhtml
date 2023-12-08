@@ -16,62 +16,77 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                <p:panel >
+                    <div class="row p-2">
+                        <div class="col-md-4">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-4" >
+                            </p:calendar>
+                        </div>
+                        <div class="col-md-4">
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-4" >
+                            </p:calendar>
+                        </div>
+                        <div class="col-md-4">
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;
+                            <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                            forceSelection="true" 
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{commonReport.webUser}" ></p:autoComplete>
+                        </div>
+                    </div>
 
-                    <p:panel>
+                    <div class="row">
+                        <div class="col-12">
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
+                                             styleClass="noPrintButton"
+                                             action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                             styleClass="noPrintButton ml-2 mb-2 mt-2 w-10" 
+                                             action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                             styleClass="noPrintButton" class="mx-2"
+                                             action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <p:panel id="reportPrint">
                         <f:facet name="header" >
                             <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
                             <br/>
                             <h:outputLabel value="#{commonReport.header} :"/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                             <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
-                            <h:outputLabel value="#{commonReport.fromDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            <h:outputLabel value="&nbsp;#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss "/>
                             </h:outputLabel>
                             <h:outputLabel value="&emsp;&emsp;To :"/>
-                            <h:outputLabel value="#{commonReport.toDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            <h:outputLabel value="&nbsp;#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss "/>
                             </h:outputLabel>
                             <br/>
                             <h:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} " />
-                            
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
+
                         </f:facet>
                         <f:facet name="footer">
-                            
+
                         </f:facet>
 
 
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
 
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
-                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                            forceSelection="true"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{commonReport.webUser}" ></p:autoComplete>
-
-                        </h:panelGrid>
 
                         <ca:opdBilledSummery data="#{commonReport.userBillsOwn}"/>
 
