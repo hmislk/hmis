@@ -13,6 +13,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.PostLoad;
@@ -36,6 +37,8 @@ public class Patient implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties
     Long id;
+
+    private Long patientPhoneNumber;
     @ManyToOne
     Person person;
     //personaI dentification Number
@@ -60,7 +63,7 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    
+
     @Transient
     String age;
     @Transient
@@ -111,17 +114,18 @@ public class Patient implements Serializable {
     @Transient
     Bill bill;
 
+    @Transient
+    private String phoneNumberStringTransient;
+
     private Boolean cardIssues;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
 
     public Patient() {
-        editingMode=true;
+        editingMode = true;
     }
 
-    
-    
     public void toggleEditMode() {
         editingMode = !editingMode;
     }
@@ -569,6 +573,42 @@ public class Patient implements Serializable {
 
     public void setEditingMode(boolean editingMode) {
         this.editingMode = editingMode;
+    }
+
+    public String getPhoneNumberStringTransient() {
+        if (this.getPerson() == null) {
+            return null;
+        }
+        phoneNumberStringTransient = this.getPerson().getPhone();
+        return phoneNumberStringTransient;
+    }
+
+    public Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
+    }
+
+    public void setPhoneNumberStringTransient(String phoneNumberStringTransient) {
+        try {
+            if (this.getPerson() == null) {
+                return;
+            }
+            this.getPerson().setPhone(phoneNumberStringTransient);
+            this.patientPhoneNumber = removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.phoneNumberStringTransient = phoneNumberStringTransient;
+            System.err.println("Patient Phone Number : "+this.patientPhoneNumber);
+        } catch (Exception e) {
+            System.err.println("Error Setting Phone Number !");
+        }
+    }
+
+    public Long getPatientPhoneNumber() {
+        return patientPhoneNumber;
+    }
+
+    public void setPatientPhoneNumber(Long patientPhoneNumber) {
+        this.patientPhoneNumber = patientPhoneNumber;
     }
 
 }
