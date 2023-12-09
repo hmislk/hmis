@@ -11,14 +11,14 @@
     <ui:define name="item">
 
         <h:form >
-            <p:poll update="txtPoll"></p:poll>
-            <h:outputLabel value="" id="txtPoll" ></h:outputLabel>
+
+
         </h:form>
 
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload AMPs</h2>
+                    <h2>Upload Items</h2>
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -48,12 +48,12 @@
                             <tr>
                                 <td>B</td>
                                 <td>Printing Name</td>
-                                <td>Printing Name name. (Trade Name) Required.</td>
+                                <td>Printing Name name. Optional.</td>
                             </tr>
                             <tr>
                                 <td>C</td>
                                 <td>Full Name</td>
-                                <td>Full Name</td>
+                                <td>Full Name Optional</td>
                             </tr>
                             <tr>
                                 <td>D</td>
@@ -83,33 +83,35 @@
                             <tr>
                                 <td>I</td>
                                 <td>Item Type</td>
-                                <td>Optional. Default is Service. Other options include Investigation</td>
+                                <td>Optional. Default is Investigation. Other options include Service.</td>
                             </tr>
                             <tr>
                                 <td>J</td>
                                 <td>Hospital Fee</td>
-                                <td>Optional. Created for Logged Department and Institution</td>
+                                <td>Mandatory. Created for Logged Department and Institution</td>
                             </tr>
-                             <tr>
+                            <tr>
                                 <td>K</td>
                                 <td>Collecting Centre Fee</td>
-                                <td>Optional. Created for Column data.</td>
+                                <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
                             </tr>
-                            
+
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <p:dataTable value="#{dataUploadBean.items}" var="item" >
+        <p:poll update="tbl"></p:poll>
+
+        <p:dataTable id="tbl" value="#{dataUploadBean.items}" var="item" >
             <p:column >
                 #{item.name}
             </p:column>
-             <p:column >
+            <p:column >
                 #{item.total}
             </p:column>
-            
+
         </p:dataTable>
 
 
