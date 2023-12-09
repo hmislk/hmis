@@ -37,7 +37,7 @@ public class Patient implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties
     Long id;
-    
+
     private Long patientPhoneNumber;
     @ManyToOne
     Person person;
@@ -583,13 +583,24 @@ public class Patient implements Serializable {
         return phoneNumberStringTransient;
     }
 
+    public Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
+    }
+
     public void setPhoneNumberStringTransient(String phoneNumberStringTransient) {
-        if(this.getPerson()==null){
-            return;
+        try {
+            if (this.getPerson() == null) {
+                return;
+            }
+            this.getPerson().setPhone(phoneNumberStringTransient);
+            this.patientPhoneNumber = removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
+            this.phoneNumberStringTransient = phoneNumberStringTransient;
+            System.err.println("Patient Phone Number : "+this.patientPhoneNumber);
+        } catch (Exception e) {
+            System.err.println("Error Setting Phone Number !");
         }
-        this.getPerson().setPhone(phoneNumberStringTransient);
-        this.patientPhoneNumber = Long.valueOf(phoneNumberStringTransient); //ToDo:Pavan , error handling, remove dashes, remove spaces 
-        this.phoneNumberStringTransient = phoneNumberStringTransient;
     }
 
     public Long getPatientPhoneNumber() {
@@ -599,7 +610,5 @@ public class Patient implements Serializable {
     public void setPatientPhoneNumber(Long patientPhoneNumber) {
         this.patientPhoneNumber = patientPhoneNumber;
     }
-    
-    
 
 }
