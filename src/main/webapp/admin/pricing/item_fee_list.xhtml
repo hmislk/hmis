@@ -31,13 +31,16 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                ajax="false" value="Refresh Items" action="#{itemController.fetchItemFeeList()}" >
+                                ajax="false" value="Reload Items" action="#{itemController.fetchItemFeeList()}" >
                             </p:commandButton>
 
                             <p:commandButton 
                                 ajax="false" class="ui-button-success" value="Download" action="#{itemController.refreshInvestigationsAndServices}" >
-                                <p:dataExporter target="tblExport" type="xlsx" fileName="item_fees_list" ></p:dataExporter>
-
+                                <p:dataExporter 
+                                    target="tblExport" 
+                                    type="xlsx" 
+                                    fileName="item_fees_list" 
+                                    exportHeader="true"></p:dataExporter>
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -96,31 +99,6 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.staff.name}" ></h:outputLabel>
                                 </p:column>
-
-                                <p:column sortBy="#{i.dblValue}" width="80"
-                                          filterMatchMode="contains" filterBy="#{i.dblValue}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total Fee" >
-
-                                        </h:outputLabel>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.item.total}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column sortBy="#{i.dblValue}" width="80"
-                                          filterMatchMode="contains" filterBy="#{i.dblValue}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Forigner Fee" >
-
-                                        </h:outputLabel>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.item.totalForForeigner}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-                                
                                 <p:column sortBy="#{i.feeType.label}" width="120"
                                           filterMatchMode="contains" filterBy="#{i.staff.name}">
                                     <f:facet name="header">
@@ -128,7 +106,36 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.feeType.label}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Actions" width="60">
+
+                                <p:column sortBy="#{i.fee}" width="80"
+                                          filterMatchMode="contains" filterBy="#{i.fee}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total Fee" >
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.fee}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.ffee}" width="80"
+                                          filterMatchMode="contains" filterBy="#{i.ffee}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Forigner Fee" >
+
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.ffee}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                
+                                <p:column 
+                                    headerText="Actions" 
+                                    exportable="false" 
+                                    width="60">
                                     <p:commandButton ajax="false" value="Edit" action="#{itemFeeManager.toManageItemFees()}"  actionListener="#{viewController.makeBulkFeesAsPreviousPage()}">
                                         <f:setPropertyActionListener value="#{i}" target="#{itemFeeManager.item}" ></f:setPropertyActionListener>
                                     </p:commandButton>
