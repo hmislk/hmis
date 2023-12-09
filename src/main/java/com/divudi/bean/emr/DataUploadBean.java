@@ -2,13 +2,13 @@ package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
-import com.divudi.bean.common.AnalysisController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ItemFeeController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.ServiceController;
@@ -53,10 +53,10 @@ import com.divudi.facade.VtmFacade;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -70,12 +70,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
-@RequestScoped
-public class DataUploadBean {
+@ViewScoped
+public class DataUploadBean implements Serializable {
 
     @Inject
     ItemController itemController;
@@ -119,6 +120,8 @@ public class DataUploadBean {
     InvestigationCategoryController investigationCategoryController;
     @Inject
     ItemFeeManager itemFeeManager;
+    @Inject
+    ItemFeeController itemFeeController;
 
     @EJB
     PatientFacade patientFacade;
@@ -130,6 +133,7 @@ public class DataUploadBean {
     private UploadedFile file;
     private String outputString;
     private List<Item> items;
+    private List<ItemFee> itemFees;
 
     public UploadedFile getFile() {
         return file;
@@ -244,6 +248,17 @@ public class DataUploadBean {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 items = readItemsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadItemFeesToUpdateFees() {
+        itemFees = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -766,7 +781,7 @@ public class DataUploadBean {
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemType = itemTypeCell.getStringCellValue();
             }
-            if(itemType==null||itemType.trim().equals("")){
+            if (itemType == null || itemType.trim().equals("")) {
                 itemType = "Investigation";
             }
             if (itemType.equals("Service")) {
@@ -868,6 +883,73 @@ public class DataUploadBean {
         }
 
         return items;
+    }
+
+    private List<ItemFee> replaceItemFeesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemFees = new ArrayList<>();
+        ItemFee itemFee;
+
+//        // Assuming the first row contains headers, skip it
+//        if (rowIterator.hasNext()) {
+//            rowIterator.next();
+//        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            itemFee = null;
+            Long itemFeeId = null;
+            Double feeValue = null;
+            Double foreignerFeeValue = null;
+
+            Cell itemFeeIdCell = row.getCell(0);
+            if (itemFeeIdCell != null && itemFeeIdCell.getCellType() == CellType.NUMERIC) {
+                double numericValue = itemFeeIdCell.getNumericCellValue();
+                if (numericValue % 1 == 0) {
+                    itemFeeId = (long) numericValue;
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            itemFee = itemFeeController.findItemFeeFromItemFeeId(itemFeeId);
+
+            if (itemFee == null) {
+                continue;
+            }
+
+            Cell feeCell = row.getCell(6);
+            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
+                feeValue = feeCell.getNumericCellValue();
+            }
+            
+            if (feeValue == null) {
+                continue;
+            }
+            
+            Cell ffeeCell = row.getCell(7);
+            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
+                foreignerFeeValue = ffeeCell.getNumericCellValue();
+            }
+            
+            if (foreignerFeeValue == null) {
+                foreignerFeeValue = feeValue;
+            }
+            
+            itemFee.setFee(feeValue);
+            itemFee.setFfee(foreignerFeeValue);
+            
+            itemFeeManager.saveItemFee(itemFee);
+            
+            itemFees.add(itemFee);
+        }
+
+        return itemFees;
     }
 
     private List<Investigation> readInvestigationsFromExcel(InputStream inputStream) throws IOException {
@@ -1295,6 +1377,14 @@ public class DataUploadBean {
 
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public List<ItemFee> getItemFees() {
+        return itemFees;
+    }
+
+    public void setItemFees(List<ItemFee> itemFees) {
+        this.itemFees = itemFees;
     }
 
 }
