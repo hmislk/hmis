@@ -229,7 +229,61 @@ public class PatientController implements Serializable {
     private boolean printPreview = false;
 
     private List<PatientInvestigation> patientInvestigations;
+    
+    
+    /**
+     * 
+     * 
+     * 
+     * 
+     */
+    
+    //Damthi's contents
+    
+    /**
+     * 
+     * 
+     * 
+     * 
+     */
+    
+    
+    
+    
+    /**
+     * 
+     * 
+     * 
+     * 
+     */
+    
+    //Pavan's contents
+    
+    /**
+     * 
+     * 
+     * 
+     * 
+     */
+    
+    
+    
+    public void convertOldPersonPhoneToPatientPhoneLong(){
+        //to be done by Pavan
+    }
 
+    
+    public String navigateToconvertOldPersonPhoneToPatientPhoneLong(){
+        
+        return "";
+    }
+    
+    
+    
+    
+    
+    
+    
     public void generateNewPhnAndAssignToCurrentPatient(){
         if(current==null){
             JsfUtil.addErrorMessage("No patient selected");
@@ -413,6 +467,8 @@ public class PatientController implements Serializable {
         dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd-MM-yyyy"));
         return dateCellStyle;
     }
+    
+    
 
     public void calculateAgeComponantsFromDob(Patient p) {
         if (p == null || p.getPerson() == null || p.getPerson().getDob() == null) {
@@ -968,6 +1024,13 @@ public class PatientController implements Serializable {
         return "";
     }
 
+    
+    public String searchPatientForOpdFromPatientPhoneLong() {
+        //to do by Damith
+        
+        return "";
+    }
+    
     public void clearSearchDetails() {
         searchName = null;
         searchPhone = null;
