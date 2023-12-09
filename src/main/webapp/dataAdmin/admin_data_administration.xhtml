@@ -36,6 +36,13 @@
                                                              action="/dataAdmin/downloads" 
 
                                                              rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+                                                             
+                                            <p:commandButton value="Convert Phone Number"
+                                                             ajax="false"
+                                                             class="btn btn-block"
+                                                             action="/dataAdmin/phone_number_convert" 
+
+                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
 
 
                                         </div>

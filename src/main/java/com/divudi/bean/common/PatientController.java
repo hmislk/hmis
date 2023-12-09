@@ -214,6 +214,8 @@ public class PatientController implements Serializable {
     private String searchPatientId;
     private String searchBillId;
     private String searchSampleId;
+    private String searchPatientPhoneNumber;
+
     private List<Patient> searchedPatients;
     private List<Person> searchedPersons;
 
@@ -229,70 +231,108 @@ public class PatientController implements Serializable {
     private boolean printPreview = false;
 
     private List<PatientInvestigation> patientInvestigations;
-    
-    
+
     /**
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      */
-    
     //Damthi's contents
-    
     /**
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      */
-    
-    
-    
-    
     /**
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      */
-    
     //Pavan's contents
-    
+    private List<Patient> allPatientList;
+    private List<Person> allPersonList;
+    private Map<String, Patient> PatientMap;
+
     /**
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      */
-    
-    
-    
-    public void convertOldPersonPhoneToPatientPhoneLong(){
-        //to be done by Pavan
+    public Map<String, Patient> CreatePatientMap(List<Patient> patients) {
+
+        Map<String, Patient> patientMap = new HashMap<>();
+        for (Patient patient : patients) {
+            if (patient != null && patient.getPerson().getId() != null) {
+                String patientPerson = String.valueOf(patient.getPerson().getId());
+                patientMap.put(patientPerson, patient);
+            }
+        }
+        return patientMap;
     }
 
-    
-    public String navigateToconvertOldPersonPhoneToPatientPhoneLong(){
-        
-        return "";
+    public Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
     }
-    
-    
-    
-    
-    
-    
-    
-    public void generateNewPhnAndAssignToCurrentPatient(){
-        if(current==null){
+
+    public void convertOldPersonPhoneToPatientPhoneLong() {
+        System.out.println("Working convertOldPersonPhoneToPatientPhoneLong()");
+
+        String j = "select p "
+                + " from Patient p "
+                + " where p.retired=:ret "
+                + " order by p.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        allPatientList = getFacade().findByJpql(j, m);
+
+        String s = "select p "
+                + " from Person p "
+                + " where p.retired=:ret "
+                + " order by p.id";
+        Map<String, Object> h = new HashMap<>();
+        h.put("ret", false);
+        allPersonList = getPersonFacade().findByJpql(s, h);
+
+        System.out.println("allPatients : " + allPatientList.size() + "  allPersons : " + allPersonList.size());
+
+        Map<String, Patient> patientMap = CreatePatientMap(allPatientList);
+        if (patientMap.isEmpty() || allPersonList.isEmpty()) {
+            System.out.println("Patients or Persons Not Available");
+        }
+
+        for (Person person : allPersonList) {
+            if (person != null && person.getId() != null) {
+                String personId = String.valueOf(person.getId());
+                Patient patient = patientMap.get(personId);
+                if (patient != null && person.getPhone() != null && !person.getPhone().isEmpty()) {
+                    Long personPhone = removeSpecialCharsInPhonenumber(person.getPhone());
+                    patient.setPatientPhoneNumber(personPhone);
+                    getFacade().edit(patient);
+                }
+
+            }
+        }
+    }
+
+    public String navigateToconvertOldPersonPhoneToPatientPhoneLong() {
+
+        return "/dataAdmin/downloads";
+    }
+
+    public void generateNewPhnAndAssignToCurrentPatient() {
+        if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
-            return ;
+            return;
         }
         current.setPhn(applicationController.createNewPersonalHealthNumber(sessionController.getInstitution()));
     }
-    
-    
+
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
         String j = "select p "
@@ -334,7 +374,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -452,7 +492,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -467,8 +507,6 @@ public class PatientController implements Serializable {
         dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd-MM-yyyy"));
         return dateCellStyle;
     }
-    
-    
 
     public void calculateAgeComponantsFromDob(Patient p) {
         if (p == null || p.getPerson() == null || p.getPerson().getDob() == null) {
@@ -1005,10 +1043,10 @@ public class PatientController implements Serializable {
             searchByPatientId();
         } else if (searchPhone == null && searchNic == null && searchName != null && !searchName.trim().equals("")) {
             searchPatientByName();
-        } else if (searchName == null && searchNic == null && searchPhone != null && !searchPhone.trim().equals("")) {
-            searchPatientByPhone();
         } else if (searchPhone == null && searchName == null && searchNic != null && !searchNic.trim().equals("")) {
             searchPatientByNic();
+        } else if (searchPhone == null && searchName == null && searchNic != null && searchNic != null && !searchPatientPhoneNumber.trim().equals("")) {
+            searchByPatientPhoneNumber();
         } else {
             searchPatientByDetails();
         }
@@ -1024,13 +1062,12 @@ public class PatientController implements Serializable {
         return "";
     }
 
-    
     public String searchPatientForOpdFromPatientPhoneLong() {
         //to do by Damith
-        
+
         return "";
     }
-    
+
     public void clearSearchDetails() {
         searchName = null;
         searchPhone = null;
@@ -1040,6 +1077,7 @@ public class PatientController implements Serializable {
         searchPatientId = null;
         searchBillId = null;
         searchSampleId = null;
+        searchPatientPhoneNumber=null;
     }
 
     public void searchByBill() {
@@ -1250,9 +1288,18 @@ public class PatientController implements Serializable {
         try {
             ptId = Long.parseLong(searchPatientId);
         } catch (Exception e) {
+            m.put("id", ptId);
+            searchedPatients = getFacade().findByJpql(j, m);
 
         }
-        m.put("id", ptId);
+    }
+
+    public void searchByPatientPhoneNumber() {
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+        m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
 
     }
@@ -1850,7 +1897,7 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
-         if(p.getPhn()==null||p.getPhn().trim().equals("")){
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
             p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             getEjbFacade().edit(p);
         }
@@ -1916,7 +1963,7 @@ public class PatientController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
-        if(getCurrent().getPhn()==null||getCurrent().getPhn().trim().equals("")){
+        if (getCurrent().getPhn() == null || getCurrent().getPhn().trim().equals("")) {
             getCurrent().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             getEjbFacade().edit(getCurrent());
         }
@@ -2317,9 +2364,6 @@ public class PatientController implements Serializable {
         return count;
     }
 
-    
-    
-    
     // Placeholder for the common search method
     private void searchByMultipleCriteria() {
         // Logic for searching by multiple criteria
@@ -2458,7 +2502,7 @@ public class PatientController implements Serializable {
     }
 
     private void searchByPhn(String phn) {
-         String j1 = "Select p.person "
+        String j1 = "Select p.person "
                 + " from Patient p"
                 + " where p.retired=:ret"
                 + " and p.phn=:phn ";
@@ -2895,13 +2939,12 @@ public class PatientController implements Serializable {
 
     public void setCurrentPerson(Person currentPerson) {
         this.currentPerson = currentPerson;
-        if(currentPerson!=null){
+        if (currentPerson != null) {
             current = findPatientOfAPerson(currentPerson);
         }
     }
 
-    
-    public Patient findPatientOfAPerson(Person p){
+    public Patient findPatientOfAPerson(Person p) {
         String jpql;
         Map m = new HashMap();
         jpql = "select p "
@@ -2911,7 +2954,39 @@ public class PatientController implements Serializable {
         m.put("person", p);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
+    public List<Patient> getAllPatientList() {
+        return allPatientList;
+    }
+
+    public void setAllPatientList(List<Patient> allPatientList) {
+        this.allPatientList = allPatientList;
+    }
+
+    public List<Person> getAllPersonList() {
+        return allPersonList;
+    }
+
+    public void setAllPersonList(List<Person> allPersonList) {
+        this.allPersonList = allPersonList;
+    }
+
+    public Map<String, Patient> getPatientMap() {
+        return PatientMap;
+    }
+
+    public void setPatientMap(Map<String, Patient> PatientMap) {
+        this.PatientMap = PatientMap;
+    }
+
+    public String getSearchPatientPhoneNumber() {
+        return searchPatientPhoneNumber;
+    }
+
+    public void setSearchPatientPhoneNumber(String searchPatientPhoneNumber) {
+        this.searchPatientPhoneNumber = searchPatientPhoneNumber;
+    }
+
     /**
      *
      * Set all Patients to null
