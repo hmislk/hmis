@@ -20,7 +20,20 @@
 
                     <p:panel header="Patient Lookup &amp; Registration" style="height: 100vh;" >
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <p:panel class="mb-2">
+                                    <p:inputText 
+                                        class="form-control" 
+                                        value="#{patientController.searchName}"
+                                        placeholder="Phone Number"
+                                        />
+                                    <p:commandButton 
+                                        id="btnSearchbyPhoneNo"
+                                        value="Search"
+                                        action="#{patientController.searchPatientForOpd()}" 
+                                        ajax="false" 
+                                        class="mt-2 w-100"/> 
+                                </p:panel>
 
                                 <div class="mb-3">
                                     <h:outputLabel value="Name" class="form-label" />
@@ -73,8 +86,8 @@
 
                                 </div>
                             </div>
-                            <div class="col-md-9">
-                                <div class="mb-3">
+                            <div class="col-md-10">
+                                <div class="mb-3" >
                                     <p:commandButton value="New"
                                                      action="#{patientController.navigateToAddNewPatientForOpd()}" 
                                                      ajax="false"
