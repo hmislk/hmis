@@ -60,9 +60,9 @@
                                     <p:outputLabel value="#{patientController.current.person.civilStatus.name}" rendered="#{not empty patientController.current.person.civilStatus.name}" />
 
                                     <p:outputLabel value="Phone:" rendered="#{not empty patientController.current.person.phone}" />
-                                    <p:outputLabel value="#{patientController.current.person.phone}" rendered="#{not empty patientController.current.person.phone}" />
+                                    <p:outputLabel value="#{patientController.current.phoneNumberStringTransient}" rendered="#{not empty patientController.current.person.phone}" />
 
-                                    <p:outputLabel value="Mobile:" rendered="#{not empty patientController.current.person.mobile}" />
+                                    <p:outputLabel value="Additional Contact Number:" rendered="#{not empty patientController.current.person.mobile}" />
                                     <p:outputLabel value="#{patientController.current.person.mobile}" rendered="#{not empty patientController.current.person.mobile}" />
 
                                     <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />

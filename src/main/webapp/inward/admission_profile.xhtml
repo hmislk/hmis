@@ -13,7 +13,7 @@
     <ui:define name="content">
         <h:form id="form">
             <p:growl id="inpatientDashboardGrowl" ></p:growl>
-            
+
             <p:panel >
                 <f:facet name="header" >
                     <h:outputText styleClass="fa fa-id-card"></h:outputText>
@@ -21,10 +21,17 @@
                 </f:facet>
                 <div class="row" >
                     <div class="col-4" >
+                        <p:commandButton 
+                            value="View Clinical Data"
+                            action="#{patientController.toEmrPatientProfile}"
+                            ajax="false"
+                            styleClass="mb-2 w-100">
+                            <f:setPropertyActionListener value="#{p}" target="#{admissionController.current}" />
+                        </p:commandButton>
                         <common:patient_details patient="#{admissionController.current.patient}" class="w-100"/>
                         <common:admission_details admission="#{admissionController.current}" class="w-100"></common:admission_details>
                     </div>
-                    
+
                     <div class="col-4" >
                         <p:panel header="Admission &amp; Billing">
                             <div class="d-grid gap-3">
@@ -141,7 +148,7 @@
                             </div>
                         </p:panel>
 
-                        
+
 
                     </div>
                     <div class="col-4"> 
@@ -158,7 +165,7 @@
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
                                         target="#{surgeryBillController.batchBill.patientEncounter}"
-                                    />
+                                        />
                                 </p:commandButton>
                                 <p:commandButton 
 
@@ -173,13 +180,13 @@
 
                                         target="#{billBhtController.patientEncounter}"
 
-                                    />
+                                        />
                                 </p:commandButton>
                             </div>
-                                
-                            
+
+
                         </p:panel>
-                        
+
                         <p:panel header="Pharmaceuticals &amp; Consumables">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
@@ -194,7 +201,7 @@
                                 </p:commandButton>
                             </div>
                         </p:panel>
-                        
+
                     </div>
                 </div>
             </p:panel>
