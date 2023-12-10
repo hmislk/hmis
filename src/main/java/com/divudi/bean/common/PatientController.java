@@ -222,6 +222,7 @@ public class PatientController implements Serializable {
     private Integer ageYearComponant;
     private Integer ageMonthComponant;
     private Integer ageDateComponant;
+    private String quickSearchPhoneNumber;
 
     Bill bill;
     private BillItem billItem;
@@ -231,6 +232,7 @@ public class PatientController implements Serializable {
     private boolean printPreview = false;
 
     private List<PatientInvestigation> patientInvestigations;
+    private List<Patient> quickSearchPatientList;
 
     /**
      *
@@ -1077,7 +1079,7 @@ public class PatientController implements Serializable {
         searchPatientId = null;
         searchBillId = null;
         searchSampleId = null;
-        searchPatientPhoneNumber=null;
+        searchPatientPhoneNumber = null;
     }
 
     public void searchByBill() {
@@ -1302,6 +1304,32 @@ public class PatientController implements Serializable {
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
 
+    }
+
+    public void quickSearchPatientLongPhoneNumber(Patient patientSearched) {
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+        m.put("pp", searchedPhoneNumber);
+        quickSearchPatientList = getFacade().findByJpql(j, m);
+        if (quickSearchPatientList == null) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.size() == 1) {
+            patientSearched = quickSearchPatientList.get(0);
+            quickSearchPatientList = null;
+        } else {
+            patientSearched = null;
+            JsfUtil.addErrorMessage("Pleace Select Patient");
+        }
+    }
+
+    public void selectQuickOneFromQuickSearchPatient(Patient patientSearched) {
+        patientSearched = current;
     }
 
     public void listAllPatients() {
@@ -2985,6 +3013,22 @@ public class PatientController implements Serializable {
 
     public void setSearchPatientPhoneNumber(String searchPatientPhoneNumber) {
         this.searchPatientPhoneNumber = searchPatientPhoneNumber;
+    }
+
+    public String getQuickSearchPhoneNumber() {
+        return quickSearchPhoneNumber;
+    }
+
+    public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber) {
+        this.quickSearchPhoneNumber = quickSearchPhoneNumber;
+    }
+
+    public List<Patient> getQuickSearchPatientList() {
+        return quickSearchPatientList;
+    }
+
+    public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
+        this.quickSearchPatientList = quickSearchPatientList;
     }
 
     /**
