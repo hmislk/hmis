@@ -801,6 +801,10 @@ public class PharmacySaleController implements Serializable {
             UtilityController.addErrorMessage("Item?");
             return;
         }
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime()) ){
+            UtilityController.addErrorMessage("Please not select Expired Items");
+            return;
+        }
         if (getQty() == null) {
             errorMessage = "Quentity?";
             UtilityController.addErrorMessage("Quentity?");

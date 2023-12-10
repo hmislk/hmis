@@ -188,11 +188,11 @@ public class Person implements Serializable {
         int days = period.getDays();
 
         if (years > 12) {
-            ageAsString = years + " years.";
+            ageAsString = years + " years";
         } else if (years > 0) {
-            ageAsString = years + " years and " + months + " months.";
+            ageAsString = years + " years and " + months + " months";
         } else {
-            ageAsString = months + " months and " + days + " days.";
+            ageAsString = months + " months and " + days + " days";
         }
 
         period = new Period(ldDob, currentDate, PeriodType.days());

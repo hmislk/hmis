@@ -91,6 +91,26 @@ public class MachineController implements Serializable {
         getItems();
     }
 
+    public Machine findAndCreateAnalyserByName(String qry) {
+        Machine ma;
+        String jpql;
+        jpql = "select ma from "
+                + " Machine ma "
+                + " where ma.retired=:ret "
+                + " and ma.name=:name "
+                + " order by ma.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        ma = ejbFacade.findFirstByJpql(jpql, m);
+        if(ma==null){
+            ma = new Machine();
+            ma.setName(qry);
+            ma.setCreatedAt(new Date());
+            ejbFacade.create(ma);
+        }
+        return ma;
+    }
     public MachineFacade getEjbFacade() {
         return ejbFacade;
     }

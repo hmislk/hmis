@@ -17,37 +17,7 @@
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
                         <p:outputLabel value="Add Outside Charge" class="m-2"/>
                     </f:facet>
-                    <div class="row" >
-                        <div class="col-12 text-al" >
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-search"
-                                class="ui-button-warning " 
-                                action="#{patientController.navigateToSearchPatients()}" 
-                                >
-                            </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    value="#{admissionController.current.patient}" 
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-id-card"
-                                class="ui-button-secondary " 
-                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                >
-                            </p:commandButton>
-                        </div>
-                    </div>
+
                     <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
                         <div class="row">
                             <div class="col-12" >
@@ -80,38 +50,76 @@
                     </h:panelGroup>
 
                     <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
+                        <div class="row" >
+                            <div class="col-12 text-al" >
+
+                            </div>
+                        </div>
                         <div class="col-12">
                             <h:panelGroup rendered="true" styleClass="opdPanel">
                                 <p:panel >
+                                    <div class="d-flex justify-content-end align-items-center gap-3" >
+                                        <h:panelGrid columns="4" class="mb-2 d-flex justify-content-end">
+                                            <p:commandButton 
+                                                class="m-1 ui-button-success" 
+                                                id="btnAdd"
+                                                icon="fa fa-plus"
+                                                value="Add"  
+                                                ajax="false" 
+                                                action="#{inwardAdditionalChargeController.addCharge}"/>
 
-                                    <h:panelGrid columns="4" class="mb-2 d-flex justify-content-end">
-                                        <p:commandButton 
-                                            class="m-1 ui-button-success" 
-                                            id="btnAdd"
-                                            icon="fa fa-plus"
-                                            value="Add"  
-                                            ajax="false" 
-                                            action="#{inwardAdditionalChargeController.addCharge}"/>
+                                            <p:defaultCommand 
+                                                target="btnAdd"/>
 
-                                        <p:defaultCommand 
-                                            target="btnAdd"/>
+                                            <p:commandButton 
+                                                class="m-1 ui-button-danger" 
+                                                value="Clear"
+                                                icon="fa fa-ban"
+                                                ajax="false" 
+                                                action="#{inwardAdditionalChargeController.makeNull}" />
 
-                                        <p:commandButton 
-                                            class="m-1 ui-button-danger" 
-                                            value="Clear"
-                                            icon="fa fa-ban"
-                                            ajax="false" 
-                                            action="#{inwardAdditionalChargeController.makeNull}" />
+                                            <p:commandButton 
+                                                class="m-1 ui-button-warning " 
+                                                value="Go To Add Service" 
+                                                icon ="fa fa-wrench"
+                                                ajax="false" 
+                                                action="/inward/inward_bill_service" />
 
-                                        <p:commandButton 
-                                            class="m-1 ui-button-warning " 
-                                            value="Go To Add Service" 
-                                            icon ="fa fa-wrench"
-                                            ajax="false" 
-                                            action="/inward/inward_bill_service" />
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="3" class="mb-2 d-flex justify-content-end">
+                                            <p:commandButton 
+                                                style="float: right;"
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                class="ui-button-warning " 
+                                                action="#{patientController.navigateToSearchPatients()}" 
+                                                >
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                style="float: right;"
+                                                ajax="false"
+                                                icon="fa fa-user"
+                                                class="ui-button-warning mx-1" 
+                                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                >
+                                                <f:setPropertyActionListener 
+                                                    value="#{admissionController.current.patient}" 
+                                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                style="float: right;"
+                                                ajax="false"
+                                                icon="fa fa-id-card"
+                                                class="ui-button-secondary " 
+                                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                                >
+                                                <f:setPropertyActionListener 
+                                                    target="#{admissionController.current}" 
+                                                    value="#{inwardAdditionalChargeController.current.patientEncounter}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </h:panelGrid>
 
-                                    </h:panelGrid>
-
+                                    </div>
                                     <div class="row">
                                         <div class="col-5 ">
                                             <p:panel>

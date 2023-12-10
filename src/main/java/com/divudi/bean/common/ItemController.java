@@ -110,8 +110,25 @@ public class ItemController implements Serializable {
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
+    private List<ItemFee> ItemFeesList;
+ 
+    
+    boolean masterItem;
 
     ReportKeyWord reportKeyWord;
+    
+   public List<ItemFee> fetchItemFeeList() {
+        List<ItemFee> itemFees = new ArrayList<>();
+        
+        String sql;
+
+        sql = "select c from ItemFee c "
+                + " where c.retired=false order by c.name ";
+
+        ////// // System.out.println(sql);
+        ItemFeesList = getItemFeeFacade().findByJpql(sql);
+        return ItemFeesList;
+    }
 
     public String navigateToListAllItems() {
         allItems = null;
@@ -287,8 +304,20 @@ public class ItemController implements Serializable {
         return item;
     }
 
-    
-    
+    public Item findMasterItemByName(String name) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.isMasterItem=:mi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("mi", true);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     public void fillInvestigationSampleComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select an investigation");
@@ -498,8 +527,6 @@ public class ItemController implements Serializable {
             i.getItemFeesAuto();
         }
     }
-    
-    
 
     public void createItemFessForItemsWithoutFee() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -788,6 +815,24 @@ public class ItemController implements Serializable {
             }
         }
         return lst;
+    }
+
+    public List<Item> completeMasterItems(String query) {
+        String jpql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        jpql = "select damith "
+                + " from Item damith "
+                + " where damith.retired=:ret ";
+        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+        jpql += " and damith.isMasterItem=:mi ";
+        tmpMap.put("q", "%" + query + "%");
+        tmpMap.put("mi", true);
+        tmpMap.put("ret", false);
+        jpql += " order by c.name";
+        System.out.println("tmpMap = " + tmpMap);
+        System.out.println("jpql = " + jpql);
+        return getFacade().findByJpql(jpql, tmpMap);
     }
 
     public List<Item> completeItem(String query) {
@@ -1366,7 +1411,6 @@ public class ItemController implements Serializable {
         return mySuggestions;
     }
 
-
     public List<Item> completeItemsByDepartment(String query, Department department) {
         List<Item> suggestions;
         HashMap<String, Object> parameters = new HashMap<>();
@@ -1388,7 +1432,7 @@ public class ItemController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Item> completeItemsByDepartment(String query, Institution institution) {
         List<Item> suggestions;
         HashMap<String, Object> parameters = new HashMap<>();
@@ -1940,6 +1984,22 @@ public class ItemController implements Serializable {
 
     public void setSampleComponent(Item sampleComponent) {
         this.sampleComponent = sampleComponent;
+    }
+
+    public boolean isMasterItem() {
+        return masterItem;
+    }
+
+    public void setMasterItem(boolean masterItem) {
+        this.masterItem = masterItem;
+    }
+
+    public List<ItemFee> getItemFeesList() {
+        return ItemFeesList;
+    }
+
+    public void setItemFeesList(List<ItemFee> ItemFeesList) {
+        this.ItemFeesList = ItemFeesList;
     }
 
     @FacesConverter(forClass = Item.class)

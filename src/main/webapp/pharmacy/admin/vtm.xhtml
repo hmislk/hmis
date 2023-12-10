@@ -51,13 +51,21 @@
                             <p:focus id="focusSelect" for="lstSelect" ></p:focus>
                         </h:panelGroup>
                         <h:panelGroup id="gpDetail" >
-                            <label for="lblName" class="form-label">Name</label>
+                            <label for="txtName" class="form-label">Name</label>
                             <h:inputText 
                                 autocomplete="off" 
                                 id="txtName" 
                                 value="#{vtmController.current.name}" 
                                 required="true" 
+                                requiredMessage="Enter a name for VTM"
                                 class="form-control" ></h:inputText>
+                                
+                            <label for="txtDes" class="form-label">Description</label>
+                            <h:inputTextarea 
+                                id="txtDes" 
+                                value="#{vtmController.current.descreption}" 
+                                required="false" 
+                                class="form-control" ></h:inputTextarea>
                             <p:commandButton 
                                 id="btnSave" 
                                 value="Save"  

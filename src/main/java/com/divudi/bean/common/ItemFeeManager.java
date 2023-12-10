@@ -62,6 +62,22 @@ public class ItemFeeManager implements Serializable {
     List<Staff> staffs;
     private List<Item> selectedList;
 
+    public String navigateItemFeeList() {
+        return "/admin/pricing/item_fee_list?faces-redirect=true";
+    }
+
+    public String navigateToCorrectItemFees() {
+        return "/dataAdmin/bulk_update_itemsFees?faces-redirect=true";
+    }
+
+    public String navigateToUploadItemFees() {
+        return "/admin/pricing/item_fee_upload?faces-redirect=true";
+    }
+
+    public String navigateItemViseFeeList() {
+        return "/admin/pricing/manage_item_fees_bulk?faces-redirect=true";
+    }
+
     public void createItemFessForSelectedItems() {
         System.out.println("createItemFessForSelectedItems" + this);
         System.out.println("selectedList = " + selectedList);
@@ -276,6 +292,25 @@ public class ItemFeeManager implements Serializable {
 
         List<ItemFee> inputFees = fillFees(inputItem);
         updateTotal(inputItem, inputFees);
+
+    }
+
+    public void saveItemFee(ItemFee inputFee) {
+        if (inputFee == null) {
+            return;
+        }
+        if (inputFee.getId() == null) {
+            inputFee.setCreatedAt(new Date());
+            inputFee.setCreater(sessionController.getLoggedUser());
+            itemFeeFacade.create(inputFee);
+        }else{
+            inputFee.setEditedAt(new Date());
+            inputFee.setEditer(sessionController.getLoggedUser());
+            itemFeeFacade.edit(inputFee);
+        }
+
+        List<ItemFee> inputFees = fillFees(inputFee.getItem());
+        updateTotal(inputFee.getItem(), inputFees);
 
     }
 

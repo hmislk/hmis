@@ -13,48 +13,13 @@
                         <div class="col-md-3">
                             <h:form >
                                 <p:accordionPanel activeIndex="#{pharmacyController.pharmacyAdminIndex}">
-                                    <p:tab title="Medicines Individual Management">
+                                    <p:tab title="Pharmaceutical Fundamentals">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Generic Names (VTMs)" 
-                                                action="#{pharmacyController.navigateToVtm()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="Trade Names (ATMs)" 
-                                                action="#{pharmacyController.navigateToAtm()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="VMPs" 
-                                                action="#{pharmacyController.navigateToVmp()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="AMPs" 
-                                                action="#{pharmacyController.navigateToAmp()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="VMPPs" 
-                                                action="#{pharmacyController.navigateToVmp()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="AMPPs" 
-                                                action="#{pharmacyController.navigateToAmpp()}" />
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Medatada Management - Individual">
-                                        <div class="d-grid gap-2">
-                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Pharmaceutical Item Categories" 
                                                 action="#{pharmacyController.navigateToPharmaceuticalItemCategories()}" />
-                                            
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -79,6 +44,41 @@
 
                                         </div>
                                     </p:tab>
+                                    <p:tab title="Medicine Component Management">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="VTMs" 
+                                                action="#{pharmacyController.navigateToVtm()}" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="ATMs" 
+                                                action="#{pharmacyController.navigateToAtm()}" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="VMPs" 
+                                                action="#{pharmacyController.navigateToVmp()}" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="AMPs" 
+                                                action="#{pharmacyController.navigateToAmp()}" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="VMPPs" 
+                                                action="#{pharmacyController.navigateToVmp()}" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="AMPPs" 
+                                                action="#{pharmacyController.navigateToAmpp()}" />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Medicines Management - Multiple">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
@@ -177,7 +177,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                   
+
                                     <p:tab title="Check Entered Data">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Item Distributor" action="pharmacy_item_by_distributor" ></p:commandButton>

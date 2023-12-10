@@ -13,8 +13,12 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >
-                            <h:panelGroup>
-                                <h:panelGrid columns="7">
+                            <i class="fa-solid fa-magnifying-glass  mx-2"/>
+                            <h:outputLabel value="Search Surgery"/> 
+                        </f:facet>
+                        <h:panelGroup class="d-flex gap-2">
+                            <h:panelGrid class="col-1 mx-1">
+                                <h:panelGrid columns="1" class="mt-1">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" 
                                                 value="#{searchController.fromDate}" navigator="false" 
@@ -22,129 +26,140 @@
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                     </p:calendar>
-                                    <p:selectBooleanCheckbox value="#{searchController.searchKeyword.activeAdvanceOption}" itemLabel="Search All" />
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBills}" value="Search"  />
+                                    <p:selectBooleanCheckbox 
+                                        value="#{searchController.searchKeyword.activeAdvanceOption}" 
+                                        class="mt-1"
+                                        itemLabel="Search All" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="mt-2 w-100"
+                                        action="#{searchController.searchSurgery}" 
+                                        value="Search"  />
                                 </h:panelGrid>
 
-                                <h:panelGrid columns="8">
+                                <h:panelGrid columns="1" class="mt-2">
                                     <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="BHT No"/>
-                                    <h:outputLabel value="Surgery Name"/>                                    
-                                    <h:outputLabel value="Surgery Name"/>                                    
-                                    <h:outputLabel value="Perfomed Doctor Name"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Patient Phone"/>
-                                    <h:outputLabel value="Total"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                    <h:outputLabel value="BHT No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                    <h:outputLabel value="Surgery Name"/>        
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />    
+                                    <h:outputLabel value="Surgery Name"/>  
                                     <p:autoComplete forceSelection="true"
                                                     value="#{searchController.searchKeyword.item}" 
                                                     completeMethod="#{procedureController.completeDiagnosis}"
                                                     var="apt2" itemLabel="#{apt2.name}"
-                                                    itemValue="#{apt2}" size="30" styleClass="mediuminput">
+                                                    itemValue="#{apt2}"  styleClass="mediuminput">
                                     </p:autoComplete>
+                                    <h:outputLabel value="Perfomed Doctor Name"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                                    <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <h:outputLabel value="Patient Phone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                    <h:outputLabel value="Total"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                                </h:panelGrid>                                
-                            </h:panelGroup>
-                        </f:facet>
+                                </h:panelGrid>
+                            </h:panelGrid>
 
-                        <p:dataTable 
-                            id="tblBills" 
-                            value="#{searchController.bills}" 
-                            var="bb"
+                            <p:panel>
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bb"
+                                    >
 
-                            >
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="/theater/inward_bill_surgery"  >
-                                    <f:setPropertyActionListener value="#{bb}" target="#{surgeryBillController.batchBill}"/>
-                                </p:commandButton>
-                            </p:column>
+                                    <p:column headerText="Bill No"  >
+                                        <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
+                                    </p:column>
 
-                            <p:column headerText="Bill No"  >
-                                <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="BHT No" >
+                                        <h:outputLabel value="#{bb.patientEncounter.bhtNo}"></h:outputLabel>
+                                    </p:column>
 
-                            <p:column headerText="Bht No" >
-                                <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="Room No" >
+                                        <h:outputLabel value="#{bb.patientEncounter.currentPatientRoom.printRoomFacilityCharge.name}" ></h:outputLabel>
+                                    </p:column>
 
+                                    <p:column headerText="Surgery Name" >
+                                        <h:outputLabel value="#{bb.procedure.item.name}" ></h:outputLabel>
+                                    </p:column>
 
+                                    <p:column headerText="Perfomed Doctor Name" >
+                                        <h:outputLabel value="#{bb.staff.person.name}" ></h:outputLabel>
+                                    </p:column>
 
-                            <p:column headerText="Room No" >
-                                <h:outputLabel value="#{bb.patientEncounter.currentPatientRoom.printRoomFacilityCharge.name}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="Perfomed Doctor Speciality" >
+                                        <h:outputLabel value="#{bb.staff.speciality.name}" ></h:outputLabel>
+                                    </p:column>
 
-                            <p:column headerText="Surgery Name" >
-                                <h:outputLabel value="#{bb.procedure.item.name}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="Client" >
+                                        <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    </p:column>  
 
-                            <p:column headerText="Perfomed Doctor Name" >
-                                <h:outputLabel value="#{bb.staff.person.name}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="Surgery Value" >                              
+                                        <h:outputLabel value="#{bb.total}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>                                  
+                                    </p:column>                                
 
-                            <p:column headerText="Perfomed Doctor Speciality" >
-                                <h:outputLabel value="#{bb.staff.speciality.name}" ></h:outputLabel>
-                            </p:column>
+                                    <p:column headerText="BHT Value" >                              
+                                        <h:outputLabel value="#{bb.patientEncounter.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>                                  
+                                    </p:column>      
 
-                            <p:column headerText="Client" >
-                                <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                            </p:column>  
+                                    <p:column headerText="Prepared At" >   
+                                        <h:outputLabel value="#{bb.createdAt}" />
+                                        <br/>
+                                        <h:panelGroup rendered="#{bb.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" 
+                                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>                             
+                                    </p:column>
 
-                            <p:column headerText="Surgery Value" >                              
-                                <h:outputLabel value="#{bb.total}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                  
-                            </p:column>                                
+                                    <p:column headerText="Prepared By">  
+                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>                                  
+                                        <br/>
+                                        <h:panelGroup rendered="#{bb.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" 
+                                                           value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
 
-                            <p:column headerText="Bht Value" >                              
-                                <h:outputLabel value="#{bb.patientEncounter.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                  
-                            </p:column>      
+                                    <p:column headerText="Action"  class="justify-content-center">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                ajax="false" icon="fa-solid fa-file-invoice" 
+                                                title="View Bill" action="/theater/inward_bill_surgery"  >
+                                                <f:setPropertyActionListener value="#{bb}" target="#{surgeryBillController.batchBill}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" title="Cancel" icon="fa-solid fa-ban" 
+                                                class="ui-button-danger"
+                                                action="#{inwardSearch.cancelSurgeryBill()}" 
+                                                disabled="#{bb.cancelled eq true}">
+                                                <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                            </p:commandButton> 
+                                        </div>
+                                    </p:column>
 
-                            <p:column headerText="Prepared At" >   
-                                <h:outputLabel value="#{bb.createdAt}" />
-                                <br/>
-                                <h:panelGroup rendered="#{bb.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                </h:panelGroup>                             
-                            </p:column>
-
-                            <p:column headerText="Prepared By">  
-                                <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>                                  
-                                <br/>
-                                <h:panelGroup rendered="#{bb.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                    <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>
-                            </p:column>
-
-                            <p:column headerText="Cancel">
-                                <p:commandButton ajax="false" value="Cancel" action="#{inwardSearch.cancelSurgeryBill()}" disabled="#{bb.cancelled eq true}">
-                                    <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
-
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGroup>
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

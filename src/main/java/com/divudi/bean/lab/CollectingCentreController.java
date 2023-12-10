@@ -7,6 +7,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
@@ -171,6 +172,10 @@ public class CollectingCentreController implements Serializable {
 
     public void setInstitutionController(InstitutionController institutionController) {
         this.institutionController = institutionController;
+    }
+    
+    public CollectingCentrePaymentMethod[] getCollectingCentrePaymentMethod() {
+        return CollectingCentrePaymentMethod.values();
     }
     
 }

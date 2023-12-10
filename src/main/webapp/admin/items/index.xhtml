@@ -87,8 +87,16 @@
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
-                                        value="OPD Service Upload" 
+                                        value="Item Upload" 
                                         action="/admin/items/opd_service_upload" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Investigations Upload" 
+                                        action="/admin/items/investigation_upload" />
+                                    
+                                    
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />

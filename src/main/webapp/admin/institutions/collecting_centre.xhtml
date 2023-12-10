@@ -49,7 +49,7 @@
                                                  class="w-100"
                                                  value="#{collectingCentreController.current.name}"  ></p:inputText>
 
-                                    <h:outputText id="lblChqPrnName" value="Printi Name" ></h:outputText>
+                                    <h:outputText id="lblChqPrnName" value="Printing Name" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtChqPrnName" 
                                                  class="w-100"
                                                  value="#{collectingCentreController.current.chequePrintingName}" ></p:inputText>
@@ -63,7 +63,13 @@
                                     </h:outputText>
                                     <p:inputTextarea styleClass="longText" value="#{collectingCentreController.current.descreption}" class="w-100" >
                                     </p:inputTextarea> 
-
+                                    
+                                    <h:outputText id="lblPaymentMethod" value="Payment Method" ></h:outputText>
+                                    <p:selectOneMenu value="#{collectingCentreController.current.collectingCentrePaymentMethod}"  class="w-100">
+                                        <f:selectItem itemLabel="Select the Payment Method" />
+                                        <f:selectItems value="#{collectingCentreController.collectingCentrePaymentMethod}"/>                                        
+                                    </p:selectOneMenu>
+                                    
                                     <h:outputText value="Credit Limit" >                                        
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCredit}"  class="w-100">

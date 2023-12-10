@@ -62,6 +62,7 @@ public class SurgeryBillController implements Serializable {
     private List<EncounterComponent> timedEncounterComponents;
     private List<DepartmentBillItems> departmentBillItems;
     //////
+    
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
@@ -80,6 +81,7 @@ public class SurgeryBillController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
+    
     //////
     @Inject
     private SessionController sessionController;
@@ -87,6 +89,10 @@ public class SurgeryBillController implements Serializable {
     InwardTimedItemController inwardTimedItemController;
     @Inject
     CommonController commonController;
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    private InwardBeanController inwardBean;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -120,12 +126,7 @@ public class SurgeryBillController implements Serializable {
         makeNull();
         return "/theater/inward_bill_surgery";
     }
-
-    @Inject
-    private BillBeanController billBean;
     
-    
-
     private void updateBillFee(BillFee bf) {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
@@ -320,9 +321,6 @@ public class SurgeryBillController implements Serializable {
         }
 
     }
-
-    @Inject
-    private InwardBeanController inwardBean;
 
     private void saveBillFee(BillFee bf, Bill bill, BillItem bIllItem, double value) {
         if (bf.getId() == null) {
@@ -788,9 +786,10 @@ public class SurgeryBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
 
-    
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
 }
 

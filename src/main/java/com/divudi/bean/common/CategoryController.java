@@ -124,6 +124,7 @@ public class CategoryController implements Serializable {
         }
         return c;
     }
+    
 
     public List<Category> getSubCategories(Category cat) {
         List<Category> suggestions;

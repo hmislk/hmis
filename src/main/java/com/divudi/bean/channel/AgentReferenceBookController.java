@@ -47,7 +47,7 @@ public class AgentReferenceBookController implements Serializable {
     @EJB
     InstitutionFacade institutionFacade;
     @EJB
-    AgentHistoryFacade agentHistoryFacade;
+    private AgentHistoryFacade agentHistoryFacade;
     @EJB
     CommonFunctions commonFunctions;
     @Inject
@@ -55,6 +55,7 @@ public class AgentReferenceBookController implements Serializable {
 
     List<AgentReferenceBook> agentReferenceBooks;
     List<AgentReferenceBook> selectedList;
+    private List<AgentReferenceBook> agentRefBookList;
     Date frmDate;
     Date toDate;
 
@@ -142,6 +143,23 @@ public class AgentReferenceBookController implements Serializable {
         UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
     }
 
+    public void searchReferenceBooks() {
+        createAllBookTable();
+      
+    }
+    
+    public void createAllBookTable() {
+        String sql;
+        HashMap m = new HashMap();
+        sql = "select a from AgentReferenceBook a where "
+                + " a.createdAt between :fd and :td ";
+        m.put("fd", frmDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.DATE);
+    }
+
     public void createAllBooks() {
         String sql;
         HashMap m = new HashMap();
@@ -222,16 +240,16 @@ public class AgentReferenceBookController implements Serializable {
         m.put("ins", institution);
         m.put("ag", dbl);
         m.put("bookNumber", bookNumber);
-        
+
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
 
         AgentReferenceBook book = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
 
         if (book == null) {
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
 
     }
@@ -383,6 +401,22 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setSelectedList(List<AgentReferenceBook> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public AgentHistoryFacade getAgentHistoryFacade() {
+        return agentHistoryFacade;
+    }
+
+    public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
+        this.agentHistoryFacade = agentHistoryFacade;
+    }
+
+    public List<AgentReferenceBook> getAgentRefBookList() {
+        return agentRefBookList;
+    }
+
+    public void setAgentRefBookList(List<AgentReferenceBook> agentRefBookList) {
+        this.agentRefBookList = agentRefBookList;
     }
 
 }

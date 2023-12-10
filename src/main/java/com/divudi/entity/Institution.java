@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
@@ -75,6 +76,8 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String cashierBillHeading;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
+    @Enumerated(EnumType.STRING)
+    private CollectingCentrePaymentMethod CollectingCentrePaymentMethod;
     @ManyToOne
     private Route route;
     //Created Properties
@@ -642,6 +645,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setRoute(Route route) {
         this.route = route;
+    }
+
+    public CollectingCentrePaymentMethod getCollectingCentrePaymentMethod() {
+        return CollectingCentrePaymentMethod;
+    }
+
+    public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
+        this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
     }
     
     
