@@ -24,13 +24,13 @@
                                 <p:panel class="mb-2">
                                     <p:inputText 
                                         class="form-control" 
-                                        value="#{patientController.searchName}"
+                                        value="#{patientController.searchPatientPhoneNumber}"
                                         placeholder="Phone Number"
                                         />
                                     <p:commandButton 
                                         id="btnSearchbyPhoneNo"
                                         value="Search"
-                                        action="#{patientController.searchPatientForOpd()}" 
+                                        action="#{patientController.searchByPatientPhoneNumber()}" 
                                         ajax="false" 
                                         class="mt-2 w-100"/> 
                                 </p:panel>
