@@ -222,6 +222,7 @@ public class PatientController implements Serializable {
     private Integer ageYearComponant;
     private Integer ageMonthComponant;
     private Integer ageDateComponant;
+    private String quickSearchPhoneNumber;
 
     Bill bill;
     private BillItem billItem;
@@ -231,6 +232,7 @@ public class PatientController implements Serializable {
     private boolean printPreview = false;
 
     private List<PatientInvestigation> patientInvestigations;
+    private List<Patient> quickSearchPatientList;
 
     /**
      *
@@ -1077,7 +1079,7 @@ public class PatientController implements Serializable {
         searchPatientId = null;
         searchBillId = null;
         searchSampleId = null;
-        searchPatientPhoneNumber=null;
+        searchPatientPhoneNumber = null;
     }
 
     public void searchByBill() {
@@ -1302,6 +1304,42 @@ public class PatientController implements Serializable {
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
 
+    }
+
+    public void quickSearchPatientLongPhoneNumber(Patient patientSearched, Object controller) {
+        System.out.println("quickSearchPatientLongPhoneNumber");
+        System.out.println("patientSearched = " + patientSearched);
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+        m.put("pp", searchedPhoneNumber);
+        System.out.println("searchedPhoneNumber = " + searchedPhoneNumber);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        quickSearchPatientList = getFacade().findByJpql(j, m);
+        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
+        if (quickSearchPatientList == null) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.size() == 1) {
+            patientSearched = quickSearchPatientList.get(0);
+            if(controller instanceof OpdBillController){
+                OpdBillController con = (OpdBillController) controller;
+                con.setPatient(patientSearched);
+            }
+            quickSearchPatientList = null;
+        } else {
+            patientSearched = null;
+            JsfUtil.addErrorMessage("Pleace Select Patient");
+        }
+    }
+
+    public void selectQuickOneFromQuickSearchPatient(Patient patientSearched) {
+        patientSearched = current;
     }
 
     public void listAllPatients() {
@@ -2985,6 +3023,22 @@ public class PatientController implements Serializable {
 
     public void setSearchPatientPhoneNumber(String searchPatientPhoneNumber) {
         this.searchPatientPhoneNumber = searchPatientPhoneNumber;
+    }
+
+    public String getQuickSearchPhoneNumber() {
+        return quickSearchPhoneNumber;
+    }
+
+    public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber) {
+        this.quickSearchPhoneNumber = quickSearchPhoneNumber;
+    }
+
+    public List<Patient> getQuickSearchPatientList() {
+        return quickSearchPatientList;
+    }
+
+    public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
+        this.quickSearchPatientList = quickSearchPatientList;
     }
 
     /**
