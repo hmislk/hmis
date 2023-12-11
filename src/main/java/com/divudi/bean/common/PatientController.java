@@ -1306,13 +1306,19 @@ public class PatientController implements Serializable {
 
     }
 
-    public void quickSearchPatientLongPhoneNumber(Patient patientSearched) {
+    public void quickSearchPatientLongPhoneNumber(Patient patientSearched, Object controller) {
+        System.out.println("quickSearchPatientLongPhoneNumber");
+        System.out.println("patientSearched = " + patientSearched);
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
         Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
         m.put("pp", searchedPhoneNumber);
+        System.out.println("searchedPhoneNumber = " + searchedPhoneNumber);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
         quickSearchPatientList = getFacade().findByJpql(j, m);
+        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             return;
@@ -1321,6 +1327,10 @@ public class PatientController implements Serializable {
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
+            if(controller instanceof OpdBillController){
+                OpdBillController con = (OpdBillController) controller;
+                con.setPatient(patientSearched);
+            }
             quickSearchPatientList = null;
         } else {
             patientSearched = null;
