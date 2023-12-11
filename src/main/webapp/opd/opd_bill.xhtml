@@ -33,7 +33,10 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-                                <common:patient_details      patient="#{opdBillController.patient}" controller="#{opdBillController}"/>
+                                <common:patient_details  
+                                    editable="true"
+                                    patient="#{opdBillController.patient}" 
+                                    controller="#{opdBillController}"/>
                                 
                                 <p:panel 
                                     id='pIxAdd' 
