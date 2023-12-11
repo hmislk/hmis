@@ -300,6 +300,30 @@ public class ItemMappingController implements Serializable {
         results = itemFacade.findByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
+    
+    public List<Item> fillItemByInstitution(Institution institution) {
+        List<Item> results;
+        String jpql = "SELECT im.item FROM ItemMapping im "
+                + " WHERE im.retired = false "
+                + " AND im.department.institution = :ins "
+                + " ORDER BY im.item.name";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ins", institution);
+        results = itemFacade.findByJpql(jpql, parameters);
+        return results != null ? results : new ArrayList<>();
+    }
+    
+    public List<Item> fillItemByDepartment(Department dept) {
+        List<Item> results;
+        String jpql = "SELECT im.item FROM ItemMapping im "
+                + " WHERE im.retired = false "
+                + " AND im.department=:dept "
+                + " ORDER BY im.item.name";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("dept", dept);
+        results = itemFacade.findByJpql(jpql, parameters);
+        return results != null ? results : new ArrayList<>();
+    }
 
     public List<ItemMapping> completeItemMapping(String qry) {
         List<ItemMapping> list;
@@ -439,8 +463,7 @@ public class ItemMappingController implements Serializable {
     public void setSelectedItemMappings(List<ItemMapping> selectedItemMappings) {
         this.selectedItemMappings = selectedItemMappings;
     }
-    
-    
+
 
     // No getters and setters as per request
     @FacesConverter(forClass = ItemMapping.class)
