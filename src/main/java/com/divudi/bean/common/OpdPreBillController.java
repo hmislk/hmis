@@ -15,6 +15,11 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
+import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -121,6 +126,8 @@ public class OpdPreBillController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
     private CommonController commonController;
@@ -192,6 +199,8 @@ public class OpdPreBillController implements Serializable {
     private List<BillEntry> lstBillEntriesPrint;
 
     List<BillFeePayment> billFeePayments;
+    
+    private List<Item> opdItems;
     // </editor-fold>
 
     public double getCashRemain() {
@@ -228,6 +237,24 @@ public class OpdPreBillController implements Serializable {
         }
     }
 
+    public List<Item> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
+    }
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -1930,5 +1957,13 @@ public class OpdPreBillController implements Serializable {
 
     public void setCurrent(Patient current) {
         this.current = current;
+    }
+    
+    public List<Item> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+
+        return opdItems;
     }
 }
