@@ -88,7 +88,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OpdBillController implements Serializable {
+public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
 
