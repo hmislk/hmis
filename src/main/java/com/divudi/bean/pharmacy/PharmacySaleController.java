@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -86,7 +87,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable {
+public class PharmacySaleController implements Serializable, ControllerWithPatient{
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -422,6 +423,7 @@ public class PharmacySaleController implements Serializable {
 
     private Patient savePatient() {
         if (!getSearchedPatient().getPerson().getName().trim().equals("")) {
+            setPatient(getSearchedPatient());
             getSearchedPatient().setCreater(getSessionController().getLoggedUser());
             getSearchedPatient().setCreatedAt(new Date());
             getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -1365,6 +1367,7 @@ public class PharmacySaleController implements Serializable {
             }
         }
         Patient pt = savePatient();
+        System.out.println(pt.getPerson().getName());
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -2263,6 +2266,16 @@ public class PharmacySaleController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    @Override
+    public Patient getPatient() {
+        return searchedPatient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.searchedPatient = patient;
     }
 
 }

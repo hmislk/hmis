@@ -8,7 +8,8 @@
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
 
@@ -420,9 +421,10 @@
                                         </h:panelGrid>
 
                                     </p:panel>
-                                    
-                                  
 
+
+
+                                    
                                     <p:panel  class="my-1"> 
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fas fa-user-tie" />
@@ -433,62 +435,64 @@
                                                     update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                     listener="#{pharmacySaleController.onTabChange}" />
                                             <p:tab id="tabPt" title="Patient"  >
-                                                <bil:newPatient controller="#{pharmacySaleController}"/>
+                                                <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacySaleController}"/>
                                             </p:tab>
 
-<!--                                            <p:tab id="tabSearchPt" title="Search Patient" >
-
-                                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
-                                                                         itemLabel="Serch Only Registed Patient" >
-                                                    <f:ajax execute="@this" render="acPt" />
-                                                </p:selectBooleanCheckbox>
-                                                <p:autoComplete
-                                                    widgetVar="aPt" 
-                                                    id="acPt" forceSelection="true" 
-                                                    value="#{pharmacySaleController.searchedPatient}" 
-                                                    completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                    var="apt" itemLabel="#{apt.person.name}" 
-                                                    itemValue="#{apt}" size="30"  
-                                                    style="width: 400px;"
-                                                    disabled="#{pharmacySaleController.fromOpdEncounter}">
-                                                    <p:column headerText="Name">
-                                                        <h:outputLabel value="#{apt.person.nameWithTitle}" />
-                                                    </p:column>
-                                                    <p:column headerText="Age">
-                                                        <h:outputLabel value="#{apt.age}" />
-                                                    </p:column>
-                                                    <p:column headerText="NIC">
-                                                        <h:outputLabel value="#{apt.person.nic}"/>
-                                                    </p:column>
-                                                    <p:column headerText="Code">
-                                                        <h:outputLabel value="#{apt.code}" />
-                                                    </p:column>
-                                                    <p:column headerText="PHN">
-                                                        <h:outputLabel value="#{apt.phn}"/>
-                                                    </p:column>
-                                                    <p:column headerText="Sex">
-                                                        <h:outputLabel value="#{apt.person.sex}" />
-                                                    </p:column>
-                                                    <p:column headerText="Address">
-                                                        <h:outputLabel value="#{apt.person.address}" />
-                                                    </p:column>
-
-                                                    <p:column headerText="Date of Birth">
-                                                        <h:outputLabel value="#{apt.person.dob}" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                        </h:outputLabel>
-                                                    </p:column>
-
-                                                    <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
-                                                            listener="#{pharmacySaleController2.searchPatientListener}"/>
-                                                </p:autoComplete>  
-                                                <h:panelGroup id="panSearch">
-                                                    <pat:searchPatientDetail patient="#{pharmacySaleController2.searchedPatient}"  />
-                                                </h:panelGroup>
-                                                <div style="padding: 2px; margin: 2px; border: 1px solid;">
-                                                    <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
-                                                </div>
-                                            </p:tab>-->
+                                            <!--                                            <p:tab id="tabSearchPt" title="Search Patient" >
+                                            
+                                                                                            <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
+                                                                                                                     itemLabel="Serch Only Registed Patient" >
+                                                                                                <f:ajax execute="@this" render="acPt" />
+                                                                                            </p:selectBooleanCheckbox>
+                                                                                            <p:autoComplete
+                                                                                                widgetVar="aPt" 
+                                                                                                id="acPt" forceSelection="true" 
+                                                                                                value="#{pharmacySaleController.searchedPatient}" 
+                                                                                                completeMethod="#{patientController.completePatientByNameOrCode}" 
+                                                                                                var="apt" itemLabel="#{apt.person.name}" 
+                                                                                                itemValue="#{apt}" size="30"  
+                                                                                                style="width: 400px;"
+                                                                                                disabled="#{pharmacySaleController.fromOpdEncounter}">
+                                                                                                <p:column headerText="Name">
+                                                                                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                                                                                </p:column>
+                                                                                                <p:column headerText="Age">
+                                                                                                    <h:outputLabel value="#{apt.age}" />
+                                                                                                </p:column>
+                                                                                                <p:column headerText="NIC">
+                                                                                                    <h:outputLabel value="#{apt.person.nic}"/>
+                                                                                                </p:column>
+                                                                                                <p:column headerText="Code">
+                                                                                                    <h:outputLabel value="#{apt.code}" />
+                                                                                                </p:column>
+                                                                                                <p:column headerText="PHN">
+                                                                                                    <h:outputLabel value="#{apt.phn}"/>
+                                                                                                </p:column>
+                                                                                                <p:column headerText="Sex">
+                                                                                                    <h:outputLabel value="#{apt.person.sex}" />
+                                                                                                </p:column>
+                                                                                                <p:column headerText="Address">
+                                                                                                    <h:outputLabel value="#{apt.person.address}" />
+                                                                                                </p:column>
+                                            
+                                                                                                <p:column headerText="Date of Birth">
+                                                                                                    <h:outputLabel value="#{apt.person.dob}" >
+                                                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                                                                    </h:outputLabel>
+                                                                                                </p:column>
+                                            
+                                                                                                <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
+                                                                                                        listener="#{pharmacySaleController2.searchPatientListener}"/>
+                                                                                            </p:autoComplete>  
+                                                                                            <h:panelGroup id="panSearch">
+                                                                                                <pat:searchPatientDetail patient="#{pharmacySaleController2.searchedPatient}"  />
+                                                                                            </h:panelGroup>
+                                                                                            <div style="padding: 2px; margin: 2px; border: 1px solid;">
+                                                                                                <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
+                                                                                            </div>
+                                                                                        </p:tab>-->
 
                                             <p:tab id="tabCredit" title="Credit"  >
                                                 <h:panelGrid columns="3" >
@@ -577,43 +581,50 @@
 
                         </div>
 
-                        <h:panelGroup   id="gpBillPreview" >
-
-                            <h:panelGroup   id="gpBillPreviewSingle" >
-
+                        <div >
+                            <h:panelGroup   id="gpBillPreview"> 
+                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                             </h:panelGroup>
+                        </div>
 
-                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
-                                    </h:panelGroup>
-                                </div>
-
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>                            
-
-                        </h:panelGroup>                     
+                        <!--                        <h:panelGroup   id="gpBillPreview" >
+                        
+                                                    <h:panelGroup   id="gpBillPreviewSingle" >
+                        
+                                                    </h:panelGroup>
+                        
+                                                    
+                                                    <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                                        <div>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
+                                                                <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                                            </h:panelGroup>
+                                                        </div>
+                        
+                                                        <div>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>
+                        
+                                                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                                        <div >
+                                                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                                                <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>
+                        
+                                                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                                        <div >
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                                <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>                            
+                        
+                                                </h:panelGroup>                     -->
 
 
                     </p:panel>
