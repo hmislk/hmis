@@ -88,7 +88,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class OpdPreBillController implements Serializable {
+public class OpdPreBillController implements Serializable, ControllerWithPatient {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB

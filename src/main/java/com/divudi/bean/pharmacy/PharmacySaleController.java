@@ -157,7 +157,7 @@ public class PharmacySaleController implements Serializable {
     private Patient newPatient;
     private Patient searchedPatient;
     private YearMonthDay yearMonthDay;
-    private String patientTabId = "tabNewPt";
+    private String patientTabId = "tabPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
     boolean fromOpdEncounter = false;
@@ -231,7 +231,7 @@ public class PharmacySaleController implements Serializable {
         newPatient = null;
         searchedPatient = null;
         yearMonthDay = null;
-        patientTabId = "tabNewPt";
+        patientTabId = "tabPt";
         strTenderedValue = "";
         billPreview = false;
         replaceableStocks = null;
@@ -421,29 +421,46 @@ public class PharmacySaleController implements Serializable {
     }
 
     private Patient savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                if (!getNewPatient().getPerson().getName().trim().equals("")) {
-                    getNewPatient().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().setCreatedAt(new Date());
-                    getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().getPerson().setCreatedAt(new Date());
-                    if (getNewPatient().getPerson().getId() == null) {
-                        getPersonFacade().create(getNewPatient().getPerson());
-                    }
-                    if (getNewPatient().getId() == null) {
-                        getPatientFacade().create(getNewPatient());
-                    }
-                    return getNewPatient();
-                } else {
-                    return null;
-                }
-            case "tabSearchPt":
-                return getSearchedPatient();
+        if (!getSearchedPatient().getPerson().getName().trim().equals("")) {
+            getSearchedPatient().setCreater(getSessionController().getLoggedUser());
+            getSearchedPatient().setCreatedAt(new Date());
+            getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getSearchedPatient().getPerson().setCreatedAt(new Date());
+            if (getSearchedPatient().getPerson().getId() == null) {
+                getPersonFacade().create(getSearchedPatient().getPerson());
+            }
+            if (getSearchedPatient().getId() == null) {
+                getPatientFacade().create(getSearchedPatient());
+            }
+            return getSearchedPatient();
+        } else {
+            return null;
         }
-        return null;
     }
 
+//    private Patient savePatient() {
+//        switch (getPatientTabId()) {
+//            case "tabPt":
+//                if (!getSearchedPatient().getPerson().getName().trim().equals("")) {
+//                    getSearchedPatient().setCreater(getSessionController().getLoggedUser());
+//                    getSearchedPatient().setCreatedAt(new Date());
+//                    getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+//                    getSearchedPatient().getPerson().setCreatedAt(new Date());
+//                    if (getSearchedPatient().getPerson().getId() == null) {
+//                        getPersonFacade().create(getSearchedPatient().getPerson());
+//                    }
+//                    if (getSearchedPatient().getId() == null) {
+//                        getPatientFacade().create(getSearchedPatient());
+//                    }
+//                    return getSearchedPatient();
+//                } else {
+//                    return null;
+//                }
+//            case "tabSearchPt":
+//                return getSearchedPatient();
+//        }
+//        return null;
+//    }
     public Title[] getTitle() {
         return Title.values();
     }
@@ -801,7 +818,7 @@ public class PharmacySaleController implements Serializable {
             UtilityController.addErrorMessage("Item?");
             return;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime()) ){
+        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
             UtilityController.addErrorMessage("Please not select Expired Items");
             return;
         }
@@ -1365,7 +1382,7 @@ public class PharmacySaleController implements Serializable {
             }
         } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             if (pt == null) {
-                UtilityController.addErrorMessage("Need a Peation");
+                UtilityController.addErrorMessage("Need a Patient");
                 return;
             }
 
@@ -1432,19 +1449,19 @@ public class PharmacySaleController implements Serializable {
         } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             double runningBalance;
             if (pt != null) {
-                if(pt.getRunningBalance()!=null){
-                 runningBalance=pt.getRunningBalance();
-                }else{
-                    runningBalance=0.0;
+                if (pt.getRunningBalance() != null) {
+                    runningBalance = pt.getRunningBalance();
+                } else {
+                    runningBalance = 0.0;
                 }
-                runningBalance+=netTotal;
+                runningBalance += netTotal;
                 pt.setRunningBalance(runningBalance);
             }
 
         }
 
         resetAll();
-        
+
         billPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
 
@@ -1834,7 +1851,7 @@ public class PharmacySaleController implements Serializable {
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
-        patientTabId = "tabNewPt";
+        patientTabId = "tabPt";
         cashPaid = 0;
         netTotal = 0;
         balance = 0;
@@ -1927,7 +1944,7 @@ public class PharmacySaleController implements Serializable {
         this.pharmacyBean = pharmacyBean;
     }
 
-    public Patient getNewPatient() {
+    public Patient getSearchedPatient() {
         if (newPatient == null) {
             newPatient = new Patient();
             Person p = new Person();
@@ -1941,9 +1958,9 @@ public class PharmacySaleController implements Serializable {
         this.newPatient = newPatient;
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
+//    public Patient getSearchedPatient() {
+//        return searchedPatient;
+//    }
 
     public void setSearchedPatient(Patient searchedPatient) {
         this.searchedPatient = searchedPatient;

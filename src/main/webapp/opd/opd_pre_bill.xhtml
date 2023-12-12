@@ -62,9 +62,10 @@
                         </p:dialog>
                         <div class="row">
                             <div class="col-md-6">
-                                <common:patient_details patient="#{opdPreBillController.patient}"/>
-
-                                <h:panelGroup id="panelIx" >
+                                <common:patient_details  
+                                    editable="true"
+                                    controller="#{opdPreBillController}"/>
+                                
 
 
                                     <p:panel id='pIxAdd' class="w-100 mb-1" >
@@ -268,10 +269,6 @@
                                     </p:panel>
 
 
-
-
-
-                                </h:panelGroup>
 
 
                             </div>
