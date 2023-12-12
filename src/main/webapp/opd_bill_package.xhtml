@@ -87,9 +87,14 @@
 
 
                                     <div class="mb-2">
-                                        <p:panel id='pIxAdd' header="Items Requests"  >  
-                                            <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" value="#{billPackageController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"    
-                                                            required="true" requiredMessage="Please add item" size="50" class="mx-2 ">
+                                        <p:panel id='pIxAdd' header="Items Requests"  >
+
+<!--                                            <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
+                                                            value="#{billPackageController.currentBillItem.item}" 
+                                                            completeMethod="#{itemController.completePackage}" 
+                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"    
+                                                            required="true" requiredMessage="Please add item" 
+                                                            size="50" class="mx-2 ">
                                                 <p:column>
                                                     #{ix.name}
                                                 </p:column>
@@ -97,7 +102,28 @@
                                                     #{ix.total}
                                                 </p:column>
 
-                                            </p:autoComplete>
+                                            </p:autoComplete>-->
+
+                                            <p:selectOneListbox 
+                                                filter="true"
+                                                id="acIx"
+                                                class="w-100"
+                                                scrollHeight="200"
+                                                value="#{billPackageController.currentBillItem.item}" var="ix" >
+                                                <f:selectItems value="#{billPackageController.opdPackege}"
+                                                               var="package" 
+                                                               itemLabel="#{package.name}"
+                                                               itemValue="#{package}" >
+                                                </f:selectItems>
+                                                <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx"></p:ajax>
+                                                <p:column>
+                                                    #{ix.name}
+                                                </p:column>
+                                                
+                                            </p:selectOneListbox>
+
+
+
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
@@ -157,7 +183,7 @@
                                                         itemValue="#{ix}" 
                                                         size="30"  
                                                         />
-                                                    
+
                                                     <p:commandButton 
                                                         id="btnAddNewDoc" 
                                                         type="button" 
@@ -169,7 +195,7 @@
                                                         update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" 
                                                         />  
                                                 </p:tab>
-                                                
+
                                                 <p:tab title="Company" class="w-100">
                                                     <p:autoComplete 
                                                         id="creditCom" 
@@ -184,7 +210,7 @@
                                                     <p:commandButton 
                                                         actionListener="#{billPackageController.calTotals()}" 
                                                         value="Set CreditCompay"
-                                                                     >
+                                                        >
                                                         <f:ajax 
                                                             execute="creditCom" 
                                                             render=":#{p:resolveFirstComponentWithId('panelBillTotals',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} "/>
