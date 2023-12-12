@@ -151,7 +151,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     Date sessionDate;
     String strTenderedValue;
     private YearMonthDay yearMonthDay;
-    private Patient current;
     private PaymentMethodData paymentMethodData;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
@@ -1049,13 +1048,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public String navigateToBillingForCashierFromMenu() {
-        if (current == null) {
+        if (patient == null) {
             JsfUtil.addErrorMessage("No patient selected");
-            Patient p = new Patient();
-            setCurrent(p);
+            patient = new Patient();
         }
         opdPreBillController.prepareNewBill();
-        opdPreBillController.setPatient(getCurrent());
+        opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill";
 
     }
@@ -1449,10 +1447,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         calTotals();
     }
 
+    @Override
     public Patient getPatient() {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
@@ -1951,14 +1951,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.commonController = commonController;
     }
 
-    public Patient getCurrent() {
-        return current;
-    }
-
-    public void setCurrent(Patient current) {
-        this.current = current;
-    }
-    
     public List<Item> getOpdItems() {
         if (opdItems == null) {
             opdItems = fillOpdItems();
