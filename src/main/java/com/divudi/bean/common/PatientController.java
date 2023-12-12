@@ -656,7 +656,7 @@ public class PatientController implements Serializable {
             return "";
         }
         pharmacySaleController.prepareForNewPharmacyRetailBill();
-        pharmacySaleController.setSearchedPatient(current);
+        pharmacySaleController.setPatient(current);
         pharmacySaleController.setPatientSearchTab(1);
         return pharmacySaleController.toPharmacyRetailSale();
     }
