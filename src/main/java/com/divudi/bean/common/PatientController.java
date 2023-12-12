@@ -754,7 +754,7 @@ public class PatientController implements Serializable {
         }
 
         collectingCentreBillController.prepareNewBill();
-        collectingCentreBillController.setSearchedPatient(getCurrent());
+        collectingCentreBillController.setPatient(getCurrent());
         return "/collecting_centre/bill?faces-redirect=true;";
     }
 
