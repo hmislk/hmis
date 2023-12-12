@@ -89,7 +89,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class CollectingCentreBillController implements Serializable {
+public class CollectingCentreBillController implements Serializable,ControllerWithPatient {
 
     /**
      * EJBs
