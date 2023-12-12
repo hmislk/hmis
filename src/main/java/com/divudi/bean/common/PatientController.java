@@ -656,7 +656,7 @@ public class PatientController implements Serializable {
             return "";
         }
         pharmacySaleController.prepareForNewPharmacyRetailBill();
-        pharmacySaleController.setSearchedPatient(current);
+        pharmacySaleController.setPatient(current);
         pharmacySaleController.setPatientSearchTab(1);
         return pharmacySaleController.toPharmacyRetailSale();
     }
@@ -754,7 +754,7 @@ public class PatientController implements Serializable {
         }
 
         collectingCentreBillController.prepareNewBill();
-        collectingCentreBillController.setSearchedPatient(getCurrent());
+        collectingCentreBillController.setPatient(getCurrent());
         return "/collecting_centre/bill?faces-redirect=true;";
     }
 
