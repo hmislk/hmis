@@ -38,6 +38,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -63,7 +64,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -72,41 +72,15 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class BillPackageController implements Serializable {
+public class BillPackageController implements Serializable, ControllerWithPatient {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    private boolean printPreview;
-    //Interface Data
-    private PaymentScheme paymentScheme;
-    PaymentMethod paymentMethod;
-    private Patient searchedPatient;
-    private Doctor referredBy;
-    private Institution creditCompany;
-    private Staff staff;
-    private double total;
-    private double discount;
-    private double netTotal;
-    private double cashPaid;
-    private double cashBalance;
-    private Institution chequeBank;
-    private BillItem currentBillItem;
-    private Institution collectingCentre;
-    //Bill Items
-    private List<BillComponent> lstBillComponents;
-    private List<BillFee> lstBillFees;
-    private List<BillItem> lstBillItems;
-    private List<BillEntry> lstBillEntries;
-    private Integer index;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
-    private BillBeanController billBean;
     @EJB
     CommonFunctions commonFunctions;
     @EJB
@@ -119,12 +93,58 @@ public class BillPackageController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    List<Bill> bills;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+    @EJB
+    ServiceSessionBean serviceSessionBean;
+    @EJB
+    BillSessionFacade billSessionFacade;
+    //</editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Injects">
+    @Inject
+    SessionController sessionController;
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    
+    //</editor-fold>
+    
+    private static final long serialVersionUID = 1L;
+    
+    private boolean printPreview;
+    //Interface Data
+    private PaymentScheme paymentScheme;
+    PaymentMethod paymentMethod;
+    private Patient searchedPatient;
+    private Patient patient;
+    private Doctor referredBy;
+    private Institution creditCompany;
+    private Staff staff;
+    private double total;
+    private double discount;
+    private double netTotal;
+    private double cashPaid;
+    private double cashBalance;
+    private Institution chequeBank;
+    private BillItem currentBillItem;
+    private Institution collectingCentre;
+    
+    //Bill Items
+    private List<BillComponent> lstBillComponents;
+    private List<BillFee> lstBillFees;
+    private List<BillItem> lstBillItems;
+    private List<BillEntry> lstBillEntries;
+    private Integer index;
+    
+    List<Bill> bills;
     private YearMonthDay yearMonthDay;
     PaymentMethodData paymentMethodData;
-
     Institution referredByInstitution;
     String referralId;
     private Patient newPatient;
@@ -230,13 +250,6 @@ public class BillPackageController implements Serializable {
             bills.add(myBill);
         }
     }
-
-    @EJB
-    CashTransactionBean cashTransactionBean;
-    @EJB
-    ServiceSessionBean serviceSessionBean;
-    @EJB
-    BillSessionFacade billSessionFacade;
 
     public BillSessionFacade getBillSessionFacade() {
         return billSessionFacade;
@@ -346,19 +359,17 @@ public class BillPackageController implements Serializable {
             //   //////System.out.println("22");
         }
 
-    saveBatchBill();
-    saveBillItemSessions();
+        saveBatchBill();
+        saveBillItemSessions();
 
-    clearBillItemValues();
-    //////System.out.println("33");
+        clearBillItemValues();
+        //////System.out.println("33");
 
-    UtilityController.addSuccessMessage (
-    "Bill Saved");
-        printPreview  = true;
-}
-    @Inject
-    ItemApplicationController itemApplicationController;
-    
+        UtilityController.addSuccessMessage(
+                "Bill Saved");
+        printPreview = true;
+    }
+
     private List<Packege> opdPackages;
 
     public List<Packege> getOpdPackege() {
@@ -369,7 +380,7 @@ public class BillPackageController implements Serializable {
         return opdPackages;
     }
 
-private Bill saveBill(Department bt, BilledBill temp) {
+    private Bill saveBill(Department bt, BilledBill temp) {
 
         //getCurrent().setCashBalance(cashBalance); 
         //getCurrent().setCashPaid(cashPaid);
@@ -412,9 +423,6 @@ private Bill saveBill(Department bt, BilledBill temp) {
         return temp;
 
     }
-
-    @Inject
-    PaymentSchemeController paymentSchemeController;
 
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
@@ -557,17 +565,17 @@ private Bill saveBill(Department bt, BilledBill temp) {
         getLstBillItems();
         calTotals();
     }
-    
+
     public Patient getNewPatient() {
         if (newPatient == null) {
             newPatient = new Patient();
             Person p = new Person();
-            
+
             newPatient.setPerson(p);
         }
         return newPatient;
     }
-    
+
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
         setSearchedPatient(getNewPatient());
@@ -950,7 +958,7 @@ private Bill saveBill(Department bt, BilledBill temp) {
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
 
-}
+    }
 
     public List<Packege> getOpdPackages() {
         return opdPackages;
@@ -960,46 +968,56 @@ private Bill saveBill(Department bt, BilledBill temp) {
         this.opdPackages = opdPackages;
     }
 
+    @Override
+    public Patient getPatient() {
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
     /**
      *
      */
     @FacesConverter(forClass = Bill.class)
-public static class BillControllerConverter implements Converter {
+    public static class BillControllerConverter implements Converter {
 
-    @Override
-    public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-        if (value == null || value.length() == 0) {
-            return null;
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "billPackageController");
+            return controller.getBillFacade().find(getKey(value));
         }
-        BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
-                getValue(facesContext.getELContext(), null, "billPackageController");
-        return controller.getBillFacade().find(getKey(value));
-    }
 
-    java.lang.Long getKey(String value) {
-        java.lang.Long key;
-        key = Long.valueOf(value);
-        return key;
-    }
-
-    String getStringKey(java.lang.Long value) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(value);
-        return sb.toString();
-    }
-
-    @Override
-    public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-        if (object == null) {
-            return null;
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
         }
-        if (object instanceof Bill) {
-            Bill o = (Bill) object;
-            return getStringKey(o.getId());
-        } else {
-            throw new IllegalArgumentException("object " + object + " is of type "
-                    + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Bill) {
+                Bill o = (Bill) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
+            }
         }
     }
-}
 }
