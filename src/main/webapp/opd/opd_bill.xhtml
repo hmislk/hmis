@@ -15,7 +15,7 @@
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
                     You are NOT authorized
                 </h:panelGroup>
-
+                
                 <h:form id="form" rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" >
 
                     <p:growl id="msg" ></p:growl>
@@ -33,7 +33,9 @@
                                                 </div>-->
                         <div class="row" >
                             <div class="col-md-6" >
-                                <common:patient_details patient="#{opdBillController.patient}" controller="#{opdBillController}"/>
+                                <common:patient_details  
+                                    editable="true"
+                                    controller="#{opdBillController}"/>
                                 <p:panel 
                                     id='pIxAdd' 
                                     class="w-100 form">
@@ -44,19 +46,23 @@
                                     <div class="row" >
                                         <p:focus context="acIx"/>
                                         <div class="col-md-10" >
-                                            <p:autoComplete 
-                                                widgetVar="aIx" 
-                                                id="acIx" 
-                                                forceSelection="true"
-                                                value="#{opdBillController.currentBillItem.item}" 
-                                                completeMethod="#{opdBillController.completeOpdItems}"
-                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                size="10"  
-                                                maxResults="10"
+                                            <p:watermark for="acIx" value="Enter first few letters of the service or item to add" ></p:watermark>
+                                            <p:selectOneListbox 
+                                                filter="true"
+                                                id="acIx"
                                                 class="w-100"
-                                                placeholder="Enter first few letters of the service or item to add"
-                                                inputStyleClass="form-control">
+                                                scrollHeight="200"
+                                                value="#{opdBillController.currentBillItem.item}" var="ix" >
+                                                <f:selectItems value="#{opdBillController.opdItems}"
+                                                               var="item" 
+                                                               itemLabel="#{item.name}"
+                                                               itemValue="#{item}" >
+                                                </f:selectItems>
+                                                <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
                                                 <p:column  headerText="Name">
+                                                    <f:facet name="header" >
+                                                        Name
+                                                    </f:facet>
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                     <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
                                                         <h:outputText value=" (#{ix.fullName})" ></h:outputText>
@@ -71,9 +77,7 @@
                                                 <p:column style="text-align: right;" headerText="Value">
                                                     <h:outputText value="#{ix.total}"></h:outputText>
                                                 </p:column>
-                                                <p:ajax event="itemSelect"  listener="#{opdBillController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
-                                                <f:ajax event="itemSelect"  execute="@this" render="txtQty" />
-                                            </p:autoComplete>
+                                            </p:selectOneListbox>
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
