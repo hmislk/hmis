@@ -420,6 +420,8 @@
                                         </h:panelGrid>
 
                                     </p:panel>
+                                    
+                                  
 
                                     <p:panel  class="my-1"> 
                                         <f:facet name="header" >
@@ -430,11 +432,11 @@
                                             <p:ajax event="tabChange"  process="@this"
                                                     update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                     listener="#{pharmacySaleController.onTabChange}" />
-                                            <p:tab id="tabNewPt" title="New Patient"  >
+                                            <p:tab id="tabPt" title="Patient"  >
                                                 <bil:newPatient controller="#{pharmacySaleController}"/>
                                             </p:tab>
 
-                                            <p:tab id="tabSearchPt" title="Search Patient" >
+<!--                                            <p:tab id="tabSearchPt" title="Search Patient" >
 
                                                 <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
                                                                          itemLabel="Serch Only Registed Patient" >
@@ -486,7 +488,7 @@
                                                 <div style="padding: 2px; margin: 2px; border: 1px solid;">
                                                     <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
                                                 </div>
-                                            </p:tab>
+                                            </p:tab>-->
 
                                             <p:tab id="tabCredit" title="Credit"  >
                                                 <h:panelGrid columns="3" >
