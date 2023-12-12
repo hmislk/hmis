@@ -376,7 +376,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -494,7 +494,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1306,9 +1306,9 @@ public class PatientController implements Serializable {
 
     }
 
-    public void quickSearchPatientLongPhoneNumber(Patient patientSearched, Object controller) {
+    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
         System.out.println("quickSearchPatientLongPhoneNumber");
-        System.out.println("patientSearched = " + patientSearched);
+        Patient patientSearched = null;
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
@@ -1327,19 +1327,22 @@ public class PatientController implements Serializable {
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
-            if(controller instanceof OpdBillController){
-                OpdBillController con = (OpdBillController) controller;
-                con.setPatient(patientSearched);
-            }
+            controller.setPatient(patientSearched);
             quickSearchPatientList = null;
         } else {
+            controller.setPatient(null);
             patientSearched = null;
             JsfUtil.addErrorMessage("Pleace Select Patient");
         }
     }
 
-    public void selectQuickOneFromQuickSearchPatient(Patient patientSearched) {
-        patientSearched = current;
+    public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {
+        if (controller == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        controller.setPatient(current);
+        quickSearchPatientList = null;
     }
 
     public void listAllPatients() {
