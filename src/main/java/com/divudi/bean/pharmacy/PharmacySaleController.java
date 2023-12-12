@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -86,7 +87,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable {
+public class PharmacySaleController implements Serializable, ControllerWithPatient {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -154,8 +155,8 @@ public class PharmacySaleController implements Serializable {
 
     int activeIndex;
 
-    private Patient newPatient;
-    private Patient searchedPatient;
+   
+    private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabPt";
     private String strTenderedValue = "";
@@ -228,8 +229,7 @@ public class PharmacySaleController implements Serializable {
         paymentScheme = null;
         paymentMethod = null;
         activeIndex = 0;
-        newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabPt";
         strTenderedValue = "";
@@ -257,8 +257,7 @@ public class PharmacySaleController implements Serializable {
         paymentScheme = null;
         paymentMethod = null;
         activeIndex = 0;
-        newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabSearchPt";
         patientSearchTab = 1;
@@ -315,7 +314,7 @@ public class PharmacySaleController implements Serializable {
 
         if (!getPatientTabId().equals("tabSearchPt")) {
             if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
+                setPatient(null);
             }
         }
 
@@ -421,18 +420,18 @@ public class PharmacySaleController implements Serializable {
     }
 
     private Patient savePatient() {
-        if (!getSearchedPatient().getPerson().getName().trim().equals("")) {
-            getSearchedPatient().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().setCreatedAt(new Date());
-            getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().getPerson().setCreatedAt(new Date());
-            if (getSearchedPatient().getPerson().getId() == null) {
-                getPersonFacade().create(getSearchedPatient().getPerson());
+        if (!getPatient().getPerson().getName().trim().equals("")) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            if (getPatient().getPerson().getId() == null) {
+                getPersonFacade().create(getPatient().getPerson());
             }
-            if (getSearchedPatient().getId() == null) {
-                getPatientFacade().create(getSearchedPatient());
+            if (getPatient().getId() == null) {
+                getPatientFacade().create(getPatient());
             }
-            return getSearchedPatient();
+            return getPatient();
         } else {
             return null;
         }
@@ -1724,7 +1723,7 @@ public class PharmacySaleController implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
@@ -1846,8 +1845,8 @@ public class PharmacySaleController implements Serializable {
     private void clearBill() {
         preBill = null;
         saleBill = null;
-        newPatient = null;
-        searchedPatient = null;
+        patient = null;
+        patient = null;
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
@@ -1944,26 +1943,17 @@ public class PharmacySaleController implements Serializable {
         this.pharmacyBean = pharmacyBean;
     }
 
-    public Patient getSearchedPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-
-            newPatient.setPerson(p);
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
         }
-        return newPatient;
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
-
-//    public Patient getSearchedPatient() {
-//        return searchedPatient;
-//    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public YearMonthDay getYearMonthDay() {

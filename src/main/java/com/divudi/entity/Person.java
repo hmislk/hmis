@@ -12,6 +12,7 @@ import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -130,6 +131,11 @@ public class Person implements Serializable {
     int serealNumber;
     @Transient
     private String smsNumber;
+    
+    @PostConstruct
+    public void init(){
+        calAgeFromDob();
+    }
 
     public Item getCivilStatus() {
         return civilStatus;
