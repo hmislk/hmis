@@ -346,16 +346,30 @@ public class BillPackageController implements Serializable {
             //   //////System.out.println("22");
         }
 
-        saveBatchBill();
-        saveBillItemSessions();
+    saveBatchBill();
+    saveBillItemSessions();
 
-        clearBillItemValues();
-        //////System.out.println("33");
-        UtilityController.addSuccessMessage("Bill Saved");
-        printPreview = true;
+    clearBillItemValues();
+    //////System.out.println("33");
+
+    UtilityController.addSuccessMessage (
+    "Bill Saved");
+        printPreview  = true;
+}
+    @Inject
+    ItemApplicationController itemApplicationController;
+    
+    private List<Packege> opdPackages;
+
+    public List<Packege> getOpdPackege() {
+        if (opdPackages == null) {
+            opdPackages = itemApplicationController.getPackages();
+        }
+        //System.out.println("Packege : " + opdPackages);
+        return opdPackages;
     }
 
-    private Bill saveBill(Department bt, BilledBill temp) {
+private Bill saveBill(Department bt, BilledBill temp) {
 
         //getCurrent().setCashBalance(cashBalance); 
         //getCurrent().setCashPaid(cashPaid);
@@ -935,48 +949,57 @@ public class BillPackageController implements Serializable {
 
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
+
+}
+
+    public List<Packege> getOpdPackages() {
+        return opdPackages;
+    }
+
+    public void setOpdPackages(List<Packege> opdPackages) {
+        this.opdPackages = opdPackages;
     }
 
     /**
      *
      */
     @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
+public static class BillControllerConverter implements Converter {
 
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billPackageController");
-            return controller.getBillFacade().find(getKey(value));
+    @Override
+    public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+        if (value == null || value.length() == 0) {
+            return null;
         }
+        BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
+                getValue(facesContext.getELContext(), null, "billPackageController");
+        return controller.getBillFacade().find(getKey(value));
+    }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+    java.lang.Long getKey(String value) {
+        java.lang.Long key;
+        key = Long.valueOf(value);
+        return key;
+    }
+
+    String getStringKey(java.lang.Long value) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(value);
+        return sb.toString();
+    }
+
+    @Override
+    public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+        if (object == null) {
+            return null;
         }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
-            }
+        if (object instanceof Bill) {
+            Bill o = (Bill) object;
+            return getStringKey(o.getId());
+        } else {
+            throw new IllegalArgumentException("object " + object + " is of type "
+                    + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
         }
     }
+}
 }
