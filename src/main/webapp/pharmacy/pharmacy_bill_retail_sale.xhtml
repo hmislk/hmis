@@ -38,14 +38,14 @@
 
                             <div class="row">
                                 <div class="col-6">
-                                    <p:panel header="Add Items" class="my-1">
+                                    <p:panel header="Add Items" class="w-100">
 
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fas fa-cube" />
                                             <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
                                         </f:facet>
 
-                                        <h:panelGrid columns="6" >
+                                        <h:panelGrid columns="5" >
                                             <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                 <p:autoComplete accesskey="i"    id="acStock" 
@@ -54,16 +54,16 @@
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
                                                                 >
                                                     <p:column headerText="Item">
-                                                        <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;
+                                                        <h:outputLabel value="#{i.itemBatch.item.name}" class="w-100" style="
                                                                        #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                          commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                     </p:column>
 
                                                     <p:column headerText="Code">
-                                                        <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
+                                                        <h:outputLabel value="#{i.itemBatch.item.code}" class="w-100"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Generic">
-                                                        <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                                        <h:outputLabel value="#{i.itemBatch.item.vmp.name}" class="w-100"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Rate">
                                                         <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
