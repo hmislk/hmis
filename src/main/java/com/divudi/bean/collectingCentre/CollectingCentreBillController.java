@@ -89,7 +89,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class CollectingCentreBillController implements Serializable {
+public class CollectingCentreBillController implements Serializable,ControllerWithPatient {
 
     /**
      * EJBs
@@ -156,6 +156,7 @@ public class CollectingCentreBillController implements Serializable {
     private PaymentMethod paymentMethod = PaymentMethod.Agent;
     private Patient newPatient;
     private Patient searchedPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
     String referralId;
@@ -592,10 +593,6 @@ public class CollectingCentreBillController implements Serializable {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getSearchedPatient().getPerson().getDob(), getSearchedPatient().getPerson().getSex(), getSearchedPatient().getPerson().getTitle())) {
-            UtilityController.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
-            return true;
-        }
         return false;
     }
 
@@ -620,6 +617,8 @@ public class CollectingCentreBillController implements Serializable {
         } else {
             getPatientFacade().edit(getSearchedPatient());
         }
+
+        
     }
 
 //    private void savePatient() {
@@ -899,6 +898,7 @@ public class CollectingCentreBillController implements Serializable {
 
     public void dateChangeListen() {
         getSearchedPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        
 
     }
 
@@ -1033,7 +1033,6 @@ public class CollectingCentreBillController implements Serializable {
 //            UtilityController.addErrorMessage("Invaild Reference Number.");
 //            return true;
 //        }
-
         if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
             UtilityController.addErrorMessage("This Reference Number is alredy Given.");
             setReferralId("");
@@ -2059,6 +2058,15 @@ public class CollectingCentreBillController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        setSearchedPatient(this.patient);
+        this.patient = patient;
     }
 
 }

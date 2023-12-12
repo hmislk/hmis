@@ -35,7 +35,9 @@
 
                     <h:panelGroup layout="block" rendered="#{!collectingCentreBillController.printPreview}" class="row">
                         <div class="col-6" >
-                            <common:patient_details patient="#{collectingCentreBillController.searchedPatient}"/>
+                            <common:patient_details 
+                                editable="true"
+                                controller="#{collectingCentreBillController}"/>
 
                             <h:panelGroup id="panelIx" >
 

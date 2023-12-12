@@ -57,7 +57,7 @@
                     <h:outputLabel  value="Adress" />
                     <h:inputText autocomplete="off" value="#{patientController.current.person.address}" ></h:inputText>
                     <h:outputLabel value="Phone"/>
-                    <p:inputText  id="txtNewPtPhone" maxlength="11" value="#{patientController.current.phoneNumberStringTransient}">
+                    <p:inputText  id="txtNewPtPhone" maxlength="11" value="#{patientController.current.person.phone}">
                     </p:inputText>
                 </h:panelGrid>
                 <h:commandButton value="Save" action="#{patientController.saveSelected()}"/>
