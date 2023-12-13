@@ -945,8 +945,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
-    }
 
+    }
+    
     public List<Packege> getOpdPackages() {
         return opdPackages;
     }
