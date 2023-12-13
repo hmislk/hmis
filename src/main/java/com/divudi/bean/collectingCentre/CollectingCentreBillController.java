@@ -89,7 +89,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class CollectingCentreBillController implements Serializable,ControllerWithPatient {
+public class CollectingCentreBillController implements Serializable, ControllerWithPatient {
 
     /**
      * EJBs
@@ -121,6 +121,8 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
      */
     @Inject
     ItemController itemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     @Inject
     ItemMappingController itemMappingController;
     @Inject
@@ -197,6 +199,21 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
+    private List<Item> opdItems;
+
+    public void selectCollectingCentre() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a collecting centre");
+            return;
+        }
+        listnerSelectLabBooks();
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+    }
+    
+    public void deselectCollectingCentre() {
+        collectingCentre = null;
+        itemController.setCcInstitutionItems(null);
+    }
 
     public BillType getBillType() {
         return billType;
@@ -617,7 +634,6 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
             getPatientFacade().edit(getPatient());
         }
 
-        
     }
 
 //    private void savePatient() {
@@ -897,7 +913,6 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
 
     public void dateChangeListen() {
         getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
-        
 
     }
 
@@ -1091,6 +1106,32 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
+    }
+
+    public List<Item> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(null);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(collectingCentre);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.getCcDeptItems();
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.getCcInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
     }
 
     public void addToBill() {
@@ -1561,8 +1602,8 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
 
     @Override
     public Patient getPatient() {
-        if(patient==null){
-            patient= new Patient();
+        if (patient == null) {
+            patient = new Patient();
         }
         return patient;
     }
@@ -1922,6 +1963,13 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
         this.patientSearchTab = patientSearchTab;
     }
 
+    public List<Item> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
+    }
+
     public Bill getBill() {
         if (bill == null) {
             bill = new Bill();
@@ -2063,7 +2111,5 @@ public class CollectingCentreBillController implements Serializable,ControllerWi
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-
-    
 
 }
