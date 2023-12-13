@@ -1115,7 +1115,7 @@ public class PatientController implements Serializable {
 
     public void searchBySample() {
         String j;
-        j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.retired=false ";
+        j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.patientInvestigation.retired=false ";
         Map m = new HashMap();
         Long temId;
         if (false) {
