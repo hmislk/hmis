@@ -28,6 +28,24 @@
                         <p:commandButton value="Upload"
                                          action="#{dataUploadBean.uploadItems()}"
                                          ajax="false"/>
+                        <p:commandButton value="Download Template" 
+                                         ajax="false" 
+                                         onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                         icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{dataUploadBean.templateForItemWithFeeUpload}" />
+                        </p:commandButton>
+
+                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                        </p:dialog>
+                        <script type="text/javascript">
+                            function start() {
+                                PF('statusDialog').show();
+                            }
+
+                            function stop() {
+                                PF('statusDialog').hide();
+                            }
+                        </script>
 
                     </h:form>
 

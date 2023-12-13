@@ -1,5 +1,21 @@
 package com.divudi.bean.emr;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
@@ -72,6 +88,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -134,6 +152,7 @@ public class DataUploadBean implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private StreamedContent templateForItemWithFeeUpload;
 
     public UploadedFile getFile() {
         return file;
@@ -927,25 +946,25 @@ public class DataUploadBean implements Serializable {
             if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
                 feeValue = feeCell.getNumericCellValue();
             }
-            
+
             if (feeValue == null) {
                 continue;
             }
-            
+
             Cell ffeeCell = row.getCell(7);
             if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
                 foreignerFeeValue = ffeeCell.getNumericCellValue();
             }
-            
+
             if (foreignerFeeValue == null) {
                 foreignerFeeValue = feeValue;
             }
-            
+
             itemFee.setFee(feeValue);
             itemFee.setFfee(foreignerFeeValue);
-            
+
             itemFeeManager.saveItemFee(itemFee);
-            
+
             itemFees.add(itemFee);
         }
 
@@ -1361,6 +1380,73 @@ public class DataUploadBean implements Serializable {
             }
         }
         throw new IllegalArgumentException("No matching date format found for: " + dateString);
+    }
+
+    public StreamedContent getTemplateForItemWithFeeUpload() {
+        try {
+            createTemplateForItemWithFeeUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForItemWithFeeUpload;
+    }
+
+    public void createTemplateForItemWithFeeUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Creating the second sheet for institution list
+        XSSFSheet institutionSheet = workbook.createSheet("Institutions");
+
+        // Fetching institutions and adding to the institution sheet
+        List<Institution> institutions = institutionController.getItems();
+        for (int i = 0; i < institutions.size(); i++) {
+            Row row = institutionSheet.createRow(i);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(institutions.get(i).getName());
+        }
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Code", "Category", "Institution", "Department", "Inward Charge Type", "Item Type", "Hospital Fee", "Collecting Centre Fee"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Setting data validation for institution column in data sheet
+        XSSFDataValidationHelper validationHelper = new XSSFDataValidationHelper(dataSheet);
+        DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("Institutions!$A$1:$A$" + institutions.size());
+
+        CellRangeAddressList addressList = new CellRangeAddressList(1, 65535, 5, 5); // Assuming column F is for institutions
+        XSSFDataValidation dataValidation = (XSSFDataValidation) validationHelper.createValidation(constraint, addressList);
+
+        dataValidation.setShowErrorBox(true);
+        dataSheet.addValidationData(dataValidation);
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForItemWithFeeUpload = DefaultStreamedContent.builder()
+                .name("template_for_item_fee_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
     }
 
     public String getOutputString() {

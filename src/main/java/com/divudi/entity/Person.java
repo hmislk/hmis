@@ -39,6 +39,9 @@ public class Person implements Serializable {
 
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
     private WebUser webUser;
+    
+    @Transient
+    boolean ageCalculated=false;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -227,14 +230,26 @@ public class Person implements Serializable {
     }
 
     public int getAgeMonthsComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageMonthsComponent;
     }
 
     public int getAgeDaysComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageDaysComponent;
     }
 
     public int getAgeYearsComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageYearsComponent;
     }
 

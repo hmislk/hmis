@@ -3007,7 +3007,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (opdItems == null) {
             opdItems = fillOpdItems();
         }
-
         return opdItems;
     }
 
