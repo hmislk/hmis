@@ -11,12 +11,11 @@
 
                 <div class="row">
                     <div class="col-3">                       
-
-
                         <h:form>
-                            <p:accordionPanel>
-                                <p:tab title="Service Report">
-                                    <div class="d-grid gap-2">
+                            <p:accordionPanel activeIndex="#{mdInwardReportController.managaeInwardReportIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Service Report" closable="false">
+                                    <div class="d-grid gap-2"> 
                                         <p:commandButton  ajax="false" value="Report By Bill" action="report_md_inward_bill" actionListener="#{mdInwardReportController.makeNull()}"/> 
                                         <p:commandButton  ajax="false" value="Report By Item (Count)" action="report_md_inward_item"  actionListener="#{mdInwardReportController.makeNull()}"/> 
                                         <p:commandButton  ajax="false" value="Report By Item " action="report_md_inward_item_1"  actionListener="#{mdInwardReportController.makeNull()}"/> 
@@ -33,16 +32,16 @@
                                         <p:commandButton  ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
                                         <p:commandButton  ajax="false" value="Doctor Payment Summary" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                         <p:commandButton  ajax="false" value="Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report Inward" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                         <p:commandButton  ajax="false" value="All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
                                         <p:commandButton  ajax="false" value="Doctor Payment Done Detailed" action="inward_report_professional_done_payment"/>
-                                        <p:commandButton  ajax="false" value="Doctor Payment Due OPD and Inward" action="inward_professional_payment_and_opd_payment_due"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due OPD And Inward" action="inward_professional_payment_and_opd_payment_due"/>
                                     </div>
                                 </p:tab>
 
-                                <p:tab title="All Summerries">
+                                <p:tab title="All Summaries">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="NEWLY ADDED REPORT" action="inward_report_bht_bil"   ajax="false" />
+                                        <p:commandButton value="Newly Added Report" action="inward_report_bht_bil"   ajax="false" />
                                         <p:commandButton value="BHT Inward Charge Category Report" action="inward_report_bht_inward_charge_category"   ajax="false" />
                                         <p:commandButton value="BHT Income By Categories Individual BHT " action="inward_report_bht_income_by_caregories_bht"   ajax="false" />
                                         <p:commandButton value="BHT Income By Categories All BHT " action="inward_report_bht_income_by_caregories"   ajax="false" />
@@ -53,7 +52,7 @@
                                     </div>
                                 </p:tab>
 
-                                <p:tab title="Reports By Bht">
+                                <p:tab title="Reports By BHT">
                                     <div class="d-grid gap-2">
                                         <p:commandButton  ajax="false" value="BHT Break Down (TAB Format)" action="inward_bill_intrim_finalized" actionListener="#{bhtSummeryFinalizedController.makeNull()}" /> 
                                         <p:commandButton  ajax="false" value="BHT Break Down (Table Format)" action="inward_bill_final_break_down" /> 

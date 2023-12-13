@@ -99,6 +99,15 @@
                                         itemValue="#{v}"
                                         required="true"
                                         requiredMessage="VTM is needed"></p:autoComplete>
+
+
+                                    <p:outputLabel for="txtDes" class="form-label w-100">Description</p:outputLabel>
+                                    <h:inputTextarea 
+                                        id="txtDes" 
+                                        value="#{atmController.current.name}" 
+                                        required="false" 
+                                        class="form-control" 
+                                        ></h:inputTextarea>
                                 </p:panelGrid>
                                 <p:focus id="focusDetail" for="gpDetail" ></p:focus>
                             </h:form>

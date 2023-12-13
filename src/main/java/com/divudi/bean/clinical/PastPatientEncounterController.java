@@ -1967,7 +1967,7 @@ public class PastPatientEncounterController implements Serializable {
         if (current == null) {
             return "";
         }
-        getPharmacySaleController().setSearchedPatient(current.getPatient());
+        getPharmacySaleController().setPatient(current.getPatient());
         getPharmacySaleController().setPatientSearchTab(1);
         getPharmacySaleController().setOpdEncounterComments(current.getComments());
         getPharmacySaleController().setFromOpdEncounter(true);

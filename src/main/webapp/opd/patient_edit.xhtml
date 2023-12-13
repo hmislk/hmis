@@ -125,8 +125,8 @@
                                         <div class="col-md-6">
                                             <p:outputLabel value="Date of Birth:"  class="form-label" />
                                             <p:calendar value="#{patientController.current.person.dob}" id="calNewPtDob" navigator="true"
-                                                          pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" 
-                                                          maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
+                                                        pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" 
+                                                        maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
                                                 <p:ajax event="dateSelect" process="calNewPtDob" update="year month day" />
                                             </p:calendar>
                                         </div>
@@ -185,8 +185,22 @@
                                     </div>
                                     <div class="row form-group mb-1">
                                         <div class="col-md-6">
-                                            <p:outputLabel value="PHN Number:"  class="form-label" />
-                                            <p:inputText value="#{patientController.current.phn}" class="form-control" />
+                                            <p:outputLabel value="PHN Number:" class="form-label" />
+                                            <div class="input-group">
+                                                <p:inputText
+                                                    id="txtPhn"
+                                                    value="#{patientController.current.phn}" class="form-control" />
+
+                                                <span class="input-group-btn">
+                                                    <p:commandButton
+                                                        id="btnPhn"
+                                                        value="Generate" 
+                                                        process="btnPhn" 
+                                                        update="txtPhn" 
+                                                        action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                                        class="mx-1" />
+                                                </span>
+                                            </div>
                                         </div>
                                         <div class="col-md-6">
                                             <h:outputLabel class="form-label" value="MRN No:"  />

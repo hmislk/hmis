@@ -9,20 +9,22 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel>
+           
 
-                <p:panel header="Item Report">                    
+                <p:panel header="Item Report" class="my-2">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{pharmacySaleReport.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar class="mx-4" id="fromDate" value="#{pharmacySaleReport.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
 
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{pharmacySaleReport.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar class="mx-4" id="toDate" value="#{pharmacySaleReport.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
-                    <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}" style="float: right;"  />
-                    </p:panelGrid>                    
+                    
+                        <p:commandButton ajax="false"
+                                         value="Process by Bill Created Date" 
+                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}"
+                                         class="my-2"  />
+                            
 
                 </p:panel>   
 
@@ -101,8 +103,8 @@
                         </p:subTable>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column footerText="Total" colspan="3" />
-                                <p:column style="text-align: right;" >
+                                <p:column footerText="Total" colspan="4" />
+                                <p:column style="text-align: right" >
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{pharmacySaleReport.totalBHTIssue}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -114,7 +116,7 @@
 
                     </p:dataTable>
                 </p:panel>
-            </p:panel>
+           
 
         </h:form>
     </ui:define>

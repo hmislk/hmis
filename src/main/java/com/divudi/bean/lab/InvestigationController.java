@@ -1386,6 +1386,63 @@ public class InvestigationController implements Serializable {
         getItems();
     }
     
+    public void save(Investigation i) {
+
+//        if (errorCheck()) {
+//            return;
+//        }
+        i.setCategory(i.getInvestigationCategory());
+        i.setSymanticType(SymanticType.Laboratory_Procedure);
+        if (i.getInwardChargeType() == null) {
+            i.setInwardChargeType(InwardChargeType.Laboratory);
+        }
+//        i.setInstitution(institution);
+        if (i.getId() != null && i.getId() > 0) {
+            //////// // System.out.println("1");
+            if (billedAs == false) {
+                //////// // System.out.println("2");
+                i.setBilledAs(i);
+
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("3");
+                i.setReportedAs(i);
+            }
+            getFacade().edit(i);
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            //////// // System.out.println("4");
+            i.setCreatedAt(new Date());
+            i.setCreater(getSessionController().getLoggedUser());
+
+            getFacade().create(i);
+            if (billedAs == false) {
+                //////// // System.out.println("5");
+                i.setBilledAs(i);
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("6");
+                i.setReportedAs(i);
+            }
+            getFacade().edit(i);
+            Item sc = new Item();
+
+            sc.setCreatedAt(new Date());
+            sc.setCreater(sessionController.getLoggedUser());
+
+            sc.setItemType(ItemType.SampleComponent);
+            sc.setName(i.getName());
+            sc.setParentItem(i);
+            getItemFacade().create(sc);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        System.out.println("Before recreate model");
+        recreateModel();
+        System.out.println("After recreate model");
+        getItems();
+        System.out.println("Execute getItems()");
+    }
+    
     
     public void saveSelected(Investigation tix) {
         if (tix.getId() == null) {

@@ -15,10 +15,12 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form class="w-100" >
-
-            <p:commandButton class="my-1" value="Print" ajax="false" >
+            <div claas="col-md-12">
+                <p:commandButton class="my-1 w-25" value="Print" ajax="false" >
                 <p:printer target="gpBillPreview" ></p:printer>
             </p:commandButton>
+            </div>
+            
 
             <h:outputStylesheet>
                 /* Styles for screen display */
@@ -137,7 +139,7 @@
                         </div>
 
                         <div class="my-4" style="font-weight: bold;margin-left: 10%;">
-                            <p:outputLabel   value="PATIENT DETAIL" />
+                            <p:outputLabel   value="PATIENT DETAILS" />
                         </div>
 
                         <div class="row ">
@@ -219,7 +221,7 @@
                         </div>
 
                         <div class="my-4" style="font-weight: bold;margin-left: 10%;">
-                            <p:outputLabel   value="GUARDIAN DETAIL" />
+                            <p:outputLabel   value="GUARDIAN DETAILS" />
                         </div>
 
                         <div class="row">
@@ -276,7 +278,7 @@
                         </div>
 
                         <div class="my-4" style="font-weight: bold;margin-left: 10%;">
-                            <p:outputLabel   value="CREDIT COMPANY DETAIL" />
+                            <p:outputLabel   value="CREDIT COMPANY DETAILS" />
                         </div>
 
                         <div class="row">

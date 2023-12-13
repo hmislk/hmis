@@ -85,6 +85,7 @@
 
                         <p:menuitem 
                             ajax="false" 
+                            action="/opd/patient_accept_payment" 
                             value="Accept Payments"
                             icon="fas fa-money-bill"></p:menuitem>
 
@@ -483,16 +484,19 @@
                     <p:menuitem  ajax="false" action="/pharmacy/pharmacy_summery_index"  value="Summeries" rendered="#{webUserController.hasPrivilege('PharmacySummery')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
-                    <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery"
+                    <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
                                  value="Add Surgeries"
-                                 actionListener="#{surgeryBillController.makeNull}"
                                  rendered="#{webUserController.hasPrivilege('TheatreAddSurgery')}" />
                     <p:submenu label="Service" rendered="#{webUserController.hasPrivilege('TheatreBilling')}">
-                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_service"
+                        
+                        <p:menuitem  ajax="false"  
+                                     action="#{billBhtController.navigateToAddServiceFromMenu()}"
                                      value="Add Service"
-                                     actionListener="#{billBhtController.makeNull()}"
                                      rendered="#{webUserController.hasPrivilege('TheatreBilling')}" />
-                        <p:menuitem  ajax="false"  action="/inward/inward_search_service" value="Search Bill"
+                        
+                        <p:menuitem  ajax="false"  
+                                     action="/inward/inward_search_service" 
+                                     value="Search Bill"
                                      actionListener="#{searchController.makeListNull}" 
                                      rendered="#{webUserController.hasPrivilege('TheatreBilling')}" ></p:menuitem>  
 
@@ -785,7 +789,7 @@
                     <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="Collecting Centre Book Issuing">
                             <p:menuitem  ajax="false"  action="/lab/agent_referece_book" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/reportLab/lab/report_collecting_center_referece_book" value="Collecting Centre Book Report"  ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/lab/report_collecting_center_referece_book" value="Collecting Centre Book Report"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit" value="Collecting Centre Credit Limit Update"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history" value="Collecting Centre History"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1" value="Collecting Centre Statement"  ></p:menuitem>
@@ -944,7 +948,7 @@
                     <p:menuitem  
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
-                        value="Manage Pharmaceuticals" 
+                        value="Pharmaceutical Management" 
                         icon="fa fa-medkit"
                         rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >
                     </p:menuitem>

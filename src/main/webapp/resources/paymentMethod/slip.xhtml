@@ -25,7 +25,7 @@
 
             <div class="col "  >
                 <div class="d-flex align-items-center">
-                    <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" class="mx-2">
+                    <p:selectOneMenu value="#{cc.attrs.paymentMethodData.slip.institution}" class="mx-2" style="width: 10em;">
                         <f:selectItem itemLabel="Select Bank"/>
                         <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                         <p:ajax process="@this" ></p:ajax>

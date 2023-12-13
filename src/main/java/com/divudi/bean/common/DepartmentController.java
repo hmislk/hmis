@@ -53,12 +53,36 @@ public class DepartmentController implements Serializable {
 
     List<Department> itemsToRemove;
 
+    public Department findAndSaveDepartmentByName(String name) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Department i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Department i = getFacade().findFirstByJpql(sql, m);
+        if (i == null) {
+            i = new Department();
+            i.setName(name);
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
+
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findByJpql(j);
     }
-    
+
     public List<Department> getInsDepartments(Institution currentInstituion) {
         List<Department> currentInsDepartments = new ArrayList<>();
         if (currentInstituion == null) {
@@ -72,7 +96,7 @@ public class DepartmentController implements Serializable {
                 + " where d.retired=:ret "
                 + " and d.institution=:ins"
                 + " order by d.name";
-        currentInsDepartments = getFacade().findByJpql(jpql,m);
+        currentInsDepartments = getFacade().findByJpql(jpql, m);
         if (currentInsDepartments == null) {
             currentInsDepartments = new ArrayList<>();
         }
@@ -135,18 +159,17 @@ public class DepartmentController implements Serializable {
         items = null;
     }
 
-    
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String jpql = "select d "
                     + "from Department d "
                     + "where d.retired=:ret "
                     + "order by d.name";
-            
+
             Map m = new HashMap();
-            m.put("ret",false);
-            searchItems = getFacade().findByJpql(jpql,m);
-             
+            m.put("ret", false);
+            searchItems = getFacade().findByJpql(jpql, m);
+
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -386,7 +409,7 @@ public class DepartmentController implements Serializable {
         }
         recreateModel();
         fillSearchItems();
-        
+
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins, DepartmentType departmentType) {
@@ -525,7 +548,7 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getItems() {
-        if(items == null){
+        if (items == null) {
             fillSearchItems();
         }
         return items;

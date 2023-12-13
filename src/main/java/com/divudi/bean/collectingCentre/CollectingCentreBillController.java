@@ -43,11 +43,13 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -87,7 +89,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class CollectingCentreBillController implements Serializable {
+public class CollectingCentreBillController implements Serializable, ControllerWithPatient {
 
     /**
      * EJBs
@@ -117,6 +119,12 @@ public class CollectingCentreBillController implements Serializable {
     /**
      * Controllers
      */
+    @Inject
+    ItemController itemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    ItemMappingController itemMappingController;
     @Inject
     ApplicationController applicationController;
     @Inject
@@ -149,7 +157,7 @@ public class CollectingCentreBillController implements Serializable {
     private Institution collectingCentre;
     private PaymentMethod paymentMethod = PaymentMethod.Agent;
     private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
     String referralId;
@@ -191,6 +199,21 @@ public class CollectingCentreBillController implements Serializable {
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
+    private List<Item> opdItems;
+
+    public void selectCollectingCentre() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a collecting centre");
+            return;
+        }
+        listnerSelectLabBooks();
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+    }
+    
+    public void deselectCollectingCentre() {
+        collectingCentre = null;
+        itemController.setCcInstitutionItems(null);
+    }
 
     public BillType getBillType() {
         return billType;
@@ -580,42 +603,39 @@ public class CollectingCentreBillController implements Serializable {
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
     }
-    
+
     private boolean checkPatientAgeSex() {
-        if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("") || getSearchedPatient().getPerson().getSex() == null || getSearchedPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
-            return true;
-        }
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getSearchedPatient().getPerson().getDob(), getSearchedPatient().getPerson().getSex(), getSearchedPatient().getPerson().getTitle())) {
-            UtilityController.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
             return true;
         }
         return false;
     }
 
     private void savePatient() {
-        if (getSearchedPatient().getId() == null) {
-            getSearchedPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
-            getSearchedPatient().setCreatedInstitution(getSessionController().getInstitution());
-            getSearchedPatient().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().setCreatedAt(new Date());
-            getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().getPerson().setCreatedAt(new Date());
+        if (getPatient().getId() == null) {
+            getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            getPatient().setCreatedInstitution(getSessionController().getInstitution());
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
             try {
-                getPersonFacade().create(getSearchedPatient().getPerson());
+                getPersonFacade().create(getPatient().getPerson());
             } catch (Exception e) {
-                getPersonFacade().edit(getSearchedPatient().getPerson());
+                getPersonFacade().edit(getPatient().getPerson());
             }
             try {
-                getPatientFacade().create(getSearchedPatient());
+                getPatientFacade().create(getPatient());
             } catch (Exception e) {
-                getPatientFacade().edit(getSearchedPatient());
+                getPatientFacade().edit(getPatient());
             }
         } else {
-            getPatientFacade().edit(getSearchedPatient());
+            getPatientFacade().edit(getPatient());
         }
+
     }
-    
+
 //    private void savePatient() {
 //        switch (getPatientTabId()) {
 //            case "tabNewPt":
@@ -632,7 +652,6 @@ public class CollectingCentreBillController implements Serializable {
 //                break;
 //        }
 //    }
-
     public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -893,7 +912,7 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getSearchedPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -982,8 +1001,8 @@ public class CollectingCentreBillController implements Serializable {
     AgentReferenceBookController agentReferenceBookController;
 
     private boolean errorCheck() {
-        if (getSearchedPatient().getPerson().getName() == null
-                || getSearchedPatient().getPerson().getName().trim().equals("")) {
+        if (getPatient().getPerson().getName() == null
+                || getPatient().getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
             return true;
         }
@@ -1024,11 +1043,10 @@ public class CollectingCentreBillController implements Serializable {
             return true;
         }
 
-        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
-            UtilityController.addErrorMessage("Invaild Reference Number.");
-            return true;
-        }
-
+//        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
+//            UtilityController.addErrorMessage("Invaild Reference Number.");
+//            return true;
+//        }
         if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
             UtilityController.addErrorMessage("This Reference Number is alredy Given.");
             setReferralId("");
@@ -1088,6 +1106,32 @@ public class CollectingCentreBillController implements Serializable {
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
+    }
+
+    public List<Item> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(null);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(collectingCentre);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.getCcDeptItems();
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.getCcInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
     }
 
     public void addToBill() {
@@ -1151,7 +1195,7 @@ public class CollectingCentreBillController implements Serializable {
 
     private void clearBillValues() {
         setNewPatient(null);
-        setSearchedPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
@@ -1280,6 +1324,42 @@ public class CollectingCentreBillController implements Serializable {
         collectingCentre = null;
     }
 
+    public void prepareNewBillKeepingCollectingCenter() {
+        clearBillItemValues();
+        clearBillValues();
+        setPrintPreview(true);
+        printPreview = false;
+        paymentMethodData = null;
+        paymentScheme = null;
+        paymentMethod = PaymentMethod.Agent;
+    }
+
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getCcItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, collectingCentre);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, collectingCentre);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, collectingCentre);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, collectingCentre);
+            default:
+                throw new AssertionError();
+        }
+    }
+
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
@@ -1324,7 +1404,7 @@ public class CollectingCentreBillController implements Serializable {
         setPatientTabId(event.getTab().getId());
         if (!getPatientTabId().equals("tabSearchPt")) {
             if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
+                setPatient(null);
             }
         }
         calTotals();
@@ -1337,9 +1417,14 @@ public class CollectingCentreBillController implements Serializable {
 
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
-        setSearchedPatient(getNewPatient());
-        return "/collecting_centre/bill";
+        setPatient(getNewPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
+    }
 
+    public String navigateToCollectingCenterBillingromCollectingCenterBilling() {
+        prepareNewBillKeepingCollectingCenter();
+        setPatient(getNewPatient());
+        return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
@@ -1515,12 +1600,17 @@ public class CollectingCentreBillController implements Serializable {
         this.newPatient = newPatient;
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
     }
 
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -1871,6 +1961,13 @@ public class CollectingCentreBillController implements Serializable {
 
     public void setPatientSearchTab(int patientSearchTab) {
         this.patientSearchTab = patientSearchTab;
+    }
+
+    public List<Item> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
     }
 
     public Bill getBill() {

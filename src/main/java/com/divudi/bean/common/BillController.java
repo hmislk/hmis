@@ -36,6 +36,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
@@ -614,6 +615,22 @@ public class BillController implements Serializable {
         return tmps;
     }
 
+    
+    public List<Bill> fillPatientSurgeryBills(PatientEncounter pe) {
+        String jpql;
+        Map temMap = new HashMap();
+        jpql = "select b from BilledBill b "
+                + " where b.billType = :billType "
+                + " and b.cancelled=false "
+                + " and b.retired=false "
+                + " and b.patientEncounter=:pe ";
+        temMap.put("billType", BillType.SurgeryBill);
+        temMap.put("pe", pe);
+        List<Bill> tmps = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP, 20);
+        return tmps;
+    }
+
+    
     public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
         String sql;
         HashMap hash = new HashMap();

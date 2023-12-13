@@ -11,6 +11,7 @@ import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -26,7 +27,7 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class RoomOccupancyController implements Serializable {
-    
+
     @Inject
     CommonController commonController;
 
@@ -78,6 +79,38 @@ public class RoomOccupancyController implements Serializable {
         createPatientRoom();
     }
 
+    public void dischargeFromRoom(PatientRoom patientRoom) {
+        if (patientRoom == null) {
+            JsfUtil.addErrorMessage("No room");
+            return;
+        }
+        if (patientRoom.isDischarged()) {
+            JsfUtil.addErrorMessage("Already Discharged");
+            return;
+        }
+        patientRoom.setDischarged(true);
+        patientRoom.setDischargedAt(new Date());
+        patientRoom.setDischargedBy(getSessionController().getLoggedUser());
+        getPatientRoomFacade().edit(patientRoom);
+        createPatientRoom();
+    }
+
+    public void dischargeCancelFromRoom(PatientRoom patientRoom) {
+        if (patientRoom == null) {
+            JsfUtil.addErrorMessage("No room");
+            return;
+        }
+        if (!patientRoom.isDischarged()) {
+            JsfUtil.addErrorMessage("Already Discharged");
+            return;
+        }
+        patientRoom.setDischarged(false);
+        patientRoom.setDischargedAt(null);
+        patientRoom.setDischargedBy(null);
+        getPatientRoomFacade().edit(patientRoom);
+        createPatientRoom();
+    }
+
     public void createPatientRoom() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -89,7 +122,7 @@ public class RoomOccupancyController implements Serializable {
                 + " order by pr.roomFacilityCharge.name";
 
         patientRooms = getPatientRoomFacade().findByJpql(sql);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Room Occupancy(/faces/inward/inward_room_occupancy.xhtml)");
 
     }
@@ -113,14 +146,14 @@ public class RoomOccupancyController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         String sql = "SELECT pr FROM PatientRoom pr "
                 + " where pr.retired=false "
                 + " and pr.discharged=false "
                 + " order by pr.roomFacilityCharge.name";
 
         patientRooms = getPatientRoomFacade().findByJpql(sql);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Room OccupancyAll( /faces/inward/inward_room_occupancy.xhtml)");
 
     }
@@ -157,6 +190,5 @@ public class RoomOccupancyController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }

@@ -84,6 +84,8 @@ public class AdmissionController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @Inject
+    BhtEditController bhtEditController;
     ////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -249,6 +251,7 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToEditAdmission() {
+        bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
 

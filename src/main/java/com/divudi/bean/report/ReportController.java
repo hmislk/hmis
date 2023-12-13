@@ -101,6 +101,8 @@ public class ReportController implements Serializable {
     private Date amcStartDate;
     private Date amcEndDate;
     private PaymentMethod paymentMethod;
+    
+    private String invoiceNumber;
 
     public ReportController() {
     }
@@ -1053,6 +1055,14 @@ public class ReportController implements Serializable {
 
     public void setService(Service service) {
         this.service = service;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 
     
