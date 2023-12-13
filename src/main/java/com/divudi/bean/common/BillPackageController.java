@@ -98,7 +98,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     @EJB
     BillSessionFacade billSessionFacade;
     //</editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Injects">
     @Inject
     SessionController sessionController;
@@ -110,13 +110,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemApplicationController itemApplicationController;
     @Inject
     PaymentSchemeController paymentSchemeController;
-    
+
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
-    
     private static final long serialVersionUID = 1L;
-    
+
     private boolean printPreview;
     //Interface Data
     private PaymentScheme paymentScheme;
@@ -133,24 +131,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private Institution chequeBank;
     private BillItem currentBillItem;
     private Institution collectingCentre;
-    
+
     //Bill Items
     private List<BillComponent> lstBillComponents;
     private List<BillFee> lstBillFees;
     private List<BillItem> lstBillItems;
     private List<BillEntry> lstBillEntries;
     private Integer index;
-    
+
     List<Bill> bills;
     private YearMonthDay yearMonthDay;
     PaymentMethodData paymentMethodData;
     Institution referredByInstitution;
     String referralId;
-    
-    //</editor-fold>
-    
-    
 
+    //</editor-fold>
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -381,7 +376,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     private Bill saveBill(Department bt, BilledBill temp) {
-
 
         //getCurrent().setCashBalance(cashBalance); 
         //getCurrent().setCashPaid(cashPaid);
@@ -959,42 +953,42 @@ public class BillPackageController implements Serializable, ControllerWithPatien
      *
      */
     @FacesConverter(forClass = Bill.class)
-public static class BillControllerConverter implements Converter {
+    public static class BillControllerConverter implements Converter {
 
-    @Override
-    public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-        if (value == null || value.length() == 0) {
-            return null;
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "billPackageController");
+            return controller.getBillFacade().find(getKey(value));
         }
-        BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
-                getValue(facesContext.getELContext(), null, "billPackageController");
-        return controller.getBillFacade().find(getKey(value));
-    }
 
-    java.lang.Long getKey(String value) {
-        java.lang.Long key;
-        key = Long.valueOf(value);
-        return key;
-    }
-
-    String getStringKey(java.lang.Long value) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(value);
-        return sb.toString();
-    }
-
-    @Override
-    public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-        if (object == null) {
-            return null;
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
         }
-        if (object instanceof Bill) {
-            Bill o = (Bill) object;
-            return getStringKey(o.getId());
-        } else {
-            throw new IllegalArgumentException("object " + object + " is of type "
-                    + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Bill) {
+                Bill o = (Bill) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
+            }
         }
     }
-}
 }
