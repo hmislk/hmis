@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -84,7 +85,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController1 implements Serializable {
+public class PharmacySaleController1 implements Serializable, ControllerWithPatient {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -98,7 +99,7 @@ public class PharmacySaleController1 implements Serializable {
 
     @Inject
     SessionController sessionController;
-    
+
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -151,8 +152,7 @@ public class PharmacySaleController1 implements Serializable {
 
     int activeIndex;
 
-    private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
@@ -213,8 +213,7 @@ public class PharmacySaleController1 implements Serializable {
         paymentScheme = null;
         paymentMethod = null;
         activeIndex = 0;
-        newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabNewPt";
         strTenderedValue = "";
@@ -261,22 +260,6 @@ public class PharmacySaleController1 implements Serializable {
 
     public void setEditingQty(Double editingQty) {
         this.editingQty = editingQty;
-    }
-
-    public void onTabChange(TabChangeEvent event) {
-        if (event != null && event.getTab() != null) {
-            setPatientTabId(event.getTab().getId());
-        }
-
-        if (!getPatientTabId().equals("tabSearchPt")) {
-            if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
-            }
-        }
-
-//        createPaymentSchemeItems();
-        calculateAllRates();
-
     }
 
     public double getOldQty(BillItem bItem) {
@@ -373,27 +356,23 @@ public class PharmacySaleController1 implements Serializable {
     }
 
     private Patient savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                if (!getNewPatient().getPerson().getName().trim().equals("")) {
-                    getNewPatient().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().setCreatedAt(new Date());
-                    getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().getPerson().setCreatedAt(new Date());
-                    if (getNewPatient().getPerson().getId() == null) {
-                        getPersonFacade().create(getNewPatient().getPerson());
-                    }
-                    if (getNewPatient().getId() == null) {
-                        getPatientFacade().create(getNewPatient());
-                    }
-                    return getNewPatient();
-                } else {
-                    return null;
-                }
-            case "tabSearchPt":
-                return getSearchedPatient();
+
+        if (!getPatient().getPerson().getName().trim().equals("")) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            if (getPatient().getPerson().getId() == null) {
+                getPersonFacade().create(getPatient().getPerson());
+            }
+            if (getPatient().getId() == null) {
+                getPatientFacade().create(getPatient());
+            }
+            return getPatient();
+        } else {
+            return null;
         }
-        return null;
+
     }
 
     public Title[] getTitle() {
@@ -1395,19 +1374,19 @@ public class PharmacySaleController1 implements Serializable {
         } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             double runningBalance;
             if (pt != null) {
-                if(pt.getRunningBalance()!=null){
-                 runningBalance=pt.getRunningBalance();
-                }else{
-                    runningBalance=0.0;
+                if (pt.getRunningBalance() != null) {
+                    runningBalance = pt.getRunningBalance();
+                } else {
+                    runningBalance = 0.0;
                 }
-                runningBalance+=netTotal;
+                runningBalance += netTotal;
                 pt.setRunningBalance(runningBalance);
             }
 
         }
 
         resetAll();
-        
+
         billPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
 
@@ -1671,7 +1650,7 @@ public class PharmacySaleController1 implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
@@ -1687,7 +1666,7 @@ public class PharmacySaleController1 implements Serializable {
                 return (tr * priceMatrix.getDiscountPercent()) / 100;
             }
         }
-        
+
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
@@ -1737,8 +1716,7 @@ public class PharmacySaleController1 implements Serializable {
     private void clearBill() {
         preBill = null;
         saleBill = null;
-        newPatient = null;
-        searchedPatient = null;
+        patient = null;
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
@@ -1814,28 +1792,20 @@ public class PharmacySaleController1 implements Serializable {
         this.stockFacade = stockFacade;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
+    public Patient gePatient() {
+        if (patient == null) {
+            patient = new Patient();
             Person p = new Person();
 
-            newPatient.setPerson(p);
+            patient.setPerson(p);
         }
-        return newPatient;
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
-
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
-    }
-
+    /**
+     *
+     * @param newPatient
+     */
     public YearMonthDay getYearMonthDay() {
         if (yearMonthDay == null) {
             yearMonthDay = new YearMonthDay();
@@ -1870,14 +1840,6 @@ public class PharmacySaleController1 implements Serializable {
 
     public void setSaleBill(Bill saleBill) {
         this.saleBill = saleBill;
-    }
-
-    public String getPatientTabId() {
-        return patientTabId;
-    }
-
-    public void setPatientTabId(String patientTabId) {
-        this.patientTabId = patientTabId;
     }
 
     public PersonFacade getPersonFacade() {
@@ -2125,6 +2087,19 @@ public class PharmacySaleController1 implements Serializable {
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
 }
