@@ -104,6 +104,8 @@ public class ItemController implements Serializable {
     List<Item> allItems;
     private List<Item> departmentItems;
     private List<Item> institutionItems;
+    private List<Item> ccDeptItems;
+    private List<Item> ccInstitutionItems;
     List<ItemFee> allItemFees;
     List<Item> selectedList;
     List<ItemFee> selectedItemFeeList;
@@ -1929,6 +1931,8 @@ public class ItemController implements Serializable {
     public void setItemlist(List<Item> itemlist) {
         this.itemlist = itemlist;
     }
+    
+    
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
@@ -2037,6 +2041,22 @@ public class ItemController implements Serializable {
             institutionItems = fillItemsByInstitution(getSessionController().getInstitution());
         }
         return institutionItems;
+    }
+
+    public List<Item> getCcDeptItems() {
+        return ccDeptItems;
+    }
+
+    public void setCcDeptItems(List<Item> ccDeptItems) {
+        this.ccDeptItems = ccDeptItems;
+    }
+
+    public List<Item> getCcInstitutionItems() {
+        return ccInstitutionItems;
+    }
+
+    public void setCcInstitutionItems(List<Item> ccInstitutionItems) {
+        this.ccInstitutionItems = ccInstitutionItems;
     }
 
     @FacesConverter(forClass = Item.class)
