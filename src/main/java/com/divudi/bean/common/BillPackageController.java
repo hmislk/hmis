@@ -36,7 +36,6 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -63,7 +62,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -72,41 +70,15 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class BillPackageController implements Serializable {
+public class BillPackageController implements Serializable, ControllerWithPatient {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    private boolean printPreview;
-    //Interface Data
-    private PaymentScheme paymentScheme;
-    PaymentMethod paymentMethod;
-    private Patient searchedPatient;
-    private Doctor referredBy;
-    private Institution creditCompany;
-    private Staff staff;
-    private double total;
-    private double discount;
-    private double netTotal;
-    private double cashPaid;
-    private double cashBalance;
-    private Institution chequeBank;
-    private BillItem currentBillItem;
-    private Institution collectingCentre;
-    //Bill Items
-    private List<BillComponent> lstBillComponents;
-    private List<BillFee> lstBillFees;
-    private List<BillItem> lstBillItems;
-    private List<BillEntry> lstBillEntries;
-    private Integer index;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
-    private BillBeanController billBean;
     @EJB
     CommonFunctions commonFunctions;
     @EJB
@@ -119,16 +91,61 @@ public class BillPackageController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    List<Bill> bills;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+    @EJB
+    ServiceSessionBean serviceSessionBean;
+    @EJB
+    BillSessionFacade billSessionFacade;
+    //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Injects">
+    @Inject
+    SessionController sessionController;
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+
+    //</editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private static final long serialVersionUID = 1L;
+
+    private boolean printPreview;
+    //Interface Data
+    private PaymentScheme paymentScheme;
+    PaymentMethod paymentMethod;
+    private Patient patient;
+    private Doctor referredBy;
+    private Institution creditCompany;
+    private Staff staff;
+    private double total;
+    private double discount;
+    private double netTotal;
+    private double cashPaid;
+    private double cashBalance;
+    private Institution chequeBank;
+    private BillItem currentBillItem;
+    private Institution collectingCentre;
+
+    //Bill Items
+    private List<BillComponent> lstBillComponents;
+    private List<BillFee> lstBillFees;
+    private List<BillItem> lstBillItems;
+    private List<BillEntry> lstBillEntries;
+    private Integer index;
+
+    List<Bill> bills;
     private YearMonthDay yearMonthDay;
     PaymentMethodData paymentMethodData;
-
     Institution referredByInstitution;
     String referralId;
-    private Patient newPatient;
 
+    //</editor-fold>
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -149,7 +166,6 @@ public class BillPackageController implements Serializable {
     }
 
     public Title[] getTitle() {
-
         return Title.values();
     }
 
@@ -177,27 +193,27 @@ public class BillPackageController implements Serializable {
     }
 
     private void savePatient() {
-        if (getSearchedPatient() == null) {
+        if (getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient to save");
             return;
         }
-        if (getSearchedPatient().getPerson() == null) {
+        if (getPatient().getPerson() == null) {
             JsfUtil.addErrorMessage("No person");
             return;
         }
-        if (getSearchedPatient().getPerson().getId() == null) {
-            getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().getPerson().setCreatedAt(new Date());
-            getPersonFacade().create(getSearchedPatient().getPerson());
+        if (getPatient().getPerson().getId() == null) {
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            getPersonFacade().create(getPatient().getPerson());
         } else {
-            getPersonFacade().edit(getSearchedPatient().getPerson());
+            getPersonFacade().edit(getPatient().getPerson());
         }
-        if (getSearchedPatient().getId() == null) {
-            getSearchedPatient().setCreater(getSessionController().getLoggedUser());
-            getSearchedPatient().setCreatedAt(new Date());
-            getPatientFacade().create(getSearchedPatient());
+        if (getPatient().getId() == null) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatientFacade().create(getPatient());
         } else {
-            getPatientFacade().edit(getSearchedPatient());
+            getPatientFacade().edit(getPatient());
         }
     }
 
@@ -230,13 +246,6 @@ public class BillPackageController implements Serializable {
             bills.add(myBill);
         }
     }
-
-    @EJB
-    CashTransactionBean cashTransactionBean;
-    @EJB
-    ServiceSessionBean serviceSessionBean;
-    @EJB
-    BillSessionFacade billSessionFacade;
 
     public BillSessionFacade getBillSessionFacade() {
         return billSessionFacade;
@@ -327,7 +336,6 @@ public class BillPackageController implements Serializable {
     }
 
     public void settleBill() {
-
         if (errorCheck()) {
             return;
         }
@@ -351,8 +359,20 @@ public class BillPackageController implements Serializable {
 
         clearBillItemValues();
         //////System.out.println("33");
-        UtilityController.addSuccessMessage("Bill Saved");
+
+        UtilityController.addSuccessMessage(
+                "Bill Saved");
         printPreview = true;
+    }
+
+    private List<Packege> opdPackages;
+
+    public List<Packege> getOpdPackege() {
+        if (opdPackages == null) {
+            opdPackages = itemApplicationController.getPackages();
+        }
+        //System.out.println("Packege : " + opdPackages);
+        return opdPackages;
     }
 
     private Bill saveBill(Department bt, BilledBill temp) {
@@ -381,7 +401,7 @@ public class BillPackageController implements Serializable {
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(getSearchedPatient());
+        temp.setPatient(getPatient());
 //        temp.setPatientEncounter(patientEncounter);
         temp.setPaymentMethod(paymentMethod);
         temp.setPaymentScheme(getPaymentScheme());
@@ -399,9 +419,6 @@ public class BillPackageController implements Serializable {
 
     }
 
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
@@ -412,20 +429,20 @@ public class BillPackageController implements Serializable {
 
     private boolean errorCheck() {
 
-        if (getSearchedPatient().getPerson().getName() == null
-                || getSearchedPatient().getPerson().getName().trim().equals("")
-                || getSearchedPatient().getPerson().getSex() == null
-                || getSearchedPatient().getPerson().getDob() == null) {
+        if (getPatient().getPerson().getName() == null
+                || getPatient().getPerson().getName().trim().equals("")
+                || getPatient().getPerson().getSex() == null
+                || getPatient().getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
 
-        if (!com.divudi.java.CommonFunctions.checkAgeSex(getSearchedPatient().getPerson().getDob(), getSearchedPatient().getPerson().getSex(), getSearchedPatient().getPerson().getTitle())) {
+        if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             UtilityController.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
 
-        if (getSearchedPatient().getPerson().getPhone().length() < 1) {
+        if (getPatient().getPerson().getPhone().length() < 1) {
             UtilityController.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
@@ -535,7 +552,6 @@ public class BillPackageController implements Serializable {
         setDiscount(dis);
         setTotal(tot);
         setNetTotal(net);
-
     }
 
     public void feeChanged() {
@@ -543,20 +559,10 @@ public class BillPackageController implements Serializable {
         getLstBillItems();
         calTotals();
     }
-    
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-            
-            newPatient.setPerson(p);
-        }
-        return newPatient;
-    }
-    
+
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
-        setSearchedPatient(getNewPatient());
+        setPatient(getPatient());
 //        appointmentController.prepereForInwardAppointPatient();
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
@@ -565,7 +571,7 @@ public class BillPackageController implements Serializable {
     }
 
     public void clearBillValues() {
-        setSearchedPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -665,12 +671,14 @@ public class BillPackageController implements Serializable {
         calTotals();
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
+    @Override
+    public Patient getPatient() {
+        return patient;
     }
 
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -921,12 +929,8 @@ public class BillPackageController implements Serializable {
         clearBillItemValues();
         clearBillValues();
         printPreview = false;
-        searchedPatient = patient;
+        this.patient = patient;
         return "/opd/opd_bill_package";
-    }
-
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
     }
 
     public Institution getCollectingCentre() {
@@ -935,6 +939,14 @@ public class BillPackageController implements Serializable {
 
     public void setCollectingCentre(Institution collectingCentre) {
         this.collectingCentre = collectingCentre;
+    }
+
+    public List<Packege> getOpdPackages() {
+        return opdPackages;
+    }
+
+    public void setOpdPackages(List<Packege> opdPackages) {
+        this.opdPackages = opdPackages;
     }
 
     /**

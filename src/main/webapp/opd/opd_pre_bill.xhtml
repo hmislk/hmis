@@ -62,9 +62,10 @@
                         </p:dialog>
                         <div class="row">
                             <div class="col-md-6">
-                                <common:patient_details patient="#{opdPreBillController.patient}"/>
-
-                                <h:panelGroup id="panelIx" >
+                                <common:patient_details  
+                                    editable="true"
+                                    controller="#{opdPreBillController}"/>
+                                
 
 
                                     <p:panel id='pIxAdd' class="w-100 mb-1" >
@@ -75,39 +76,55 @@
                                         <div class="row">
                                             <p:focus  context="acIx"/>
                                             <div class="col-md-10">
-                                                <p:autoComplete 
-                                                    widgetVar="aIx" id="acIx" forceSelection="true"
-                                                    value="#{opdPreBillController.currentBillItem.item}" 
-                                                    completeMethod="#{opdPreBillController.completeOpdItems}"
-                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
+                                                <p:selectOneListbox 
+                                                    filter="true"
+                                                    id="acIx"
                                                     class="w-100"
-                                                    size="10"  
-                                                    maxResults="10"
-                                                    placeholder="Enter first few letters of the service or item to add"
-                                                    inputStyleClass="form-control">
-                                                    <p:column>
-                                                        #{ix.name}
+                                                    scrollHeight="200"
+                                                    value="#{opdPreBillController.currentBillItem.item}" var="ix" >
+                                                    <f:selectItems value="#{opdPreBillController.opdItems}"
+                                                                   var="item" 
+                                                                   itemLabel="#{item.name}"
+                                                                   itemValue="#{item}" >
+                                                    </f:selectItems>
+                                                    <p:ajax listener="#{opdPreBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
+                                                    <p:column  headerText="Name">
+                                                        <f:facet name="header" >
+                                                            Name
+                                                        </f:facet>
+                                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                            <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                                        </h:panelGroup>
                                                     </p:column>
-                                                    <p:column>
-                                                        #{ix.fullName}
+                                                    <p:column  headerText="Dept">
+                                                        <h:outputText value="#{ix.department.name}"></h:outputText>
                                                     </p:column>
-                                                    <p:column>
-                                                        #{ix.department.name}
+                                                    <p:column  headerText="Code">
+                                                        <h:outputText value="#{ix.code}"></h:outputText>
                                                     </p:column>
-                                                    <p:column>
-                                                        #{ix.total}
+                                                    <p:column style="text-align: right;" headerText="Value">
+                                                        <h:outputText value="#{ix.total}"></h:outputText>
                                                     </p:column>
-                                                    <p:ajax event="itemSelect"  listener="#{opdPreBillController.fillBillSessions}" process="acIx"  ></p:ajax>
-                                                </p:autoComplete>
+                                                </p:selectOneListbox>
+
+
                                             </div>
                                             <div class="col-md-2">
+                                                <h:panelGrid id="txtQty">
+                                                    <h:inputText autocomplete="off" 
+                                                                 rendered="#{opdPreBillController.currentBillItem.item.requestForQuentity}"
+                                                                 value="#{opdPreBillController.currentBillItem.qty}" >
+                                                    </h:inputText>
+                                                </h:panelGrid>
                                                 <p:commandButton 
                                                     id="btnAddIx" 
                                                     value="Add" 
                                                     icon="fa fa-plus"
                                                     class="w-100 mx-1 ui-button-success"
                                                     action="#{opdPreBillController.addToBill()}" 
-                                                    process="acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                    process="acIx btnAddIx txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                     update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
@@ -252,10 +269,6 @@
                                     </p:panel>
 
 
-
-
-
-                                </h:panelGroup>
 
 
                             </div>

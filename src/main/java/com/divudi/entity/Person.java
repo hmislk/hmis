@@ -12,6 +12,7 @@ import com.divudi.data.Title;
 import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,6 +39,9 @@ public class Person implements Serializable {
 
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
     private WebUser webUser;
+    
+    @Transient
+    boolean ageCalculated=false;
 
     static final long serialVersionUID = 1L;
     @Id
@@ -130,6 +134,11 @@ public class Person implements Serializable {
     int serealNumber;
     @Transient
     private String smsNumber;
+    
+    @PostConstruct
+    public void init(){
+        calAgeFromDob();
+    }
 
     public Item getCivilStatus() {
         return civilStatus;
@@ -221,14 +230,26 @@ public class Person implements Serializable {
     }
 
     public int getAgeMonthsComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageMonthsComponent;
     }
 
     public int getAgeDaysComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageDaysComponent;
     }
 
     public int getAgeYearsComponent() {
+        if(ageCalculated==false){
+            calAgeFromDob();
+            ageCalculated=true;
+        }
         return ageYearsComponent;
     }
 

@@ -15,6 +15,11 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
+import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -83,7 +88,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class OpdPreBillController implements Serializable {
+public class OpdPreBillController implements Serializable, ControllerWithPatient {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -121,6 +126,8 @@ public class OpdPreBillController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
     private CommonController commonController;
@@ -144,7 +151,6 @@ public class OpdPreBillController implements Serializable {
     Date sessionDate;
     String strTenderedValue;
     private YearMonthDay yearMonthDay;
-    private Patient current;
     private PaymentMethodData paymentMethodData;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
@@ -192,6 +198,8 @@ public class OpdPreBillController implements Serializable {
     private List<BillEntry> lstBillEntriesPrint;
 
     List<BillFeePayment> billFeePayments;
+    
+    private List<Item> opdItems;
     // </editor-fold>
 
     public double getCashRemain() {
@@ -228,6 +236,24 @@ public class OpdPreBillController implements Serializable {
         }
     }
 
+    public List<Item> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
+    }
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -1022,13 +1048,12 @@ public class OpdPreBillController implements Serializable {
     }
 
     public String navigateToBillingForCashierFromMenu() {
-        if (current == null) {
+        if (patient == null) {
             JsfUtil.addErrorMessage("No patient selected");
-            Patient p = new Patient();
-            setCurrent(p);
+            patient = new Patient();
         }
         opdPreBillController.prepareNewBill();
-        opdPreBillController.setPatient(getCurrent());
+        opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill";
 
     }
@@ -1422,10 +1447,12 @@ public class OpdPreBillController implements Serializable {
         calTotals();
     }
 
+    @Override
     public Patient getPatient() {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
@@ -1924,11 +1951,11 @@ public class OpdPreBillController implements Serializable {
         this.commonController = commonController;
     }
 
-    public Patient getCurrent() {
-        return current;
-    }
+    public List<Item> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
 
-    public void setCurrent(Patient current) {
-        this.current = current;
+        return opdItems;
     }
 }

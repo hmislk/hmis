@@ -88,7 +88,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OpdBillController implements Serializable {
+public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
 
@@ -135,6 +135,8 @@ public class OpdBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     @Inject
     ItemMappingController itemMappingController;
     @Inject
@@ -237,6 +239,8 @@ public class OpdBillController implements Serializable {
     private int opdSummaryIndex;
     private int opdAnalyticsIndex;
 
+    private List<Item> opdItems;
+
     /**
      *
      * Navigation Methods
@@ -285,6 +289,24 @@ public class OpdBillController implements Serializable {
                 return itemController.completeItemsByInstitution(query, institution);
             default:
                 throw new AssertionError();
+        }
+    }
+
+    public List<Item> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
         }
     }
 
@@ -2979,6 +3001,13 @@ public class OpdBillController implements Serializable {
 
     public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
         this.opdAnalyticsIndex = opdAnalyticsIndex;
+    }
+
+    public List<Item> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
     }
 
 }

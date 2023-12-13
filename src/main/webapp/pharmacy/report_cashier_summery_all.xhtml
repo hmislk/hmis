@@ -16,31 +16,27 @@
 
 
                 <h:form>
-                    <p:panel id="reportPrint" header="All Cashier Summery" >
+                    <p:panel header="All Cashier Summary" >
                         <div class="row p-1">
                             <div class="col-md-4">
                                 <h:outputLabel value="Department" />&nbsp;&nbsp;
                                 <h:outputLabel value="#{sessionController.department.name}" />
-
                             </div>
                             <div class="col-md-4">
                                 <h:outputLabel value="From Date" />&nbsp;&nbsp;
                                 <p:calendar id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                                 </p:calendar>
                             </div>
-                        </div>
-                        <div class="row p-1">
                             <div class="col-md-4">
-                                <h:outputLabel value="To Date"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <h:outputLabel value="To Date"/>&nbsp;&nbsp;
                                 <p:calendar id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 </p:calendar>
                             </div>
-
                         </div>
 
                         
 
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="5" class="my-2" >
 
 
 
@@ -52,14 +48,15 @@
                             <p:commandButton id="btnRefresh1" ajax="false" 
                                              value="Process Channel Bills" 
                                              styleClass="noPrintButton" 
-                                             style="float: right;" 
+                                             style="float: right;"
+                                             class="mx-2"
                                              actionListener="#{cashierReportController.calCashierDataChannel()}" />  
                             <p:commandButton id="btnRefresh2" ajax="false" 
                                              value="Process Other Bills" 
                                              styleClass="noPrintButton" 
                                              style="float: right;" 
                                              actionListener="#{cashierReportController.calCashierDataCashier()}" />  
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" class="mx-2" >
                                 <p:printer target="reportPrint" />
                             </p:commandButton>  
 
@@ -72,9 +69,8 @@
                         </h:panelGrid>
 
 
-
-
-                        <p:dataTable id="tbl" value="#{cashierReportController.webUserBillsTotals}" var="csh">
+                        <p:panel id="reportPrint">
+                            <p:dataTable id="tbl" value="#{cashierReportController.webUserBillsTotals}" var="csh">
 
                             <p:columnGroup type="header">
                                 <p:row>
@@ -183,6 +179,9 @@
                                 </p:row>
                             </p:columnGroup>
                         </p:dataTable>
+                        </p:panel>
+
+                        
 
 
                     </p:panel>  

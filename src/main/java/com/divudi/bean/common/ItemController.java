@@ -90,6 +90,8 @@ public class ItemController implements Serializable {
     ItemFeeController itemFeeController;
     @Inject
     ServiceController serviceController;
+    @Inject
+    ItemApplicationController itemApplicationController;
 
     /**
      * Properties
@@ -100,6 +102,10 @@ public class ItemController implements Serializable {
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
     List<Item> allItems;
+    private List<Item> departmentItems;
+    private List<Item> institutionItems;
+    private List<Item> ccDeptItems;
+    private List<Item> ccInstitutionItems;
     List<ItemFee> allItemFees;
     List<Item> selectedList;
     List<ItemFee> selectedItemFeeList;
@@ -111,15 +117,14 @@ public class ItemController implements Serializable {
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
- 
-    
+
     boolean masterItem;
 
     ReportKeyWord reportKeyWord;
-    
-   public List<ItemFee> fetchItemFeeList() {
+
+    public List<ItemFee> fetchItemFeeList() {
         List<ItemFee> itemFees = new ArrayList<>();
-        
+
         String sql;
 
         sql = "select c from ItemFee c "
@@ -1926,6 +1931,8 @@ public class ItemController implements Serializable {
     public void setItemlist(List<Item> itemlist) {
         this.itemlist = itemlist;
     }
+    
+    
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
@@ -2000,6 +2007,56 @@ public class ItemController implements Serializable {
 
     public void setItemFeesList(List<ItemFee> ItemFeesList) {
         this.ItemFeesList = ItemFeesList;
+    }
+
+    public List<Item> fillItemsByDepartment(Department dept) {
+        List<Item> deptItems = new ArrayList<>();
+        for (Item i : itemApplicationController.getItems()) {
+            if (i.getDepartment()!=null && i.getDepartment().equals(dept)) {
+                deptItems.add(i);
+            }
+        }
+        return deptItems;
+    }
+
+    public List<Item> fillItemsByInstitution(Institution institution) {
+        List<Item> insItems = new ArrayList<>();
+        for (Item i : itemApplicationController.getItems()) {
+            if (i.getInstitution()!=null && i.getInstitution().equals(institution)) {
+                insItems.add(i);
+            }
+        }
+        return insItems;
+    }
+
+    public List<Item> getDepartmentItems() {
+        if (departmentItems == null) {
+            departmentItems = fillItemsByDepartment(getSessionController().getDepartment());
+        }
+        return departmentItems;
+    }
+
+    public List<Item> getInstitutionItems() {
+        if(institutionItems==null){
+            institutionItems = fillItemsByInstitution(getSessionController().getInstitution());
+        }
+        return institutionItems;
+    }
+
+    public List<Item> getCcDeptItems() {
+        return ccDeptItems;
+    }
+
+    public void setCcDeptItems(List<Item> ccDeptItems) {
+        this.ccDeptItems = ccDeptItems;
+    }
+
+    public List<Item> getCcInstitutionItems() {
+        return ccInstitutionItems;
+    }
+
+    public void setCcInstitutionItems(List<Item> ccInstitutionItems) {
+        this.ccInstitutionItems = ccInstitutionItems;
     }
 
     @FacesConverter(forClass = Item.class)

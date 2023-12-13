@@ -222,6 +222,7 @@ public class PatientController implements Serializable {
     private Integer ageYearComponant;
     private Integer ageMonthComponant;
     private Integer ageDateComponant;
+    private String quickSearchPhoneNumber;
 
     Bill bill;
     private BillItem billItem;
@@ -231,6 +232,7 @@ public class PatientController implements Serializable {
     private boolean printPreview = false;
 
     private List<PatientInvestigation> patientInvestigations;
+    private List<Patient> quickSearchPatientList;
 
     /**
      *
@@ -374,7 +376,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -492,7 +494,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -654,7 +656,7 @@ public class PatientController implements Serializable {
             return "";
         }
         pharmacySaleController.prepareForNewPharmacyRetailBill();
-        pharmacySaleController.setSearchedPatient(current);
+        pharmacySaleController.setPatient(current);
         pharmacySaleController.setPatientSearchTab(1);
         return pharmacySaleController.toPharmacyRetailSale();
     }
@@ -752,7 +754,7 @@ public class PatientController implements Serializable {
         }
 
         collectingCentreBillController.prepareNewBill();
-        collectingCentreBillController.setSearchedPatient(getCurrent());
+        collectingCentreBillController.setPatient(getCurrent());
         return "/collecting_centre/bill?faces-redirect=true;";
     }
 
@@ -1077,7 +1079,7 @@ public class PatientController implements Serializable {
         searchPatientId = null;
         searchBillId = null;
         searchSampleId = null;
-        searchPatientPhoneNumber=null;
+        searchPatientPhoneNumber = null;
     }
 
     public void searchByBill() {
@@ -1113,7 +1115,7 @@ public class PatientController implements Serializable {
 
     public void searchBySample() {
         String j;
-        j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.retired=false ";
+        j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.patientInvestigation.retired=false ";
         Map m = new HashMap();
         Long temId;
         if (false) {
@@ -1302,6 +1304,45 @@ public class PatientController implements Serializable {
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
 
+    }
+
+    public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
+        System.out.println("quickSearchPatientLongPhoneNumber");
+        Patient patientSearched = null;
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
+        m.put("pp", searchedPhoneNumber);
+        System.out.println("searchedPhoneNumber = " + searchedPhoneNumber);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        quickSearchPatientList = getFacade().findByJpql(j, m);
+        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
+        if (quickSearchPatientList == null) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.isEmpty()) {
+            JsfUtil.addErrorMessage("No Patient found !");
+            return;
+        } else if (quickSearchPatientList.size() == 1) {
+            patientSearched = quickSearchPatientList.get(0);
+            controller.setPatient(patientSearched);
+            quickSearchPatientList = null;
+        } else {
+            controller.setPatient(null);
+            patientSearched = null;
+            JsfUtil.addErrorMessage("Pleace Select Patient");
+        }
+    }
+
+    public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {
+        if (controller == null) {
+            JsfUtil.addErrorMessage("Programming Error. Controller is null.");
+            return;
+        }
+        controller.setPatient(current);
+        quickSearchPatientList = null;
     }
 
     public void listAllPatients() {
@@ -2985,6 +3026,22 @@ public class PatientController implements Serializable {
 
     public void setSearchPatientPhoneNumber(String searchPatientPhoneNumber) {
         this.searchPatientPhoneNumber = searchPatientPhoneNumber;
+    }
+
+    public String getQuickSearchPhoneNumber() {
+        return quickSearchPhoneNumber;
+    }
+
+    public void setQuickSearchPhoneNumber(String quickSearchPhoneNumber) {
+        this.quickSearchPhoneNumber = quickSearchPhoneNumber;
+    }
+
+    public List<Patient> getQuickSearchPatientList() {
+        return quickSearchPatientList;
+    }
+
+    public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
+        this.quickSearchPatientList = quickSearchPatientList;
     }
 
     /**
