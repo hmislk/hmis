@@ -28,7 +28,7 @@ public class ItemApplicationController {
     ItemFacade itemFacade;
     // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> items;
     private List<Item> investigationsAndServices;
     private List<Investigation> investigations;
@@ -53,6 +53,16 @@ public class ItemApplicationController {
         return itemFacade.findByJpql(jpql, m);
     }
 
+    public void reloadItems(){
+        List<Item> reloaded = fillAllItems();
+        items = reloaded;
+        packages=null;
+        services=null;
+        investigations=null;
+        investigationsAndServices=null;
+        reloaded=null;
+    }
+    
     private <T extends Item> List<T> fillItems(Class<T> cls) {
         List<T> filteredItems = new ArrayList<>();
         for (Item item : getItems()) {

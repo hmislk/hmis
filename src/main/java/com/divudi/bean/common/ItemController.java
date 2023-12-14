@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.ItemType;
+import com.divudi.data.dataStructure.ItemFeeRow;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.CashierItem;
@@ -117,6 +118,7 @@ public class ItemController implements Serializable {
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
+    private List<ItemFeeRow> itemFeeRows;
 
     boolean masterItem;
 
@@ -124,15 +126,64 @@ public class ItemController implements Serializable {
 
     public List<ItemFee> fetchItemFeeList() {
         List<ItemFee> itemFees = new ArrayList<>();
-
         String sql;
-
         sql = "select c from ItemFee c "
                 + " where c.retired=false order by c.name ";
-
-        ////// // System.out.println(sql);
         ItemFeesList = getItemFeeFacade().findByJpql(sql);
         return ItemFeesList;
+    }
+
+    public void fillItemFeeRows() {
+        itemFeeRows = generateItemFeeRows();
+    }
+
+    public List<ItemFeeRow> generateItemFeeRows() {
+        List<Item> items = itemApplicationController.getInvestigationsAndServices();
+        List<ItemFeeRow> itemFeeRows = new ArrayList<>();
+
+        for (Item item : items) {
+            // Check for null values in Institution and Department
+            if (item == null || item.getInstitution() == null || item.getDepartment() == null) {
+                continue;
+            }
+
+            ItemFeeRow row = new ItemFeeRow();
+            row.setItemName(item.getName());
+            row.setItemInstitution(item.getInstitution().getName());
+            row.setItemDepartment(item.getDepartment().getName());
+
+            List<ItemFee> itemFees = fetchItemFeesForItem(item);
+
+            for (ItemFee fee : itemFees) {
+                if (fee == null || fee.getFeeType() == null) {
+                    continue;
+                }
+
+                if (fee.getFeeType() == FeeType.OwnInstitution && row.getHospitalFeeId() == null) {
+                    row.setHospitalFeeId(fee.getId());
+                    row.setHospitalFee(fee.getFee());
+                    row.setHospitalFeeForForeigners(fee.getFfee());
+                    if (fee.getInstitution() != null) {
+                        row.setFeeInstitution(fee.getInstitution().getName());
+                    }
+                } else if (fee.getFeeType() == FeeType.CollectingCentre && row.getCollectingCentreFeeId() == null) {
+                    row.setCollectingCentreFeeId(fee.getId());
+                    row.setCollectingCentreFee(fee.getFee());
+                    row.setCollectingCentreFeeForForeigners(fee.getFfee());
+                }
+            }
+
+            itemFeeRows.add(row);
+        }
+
+        return itemFeeRows;
+    }
+
+    private List<ItemFee> fetchItemFeesForItem(Item item) {
+        String sql = "select c from ItemFee c where c.item.id = :itemId and c.retired=false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", item.getId());
+        return getItemFeeFacade().findByJpql(sql, params);
     }
 
     public String navigateToListAllItems() {
@@ -1931,8 +1982,6 @@ public class ItemController implements Serializable {
     public void setItemlist(List<Item> itemlist) {
         this.itemlist = itemlist;
     }
-    
-    
 
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
@@ -2012,7 +2061,7 @@ public class ItemController implements Serializable {
     public List<Item> fillItemsByDepartment(Department dept) {
         List<Item> deptItems = new ArrayList<>();
         for (Item i : itemApplicationController.getItems()) {
-            if (i.getDepartment()!=null && i.getDepartment().equals(dept)) {
+            if (i.getDepartment() != null && i.getDepartment().equals(dept)) {
                 deptItems.add(i);
             }
         }
@@ -2022,7 +2071,7 @@ public class ItemController implements Serializable {
     public List<Item> fillItemsByInstitution(Institution institution) {
         List<Item> insItems = new ArrayList<>();
         for (Item i : itemApplicationController.getItems()) {
-            if (i.getInstitution()!=null && i.getInstitution().equals(institution)) {
+            if (i.getInstitution() != null && i.getInstitution().equals(institution)) {
                 insItems.add(i);
             }
         }
@@ -2037,7 +2086,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> getInstitutionItems() {
-        if(institutionItems==null){
+        if (institutionItems == null) {
             institutionItems = fillItemsByInstitution(getSessionController().getInstitution());
         }
         return institutionItems;
@@ -2057,6 +2106,14 @@ public class ItemController implements Serializable {
 
     public void setCcInstitutionItems(List<Item> ccInstitutionItems) {
         this.ccInstitutionItems = ccInstitutionItems;
+    }
+
+    public List<ItemFeeRow> getItemFeeRows() {
+        return itemFeeRows;
+    }
+
+    public void setItemFeeRows(List<ItemFeeRow> itemFeeRows) {
+        this.itemFeeRows = itemFeeRows;
     }
 
     @FacesConverter(forClass = Item.class)
