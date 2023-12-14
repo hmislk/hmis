@@ -7,8 +7,9 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-    
+
     <ui:define name="subcontent">
+
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
@@ -21,14 +22,16 @@
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadBean.uploadItemFeesToUpdateFees()}"
+                                         action="#{dataUploadBean.uploadAndUpdateItemFeesForCollectingCentres()}"
                                          ajax="false"/>
 
                     </h:form>
-                    <p>Please use xlsx file format. the xls format is NOT supported.</p>
+
+                    <p>Please use xlsx file format. The xls format is NOT supported.</p>
                     <p>Please use the first row as the header. Do not put any data in the first row. They will be ignored.</p>
-                    <p>We consider only the columns which contain the ID, Fee and Foreigner Fee. All other columsn will be ignored.</p>
+                    <p>We consider only the columns which contain the ID, Fee, and Foreigner Fee. All other columns will be ignored.</p>
                     <p>The columns should match the exact data as described below.</p>
+
                     <table class="table">
                         <thead>
                             <tr>
@@ -40,52 +43,60 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Item Fee ID</td>
-                                <td>Unique ID of the item fees. This is Mandatory. This will be used to select the itemfee and change the values. Required</td>
+                                <td>Hospital Fee ID</td>
+                                <td>Unique ID of the Hospital item fees. This is Mandatory. This will be used to select the item fee and change the values. Required.</td>
                             </tr>
                             <tr>
                                 <td>B</td>
+                                <td>COllecting Centre Item Fee ID</td>
+                                <td>Unique ID of the Hospital item fees. This is Mandatory. This will be used to select the item fee and change the values. Required.</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
                                 <td>Item Name</td>
                                 <td>Ignored.</td>
                             </tr>
                             <tr>
-                                <td>C</td>
-                                <td>Institution</td>
-                                <td>Ignored</td>
-                            </tr>
-                            <tr>
                                 <td>D</td>
-                                <td>Department</td>
-                                <td>Ignored</td>
+                                <td>Collecting Centre Name</td>
+                                <td>Ignored.</td>
                             </tr>
                             <tr>
                                 <td>E</td>
-                                <td>Staff</td>
+                                <td>Institution Name</td>
                                 <td>Ignored.</td>
                             </tr>
                             <tr>
                                 <td>F</td>
-                                <td>Fee Type</td>
-                                <td>Ignored.</td>
+                                <td>Hospital Fee</td>
+                                <td>Required.</td>
                             </tr>
                             <tr>
                                 <td>G</td>
-                                <td>Fee</td>
-                                <td>Required</td>
+                                <td>Collecting Centre Fee</td>
+                                <td>Required.</td>
                             </tr>
                             <tr>
                                 <td>H</td>
-                                <td>Fee for foreigner</td>
-                                <td>Required</td>
+                                <td>Hospital Fee for Foreigners</td>
+                                <td>Required.</td>
+                            </tr>
+                            <tr>
+                                <td>I</td>
+                                <td>Collecting Centre Fee for Foreigners</td>
+                                <td>Required.</td>
                             </tr>
                         </tbody>
                     </table>
+
+
+
                 </div>
             </div>
         </div>
 
         <p:poll update="tblExport" interval="30"></p:poll>
-       
+
 
         <p:dataTable  value="#{dataUploadBean.itemFees}"
                       id="tblExport"
