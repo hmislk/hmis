@@ -66,7 +66,8 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Clear" 
-                                icon="fas fa-broom"
+                                icon="fa-solid fa-eraser"
+                                class="ui-button-warning"
                                 action="#{bhtSummeryController.clear}"  />
 
                             <p:commandButton 
@@ -80,21 +81,21 @@
                                 ajax="false"   
                                 value="Print Bill" 
                                 icon="fas fa-print"
-                                class="ui-button-help"
+                                class="ui-button-info"
                                 action="#{bhtSummeryController.toPrintItrim()}"  />
 
                             <div class="d-flex justify-content-end mx-4" >
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-search"
-                                    class="ui-button-plain" 
+                                    class="ui-button-warning" 
                                     action="#{patientController.navigateToSearchPatients()}" 
                                     />
 
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-user"
-                                    class="ui-button-plain  mx-1" 
+                                    class="ui-button-warning  mx-1" 
                                     action="#{patientController.navigateToOpdPatientProfile()}" 
                                     />
 
@@ -194,13 +195,13 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Discharge" 
-                                                class="mx-1 ui-button-info"
+                                                class="mx-1 ui-button-success"
                                                 action="#{bhtSummeryController.discharge}"  />
 
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Discharge Cancel" 
-                                                class="mx-1 ui-button-warning"
+                                                class=" ui-button-warning"
                                                 action="#{bhtSummeryController.dischargeCancel}"  />
                                         </div>
                                     </p:panel>
