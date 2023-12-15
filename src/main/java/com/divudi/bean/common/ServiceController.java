@@ -108,6 +108,7 @@ public class ServiceController implements Serializable {
     private Department department;
     private Category category;
     private InwardChargeType inwardChargeType;
+    private String genaratedServiceCode;
 
     public List<Service> getItemsToRemove() {
         return itemsToRemove;
@@ -427,14 +428,82 @@ public class ServiceController implements Serializable {
         return code;
     }
 
-    public String genarateServiceCode() {
-        String serviceCode = null;
-        Random random = new Random();
-        int randomNumber = random.nextInt(9000) + 1000;
-        serviceCode = Integer.toString(randomNumber);
-        System.out.println("Service Code : " + serviceCode);
-        getCurrent().setCode(serviceCode);
-        return serviceCode;
+    public void genarateItemCode(List<Service> temp) {
+        Integer max = 0;
+        String itemPatternString = returnPatternForItemCode();
+        if (temp != null && !temp.isEmpty() && temp.size()!=0) {
+            for (Service service : temp) {
+                Integer itemCodeNumber = returnNumberForItemCode(service.getCode());
+                if (itemCodeNumber > max) {
+                    max = itemCodeNumber;
+                }
+            }
+        }
+        String ItemCode = itemPatternString + "" + (String.valueOf(max + 1));
+        setGenaratedServiceCode(ItemCode);
+
+    }
+
+    public Integer returnNumberForItemCode(String itemCode) {
+        Integer code = 0;
+        String[] parts = itemCode.split("\\D+");
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                return Integer.valueOf(part);
+            }
+        }
+        return code++;
+    }
+
+    public String returnPatternForItemCode() {
+        String pattern = "";
+        String ins = current.getInstitution().getName();
+        String dep = current.getDepartment().getName();
+        String charge = current.getInwardChargeType().getLabel();
+        String insPat = "";
+        String depPat = "";
+        String chagPat = "";
+
+        System.out.println("ins : " + ins);
+        System.out.println("dep : " + dep);
+        System.out.println("charge : " + charge);
+
+        if (ins != null) {
+            insPat = ins.substring(0, 3);
+        }
+
+        if (dep != null) {
+            depPat = dep.substring(0, 3);
+
+        }
+
+        if (charge != null) {
+            chagPat = charge.substring(0, 3);
+        }
+        pattern = insPat.toUpperCase() + "/" + depPat.toUpperCase() + "/" + chagPat.toUpperCase() + "/";
+        return pattern;
+    }
+
+    public void getItemsCategoryBased() {
+        List<Service> temp;
+        HashMap hash = new HashMap();
+        String sql = "select c from Service c "
+                + "where c.retired = false "
+                + "and c.category = :sCat "
+                + "order by c.id desc";
+
+        hash.put("sCat", getCurrent().getCategory());
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP, 10);
+        genarateItemCode(temp);
+
+    }
+
+    public void setServiceCode() {
+        getItemsCategoryBased();
+        String serviceCode = genaratedServiceCode;
+        if (serviceCode != null) {
+            getCurrent().setCode(serviceCode);
+        }
     }
 
     public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
@@ -449,7 +518,6 @@ public class ServiceController implements Serializable {
         hash.put("id", getCurrent().getId());
         temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
         if (temp.size() != 0) {
-            System.out.println("list is full");
             return false;
         }
         return true;
@@ -457,7 +525,6 @@ public class ServiceController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getDepartment() == null) {
             UtilityController.addErrorMessage("Please Select Department");
             return;
@@ -478,7 +545,7 @@ public class ServiceController implements Serializable {
         }
 
         if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
-            getCurrent().setCode(genarateServiceCode());
+            setServiceCode();
         }
 
 //        if (errorCheck()) {
@@ -514,7 +581,7 @@ public class ServiceController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
-            if (!checkServiceCodeDuplicate(getCurrent().getCode()) ) {
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
                 UtilityController.addErrorMessage("Service code is alredy used");
                 return;
             } else {
@@ -530,8 +597,10 @@ public class ServiceController implements Serializable {
                 getCurrent().setReportedAs(getCurrent());
             }
 
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            if (checkServiceCodeDuplicate(genaratedServiceCode)) {
+                getFacade().edit(getCurrent());
+                UtilityController.addSuccessMessage("Saved Successfully");
+            }
 
         }
         recreateModel();
@@ -555,7 +624,7 @@ public class ServiceController implements Serializable {
                 service.setPrintName(service.getName());
             }
             if (service.getCode() == null || service.getCode().isEmpty()) {
-                service.setCode(genarateServiceCode());
+                service.setCode(genaratedServiceCode);
             }
         }
 
@@ -601,7 +670,7 @@ public class ServiceController implements Serializable {
                 service.setReportedAs(service);
             }
 
-            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+            if (!checkServiceCodeDuplicate(genaratedServiceCode)) {
                 UtilityController.addErrorMessage("Service code is alredy used");
                 return;
             } else {
@@ -1069,6 +1138,14 @@ public class ServiceController implements Serializable {
 
     public void setInwardChargeType(InwardChargeType inwardChargeType) {
         this.inwardChargeType = inwardChargeType;
+    }
+
+    public String getGenaratedServiceCode() {
+        return genaratedServiceCode;
+    }
+
+    public void setGenaratedServiceCode(String genaratedServiceCode) {
+        this.genaratedServiceCode = genaratedServiceCode;
     }
 
     /**
