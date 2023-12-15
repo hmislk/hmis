@@ -8,22 +8,26 @@
                 xmlns:p="http://primefaces.org/ui"
                 >
 
-
     <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form id="form">
-                <p:panelGrid columns="2" >
-                    <p:commandButton value="Convert"
-                                     ajax="false"
-                                     action="#{patientController.convertOldPersonPhoneToPatientPhoneLong()}">                                     </p:commandButton>
-                </p:panelGrid>
-
+                <p:panel class="m-1 ">
+                    <f:facet name="header">
+                        <h:outputLabel value="Convert Phone Number"/>
+                    </f:facet>
+                    <div class="d-flex justify-content-end mb-2">
+                        <div >
+                            <p:commandButton 
+                                value="Convert"
+                                ajax="false"
+                                action="#{patientController.convertOldPersonPhoneToPatientPhoneLong()}"> 
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </p:panel>
 
             </h:form>
-
         </h:panelGroup>
-
     </ui:define>
-
 </ui:composition>
