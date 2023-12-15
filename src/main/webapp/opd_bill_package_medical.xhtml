@@ -34,7 +34,9 @@
                                         <h:panelGrid columns="1" >
 
                                             <h:panelGroup id="panelIxx" class="w-100">
-                                                <common:patient_details patient="#{billPackageMedicalController.searchedPatient}"/>
+                                                <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{billPackageMedicalController}"/>
                                             </h:panelGroup>
 
 
