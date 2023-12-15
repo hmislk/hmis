@@ -23,7 +23,6 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeController;
 import com.divudi.bean.common.ItemFeeManager;
@@ -144,10 +143,8 @@ public class DataUploadBean implements Serializable {
     @Inject
     ItemFeeController itemFeeController;
     @Inject
-    ItemApplicationController itemApplicationController;
-    @Inject
     CollectingCentreController CollectingCentreController;
-    
+
     @EJB
     PatientFacade patientFacade;
     @EJB
@@ -206,7 +203,7 @@ public class DataUploadBean implements Serializable {
         List<Patient> patients;
 
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
 
                 for (Patient p : patients) {
@@ -223,7 +220,7 @@ public class DataUploadBean implements Serializable {
 
     public void uploadVisits() {
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -234,7 +231,7 @@ public class DataUploadBean implements Serializable {
     public void uploadVtms() {
         List<Vtm> vtms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vtms = readVtmsFromExcel(inputStream);
                 for (Vtm v : vtms) {
                     vtmController.findAndSaveVtmByNameAndCode(v);
@@ -248,7 +245,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAtms() {
         List<Atm> atms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
                     atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
@@ -262,7 +259,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAmps() {
         List<Amp> amps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -273,14 +270,14 @@ public class DataUploadBean implements Serializable {
     public void uploadItems() {
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 items = readItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     private List<CollectingCentre> collectingCentres;
 
     public void uploadCollectingCentres() {
@@ -388,144 +385,14 @@ public class DataUploadBean implements Serializable {
 
         return collectingCentresList;
     }
-    
 
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-        }
-        itemApplicationController.reloadItems();
-    }
-
-    private List<ItemFee> replaceItemFeesFromExcel(InputStream inputStream) throws IOException {
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-
-        itemFees = new ArrayList<>();
-        ItemFee itemFee;
-
-//        // Assuming the first row contains headers, skip it
-//        if (rowIterator.hasNext()) {
-//            rowIterator.next();
-//        }
-        while (rowIterator.hasNext()) {
-            Row row = rowIterator.next();
-
-            itemFee = null;
-            Long itemFeeId = null;
-            Double feeValue = null;
-            Double foreignerFeeValue = null;
-
-            Cell itemFeeIdCell = row.getCell(0);
-            if (itemFeeIdCell != null && itemFeeIdCell.getCellType() == CellType.NUMERIC) {
-                double numericValue = itemFeeIdCell.getNumericCellValue();
-                if (numericValue % 1 == 0) {
-                    itemFeeId = (long) numericValue;
-                } else {
-                    continue;
-                }
-            } else {
-                continue;
-            }
-
-            itemFee = itemFeeController.findItemFeeFromItemFeeId(itemFeeId);
-
-            if (itemFee == null) {
-                continue;
-            }
-
-            Cell feeCell = row.getCell(6);
-            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
-                feeValue = feeCell.getNumericCellValue();
-            }
-
-            if (feeValue == null) {
-                continue;
-            }
-
-            Cell ffeeCell = row.getCell(7);
-            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
-                foreignerFeeValue = ffeeCell.getNumericCellValue();
-            }
-
-            if (foreignerFeeValue == null) {
-                foreignerFeeValue = feeValue;
-            }
-
-            itemFee.setFee(feeValue);
-            itemFee.setFfee(foreignerFeeValue);
-
-            itemFeeManager.saveItemFee(itemFee);
-
-            itemFees.add(itemFee);
-        }
-
-        return itemFees;
-    }
-
-    public void uploadAndUpdateItemFeesForCollectingCentres() {
-        if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
-                updateCollectingCentreItemFeesFromExcel(inputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-                // Handle exceptions (e.g., add error message to the user interface)
-            }
-        }
-    }
-
-    private void updateCollectingCentreItemFeesFromExcel(InputStream inputStream) throws IOException {
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-
-        while (rowIterator.hasNext()) {
-            Row row = rowIterator.next();
-
-            // Skip header row or empty rows as needed
-            if (row.getRowNum() == 0 /* Header row */) {
-                continue;
-            }
-
-            Long hospitalFeeId = getNumericCellValue(row.getCell(0));
-            Long collectingCentreFeeId = getNumericCellValue(row.getCell(1));
-            Double hospitalFee = getDoubleCellValue(row.getCell(6));
-            Double collectingCentreFee = getDoubleCellValue(row.getCell(7));
-            Double hospitalFeeForForeigners = getDoubleCellValue(row.getCell(8));
-            Double collectingCentreFeeForForeigners = getDoubleCellValue(row.getCell(9));
-
-            updateItemFee(hospitalFeeId, hospitalFee, hospitalFeeForForeigners);
-            updateItemFee(collectingCentreFeeId, collectingCentreFee, collectingCentreFeeForForeigners);
-        }
-    }
-
-    private Long getNumericCellValue(Cell cell) {
-        if (cell != null && cell.getCellType() == CellType.NUMERIC) {
-            return (long) cell.getNumericCellValue();
-        }
-        return null;
-    }
-
-    private Double getDoubleCellValue(Cell cell) {
-        if (cell != null && cell.getCellType() == CellType.NUMERIC) {
-            return cell.getNumericCellValue();
-        }
-        return null;
-    }
-
-    private void updateItemFee(Long itemFeeId, Double fee, Double foreignerFee) {
-        if (itemFeeId != null) {
-            ItemFee itemFee = itemFeeController.findItemFeeFromItemFeeId(itemFeeId);
-            if (itemFee != null) {
-                itemFee.setFee(fee != null ? fee : itemFee.getFee());
-                itemFee.setFfee(foreignerFee != null ? foreignerFee : itemFee.getFfee());
-                itemFeeManager.saveItemFee(itemFee);
             }
         }
     }
@@ -533,7 +400,7 @@ public class DataUploadBean implements Serializable {
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -547,8 +414,10 @@ public class DataUploadBean implements Serializable {
             try {
                 InputStream inputStream = file.getInputStream();
                 readDiagnosesFromExcel(inputStream);
+
             } catch (IOException ex) {
-                Logger.getLogger(DataUploadBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DataUploadBean.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -557,7 +426,7 @@ public class DataUploadBean implements Serializable {
         outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -966,7 +835,7 @@ public class DataUploadBean implements Serializable {
             String departmentName = null;
             String inwardName = null;
 
-            String itemType = "Investigation";
+            String itemType = "Service";
             Double hospitalFee = 0.0;
             Double collectingCentreFee = 0.0;
 
@@ -980,9 +849,7 @@ public class DataUploadBean implements Serializable {
             }
 
             Item masterItem = itemController.findMasterItemByName(name);
-            System.out.println("name = " + name);
-            System.out.println("masterItem = " + masterItem);
-            
+
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
                 printingName = printingNameCell.getStringCellValue();
@@ -1016,28 +883,22 @@ public class DataUploadBean implements Serializable {
                 continue;
             }
             cat = categoryController.findAndCreateCategoryByName(categoryName);
-            System.out.println("categoryName = " + categoryName);
-            System.out.println("cat = " + cat);
 
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
-            System.out.println("institutionName = " + institutionName);
             if (institutionName != null && !institutionName.trim().equals("")) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
             }
-            System.out.println("institution = " + institution);
 
             Cell deptCell = row.getCell(6);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
             }
-            System.out.println("departmentName = " + departmentName);
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
-            System.out.println("department = " + department);
 
             Cell inwardCcCell = row.getCell(7);
             if (inwardCcCell != null && inwardCcCell.getCellType() == CellType.STRING) {
@@ -1054,12 +915,9 @@ public class DataUploadBean implements Serializable {
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemType = itemTypeCell.getStringCellValue();
             }
-            System.out.println("itemType = " + itemType);
             if (itemType == null || itemType.trim().equals("")) {
                 itemType = "Investigation";
             }
-            System.out.println("itemType = " + itemType);
-            
             if (itemType.equals("Service")) {
                 if (masterItem == null) {
                     masterItem = new Service();
@@ -1159,6 +1017,73 @@ public class DataUploadBean implements Serializable {
         }
 
         return items;
+    }
+
+    private List<ItemFee> replaceItemFeesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemFees = new ArrayList<>();
+        ItemFee itemFee;
+
+//        // Assuming the first row contains headers, skip it
+//        if (rowIterator.hasNext()) {
+//            rowIterator.next();
+//        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            itemFee = null;
+            Long itemFeeId = null;
+            Double feeValue = null;
+            Double foreignerFeeValue = null;
+
+            Cell itemFeeIdCell = row.getCell(0);
+            if (itemFeeIdCell != null && itemFeeIdCell.getCellType() == CellType.NUMERIC) {
+                double numericValue = itemFeeIdCell.getNumericCellValue();
+                if (numericValue % 1 == 0) {
+                    itemFeeId = (long) numericValue;
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            itemFee = itemFeeController.findItemFeeFromItemFeeId(itemFeeId);
+
+            if (itemFee == null) {
+                continue;
+            }
+
+            Cell feeCell = row.getCell(6);
+            if (feeCell != null && feeCell.getCellType() == CellType.NUMERIC) {
+                feeValue = feeCell.getNumericCellValue();
+            }
+
+            if (feeValue == null) {
+                continue;
+            }
+
+            Cell ffeeCell = row.getCell(7);
+            if (ffeeCell != null && ffeeCell.getCellType() == CellType.NUMERIC) {
+                foreignerFeeValue = ffeeCell.getNumericCellValue();
+            }
+
+            if (foreignerFeeValue == null) {
+                foreignerFeeValue = feeValue;
+            }
+
+            itemFee.setFee(feeValue);
+            itemFee.setFfee(foreignerFeeValue);
+
+            itemFeeManager.saveItemFee(itemFee);
+
+            itemFees.add(itemFee);
+        }
+
+        return itemFees;
     }
 
     private List<Investigation> readInvestigationsFromExcel(InputStream inputStream) throws IOException {
@@ -1638,14 +1563,14 @@ public class DataUploadBean implements Serializable {
                 .build();
     }
 
-    public StreamedContent getTemplateForCollectingCentresUpload() {
+    public StreamedContent getTemplateForCollectingCentreUpload() {
         try {
             createTemplateForCollectingCentreUpload();
         } catch (IOException e) {
             // Handle IOException
         }
         return templateForCollectingCentreUpload;
-    }
+    }  
 
     public void createTemplateForCollectingCentreUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -1680,7 +1605,7 @@ public class DataUploadBean implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public String getOutputString() {
         return outputString;
     }
@@ -1706,4 +1631,5 @@ public class DataUploadBean implements Serializable {
     }
 
     
+
 }
