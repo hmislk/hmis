@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -60,7 +60,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class AdmissionController implements Serializable {
+public class AdmissionController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -71,6 +71,8 @@ public class AdmissionController implements Serializable {
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
     @Inject
     RoomChangeController roomChangeController;
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -104,7 +106,7 @@ public class AdmissionController implements Serializable {
     private String bhtText = "";
     private String patientTabId = "tabNewPt";
     private int patientSearchTab;
-    private Patient newPatient;
+    private Patient patient;
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
@@ -140,9 +142,34 @@ public class AdmissionController implements Serializable {
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
     }
+    
+    public String navigateToInpatientClinicalData() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
+    public String navigateToInpatientDrugChart() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToDrugChart();
+    }
+    
+    public String navigateToInpatientInvestigations() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToInvestigations();
+    }
+    
+    public String navigateToInpatientImages() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToImages();
+    }
 
+    public String navigateToInpatientDiagnosisCard() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -642,7 +669,7 @@ public class AdmissionController implements Serializable {
 
     public String navigateToAdmitFromMenu() {
         prepereToAdmitNewPatient();
-        getCurrent().setPatient(getNewPatient());
+        getCurrent().setPatient(getPatient());
         return "/inward/inward_admission";
     }
 
@@ -657,7 +684,7 @@ public class AdmissionController implements Serializable {
         patientSearchTab = 0;
         selectText = "";
         selectedItems = null;
-        newPatient = null;
+        patient = null;
         yearMonthDay = null;
         printPreview = false;
         bhtNumberCalculation();
@@ -673,7 +700,7 @@ public class AdmissionController implements Serializable {
         patientSearchTab = 1;
         selectText = "";
         selectedItems = null;
-        newPatient = null;
+        patient = null;
         yearMonthDay = null;
         printPreview = false;
         bhtNumberCalculation();
@@ -692,8 +719,8 @@ public class AdmissionController implements Serializable {
     }
 
     private void savePatient() {
-        Person person = getNewPatient().getPerson();
-        getNewPatient().setPerson(null);
+        Person person = getPatient().getPerson();
+        getPatient().setPerson(null);
 
         if (person != null) {
             person.setCreatedAt(Calendar.getInstance().getTime());
@@ -707,17 +734,17 @@ public class AdmissionController implements Serializable {
 
         }
 
-        getNewPatient().setCreatedAt(Calendar.getInstance().getTime());
-        getNewPatient().setCreater(getSessionController().getLoggedUser());
+        getPatient().setCreatedAt(Calendar.getInstance().getTime());
+        getPatient().setCreater(getSessionController().getLoggedUser());
 
-        if (getNewPatient().getId() == null) {
-            getPatientFacade().create(getNewPatient());
+        if (getPatient().getId() == null) {
+            getPatientFacade().create(getPatient());
         } else {
-            getPatientFacade().edit(getNewPatient());
+            getPatientFacade().edit(getPatient());
         }
 
-        getNewPatient().setPerson(person);
-        getPatientFacade().edit(getNewPatient());
+        getPatient().setPerson(person);
+        getPatientFacade().edit(getPatient());
     }
 
     private void saveGuardian() {
@@ -1047,13 +1074,13 @@ public class AdmissionController implements Serializable {
     }
 
     public String getAgeText() {
-        ageText = getNewPatient().getAge();
+        ageText = getPatient().getAge();
         return ageText;
     }
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -1112,17 +1139,22 @@ public class AdmissionController implements Serializable {
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            Person p = new Person();
-            newPatient = new Patient();
-            newPatient.setPerson(p);
+    @Override
+    public Patient getPatient() {
+        if(current!=null){
+            patient = getCurrent().getPatient();
         }
-        return newPatient;
+        if (patient == null) {
+            Person p = new Person();
+            patient = new Patient();
+            patient.setPerson(p);
+        }
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public YearMonthDay getYearMonthDay() {

@@ -54,6 +54,8 @@ public class UploadController implements Serializable {
        return "/webcontent/uploads";
    }
     
+    
+    
     public String toViewUpload(){
         if(selected==null){
             JsfUtil.addErrorMessage("Nothing");

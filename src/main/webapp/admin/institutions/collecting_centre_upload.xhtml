@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+
+        <h:form >
+
+
+        </h:form>
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    <h2>Upload Collecting Centres</h2>
+                </div>
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadBean.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         action="#{dataUploadBean.uploadCollectingCentres()}"
+                                         ajax="false"/>
+                        <p:commandButton value="Download Template" 
+                                         ajax="false" 
+                                         onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                         icon="ui-icon-arrowthick-1-s">
+                            <p:fileDownload value="#{dataUploadBean.templateForCollectingCentresUpload}" />
+                        </p:commandButton>
+
+                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                        </p:dialog>
+                        <script type="text/javascript">
+                            function start() {
+                                PF('statusDialog').show();
+                            }
+
+                            function stop() {
+                                PF('statusDialog').hide();
+                            }
+                        </script>
+
+                    </h:form>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Code</td>
+                                <td>Code. Required</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Agent Name</td>
+                                <td>Agent Name. Required</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Active</td>
+                                <td>True or False</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>With Commission Status</td>
+                                <td>True or False</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Route Name</td>
+                                <td>Route Name. Required</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Percentage</td>
+                                <td>Percentage. Optional</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Available in Price List</td>
+                                <td>Available in Price List. Optional</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <p:poll update="tbl"></p:poll>
+
+        <p:dataTable id="tbl" value="#{dataUploadBean.items}" var="item" >
+            <p:column >
+                #{item.name}
+            </p:column>
+            <p:column >
+                #{item.total}
+            </p:column>
+
+        </p:dataTable>
+
+
+
+    </ui:define>
+</ui:composition>
