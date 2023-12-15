@@ -280,10 +280,10 @@
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <div class="row my-1"  >
-                                        <div class="col-6" >
+                                        <div class="col-5" >
                                             <p:selectOneMenu   
                                                 id="pay" 
-                                                style="max-width: 100%;"
+                                                class="w-100"
                                                 value="#{opdBillController.paymentMethod}"
                                                 >     
                                                 <f:selectItems 
@@ -297,7 +297,47 @@
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
                                         </div>
-                                        <div class="col-6" >
+                                        <div class="col-7 " >
+                                            <h:panelGrid columns="3" class="m-1 w-100">
+
+                                                    <p:commandButton  
+                                                        value="Settle"
+                                                        style="float: right;"
+                                                        ajax="false"
+                                                        icon="fa fa-check"              
+                                                        action="#{opdPreBillController.settleBill}" 
+                                                        class="ui-button-success mx-2 w-100"
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        style="float: right;"
+                                                        value="Lookup" 
+                                                        ajax="false"
+                                                        icon="fa fa-search"
+                                                        class="ui-button-warning mx-1 w-100" 
+                                                        action="#{patientController.navigateToSearchPatients()}" 
+                                                        >
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        style="float: right;"
+                                                        value="Profile" 
+                                                        ajax="false"
+                                                        icon="fa fa-user"
+                                                        class="ui-button-warning w-100" 
+                                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                        >
+                                                        <f:setPropertyActionListener 
+                                                            value="#{opdPreBillController.patient}" 
+                                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </h:panelGrid>
+                                            
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row my-1 mt-1" >
+                                        <div class="col-md-4" >
                                             <p:selectOneMenu   
                                                 id="cmbPs" 
                                                 value="#{opdBillController.paymentScheme}"
@@ -312,20 +352,20 @@
                                                         event="change" 
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
+                                            
                                         </div>
 
-                                    </div>
-
-                                    <div class="row my-1 mt-2" >
-                                        <div class="col-md-8" >
-                                            <p:inputText 
+                                        
+                                        <div class="row mt-1">
+                                            <div class="col-8" >
+                                                <p:inputText 
                                                 value="#{opdBillController.comment}" 
                                                 placeholder="Comments"
                                                 class="w-100"         
                                                 id="comment"/>
-                                        </div>
-
-                                        <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" >
+                                            </div>
+                                            
+                                            <h:panelGroup id="gpLocalForeign" layout="block"  class="col-md-4" >
                                             <p:commandButton value="Mark Foreigner" 
                                                              class="mx-1"
                                                              action="#{opdBillController.markAsForeigner}" 
@@ -346,43 +386,7 @@
                                                                                                              action="opd_bill_print_last" >
                                                                                             </p:commandButton>-->
                                         </h:panelGroup>
-                                        <div class="row mt-2">
-                                            <div class="col-12" >
-                                                <h:panelGrid columns="3" >
-
-                                                    <p:commandButton  
-                                                        value="Settle"
-                                                        style="float: right;"
-                                                        ajax="false"
-                                                        icon="fa fa-check"              
-                                                        action="#{opdPreBillController.settleBill}" 
-                                                        class="ui-button-success mx-1"
-                                                        >
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        style="float: right;"
-                                                        value="Lookup" 
-                                                        ajax="false"
-                                                        icon="fa fa-search"
-                                                        class="ui-button-warning mx-1" 
-                                                        action="#{patientController.navigateToSearchPatients()}" 
-                                                        >
-                                                    </p:commandButton>
-                                                    <p:commandButton 
-                                                        style="float: right;"
-                                                        value="Profile" 
-                                                        ajax="false"
-                                                        icon="fa fa-user"
-                                                        class="ui-button-warning mx-1" 
-                                                        action="#{patientController.navigateToOpdPatientProfile()}" 
-                                                        >
-                                                        <f:setPropertyActionListener 
-                                                            value="#{opdBillController.patient}" 
-                                                            target="#{patientController.current}" ></f:setPropertyActionListener>
-                                                    </p:commandButton>
-                                                </h:panelGrid>
-                                            </div>
-
+                                            
                                         </div>
 
 

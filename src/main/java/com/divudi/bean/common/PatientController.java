@@ -716,7 +716,7 @@ public class PatientController implements Serializable {
             return "";
         }
         billPackageMedicalController.clearBillValues();
-        billPackageMedicalController.setSearchedPatient(getCurrent());
+        billPackageMedicalController.setPatient(getCurrent());
 //        appointmentController.prepereForInwardAppointPatient();
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
