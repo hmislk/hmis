@@ -65,6 +65,10 @@ public class ItemFeeManager implements Serializable {
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
+    
+    public String navigateToCollectingCentreItemFeeList() {
+        return "/admin/pricing/item_fee_list_collecting_centre?faces-redirect=true";
+    }
 
     public String navigateToCorrectItemFees() {
         return "/dataAdmin/bulk_update_itemsFees?faces-redirect=true";
@@ -72,6 +76,10 @@ public class ItemFeeManager implements Serializable {
 
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
+    }
+    
+    public String navigateToUploadCollectingCentreItemFees() {
+        return "/admin/pricing/item_fee_upload_collecting_centre?faces-redirect=true";
     }
 
     public String navigateItemViseFeeList() {
