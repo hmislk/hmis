@@ -58,25 +58,24 @@
                                              class="ui-button-warning" 
                                              style="float: right;" 
                                              actionListener="#{cashierReportController.calCashierDataCashier()}" />  
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Print" 
-                                icon="fa-solid fa-print"
-                                class="ui-button-info mx-2"
-                                style="float: right;" >
-                                <p:printer target="reportPrint" />
-                            </p:commandButton>  
-
+                            
                             <p:commandButton 
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fa-solid fa-file-excel"
-                                class="ui-button-success"
+                                class="ui-button-success mx-2"
                                 style="float: right;">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery" />
                             </p:commandButton>  
 
-
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info "
+                                style="float: right;" >
+                                <p:printer target="reportPrint" />
+                            </p:commandButton>  
 
                         </h:panelGrid>
 

@@ -46,18 +46,37 @@
                     </div>
 
                     <h:panelGrid columns="4" class="my-2" >
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                         style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
+                        <p:commandButton 
+                            id="btnRefresh" 
+                            ajax="false" 
+                            value="Refresh"
+                            icon="fa-solid fa-arrows-rotate"
+                            class="ui-button-warning" 
+                            style="float: right;" 
+                            actionListener="#{commonReport.createCashierTableByUser()}" />
                         <p:defaultCommand target="btnRefresh"/>
-
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" class="mx-2" >
-                            <p:printer target="reportPrint"  />
-                        </p:commandButton>
-
-                        <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        
+                        <p:commandButton 
+                            actionListener="#{commonReport.createCashierTableByUser()}" 
+                            ajax="false" 
+                            value="Excel" 
+                            icon="fa-solid fa-file-excel"
+                            class="ui-button-success mx-2" 
+                            style="float: right;" >
                             <p:dataExporter type="xlsx" target="billed:billed,cancelled:cancelled,refund:refund,billedPh:billedPh,
                                             cancelledPh:cancelledPh,refundPh:refundPh,payment:payment,paymentCancel:paymentCancel," fileName="Cashier_Detailed_Report"  />
                         </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print" 
+                            style="float: right;" 
+                            icon="fa-solid fa-print"
+                            class="ui-button-info " >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+
+
 
                     </h:panelGrid>
 
