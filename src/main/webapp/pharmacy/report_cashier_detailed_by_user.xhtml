@@ -31,30 +31,47 @@
                             </p:calendar>
                         </div>
                         <div class="col-md-4">
-                               
-                                    <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;
-                                    <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                                     forceSelection="true"
-                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                                     value="#{channelReportController.webUser}"></p:autoComplete>
 
-                            </div>
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                             forceSelection="true"
+                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                             value="#{channelReportController.webUser}"></p:autoComplete>
+
+                        </div>
                     </div>
-                        
-                   
-                    <div class="row">
+
+
+                    <div class="row my-2">
                         <div class="col-md-12">
 
-                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" />
+                            <p:commandButton 
+                                id="btnRefresh" 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fa-solid fa-arrows-rotate"
+                                class="ui-button-warning" 
+                                action="#{channelReportController.createChannelCashierBillList}" />
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton ml-2 mb-2 w-10" class="mx-2" >
+                            <p:commandButton 
+                                actionListener="#{channelReportController.createChannelCashierBillList}" 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fa-solid fa-file-excel"
+                                class="mx-2 ui-button-success" >
+                                <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info w-10" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton ml-2 mb-2 "  >
-                                <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton> 
+
                         </div>
                     </div>
 
@@ -479,7 +496,7 @@
                             <br/>
                             <h:outputLabel value="............................"/>
                         </h:panelGrid>
-                        
+
                     </p:panel>
 
                 </p:panel>
