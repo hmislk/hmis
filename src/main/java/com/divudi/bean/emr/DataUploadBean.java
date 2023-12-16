@@ -156,6 +156,7 @@ public class DataUploadBean implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private List<CollectingCentre> collectingCentres;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
 
@@ -278,7 +279,7 @@ public class DataUploadBean implements Serializable {
         }
     }
 
-    private List<CollectingCentre> collectingCentres;
+    
 
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
@@ -1628,6 +1629,14 @@ public class DataUploadBean implements Serializable {
 
     public void setItemFees(List<ItemFee> itemFees) {
         this.itemFees = itemFees;
+    }
+
+    public List<CollectingCentre> getCollectingCentres() {
+        return collectingCentres;
+    }
+
+    public void setCollectingCentres(List<CollectingCentre> collectingCentres) {
+        this.collectingCentres = collectingCentres;
     }
 
     
