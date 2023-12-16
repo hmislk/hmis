@@ -9,7 +9,7 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
+            <p:panel  styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
                 <div class="row">
                     <div class="col-md-5">
                         <h:outputLabel value="From Date"/>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -39,7 +39,7 @@
                 </div>
 
                 <p:spacer height="10"></p:spacer>
-                <h:panelGrid columns="3">
+                <h:panelGrid columns="3" class="mb-2">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDateDetail()}"/>
                     <p:commandButton actionListener="#{pharmacySaleReport.createSaleReportByDateDetail()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <p:dataExporter  type="xlsx" target="sum1,sum2,sum3" fileName="report_grn_detail_by_supplier"  />
@@ -50,7 +50,8 @@
                 </h:panelGrid>
 
 
-                <p:dataTable id="sum1" 
+                <p:panel id="panelPrint">
+                    <p:dataTable id="sum1" 
                              value="#{pharmacySaleReport.billedDetail.datedBills}" 
                              var="i" >
                     <f:facet name="header">  
@@ -534,6 +535,9 @@
                     <h:outputLabel value="#{pharmacySaleReport.grantNetTotal}"/>
 
                 </h:panelGrid>
+                </p:panel>
+                
+                
 
             </p:panel>         
 
