@@ -58,10 +58,10 @@
                             styleClass="btn-sm mx-1"/>
                         <p:commandButton 
                             id="btnAddNewPatient"
-                            icon="fa fa-search" 
+                            icon="fa fa-plus-circle" 
                             title="Add New Patient"
-                            action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
-                            process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                            action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                            process="btnAddNewPatient"
                             update="ptImp selectPatient editPatient viewPatient"
                             styleClass="btn-sm mx-1"/>
                     </h:panelGroup>

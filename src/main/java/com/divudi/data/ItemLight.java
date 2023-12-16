@@ -11,7 +11,6 @@ import com.divudi.entity.Item;
  * @author buddhika
  */
 public class ItemLight {
-
     Long id;
     int orderNo;
     private boolean isMasterItem;

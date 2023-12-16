@@ -1336,6 +1336,11 @@ public class PatientController implements Serializable {
         }
     }
 
+    public void quickSearchNewPatient(ControllerWithPatient controller) {
+        quickSearchPatientList = null;
+        controller.setPatient(new Patient());
+    }
+
     public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {
         if (controller == null) {
             JsfUtil.addErrorMessage("Programming Error. Controller is null.");

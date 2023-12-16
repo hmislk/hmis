@@ -1,13 +1,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ItemLight;
-import com.divudi.entity.Item;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.ItemFacade;
-import com.divudi.light.common.BillLight;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,13 +76,7 @@ public class ItemApplicationController {
         reloaded = null;
     }
 
-    private List<ItemLight> fillItems(Class cls) {
-        return getItems();
-    }
-
-    private List<ItemLight> fillItems(Collection<Class> classes) {
-        return getItems();
-    }
+    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Other">
@@ -104,21 +95,21 @@ public class ItemApplicationController {
 
     public List<ItemLight> getInvestigations() {
         if (investigations == null) {
-            investigations = fillItems(Investigation.class);
+            investigations = fillInvestigations();
         }
         return investigations;
     }
 
     public List<ItemLight> getServices() {
         if (services == null) {
-            services = fillItems(Service.class);
+            services = fillServices();
         }
         return services;
     }
 
     public List<ItemLight> getPackages() {
         if (packages == null) {
-            packages = fillItems(Packege.class);
+            packages = fillPackages();
         }
         return packages;
     }
@@ -126,9 +117,79 @@ public class ItemApplicationController {
     // </editor-fold>
     public List<ItemLight> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
-            investigationsAndServices = fillItems(Arrays.asList(Investigation.class, Service.class));
+            investigationsAndServices = fillAllItems();
         }
         return investigationsAndServices;
+    }
+
+    private List<ItemLight> fillPackages() {
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret AND TYPE(i) = Packege "
+                + "ORDER BY i.name";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return lst;
+    }
+
+    private List<ItemLight> fillInvestigations() {
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret AND TYPE(i) = Investigation "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return lst;
+    }
+
+    private List<ItemLight> fillServices() {
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret AND TYPE(i) = Service "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return lst;
     }
 
 }
