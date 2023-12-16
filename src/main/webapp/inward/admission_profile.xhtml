@@ -221,7 +221,7 @@
                         <p:panel header="Clinical Data">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    value="Patient Clinical Data"
+                                    value="Patient Clinical Data - Patient History"
                                     action="#{patientController.toEmrPatientProfile}"
                                     ajax="false"
                                     styleClass="mb-2 w-100">
@@ -230,7 +230,7 @@
                                         target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Clinical Dashboard" 
+                                    value="Clinical Dashboard - This Admissions Clinical Details" 
                                     action="#{admissionController.navigateToInpatientClinicalData}" 
                                     icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
@@ -242,7 +242,7 @@
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Reports" 
+                                    value="Investigations" 
                                     action="#{admissionController.navigateToInpatientInvestigations()}" 
                                     icon="fa fa-prescription-bottle-alt"
                                     class="w-100">

@@ -240,17 +240,18 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemApplicationController.getInvestigationsAndServices();
+                return itemController.getInvestigationsAndServices();
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
                 return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
                 return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
-            case ITEMS_OF_LOGGED_DEPARTMENT:
-                return itemController.getDepartmentItems();
-            case ITEMS_OF_LOGGED_INSTITUTION:
-                return itemController.getInstitutionItems();
+//            case ITEMS_OF_LOGGED_DEPARTMENT:
+//                return itemController.getDepartmentItems();
+//            case ITEMS_OF_LOGGED_INSTITUTION:
+//                return itemController.getInstitutionItems();
             default:
-                return itemApplicationController.getInvestigationsAndServices();
+//                return itemApplicationController.getInvestigationsAndServices();
+                return itemController.getInvestigationsAndServices();
         }
     }
     
