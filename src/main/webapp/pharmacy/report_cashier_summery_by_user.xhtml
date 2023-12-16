@@ -37,22 +37,41 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row my-2">
                         <div class="col-12">
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
-                                             styleClass="noPrintButton"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:commandButton 
+                                id="btnRefresh" 
+                                ajax="false" 
+                                value="Refresh" 
+                                icon="fa-solid fa-arrows-rotate"
+                                class="ui-button-warning" 
+                                rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"   
+                                action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                             styleClass="noPrintButton ml-2 mb-2 mt-2 w-10" 
-                                             action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
+                            <p:commandButton 
+                                id="btnRefresh1" 
+                                ajax="false" 
+                                value="Only Channel"
+                                icon="fa-solid fa-stethoscope"
+                                class="ui-button-success mx-2" 
+                                rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                             styleClass="noPrintButton" class="mx-2"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:commandButton 
+                                id="btnRefresh2" 
+                                ajax="false" 
+                                value="Only Cashier" 
+                                icon="fa-solid fa-cash-register"
+                                class="ui-button-success" 
+                                rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info mx-2" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                         </div>

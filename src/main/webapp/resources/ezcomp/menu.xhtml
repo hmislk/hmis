@@ -68,14 +68,6 @@
                             icon="fa fa-fw fa-boxes"
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{billPackageMedicalController.navigateToMedicalPakageBillingFromMenu()}" 
-                            actionListener="#{billPackageController.clearBillValues}" 
-                            value="Medical Package Billing"
-                            icon="fa fa-fw fa-medkit"
-                            rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-
                     </p:submenu>
                     <p:submenu 
                         label="Cashier"
