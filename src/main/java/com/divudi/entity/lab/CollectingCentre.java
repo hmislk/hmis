@@ -10,13 +10,13 @@ package com.divudi.entity.lab;
  */
 public class CollectingCentre {
 
-    private String code = null;
-    private String agentName = null;
-    private Boolean active = null;
-    private Boolean withCommissionStatus = null;
-    private String routeName = null;
-    private Double percentage = null;
-    private String availableInPriceList = null;
+    String code = null;
+    String agentName = null;
+    Boolean active = null;
+    Boolean withCommissionStatus = null;
+    String routeName = null;
+    Double percentage = null;
+    String availableInPriceList = null;
 
     public String getCode() {
         return code;
