@@ -1112,7 +1112,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getCcItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemApplicationController.getInvestigationsAndServices();
+                return itemController.getInvestigationsAndServices();
             case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
                 return itemMappingController.fillItemByDepartment(null);
             case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
@@ -1121,16 +1121,17 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
                 return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
-            case ITEMS_OF_LOGGED_DEPARTMENT:
-                return itemController.getDepartmentItems();
-            case ITEMS_OF_LOGGED_INSTITUTION:
-                return itemController.getInstitutionItems();
-            case ITEMS_OF_SELECTED_DEPARTMENT:
-                return itemController.getCcDeptItems();
-            case ITEMS_OF_SELECTED_INSTITUTIONS:
-                return itemController.getCcInstitutionItems();
+//            case ITEMS_OF_LOGGED_DEPARTMENT:
+//                return itemController.getDepartmentItems();
+//            case ITEMS_OF_LOGGED_INSTITUTION:
+//                return itemController.getInstitutionItems();
+//            case ITEMS_OF_SELECTED_DEPARTMENT:
+//                return itemController.getCcDeptItems();
+//            case ITEMS_OF_SELECTED_INSTITUTIONS:
+//                return itemController.getCcInstitutionItems();
             default:
-                return itemApplicationController.getInvestigationsAndServices();
+//                return itemApplicationController.getInvestigationsAndServices();
+                return itemController.getInvestigationsAndServices();
         }
     }
 

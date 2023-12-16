@@ -1,10 +1,12 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.ItemLight;
 import com.divudi.entity.Item;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.ItemFacade;
+import com.divudi.light.common.BillLight;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +16,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -29,11 +32,11 @@ public class ItemApplicationController {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
-    private List<Item> items;
-    private List<Item> investigationsAndServices;
-    private List<Investigation> investigations;
-    private List<Service> services;
-    private List<Packege> packages;
+    private List<ItemLight> items;
+    private List<ItemLight> investigationsAndServices;
+    private List<ItemLight> investigations;
+    private List<ItemLight> services;
+    private List<ItemLight> packages;
     // </editor-fold>
 
     /**
@@ -42,99 +45,90 @@ public class ItemApplicationController {
     public ItemApplicationController() {
     }
 
-    // <editor-fold defaultstate="collapsed" desc="Functions">
-    public List<Item> fillAllItems() {
-        String jpql = "select i "
-                + " from Item i "
-                + " where i.retired=:ret "
-                + " order by i.name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        return itemFacade.findByJpql(jpql, m);
+    public List<ItemLight> fillAllItems() {
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service) "
+                + "ORDER BY i.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("ret", false);
+
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return lst;
     }
 
-    public void reloadItems(){
-        List<Item> reloaded = fillAllItems();
+    public void reloadItems() {
+        List<ItemLight> reloaded = fillAllItems();
         items = reloaded;
-        packages=null;
-        services=null;
-        investigations=null;
-        investigationsAndServices=null;
-        reloaded=null;
-    }
-    
-    private <T extends Item> List<T> fillItems(Class<T> cls) {
-        List<T> filteredItems = new ArrayList<>();
-        for (Item item : getItems()) {
-            if (cls.isInstance(item)) {
-                filteredItems.add(cls.cast(item));
-            }
-        }
-        return filteredItems;
+        packages = null;
+        services = null;
+        investigations = null;
+        investigationsAndServices = null;
+        reloaded = null;
     }
 
-    private <T extends Item> List<T> fillItems(Collection<Class<? extends T>> classes) {
-        List<T> filteredItems = new ArrayList<>();
-        for (Item item : getItems()) {
-            for (Class<? extends T> cls : classes) {
-                if (cls.isInstance(item)) {
-                    filteredItems.add(cls.cast(item));
-                    break; // Breaks the inner loop once a match is found
-                }
-            }
-        }
-        return filteredItems;
+    private List<ItemLight> fillItems(Class cls) {
+        return getItems();
+    }
+
+    private List<ItemLight> fillItems(Collection<Class> classes) {
+        return getItems();
     }
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Other">
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    public List<Item> getItems() {
+    public List<ItemLight> getItems() {
         if (items == null) {
             items = fillAllItems();
         }
         return items;
     }
 
-    public void setItems(List<Item> items) {
+    public void setItems(List<ItemLight> items) {
         this.items = items;
     }
 
-    public List<Investigation> getInvestigations() {
+    public List<ItemLight> getInvestigations() {
         if (investigations == null) {
             investigations = fillItems(Investigation.class);
         }
         return investigations;
     }
 
-    public List<Service> getServices() {
+    public List<ItemLight> getServices() {
         if (services == null) {
             services = fillItems(Service.class);
         }
         return services;
     }
 
-    
-    
-    public List<Packege> getPackages() {
+    public List<ItemLight> getPackages() {
         if (packages == null) {
             packages = fillItems(Packege.class);
         }
         return packages;
     }
-    
-   
-    
 
     // </editor-fold>
-
-    public List<Item> getInvestigationsAndServices() {
-        if(investigationsAndServices==null){
+    public List<ItemLight> getInvestigationsAndServices() {
+        if (investigationsAndServices == null) {
             investigationsAndServices = fillItems(Arrays.asList(Investigation.class, Service.class));
         }
         return investigationsAndServices;
     }
 
-   
 }
