@@ -17,21 +17,42 @@
 
                     <f:facet name="header" >
                         <h:outputLabel value="List of Service to Delete"></h:outputLabel>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                            <p:printer target="panIx" />
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Export Excel" styleClass="noPrintButton" >
-                            <p:dataExporter target="dtF" type="xls" fileName="All Services" />
-                        </p:commandButton>
+
                     </f:facet>
 
 
 
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="List of Service to Delete"></h:outputLabel>
-                            <p:commandButton ajax="false" value="Remove" styleClass="noPrintButton" action="#{serviceController.removeSelectedItems()}">
-                            </p:commandButton>
+                            <div>
+                                <div class="d-flex justify-content-end align-items-center">
+                                    <p:commandButton
+                                        icon="fas fa-trash-alt"
+                                        ajax="false"
+                                        value="Remove"
+                                        class="ui-button-danger"
+                                        action="#{serviceController.removeSelectedItems()}">
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fas fa-print"
+                                        value="Print" 
+                                        class="mx-2 ui-button-success" >
+                                        <p:printer target="panIx" />
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fas fa-file-excel"
+                                        value="Export Excel" 
+                                        class="ui-button-warning" >
+                                        <p:dataExporter target="dtF" type="xls" fileName="All Services" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                            
+
                         </f:facet>
 
                         <p:dataTable id="dtF" value="#{serviceController.items}" var="sv" 
@@ -87,15 +108,17 @@
                             </p:column>
 
                             <p:column headerText="Service Date Created"
+                                      style="font-weight:normal ;color: black;text-align: left;"
                                       sortBy="#{sv.createdAt}">
-                                
+
                                 <h:outputLabel value="#{sv.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" 
                                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Fee Date Created" sortBy="#{sv.createdAt}">
+                            <p:column headerText="Fee Date Created" sortBy="#{sv.createdAt}"
+                                      style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.itemFee.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
