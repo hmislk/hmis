@@ -1114,7 +1114,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getCcItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemController.getAllItems();
+                return itemApplicationController.fillAllItems();
             case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
             case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
                 return itemMappingController.fillItemLightByInstitution(collectingCentre);
