@@ -661,7 +661,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             return null;
         }
 
-        Patient p = savePatient(getPatient());
+        savePatient(getPatient());
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
@@ -1451,6 +1451,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     @Override
     public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+        }
         return patient;
     }
 
