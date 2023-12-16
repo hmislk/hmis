@@ -25,16 +25,33 @@
                 <h:panelGrid columns="4" styleClass="noPrintButton">
 
 
-                    <p:commandButton ajax="false" value="Process" style="float: right;" action="#{pharmacySaleReport.createPharmacyReport()}"/>
-                    <p:commandButton ajax="false" value="Excel" class="mx-2" style="float: right;" >
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process" 
+                        icon="fa-solid fa-arrows-rotate"
+                        class="ui-button-warning" 
+                        style="float: right;" 
+                        action="#{pharmacySaleReport.createPharmacyReport()}"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Excel" 
+                        icon="fa-solid fa-file-excel"
+                        class="mx-2 ui-button-success" 
+                        style="float: right;" >
                         <p:dataExporter type="xlsx"  target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" style="float: right;" styleClass="noPrintButton" >
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Print" 
+                        icon="fa-solid fa-print"
+                        class="ui-button-info" 
+                        style="float: right;" 
+                        styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
 
-                <h:panelGrid styleClass="printBlock" columns="2">                   
+                <h:panelGrid styleClass="printBlock" columns="2" class="mt-2">                   
 
                     <h:outputLabel value="Pharmacy Report Summary"/>    
                     <h:outputLabel/>
