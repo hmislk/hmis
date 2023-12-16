@@ -6,18 +6,11 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-
-
     <ui:define name="admin">
-
         <h:panelGroup >
             <h:form  >
-
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
-
-
-
                 <p:panel header="Manage Collecting Centres">
                     <div class="row">
                         <div class="col-md-6">
@@ -63,13 +56,26 @@
                                     </h:outputText>
                                     <p:inputTextarea styleClass="longText" value="#{collectingCentreController.current.descreption}" class="w-100" >
                                     </p:inputTextarea> 
-                                    
+
                                     <h:outputText id="lblPaymentMethod" value="Payment Method" ></h:outputText>
                                     <p:selectOneMenu value="#{collectingCentreController.current.collectingCentrePaymentMethod}"  class="w-100">
                                         <f:selectItem itemLabel="Select the Payment Method" />
                                         <f:selectItems value="#{collectingCentreController.collectingCentrePaymentMethod}"/>                                        
                                     </p:selectOneMenu>
-                                    
+
+                                    <h:outputText id="lblRoute" value="Route" ></h:outputText>
+                                    <p:selectOneMenu 
+                                        filter="true"
+                                        value="#{collectingCentreController.current.route}"  
+                                        class="w-100">
+                                        <f:selectItem itemLabel="Select the Route" />
+                                        <f:selectItems 
+                                            value="#{routeController.items}"
+                                            var="r"
+                                            itemLabel="#{r.name}"
+                                            itemValue="#{r}"/>                                        
+                                    </p:selectOneMenu>
+
                                     <h:outputText value="Credit Limit" >                                        
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCredit}"  class="w-100">
@@ -102,7 +108,7 @@
                                     </h:outputText>
                                 </h:panelGrid>
                                 <p:commandButton id="btnSave" value="Save" action="#{collectingCentreController.saveSelected()}" 
-                                               class=" m-1 ui-button-warning w-25" process="gpDetail btnSave" update="lstSelect" />
+                                                 class=" m-1 ui-button-warning w-25" process="gpDetail btnSave" update="lstSelect" />
                                 <p:defaultCommand target="btnSave"/>
                             </p:panel>
                         </div>

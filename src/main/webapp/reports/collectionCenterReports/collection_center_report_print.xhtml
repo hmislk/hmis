@@ -15,23 +15,31 @@
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="From Date" >
                             </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{reportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             <p:spacer width="20"></p:spacer>
+
                             <p:outputLabel value="To Date" >
                             </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{reportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
                             <p:outputLabel value="Institution/Branch" >
                             </p:outputLabel>
-                            <p:selectOneMenu 
+                            <p:selectOneMenu
+                                filter="true"
+                                class="form-control"
                                 id="cmdInstitution"
                                 value="#{reportController.institution}"
-                                filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.companies}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}"></f:selectItems>
@@ -39,15 +47,16 @@
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
-                            
+
                             <p:outputLabel value="Collection Center Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
+                            <p:selectOneMenu value="#{reportController.ccName}"
+                                             filter="true">
+                                <f:selectItem itemLabel="Select Collecting Centre"/>
                                 <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                             </p:selectOneMenu>
-                            
-                            
-                             <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+
+
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccRoute}"
                                              filter="true"
                                              filterMatchMode="contains">
@@ -56,69 +65,69 @@
                                                var="r"
                                                itemLabel="#{r.name}"
                                                itemValue="#{r}"
-                                              />
+                                               />
                             </p:selectOneMenu>
-                             
-                             <p:spacer></p:spacer>
-                             
+
+                            <p:spacer></p:spacer>
+
                             <p:outputLabel value="Patient MRN"></p:outputLabel>
                             <p:inputText value="#{reportController.patient.phn}"></p:inputText>
-                            
-                           
+
+
                             <p:outputLabel value="Invoice Number " ></p:outputLabel>
                             <p:inputText value="#{reportController.invoiceNumber}"></p:inputText>
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
                             <p:outputLabel value="Investigation"></p:outputLabel>
                             <p:inputText value="#{reportController.investigation}"></p:inputText>
-                            
+
                             <p:outputLabel value="Laboratary"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
                                 <f:selectItem itemLabel="Select Laboratary"/>
                                 <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
                             <p:outputLabel value="Refering Doctor Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.refDocName}">
                                 <f:selectItem itemLabel="Doctor Name"/>
                             </p:selectOneMenu>
-                            
+
                             <p:outputLabel value="Status"></p:outputLabel>
-                             <p:selectOneMenu>
+                            <p:selectOneMenu>
                                 <f:selectItem itemLabel="Select Status"/>
                             </p:selectOneMenu>
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
-                            
+
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
 
                         </h:panelGrid>
-                        
-                        
+
+
                         <p:spacer height="5"></p:spacer>
-                        
+
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-                            
+
                             <h:outputLabel value="To Date :  "/>
                             <h:outputLabel value="#{reportController.toDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-                            
+
                             <h:outputLabel value="Collection Center Name :  "/>
                             <h:outputLabel value="#{reportController.ccName}"  >
-                                        
+
                             </h:outputLabel>
                         </h:panelGrid>
-                        
+
                         <p:spacer height="5"></p:spacer>
 
                         <p:dataTable value="null" var="c">
@@ -161,12 +170,12 @@
                             <p:column headerText="Last printing time" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                         </p:dataTable>
-                        
+
                         <p:spacer height="5"></p:spacer>
-                        
-                
+
+
 
                     </p:panel>
 
