@@ -9,6 +9,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -164,6 +165,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     /**
      * Class Variables
      */
+    private ItemLight itemLight;
+    private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
     private Patient patient;
@@ -239,7 +242,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private int opdSummaryIndex;
     private int opdAnalyticsIndex;
 
-    private List<Item> opdItems;
+    private List<ItemLight> opdItems;
 
     /**
      *
@@ -292,15 +295,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public List<Item> fillOpdItems() {
+    public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
                 return itemApplicationController.getInvestigationsAndServices();
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
-                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
-                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
             case ITEMS_OF_LOGGED_DEPARTMENT:
                 return itemController.getDepartmentItems();
             case ITEMS_OF_LOGGED_INSTITUTION:
@@ -2193,6 +2196,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
+        
         return "/opd/opd_bill";
     }
 
@@ -3003,11 +3007,45 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
-    public List<Item> getOpdItems() {
+    public List<ItemLight> getOpdItems() {
         if (opdItems == null) {
             opdItems = fillOpdItems();
         }
         return opdItems;
     }
 
+    // This is the setter for selectedItemLightId
+    public void setSelectedItemLightId(Long id) {
+        this.selectedItemLightId = id;
+        if (id != null) {
+            // Now use this ID to find the corresponding Item or ItemLight
+            Item item = itemController.findItem(id);
+            this.itemLight = new ItemLight(item);
+            getCurrentBillItem().setItem(item);// Assuming you have such a constructor or method
+            // Now itemLight is set to the corresponding ItemLight object
+        } else {
+            this.itemLight = null;
+        }
+    }
+
+    public Long getSelectedItemLightId() {
+        if (getCurrentBillItem().getItem() != null) {
+            selectedItemLightId = getCurrentBillItem().getItem().getId();
+        }
+        return selectedItemLightId;
+    }
+
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
+    }
 }
