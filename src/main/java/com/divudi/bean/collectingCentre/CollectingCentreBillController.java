@@ -18,6 +18,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -148,6 +149,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     /**
      * Properties
      */
+    private ItemLight itemLight;
     List<BillSession> billSessions;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
@@ -199,7 +201,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private List<BillItem> lstBillItemsPrint;
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
-    private List<Item> opdItems;
+    private List<ItemLight> opdItems;
 
     public void selectCollectingCentre() {
         if (collectingCentre == null) {
@@ -1108,30 +1110,42 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.billSessions = billSessions;
     }
 
-    public List<Item> fillOpdItems() {
+    public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getCcItemListingStrategy()) {
             case ALL_ITEMS:
-                return itemController.getInvestigationsAndServices();
+                return itemApplicationController.fillAllItems();
             case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
-                return itemMappingController.fillItemByDepartment(null);
             case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
-                return itemMappingController.fillItemByInstitution(collectingCentre);
+                return itemMappingController.fillItemLightByInstitution(collectingCentre);
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
-                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
-                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
-//            case ITEMS_OF_LOGGED_DEPARTMENT:
-//                return itemController.getDepartmentItems();
-//            case ITEMS_OF_LOGGED_INSTITUTION:
-//                return itemController.getInstitutionItems();
-//            case ITEMS_OF_SELECTED_DEPARTMENT:
-//                return itemController.getCcDeptItems();
-//            case ITEMS_OF_SELECTED_INSTITUTIONS:
-//                return itemController.getCcInstitutionItems();
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.fillItemsByDepartment(sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.getCcDeptItems();
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.getCcInstitutionItems();
             default:
-//                return itemApplicationController.getInvestigationsAndServices();
-                return itemController.getInvestigationsAndServices();
+                return itemController.getAllItems();
+        }
+    }
+    
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
         }
     }
 
@@ -1964,7 +1978,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.patientSearchTab = patientSearchTab;
     }
 
-    public List<Item> getOpdItems() {
+    public List<ItemLight> getOpdItems() {
         if (opdItems == null) {
             opdItems = fillOpdItems();
         }
