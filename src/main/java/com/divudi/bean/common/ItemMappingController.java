@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.ItemLight;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -22,6 +23,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -192,25 +194,25 @@ public class ItemMappingController implements Serializable {
     }
 
     private void removeSelectedItemMapping() {
-        for(ItemMapping im: selectedItemMappings){
+        for (ItemMapping im : selectedItemMappings) {
             im.setRetired(true);
             getFacade().edit(im);
         }
         items.removeAll(selectedItemMappings);
         selectedItemMappings = new ArrayList<>();
     }
-    
+
     public void removeSelectedItemMappingForInstitution() {
-        if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
+        if (selectedItemMappings == null || selectedItemMappings.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
         removeSelectedItemMapping();
         fillItemMappingsForSelectedInstitution();
     }
-    
+
     public void removeSelectedItemMappingForDepartment() {
-        if(selectedItemMappings==null || selectedItemMappings.isEmpty()){
+        if (selectedItemMappings == null || selectedItemMappings.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
@@ -286,7 +288,7 @@ public class ItemMappingController implements Serializable {
         results = itemFacade.findByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
-    
+
     public List<Item> completeItemByDepartment(String qry, Institution institution) {
         List<Item> results;
         String jpql = "SELECT im.item FROM ItemMapping im "
@@ -300,7 +302,7 @@ public class ItemMappingController implements Serializable {
         results = itemFacade.findByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
-    
+
     public List<Item> fillItemByInstitution(Institution institution) {
         List<Item> results;
         String jpql = "SELECT im.item FROM ItemMapping im "
@@ -312,7 +314,25 @@ public class ItemMappingController implements Serializable {
         results = itemFacade.findByJpql(jpql, parameters);
         return results != null ? results : new ArrayList<>();
     }
-    
+
+    public List<ItemLight> fillItemLightByInstitution(Institution institution) {
+        List<ItemLight> results;
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "im.item.id, im.item.orderNo, im.item.isMasterItem, im.item.hasReportFormat, "
+                + "im.item.category.name, im.item.category.id, im.item.institution.name, im.item.institution.id, "
+                + "im.item.department.name, im.item.department.id, im.item.speciality.name, im.item.speciality.id, "
+                + "im.item.staff.person.name, im.item.staff.id, im.item.clazz, im.item.name, im.item.code, im.item.barcode, "
+                + "im.item.printName, im.item.shortName, im.item.fullName) "
+                + "FROM ItemMapping im "
+                + "WHERE im.retired = false "
+                + "AND im.department.institution = :ins "
+                + "ORDER BY im.item.name";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("ins", institution);
+        results = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return results != null ? results : new ArrayList<>();
+    }
+
     public List<Item> fillItemByDepartment(Department dept) {
         List<Item> results;
         String jpql = "SELECT im.item FROM ItemMapping im "
@@ -322,6 +342,24 @@ public class ItemMappingController implements Serializable {
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("dept", dept);
         results = itemFacade.findByJpql(jpql, parameters);
+        return results != null ? results : new ArrayList<>();
+    }
+
+    public List<ItemLight> fillItemLightByDepartment(Department dept) {
+        List<ItemLight> results;
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "im.item.id, im.item.orderNo, im.item.isMasterItem, im.item.hasReportFormat, "
+                + "im.item.category.name, im.item.category.id, im.item.institution.name, im.item.institution.id, "
+                + "im.item.department.name, im.item.department.id, im.item.speciality.name, im.item.speciality.id, "
+                + "im.item.staff.person.name, im.item.staff.id, im.item.clazz, im.item.name, im.item.code, im.item.barcode, "
+                + "im.item.printName, im.item.shortName, im.item.fullName) "
+                + "FROM ItemMapping im "
+                + "WHERE im.retired = false "
+                + "AND im.department = :dept "
+                + "ORDER BY im.item.name";
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("dept", dept);
+        results = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         return results != null ? results : new ArrayList<>();
     }
 
@@ -463,7 +501,6 @@ public class ItemMappingController implements Serializable {
     public void setSelectedItemMappings(List<ItemMapping> selectedItemMappings) {
         this.selectedItemMappings = selectedItemMappings;
     }
-
 
     // No getters and setters as per request
     @FacesConverter(forClass = ItemMapping.class)

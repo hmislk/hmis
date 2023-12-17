@@ -1,21 +1,13 @@
 package com.divudi.bean.emr;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
@@ -27,6 +19,7 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.lab.CollectingCentreController;
@@ -40,6 +33,7 @@ import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.EncounterType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
@@ -53,9 +47,9 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.lab.CollectingCentre;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.Machine;
@@ -68,7 +62,6 @@ import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -143,7 +136,9 @@ public class DataUploadBean implements Serializable {
     @Inject
     ItemFeeController itemFeeController;
     @Inject
-    CollectingCentreController CollectingCentreController;
+    CollectingCentreController collectingCentreController;
+    @Inject
+    RouteController routeController;
 
     @EJB
     PatientFacade patientFacade;
@@ -156,6 +151,7 @@ public class DataUploadBean implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private List<Institution> collectingCentres;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
 
@@ -203,7 +199,7 @@ public class DataUploadBean implements Serializable {
         List<Patient> patients;
 
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
 
                 for (Patient p : patients) {
@@ -220,7 +216,7 @@ public class DataUploadBean implements Serializable {
 
     public void uploadVisits() {
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -231,7 +227,7 @@ public class DataUploadBean implements Serializable {
     public void uploadVtms() {
         List<Vtm> vtms;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 vtms = readVtmsFromExcel(inputStream);
                 for (Vtm v : vtms) {
                     vtmController.findAndSaveVtmByNameAndCode(v);
@@ -245,7 +241,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAtms() {
         List<Atm> atms;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
                     atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
@@ -259,7 +255,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAmps() {
         List<Amp> amps;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -270,7 +266,7 @@ public class DataUploadBean implements Serializable {
     public void uploadItems() {
         items = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 items = readItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -278,12 +274,10 @@ public class DataUploadBean implements Serializable {
         }
     }
 
-    private List<CollectingCentre> collectingCentres;
-
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -291,13 +285,13 @@ public class DataUploadBean implements Serializable {
         }
     }
 
-    private List<CollectingCentre> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
+    private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        List<CollectingCentre> collectingCentresList = new ArrayList<>();
-        CollectingCentre collectingCentre;
+        List<Institution> collectingCentresList = new ArrayList<>();
+        Institution collectingCentre;
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -308,21 +302,19 @@ public class DataUploadBean implements Serializable {
             Row row = rowIterator.next();
 
             collectingCentre = null;
-            
 
             String code = null;
-            String agentName = null;
+            String collectingCentreName = null;
             Boolean active = null;
             Boolean withCommissionStatus = null;
             String routeName = null;
             Double percentage = null;
-            String availableInPriceList = null;
 
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
             }
-            
+
             if (code == null || code.trim().equals("")) {
                 continue;
             }
@@ -330,10 +322,10 @@ public class DataUploadBean implements Serializable {
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
-                agentName = agentNameCell.getStringCellValue();
+                collectingCentreName = agentNameCell.getStringCellValue();
 
             }
-            if (agentName == null || agentName.trim().equals("")) {
+            if (collectingCentreName == null || collectingCentreName.trim().equals("")) {
                 continue;
             }
 
@@ -361,7 +353,6 @@ public class DataUploadBean implements Serializable {
             if (routeName == null || routeName.trim().equals("")) {
                 continue;
             }
-       //     cat = categoryController.findAndCreateCategoryByName(categoryName);
 
             Cell percentageCell = row.getCell(5);
             if (percentageCell != null && percentageCell.getCellType() == CellType.NUMERIC) {
@@ -372,15 +363,48 @@ public class DataUploadBean implements Serializable {
                 percentage = 0.0;
             }
 
-            Cell availableInPriceListCell = row.getCell(6);
-            if (availableInPriceListCell != null && availableInPriceListCell.getCellType() == CellType.STRING) {
-                availableInPriceList = availableInPriceListCell.getStringCellValue();
-
-            }
-            if (availableInPriceList == null || availableInPriceList.trim().equals("")) {
-                availableInPriceList = "";
+            if (code.trim().equals("")) {
+                continue;
             }
 
+            if (collectingCentreName.trim().equals("")) {
+                continue;
+            }
+
+            collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
+            if (collectingCentre != null) {
+                continue;
+            }
+            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
+            if (collectingCentre != null) {
+                continue;
+            }
+            collectingCentre = new Institution();
+            collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
+            collectingCentre.setCode(code);
+            collectingCentre.setName(collectingCentreName);
+            if(withCommissionStatus){
+                collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
+            }else{
+                collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
+            }
+            
+            collectingCentre.setInactive(!active);
+            
+            Route r = routeController.findRouteByName(routeName);
+            if(r==null){
+                r = new Route();
+                r.setName(routeName);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+            
+            collectingCentre.setRoute(r);
+            
+            collectingCentreController.save(collectingCentre);
+
+            collectingCentresList.add(collectingCentre);
         }
 
         return collectingCentresList;
@@ -389,7 +413,7 @@ public class DataUploadBean implements Serializable {
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -400,7 +424,7 @@ public class DataUploadBean implements Serializable {
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -426,7 +450,7 @@ public class DataUploadBean implements Serializable {
         outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1570,7 +1594,7 @@ public class DataUploadBean implements Serializable {
             // Handle IOException
         }
         return templateForCollectingCentreUpload;
-    }  
+    }
 
     public void createTemplateForCollectingCentreUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -1580,7 +1604,7 @@ public class DataUploadBean implements Serializable {
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Code", "Agent Name", "Active", "With Commission Status", "Route Name", "Percentage", "Available in Price List"};
+        String[] columnHeaders = {"Code", "Agent Name", "Active", "With Commission Status", "Route Name", "Percentage"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -1630,6 +1654,12 @@ public class DataUploadBean implements Serializable {
         this.itemFees = itemFees;
     }
 
-    
+    public List<Institution> getCollectingCentres() {
+        return collectingCentres;
+    }
+
+    public void setCollectingCentres(List<Institution> collectingCentres) {
+        this.collectingCentres = collectingCentres;
+    }
 
 }

@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Route;
 import com.divudi.facade.RouteFacade;
@@ -53,7 +54,7 @@ public class RouteController implements Serializable {
         fillItems();
         return "/admin/institutions/routes";
     }
-    
+
     public String toEditRoute() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -98,6 +99,23 @@ public class RouteController implements Serializable {
         items = null;
     }
 
+    public Route findRouteByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Route c "
+                + " where c.retired=:ret "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
     public void saveSelected() {
         if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
             UtilityController.addErrorMessage("Please enter Value");
@@ -115,6 +133,19 @@ public class RouteController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void save(Route r) {
+        if (r == null) {
+            return;
+        }
+        if (r.getId() != null) {
+            getFacade().edit(r);
+        } else {
+            r.setCreatedAt(new Date());
+            r.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(r);
+        }
     }
 
     public RouteFacade getEjbFacade() {

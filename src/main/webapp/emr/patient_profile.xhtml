@@ -446,7 +446,7 @@
                                                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                                                 </h:outputLabel>
 
-                                                                <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"  styleClass="noBorderGrid" >
+                                                                <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
                                                                     <p:commandLink id="cmdOldReportPrint"
                                                                                    ajax="false" 
                                                                                    action="/lab/patient_report_print"
@@ -460,7 +460,6 @@
 
                                                         </p:dataTable>
                                                     </div>
-
                                                     <div class="col-6" >
                                                         <p:dataTable rowIndexVar="i" 
                                                                      id="tblBills" value="#{patientEncounterController.opdBills}" 
@@ -468,17 +467,14 @@
                                                                      style="min-width: 100%;"  
                                                                      rowKey="#{bill.id}"
                                                                      >
-                                                            <f:facet name="header" >
-                                                                <h:outputLabel value="Bills" ></h:outputLabel>
-                                                            </f:facet>
                                                             <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
-                                                                <p:outputLabel id="billTime" value="#{bill.billTime}" >
+                                                                <p:outputLabel value="#{bill.billTime}" >
                                                                     <f:convertDateTime  
                                                                         timeZone="Asia/Colombo" 
                                                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}"  >                                
                                                                 <p:commandLink id="billNo" 
                                                                                ajax="false" 
                                                                                value="#{bill.insId}" 
@@ -494,8 +490,6 @@
                                                             </p:column>                         
                                                         </p:dataTable>
                                                     </div>
-                                                </div>
-                                                <div class="row">
                                                     <div class="col-6">
                                                         <p:dataTable rowIndexVar="i" 
                                                                      id="tblChannelBills" value="#{patientEncounterController.channelBills}" 
@@ -506,12 +500,17 @@
                                                             <f:facet name="header" >
                                                                 <h:outputLabel value="Consultations" ></h:outputLabel>
                                                             </f:facet>
-                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
-                                                                <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                                            <p:column headerText="Consultation At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
                                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                             <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Fee" sortBy="#{bill.netTotal}" 
                                                                       styleClass="averageNumericColumn">
                                                                 <h:outputLabel value="#{bill.netTotal}" >
                                                                     <f:convertNumber pattern="#,##0.00"/>

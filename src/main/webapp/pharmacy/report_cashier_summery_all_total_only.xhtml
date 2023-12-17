@@ -25,21 +25,50 @@
                 </div>
 
                 <h:panelGrid columns="6" class="my-2">
-                    <p:commandButton id="btnRefresh" ajax="false" value="Total Income" 
-                                     styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calculateCashierSummeryTotals()}" />  
-                    <p:commandButton id="btnRefresh1" ajax="false" value="Channel Income"
-                                     styleClass="noPrintButton" class="mx-2" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
-                    <p:commandButton id="btnRefresh2" ajax="false" value="Cashier Income" 
-                                     styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyCashier()}" />  
+                    <p:commandButton 
+                        id="btnRefresh" 
+                        ajax="false" 
+                        value="Total Income" 
+                        icon="fa-solid fa-hand-holding-dollar"
+                        class="ui-button-warning"
+                        style="float: right;" 
+                        actionListener="#{cashierReportController.calculateCashierSummeryTotals()}" />  
+                    <p:commandButton 
+                        id="btnRefresh1" 
+                        ajax="false" 
+                        value="Channel Income"
+                        icon="fa-solid fa-hand-holding-dollar"
+                        class="ui-button-warning mx-2" 
+                        style="float: right;" 
+                        actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
+                    <p:commandButton 
+                        id="btnRefresh2" 
+                        ajax="false" 
+                        value="Cashier Income"
+                        icon="fa-solid fa-hand-holding-dollar"
+                        class="ui-button-warning"
+                        style="float: right;" 
+                        actionListener="#{cashierReportController.calCashierDataTotalOnlyCashier()}" />  
                     <p:defaultCommand target="btnRefresh"/>
-
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" class="mx-2" >
+                    <p:commandButton 
+                        actionListener="#{cashierReportController.calCashierDataTotalOnly()}" 
+                        ajax="false" 
+                        value="Excel"
+                        icon="fa-solid fa-file-excel"
+                        class="ui-button-success mx-2"
+                        style="float: right;">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Print"
+                        icon="fa-solid fa-print"
+                        class="ui-button-info "
+                        style="float: right;">
                         <p:printer target="reportPrint" />
                     </p:commandButton>  
 
-                    <p:commandButton actionListener="#{cashierReportController.calCashierDataTotalOnly()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
-                        <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" />
-                    </p:commandButton>
+
                 </h:panelGrid>
 
 
@@ -61,9 +90,9 @@
                         <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                     </f:facet>
                     <h:panelGrid columns="5" style="min-width: 30%;" styleClass="noPrintButton">
-                        
+
                         <p:spacer width="30" height="1"/>
-                        
+
 
                     </h:panelGrid>
                     <p:dataTable id="tbl" value="#{cashierReportController.webUserBillsTotals}" var="csh" >

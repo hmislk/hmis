@@ -1,19 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
-
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/admin/items/index.xhtml"
+                template="/admin/institutions/admin_institutions_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-    <ui:define name="item">
-
-        <h:form >
-
-
-        </h:form>
+    <ui:define name="admin">
 
         <div class="container-fluid" >
             <div class="card" >
@@ -30,6 +24,7 @@
                                          ajax="false"/>
                         <p:commandButton value="Download Template" 
                                          ajax="false" 
+                                         class="mx-2"
                                          onclick="PrimeFaces.monitorDownload(start, stop);" 
                                          icon="ui-icon-arrowthick-1-s">
                             <p:fileDownload value="#{dataUploadBean.templateForCollectingCentreUpload}" />
@@ -88,11 +83,7 @@
                                 <td>Percentage</td>
                                 <td>Percentage. Optional</td>
                             </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Available in Price List</td>
-                                <td>Available in Price List. Optional</td>
-                            </tr>
+
 
                         </tbody>
                     </table>
@@ -102,12 +93,13 @@
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" value="#{dataUploadBean.items}" var="item" >
+        <p:dataTable id="tbl" 
+                     value="#{dataUploadBean.collectingCentres}" var="colcen" >
             <p:column >
-                #{item.name}
+                <h:outputText value="#{colcen.name}" ></h:outputText>
             </p:column>
             <p:column >
-                #{item.total}
+               
             </p:column>
 
         </p:dataTable>

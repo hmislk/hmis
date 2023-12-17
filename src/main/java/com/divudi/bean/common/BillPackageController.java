@@ -369,7 +369,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public List<Packege> getOpdPackege() {
         if (opdPackages == null) {
-            opdPackages = itemApplicationController.getPackages();
+//            opdPackages = itemApplicationController.getPackages();
         }
         //System.out.println("Packege : " + opdPackages);
         return opdPackages;
