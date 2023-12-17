@@ -49,7 +49,10 @@
 
                                     <h:outputText value="Code" >                                        
                                     </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.institutionCode}"  class="w-100">
+                                    <p:inputText
+                                        id="txtCode"
+                                        autocomplete="off"  value="#{collectingCentreController.current.code}" 
+                                        class="w-100">
                                     </p:inputText> 
 
                                     <h:outputText value="Descreption" >                                        
@@ -106,6 +109,13 @@
                                     <h:outputText value="#{collectingCentreController.current.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputText>
+                                    <p:commandButton 
+                                        id="btnGen" 
+                                        value="Generate Code"
+                                        process="btnGen"
+                                        action="#{collectingCentreController.generateAndAssignCode()}" 
+                                        class=" m-1 ui-button-warning w-100" 
+                                        update="txtCode" />
                                 </h:panelGrid>
                                 <p:commandButton id="btnSave" value="Save" action="#{collectingCentreController.saveSelected()}" 
                                                  class=" m-1 ui-button-warning w-25" process="gpDetail btnSave" update="lstSelect" />
