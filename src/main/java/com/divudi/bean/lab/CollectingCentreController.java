@@ -92,6 +92,51 @@ public class CollectingCentreController implements Serializable {
         items = null;
     }
 
+    public void generateAndAssignCode() {
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret"
+                + " and c.institutionType=:t "
+                + " and c.code is not null "
+                + " order by c.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CollectingCentre);
+        Institution cc = getFacade().findFirstByJpql(jpql, m);
+        if (cc == null) {
+            return;
+        }
+        String previousCode = cc.getCode();
+        getCurrent().setCode(newCode(previousCode));
+    }
+
+    public String newCode(String previousCode) {
+        if (previousCode == null || previousCode.isEmpty()) {
+            return "CC1"; // Default code if there's no previous code, adjust as needed
+        }
+
+        // Splitting the previous code into the string part and numeric part
+        int i = previousCode.length() - 1;
+        while (i >= 0 && Character.isDigit(previousCode.charAt(i))) {
+            i--;
+        }
+
+        String prefix = previousCode.substring(0, i + 1);
+        String numberPart = previousCode.substring(i + 1);
+
+        // Parsing the numeric part to an integer and incrementing it
+        int number;
+        try {
+            number = Integer.parseInt(numberPart);
+        } catch (NumberFormatException e) {
+            return prefix + "1"; // Default to 1 if parsing fails
+        }
+        number++;
+
+        // Combining the incremented number with the prefix
+        return prefix + number;
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
