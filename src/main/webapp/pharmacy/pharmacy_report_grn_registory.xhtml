@@ -17,25 +17,18 @@
                         <f:facet name="header" >
                             <h:outputLabel value="GRN Registry"/>                                 
                         </f:facet>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <h:outputLabel value="From Date"/>&nbsp;&nbsp;
+                        <h:panelGrid columns="4" class="w-100">
+                            <h:outputLabel value="From Date"/>
                             <p:calendar styleClass="dateTimePicker" id="fromDate" 
-                                        value="#{searchController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-2"/>
-                            </div>
-                            <div class="col-md-4">
-                                <h:outputLabel value="To Date"/>&nbsp;&nbsp;
+                                        value="#{searchController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            
+                                <h:outputLabel value="To Date"/>
                             <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-2"/>
-                            </div>
-                        </div>
-                        <p:spacer height="3"/>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <h:outputLabel value="Department"/>&nbsp;
+                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            
+                                <h:outputLabel value="Department"/>
                             <au:department value="#{searchController.reportKeyWord.department}" />
-                            </div>
-                            <div class="col-md-4">
+                            
                                  <h:outputLabel value="Distributor"/>
                             <p:autoComplete converter="deal" placeholder="Distributor"
                                             value="#{searchController.reportKeyWord.institution}"  
@@ -43,20 +36,38 @@
                                             completeMethod="#{storeDealorController.completeDealor}"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             </p:autoComplete>
-                            </div>
-                        </div>
-                        <p:spacer height="3"/>
-                        <h:panelGrid columns="3" >
-                            <p:commandButton id="btnSearch" ajax="false" value="Process" action="#{searchController.createGRNRegistory}"/>
-                            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
-                                <p:printer target="panelPrint" />
-                            </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report ne '2'}">
+                        </h:panelGrid>
+                        
+                                
+                            
+                                 <h:panelGrid columns="3" class="my-2" >
+                            <p:commandButton 
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fa-solid fa-arrows-rotate"
+                        class="ui-button-warning"
+                                action="#{searchController.createGRNRegistory}"/>
+                            <p:commandButton 
+                                value="Excel" 
+                                ajax="false" 
+                                icon="fa-solid fa-file-excel"
+                        class="ui-button-success mx-2" 
+                                style="float: right;" 
+                                rendered="#{quickBookReportController.report ne '2'}">
                                 <p:dataExporter type="xlsx" target="tblBills" fileName="QB_Export"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print"
+                                icon="fa-solid fa-print"
+                        class="ui-button-info"
+                                style="float: right;"  >
+                                <p:printer target="panelPrint" />
                             </p:commandButton>
                         </h:panelGrid>
                      
-                        <p:spacer height="3"/>
+
                         <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                             <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
                                 <f:facet name="header">
