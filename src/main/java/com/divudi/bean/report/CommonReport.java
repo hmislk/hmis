@@ -1088,7 +1088,7 @@ public class CommonReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
