@@ -55,16 +55,35 @@
                             
                             <p:outputLabel value="Service Name" />
                             <p:selectOneMenu 
-                                value="null"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="Select Service Name"></f:selectItem>
-                                <f:selectItems value="#{serviceController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
-
-                            </p:selectOneMenu>
+                                    filter="true"
+                                    id="acIx"
+                                    class="w-100"
+                                    converter="itemLightConverter"
+                                    value="#{reportController.itemLight}" var="ix" >
+                                    <f:selectItems value="#{reportController.investigationsAndServices}"
+                                                   var="item" 
+                                                   itemLabel="#{item.name}"
+                                                   itemValue="#{item}" >
+                                    </f:selectItems>
+                                    <p:column  headerText="Name">
+                                        <f:facet name="header" >
+                                            Name
+                                        </f:facet>
+                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                            <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column  headerText="Dept">
+                                        <h:outputText value="#{ix.departmentName}"></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Code">
+                                        <h:outputText value="#{ix.code}"></h:outputText>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Value">
+                                        <h:outputText value="#{ix.total}"></h:outputText>
+                                    </p:column>
+                                </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
                             
