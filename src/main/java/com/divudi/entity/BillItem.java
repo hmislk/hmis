@@ -74,6 +74,7 @@ public class BillItem implements Serializable {
     double marginValue;
     private double adjustedValue;
     double hospitalFee;
+    private double collectingCentreFee;
     double staffFee;
 //    private double dblValue;
     @ManyToOne
@@ -832,6 +833,14 @@ public class BillItem implements Serializable {
 
     public void setBillItemStatus(BillItemStatus billItemStatus) {
         this.billItemStatus = billItemStatus;
+    }
+
+    public double getCollectingCentreFee() {
+        return collectingCentreFee;
+    }
+
+    public void setCollectingCentreFee(double collectingCentreFee) {
+        this.collectingCentreFee = collectingCentreFee;
     }
     
     
