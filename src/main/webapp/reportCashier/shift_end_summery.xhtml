@@ -17,22 +17,41 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel header="Shift End Summary">
-                    <h:panelGrid columns="2" styleClass="noPrintButton" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" class="mx-4" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" class="mx-4" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                        </p:calendar>
-                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{commonReport.webUser}"
-                                        class="mx-4 "></p:autoComplete>
-
-                    </h:panelGrid>
+                    <table>
+                        <tr >
+                            <td> <h:outputLabel value="From Date"/></td>
+                            <td><p:calendar 
+                                    id="frmDate"
+                                    class="mx-4"
+                                    value="#{commonReport.fromDate}" navigator="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar></td>
+                        </tr>
+                        <tr>
+                            <td> <h:outputLabel value="To Date"/></td>
+                            <td class="py-2">
+                                <p:calendar id="toDate" 
+                                            class="mx-4" 
+                                            value="#{commonReport.toDate}" 
+                                            navigator="true"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h:outputLabel styleClass="noPrintButton" value="User Name"/></td>
+                            <td><p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                                forceSelection="true"
+                                                var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                                value="#{commonReport.webUser}"
+                                                class="mx-4 "></p:autoComplete>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-right mp-2"><p:commandButton value="Process" class="ui-button-success"/></td>
+                        </tr>
+                    </table>
+                   
 
                     <div >
                         <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
