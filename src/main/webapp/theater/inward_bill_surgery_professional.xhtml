@@ -15,7 +15,7 @@
                 <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
                     <f:facet name="header" >
                         <h:outputText styleClass="fas fa-briefcase" />
-                        <h:outputLabel value="Add Professional Fee" class="m-2"></h:outputLabel>
+                        <h:outputLabel value="Add Professional Fee" class="mx-4"></h:outputLabel>
                     </f:facet>
 
                     <h:outputLabel value="Type Surgery Name or BHT : "/>
@@ -47,8 +47,9 @@
 
                 <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}"  >
                     <f:facet name="header" >              
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>Surgery Professional (Theatre)</span>
+                        <div class="d-flex justify-content-between">
+                            <i class="fa-solid fa-scissors"></i>
+                            Surgery Professional (Theatre)
                             <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" />
                         </div>
 
