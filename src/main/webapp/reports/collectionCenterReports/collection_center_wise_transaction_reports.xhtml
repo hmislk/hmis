@@ -251,7 +251,7 @@
                             <h:outputText value="#{bi.bill.referralNumber}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Before Balance" >
-                            <h:outputText value="#{bi.bill.balance}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.cashPaid}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Transaction Value(Hospital Amount)" >
                             <h:outputText value="#{bi.bill.hospitalFee}" ></h:outputText>
@@ -260,10 +260,10 @@
                             <h:outputText value="#{bi.bill.discountPercent} %" ></h:outputText>
                         </p:column>
                         <p:column headerText="CC Amount" >
-                            <h:outputText value="#{bi.bill.balance}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.cashBalance}" ></h:outputText>
                         </p:column>
                         <p:column headerText="After Balance" >
-                            <h:outputText value="#{bi.bill.balance}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.paidAmount}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Creater" >
                             <h:outputText value="#{bi.bill.creater}" ></h:outputText>
