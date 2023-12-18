@@ -125,6 +125,10 @@ public class ItemApplicationController {
         }
         return investigationsAndServices;
     }
+    
+    public void reloadItems(){
+        
+    }
 
    
 }
