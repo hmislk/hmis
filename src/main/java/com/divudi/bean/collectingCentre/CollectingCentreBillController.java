@@ -247,8 +247,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    private Patient tmpPatient;
+    
     List<Bill> bills;
     List<Bill> selectedBills;
     Double grosTotal;
@@ -729,7 +728,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void settleBill() {
         Date startTime = new Date();
-
         if (errorCheck()) {
             return;
         }
@@ -938,7 +936,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getPatient());
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(getPaymentMethod());
@@ -1827,14 +1825,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
-    }
-
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
     }
 
     public PatientInvestigationFacade getPatientInvestigationFacade() {
