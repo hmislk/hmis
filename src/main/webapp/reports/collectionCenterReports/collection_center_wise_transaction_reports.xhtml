@@ -203,12 +203,21 @@
                             <div class="col-md-6">
                                 <p:commandButton ajax="false"
                                                  value="Process"
+                                                 class="ui-button-warning"
                                                  action="#{reportController.processCollectingCentreTransactionReport()}" />
+<!--                                <p:commandButton ajax="false"
+                                                 value="Download to Excel"
+                                                 class="mx-1 ui-button-success"
+                                                 ><p:dataExporter 
+                                        type="xls" 
+                                        target="tblExport"
+                                        fileName="c_transaction_reports"
+                                        /></p:commandButton>-->
                             </div>
                         </div>
                     </div>
 
-                    <p:dataTable value="#{reportController.billItems}" var="bi">
+                    <p:dataTable value="#{reportController.billItems}" var="bi" id="tblExport">
                         <!--                        //Mandatory filters
                         #{bi.bill.retired} - boolean - false
                         #{bi.retired} - boolean - false
@@ -248,7 +257,7 @@
                             <h:outputText value="#{bi.bill.hospitalFee}" ></h:outputText>
                         </p:column>
                         <p:column headerText="CC(%)" >
-                            <h:outputText value="#{bi.bill.discountPercent}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.discountPercent} %" ></h:outputText>
                         </p:column>
                         <p:column headerText="CC Amount" >
                             <h:outputText value="#{bi.bill.balance}" ></h:outputText>
@@ -263,13 +272,6 @@
                             <h:outputText value="#{bi.bill.createdAt}" ></h:outputText>
                         </p:column>
                     </p:dataTable>
-
-
-
-
-
-
-
                 </h:form>
 
             </ui:define>
