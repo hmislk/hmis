@@ -1313,7 +1313,7 @@ public class ReportController implements Serializable {
     }
     
     public void processCollectingCentreTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport(bi.item, count(bi.item), bi.hospitalFee, bi.collectingCentreFee, bi.staffFee, bi.netValue "
+        String jpql = "select new  com.divudi.data.TestWiseCountReport(bi.item.name, count(bi.item), bi.hospitalFee, bi.collectingCentreFee, bi.staffFee, bi.netValue) "
                 + " from BillItem bi " 
                 + " where bi.retired=:ret"
                 + " and bi.bill.billDate between :fd and :td "
