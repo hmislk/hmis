@@ -26,6 +26,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.RouteFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.FileOutputStream;
@@ -184,7 +185,7 @@ public class ReportController implements Serializable {
 
     @EJB
     BillFacade billFacade;
-    
+   
     @Inject
     private InstitutionController institutionController;
 
@@ -421,6 +422,8 @@ public class ReportController implements Serializable {
 
         billItems = billItemFacade.findByJpql(jpql, m);
     }
+    
+   
     
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
@@ -1585,6 +1588,7 @@ public class ReportController implements Serializable {
         this.testWiseCounts = testWiseCounts;
     }
 
+   
     
    
 
