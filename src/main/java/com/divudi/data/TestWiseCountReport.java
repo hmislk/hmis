@@ -15,13 +15,13 @@ public class TestWiseCountReport {
 
     private Integer serial;
     private String testName;
-    private Integer count;
+    private Long count;
     private Double hosFee;
     private Double ccFee;
     private Double proFee;
     private Double total;
 
-    public TestWiseCountReport(String testName, Integer count, Double hosFee, Double ccFee, Double proFee, Double total) {
+    public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
         this.testName = testName;
         this.count = count;
         this.hosFee = hosFee;
@@ -48,11 +48,11 @@ public class TestWiseCountReport {
         this.testName = testName;
     }
 
-    public Integer getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 

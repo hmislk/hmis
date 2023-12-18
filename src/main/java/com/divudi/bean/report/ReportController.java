@@ -1313,11 +1313,18 @@ public class ReportController implements Serializable {
     }
     
     public void processCollectingCentreTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport(bi.item.name, count(bi.item), bi.hospitalFee, bi.collectingCentreFee, bi.staffFee, bi.netValue) "
+        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+                + "bi.item.name, "
+                + "count(bi.item), "
+                + "sum(bi.hospitalFee) , "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.netValue)"
+                + ") "
                 + " from BillItem bi " 
                 + " where bi.retired=:ret"
                 + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billType = :bType";
+                + " and bi.bill.billType = :bType ";
 
         if (false){
             BillItem bi = new BillItem();
@@ -1379,7 +1386,7 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
         
-        jpql += "group by bi.item";
+        jpql += " group by bi.item";
 
         
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
