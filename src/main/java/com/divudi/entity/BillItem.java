@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
 import com.divudi.entity.pharmacy.Ampp;
@@ -51,7 +52,7 @@ public class BillItem implements Serializable {
     Long id;
     Double qty = 0.0;
     @Transient
-    private Double absoluteQty ;
+    private Double absoluteQty;
     @Lob
     String descreption;
     @ManyToOne
@@ -125,6 +126,8 @@ public class BillItem implements Serializable {
     Date billTime;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Enumerated(EnumType.ORDINAL)
+    private BillItemStatus billItemStatus;
 
 //    @Transient
     int searialNo;
@@ -153,8 +156,6 @@ public class BillItem implements Serializable {
     @Transient
     boolean transRefund;
 
-    
-    
     public double getVat() {
         return vat;
     }
@@ -394,8 +395,6 @@ public class BillItem implements Serializable {
     public Bill getBill() {
         return bill;
     }
-    
-    
 
     public void setBill(Bill bill) {
         this.bill = bill;
@@ -819,12 +818,22 @@ public class BillItem implements Serializable {
     }
 
     public Double getAbsoluteQty() {
-        if(qty!=null){
+        if (qty != null) {
             absoluteQty = Math.abs(qty);
-        }else{
+        } else {
             absoluteQty = 0.0;
         }
         return absoluteQty;
     }
+
+    public BillItemStatus getBillItemStatus() {
+        return billItemStatus;
+    }
+
+    public void setBillItemStatus(BillItemStatus billItemStatus) {
+        this.billItemStatus = billItemStatus;
+    }
+    
+    
 
 }

@@ -20,18 +20,22 @@
             <f:facet name="header">
                 <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
                     <!-- Left aligned content -->
-                    <h:panelGroup>
-                        <h:outputText value="New Patient" rendered="#{cc.attrs.controller.patient ne null and cc.attrs.controller.patient.id eq null}"></h:outputText>
-                        <h:outputText value="Searched Patient" rendered="#{cc.attrs.controller.patient ne null and cc.attrs.controller.patient.id ne null}"></h:outputText>
-                        <h:outputText value="Select Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
-                        <p:commandLink id="btnPatientSave"
-                                       action="#{patientController.save(cc.attrs.controller.patient)}" 
-                                       rendered="#{cc.attrs.controller.patient ne null}"
-                                       styleClass="btn btn-link p-0 m-0"
-                                       process="btnPatientSave gpPatient"
-                                       update="gpPatient msg">
-                            <i class="fa fa-save"></i>
-                        </p:commandLink>
+                    <h:panelGroup id="headerFacet">
+                        <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
+                        <h:outputText styleClass="fas fa-info-circle" />
+                        <h:panelGroup 
+                            rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                            <h:outputText
+                                rendered="#{cc.attrs.controller.patient.id eq null}"
+                                value="New Patient Details" 
+                                ></h:outputText>
+                            <h:outputText
+                                rendered="#{cc.attrs.controller.patient.id ne null}"
+                                value="Searched Patient Details" 
+                                ></h:outputText>
+
+                        </h:panelGroup>
+
                     </h:panelGroup>
 
                     <!-- Right aligned quick search -->
@@ -42,13 +46,22 @@
                             value="#{patientController.quickSearchPhoneNumber}"
                             placeholder="Phone Number"
                             class="form-control-sm mx-1"
+                            onfocus="this.select()" 
                             />
                         <p:commandButton 
                             id="btnSearchbyPhoneNo"
                             icon="fa fa-search" 
-                            title="Quick Search"
+                            title="Quick Search from Phone Number"
                             action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
                             process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                            update="ptImp selectPatient editPatient viewPatient"
+                            styleClass="btn-sm mx-1"/>
+                        <p:commandButton 
+                            id="btnAddNewPatient"
+                            icon="fa fa-plus-circle" 
+                            title="Add New Patient"
+                            action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                            process="btnAddNewPatient"
                             update="ptImp selectPatient editPatient viewPatient"
                             styleClass="btn-sm mx-1"/>
                     </h:panelGroup>
@@ -56,17 +69,14 @@
             </f:facet>
 
             <h:panelGroup id="selectPatient" >
-                <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null}">
+                <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
                     <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
                         <p:column headerText="Name">
                             #{ps.person.name}
-
                         </p:column>
-
                         <p:column headerText="Phone Number">
                             #{ps.person.phone}
                         </p:column>
-
                         <p:column>
                             <p:commandButton 
                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
@@ -77,29 +87,14 @@
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>
                         </p:column>
-
                     </p:dataTable>
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup id="editPatient" >
                 <h:panelGroup rendered="#{cc.attrs.editable}" >
-                    <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
-                        <p:panel class="mb-1 w-100" id="panelPatient" 
-                                 rendered="#{cc.attrs.controller.patient.editingMode}">
-
-                            <f:facet name="header" >
-                                <h:panelGroup id="headerFacet">
-                                    <h:outputText styleClass="fas fa-info-circle" />
-                                    <h:outputText value="Patient Details" class="mx-4"></h:outputText>
-
-                                    <!-- Save Link with Icon -->
-
-
-
-
-
-                                </h:panelGroup>
-                            </f:facet>
+                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                        <h:panelGroup class="mb-1 w-100" id="panelPatient" 
+                                      rendered="#{cc.attrs.controller.patient.editingMode}">
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">
                                     <div class="col-md-3 p-1">
@@ -281,12 +276,9 @@
 
 
                             </h:panelGroup>
-                        </p:panel>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
-
-
-
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
                 <h:panelGroup rendered="#{not cc.attrs.editable}" >

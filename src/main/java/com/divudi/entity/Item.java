@@ -23,7 +23,6 @@ import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;

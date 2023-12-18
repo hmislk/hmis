@@ -122,6 +122,8 @@ public class BhtSummeryController implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     CommonController commonController;
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
     //////////////////////////
     @Inject
     private SessionController sessionController;
@@ -167,6 +169,8 @@ public class BhtSummeryController implements Serializable {
     public String navigateToInpatientProfile() {
         return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
+    
+    
 
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {

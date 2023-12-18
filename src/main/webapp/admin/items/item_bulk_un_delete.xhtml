@@ -17,8 +17,12 @@
 
                 <p:panel header="Undelete Services" >
 
-                    <p:commandButton value="List Deleted Services" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
-                    <p:commandButton value="Undelete Selected" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
+                    <div class="d-flex justify-content-end align-items-center my-2">
+                        <div>
+                            <p:commandButton value="List Deleted Services" class="mx-2 ui-button-warning" action="#{serviceController.listDeletedServices()}" ajax="false" ></p:commandButton>
+                            <p:commandButton value="Undelete Selected" class="ui-button-success" action="#{serviceController.undeleteSelectedServices()}" ajax="false" ></p:commandButton>
+                        </div>
+                    </div>
 
                     <p:dataTable value="#{serviceController.deletedServices}" var="item" rowKey="#{item.id}"
                                  paginator="true" paginatorAlwaysVisible="true"

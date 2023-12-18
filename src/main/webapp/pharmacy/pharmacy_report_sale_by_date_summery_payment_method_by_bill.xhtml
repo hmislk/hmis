@@ -9,7 +9,7 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Summary By Payment Method(By Bill)">
+            <p:panel  styleClass="noBorder summeryBorder" header="Sale Summary By Payment Method(By Bill)">
                 <div class="row">
                     <div class="col-md-4">
                         <h:outputLabel value="From Date"/>&nbsp;&nbsp;
@@ -21,28 +21,40 @@
                         <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2" >
                         </p:calendar>
                     </div>
-                    
-                </div>
-                <div class="row">
                     <div class="col-md-4">
-                        <h:outputLabel value="Department"/>
-                        <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                        <h:outputLabel value="Department"/>&nbsp;&nbsp;
+                        <p:autoComplete  value="#{pharmacySaleReport.department}"  style="text-align: left;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                         </p:autoComplete>
                     </div>
                 </div>
+                
 
 
-                <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodByBill()}"/>
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                <h:panelGrid columns="3" class="my-2">
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Process" 
+                        icon="fa-solid fa-arrows-rotate"
+                        class="ui-button-warning" 
+                        action="#{pharmacySaleReport.createSalePaymentMethodByBill()}"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Excel" 
+                        icon="fa-solid fa-file-excel"
+                        class="mx-2 ui-button-success" 
+                        style="float: right;" >
                         <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Print"
+                        icon="fa-solid fa-print"
+                        class="ui-button-info" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
 
-                                <h:panelGrid styleClass="printBlock" columns="2">
+                <h:panelGrid styleClass="printBlock" columns="2" >
                                     <h:outputLabel value=" Department Name"/>
                                     <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
                                                        
@@ -56,101 +68,106 @@
                                     </h:outputLabel>                       
                                 </h:panelGrid>
                 <p:spacer height="15"/>
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.billedPaymentSummery.bills}" var="i">
-                    <f:facet name="header">  
-                        <h:outputLabel value="Report Pharmacy Sale By Date Summary Payment Method"/>
-                        <br/>
-                        <h:outputLabel value="From  :"/>&nbsp;&nbsp;
-                        <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>
-                        <p:spacer width="10" height="1"/>
-                        <h:outputLabel value="To  :"/>&nbsp;&nbsp;
-                        <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                        </h:outputLabel>&#13;&nbsp;
-                        <br/>
-                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
-                        &#13;&nbsp;
-                    </f:facet>
+                
+                <p:panel id="panelPrint">
+                    <p:dataTable id="sum1" value="#{pharmacySaleReport.billedPaymentSummery.bills}" var="i">
+                        <f:facet name="header">  
+                            <h:outputLabel value="Report Pharmacy Sale By Date Summary Payment Method"/>
+                            <br/>
+                            <h:outputLabel value="From  :"/>&nbsp;&nbsp;
+                            <h:outputLabel value="#{pharmacySaleReport.fromDate}">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                            <p:spacer width="10" height="1"/>
+                            <h:outputLabel value="To  :"/>&nbsp;&nbsp;
+                            <h:outputLabel value="#{pharmacySaleReport.toDate}">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>&#13;&nbsp;
+                            <br/>
+                            <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                            &#13;&nbsp;
+                        </f:facet>
 
-                    <p:column headerText="Date">
-                        <f:facet name="header">
-                            <h:outputLabel value="Date" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.date}"/>
-                    </p:column>
-                    <p:column headerText="CASH" style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Cash" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.value1}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cashTotal}">
+                        <p:column headerText="Date">
+                            <f:facet name="header">
+                                <h:outputLabel value="Date" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.date}"/>
+                        </p:column>
+                        <p:column headerText="CASH" style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Cash" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.value1}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column headerText="CREDIT" style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Credit" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.value2}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.creditTotal}">
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cashTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="CREDIT" style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Credit" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.value2}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column headerText="CARD" style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Card" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.value3}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cardTotal}">
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.creditTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="CARD" style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Card" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.value3}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column headerText="TOTAL" style="text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Total" />
-                        </f:facet>
-                        <h:outputLabel value="#{i.value1+i.value2+i.value3}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer" >
-                            <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cashTotal+pharmacySaleReport.billedPaymentSummery.creditTotal+pharmacySaleReport.billedPaymentSummery.cardTotal}">
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cardTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="TOTAL" style="text-align: right;">
+                            <f:facet name="header">
+                                <h:outputLabel value="Total" />
+                            </f:facet>
+                            <h:outputLabel value="#{i.value1+i.value2+i.value3}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </f:facet>
-                    </p:column>                   
-                </p:dataTable>
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{pharmacySaleReport.billedPaymentSummery.cashTotal+pharmacySaleReport.billedPaymentSummery.creditTotal+pharmacySaleReport.billedPaymentSummery.cardTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>                   
+                    </p:dataTable>
 
 
-                <p:spacer height="30"/>
+                    <p:spacer height="30"/>
 
-                <h:panelGrid columns="2" style="min-width: 100%;">
-                    <h:outputLabel value="Net Cash"/>
-                    <h:outputLabel value="#{pharmacySaleReport.grantCashTotal}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                    <h:outputLabel value="Net Credit"/>
-                    <h:outputLabel value="#{pharmacySaleReport.grantCreditTotal}" >
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                    <h:outputLabel value="Net Card"/>
-                    <h:outputLabel value="#{pharmacySaleReport.grantCardTotal}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel>
-                </h:panelGrid>
+                    <h:panelGrid columns="2" style="min-width: 100%;">
+                        <h:outputLabel value="Net Cash"/>
+                        <h:outputLabel value="#{pharmacySaleReport.grantCashTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <h:outputLabel value="Net Credit"/>
+                        <h:outputLabel value="#{pharmacySaleReport.grantCreditTotal}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <h:outputLabel value="Net Card"/>
+                        <h:outputLabel value="#{pharmacySaleReport.grantCardTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+                
+                
 
 
 

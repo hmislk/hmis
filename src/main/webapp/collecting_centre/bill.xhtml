@@ -11,13 +11,7 @@
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
-
-
-
-
     <ui:define name="content">
-
-
         <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier'))}" >
             You are NOT authorized
         </h:panelGroup>
@@ -87,7 +81,8 @@
                                                     id="acIx"
                                                     class="w-100"
                                                     scrollHeight="200"
-                                                    value="#{collectingCentreBillController.currentBillItem.item}" var="ix" >
+                                                    converter="itemLightConverter"
+                                                    value="#{collectingCentreBillController.itemLight}" var="ix" >
                                                     <f:selectItems value="#{collectingCentreBillController.opdItems}"
                                                                    var="item" 
                                                                    itemLabel="#{item.name}"
@@ -111,7 +106,7 @@
                                                         </h:panelGroup>
                                                     </p:column>
                                                     <p:column  headerText="Dept">
-                                                        <h:outputText value="#{ix.department.name}"></h:outputText>
+                                                        <h:outputText value="#{ix.departmentName}"></h:outputText>
                                                     </p:column>
                                                     <p:column  headerText="Code">
                                                         <h:outputText value="#{ix.code}"></h:outputText>

@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
+import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CssVerticalAlign;
@@ -97,6 +98,10 @@ public class EnumController implements Serializable {
 
     public RestAuthenticationType[] getRestAuthenticationTypes() {
         return RestAuthenticationType.values();
+    }
+    
+    public BillItemStatus[] getBillItemStatuses() {
+        return BillItemStatus.values();
     }
 
     public AdmissionStatus[] getAdmissionStatuses() {

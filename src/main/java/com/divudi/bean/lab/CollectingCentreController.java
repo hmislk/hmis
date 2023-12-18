@@ -14,7 +14,9 @@ import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -62,11 +64,11 @@ public class CollectingCentreController implements Serializable {
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems=institutionController.completeInstitution(null, InstitutionType.CollectingCentre);
+            selectedItems = institutionController.completeInstitution(null, InstitutionType.CollectingCentre);
         } else {
-            selectedItems=institutionController.completeInstitution(selectText, InstitutionType.CollectingCentre);
+            selectedItems = institutionController.completeInstitution(selectText, InstitutionType.CollectingCentre);
         }
-        
+
 //        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false "
 //                + "and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  "
 //                + "and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -90,6 +92,51 @@ public class CollectingCentreController implements Serializable {
         items = null;
     }
 
+    public void generateAndAssignCode() {
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret"
+                + " and c.institutionType=:t "
+                + " and c.code is not null "
+                + " order by c.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CollectingCentre);
+        Institution cc = getFacade().findFirstByJpql(jpql, m);
+        if (cc == null) {
+            return;
+        }
+        String previousCode = cc.getCode();
+        getCurrent().setCode(newCode(previousCode));
+    }
+
+    public String newCode(String previousCode) {
+        if (previousCode == null || previousCode.isEmpty()) {
+            return "CC1"; // Default code if there's no previous code, adjust as needed
+        }
+
+        // Splitting the previous code into the string part and numeric part
+        int i = previousCode.length() - 1;
+        while (i >= 0 && Character.isDigit(previousCode.charAt(i))) {
+            i--;
+        }
+
+        String prefix = previousCode.substring(0, i + 1);
+        String numberPart = previousCode.substring(i + 1);
+
+        // Parsing the numeric part to an integer and incrementing it
+        int number;
+        try {
+            number = Integer.parseInt(numberPart);
+        } catch (NumberFormatException e) {
+            return prefix + "1"; // Default to 1 if parsing fails
+        }
+        number++;
+
+        // Combining the incremented number with the prefix
+        return prefix + number;
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -103,6 +150,21 @@ public class CollectingCentreController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void save(Institution cc) {
+        if (cc == null) {
+            return;
+        }
+        if (cc.getId() != null) {
+            getFacade().edit(cc);
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            cc.setCreatedAt(new Date());
+            cc.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(cc);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -131,6 +193,44 @@ public class CollectingCentreController implements Serializable {
             current.setInstitutionType(InstitutionType.CollectingCentre);
         }
         return current;
+    }
+
+    public Institution findCollectingCentreByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CollectingCentre);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+    public Institution findCollectingCentreByCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        if (code.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.code=:code";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.CollectingCentre);
+        m.put("code", code);
+        return getFacade().findFirstByJpql(jpql, m);
     }
 
     public void setCurrent(Institution current) {
@@ -173,9 +273,9 @@ public class CollectingCentreController implements Serializable {
     public void setInstitutionController(InstitutionController institutionController) {
         this.institutionController = institutionController;
     }
-    
+
     public CollectingCentrePaymentMethod[] getCollectingCentrePaymentMethod() {
         return CollectingCentrePaymentMethod.values();
     }
-    
+
 }
