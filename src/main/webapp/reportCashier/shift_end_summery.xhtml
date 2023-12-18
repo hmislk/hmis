@@ -17,6 +17,23 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel header="Shift End Summary">
+                    <h:panelGrid columns="2" styleClass="noPrintButton" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" class="mx-4" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" class="mx-4" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                        value="#{commonReport.webUser}"
+                                        class="mx-4 "></p:autoComplete>
+
+                    </h:panelGrid>
+
                     <div >
                         <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
                                          styleClass="noPrintButton" style="float: right;"
@@ -30,8 +47,8 @@
                                          class="noPrintButton mx-1 ui-button-warning" style="float: right;"
                                          action="#{commonReport.createCashierTableByUser()}" />  
                         <p:defaultCommand target="btnRefresh"/>
-                        
-                        
+
+
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-1" icon="fas fa-print" style="float: right;" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
@@ -48,7 +65,7 @@
                                         <td><h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                                         </td>
                                     </tr>
-                                    
+
                                     <tr>
                                         <td> <h:outputLabel value="From "/></td>
                                         <td  class="px-4">:</td>
@@ -66,29 +83,12 @@
                                         </td>
                                     </tr>
                                 </table>
-                               <br/>
+                                <br/>
                                 <h:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} " />
                             </f:facet>
                             <f:facet name="footer">
 
                             </f:facet>
-
-
-                            <h:panelGrid columns="6" styleClass="noPrintButton" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>
-
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>
-                                <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                                <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                                forceSelection="true"
-                                                var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                                value="#{commonReport.webUser}" ></p:autoComplete>
-
-                            </h:panelGrid>
 
                             <ca:opdBilledSummery data="#{commonReport.userBillsOwn}"/>
 
