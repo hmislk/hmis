@@ -59,13 +59,14 @@ import javax.servlet.http.HttpServletResponse;
 @SessionScoped
 public class ReportController implements Serializable {
     public void processCollectionCenterBalance() {
-        String jpql = "select cc "
-                + " from Institution cc "
+        String jpql = "select cc"
+                + " from Institution cc"
                 + " where cc.retired=:ret"
-                + " and cc.name = :i";
+                + " and cc = :i";
 
         Map<String, Object> m = new HashMap<>();
-         m.put("i", collectingCentre);
+        m.put("ret", false);
+        m.put("i", collectingCentre);
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
