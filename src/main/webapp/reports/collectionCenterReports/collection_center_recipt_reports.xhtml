@@ -15,7 +15,7 @@
                     <div class="container">
                         <div class="row mb-2">
                             <div class="col-12 my-4">
-                                <h2>Collection Center Wise Transaction Reports</h2>
+                                <h2>Collection Center Receipt Reports</h2>
                             </div>
                         </div>
 
@@ -204,7 +204,7 @@
                                 <p:commandButton ajax="false"
                                                  value="Process"
                                                  class="ui-button-warning"
-                                                 action="#{reportController.processCollectingCentreTransactionReport()}" />
+                                                 action="#{reportController.processCollectingCentreReciptReport()}" />
 <!--                                <p:commandButton ajax="false"
                                                  value="Download to Excel"
                                                  class="mx-1 ui-button-success"
@@ -217,7 +217,7 @@
                         </div>
                     </div>
 
-                    <p:dataTable value="#{reportController.billItems}" var="bi" id="tblExport">
+                    <p:dataTable value="#{reportController.bills}" var="bi" id="tblExport">
                         <!--                        //Mandatory filters
                         #{bi.bill.retired} - boolean - false
                         #{bi.retired} - boolean - false
@@ -244,32 +244,29 @@
                         <p:column headerText="S. No" >
                             <h:outputText value="#{bi.id}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Collecting center" >
-                            <h:outputText value="#{bi.bill.collectingCentre.name}" ></h:outputText>
-                        </p:column>
                         <p:column headerText="Bill No" >
-                            <h:outputText value="#{bi.bill.referralNumber}" ></h:outputText>
+                            <h:outputText value="#{bi.referralNumber}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Before Balance" >
-                            <h:outputText value="#{bi.bill.cashPaid}" ></h:outputText>
+                        <p:column headerText="Billed at" >
+                            <h:outputText value="#{bi.createdAt}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Transaction Value(Hospital Amount)" >
-                            <h:outputText value="#{bi.bill.hospitalFee}" ></h:outputText>
+                        <p:column headerText="Billed By" >
+                            <h:outputText value="#{bi.creater.name}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC(%)" >
-                            <h:outputText value="#{bi.bill.discountPercent} %" ></h:outputText>
+                        <p:column headerText="Payment Method" >
+                            <h:outputText value="#{bi.paymentMethod}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC Amount" >
-                            <h:outputText value="#{bi.bill.cashBalance}" ></h:outputText>
+                        <p:column headerText="Agent Code" >
+                            <h:outputText value="#{bi.collectingCentre.code}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="After Balance" >
-                            <h:outputText value="#{bi.bill.paidAmount}" ></h:outputText>
+                        <p:column headerText="Agent Name" >
+                            <h:outputText value="#{bi.collectingCentre.name}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Creater" >
-                            <h:outputText value="#{bi.bill.creater}" ></h:outputText>
+                        <p:column headerText="Amount" >
+                            <h:outputText value="#{bi.balance}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Created Date" >
-                            <h:outputText value="#{bi.bill.createdAt}" ></h:outputText>
+                        <p:column headerText="Comments" >
+                            <h:outputText value="#{bi.comments}" ></h:outputText>
                         </p:column>
                     </p:dataTable>
                 </h:form>
