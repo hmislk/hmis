@@ -11,53 +11,80 @@
             <ui:define name="subcontent">
 
                 <h:form >
+
                     <p:panel header="Collection Center Bill Wise Detail Report" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="From Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            <p:outputLabel value="Institution/Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdInstitution"
-                                value="#{reportController.institution}"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="From Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.fromDate}" 
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
 
-                            </p:selectOneMenu>
+                            <div class="col-md-2">
+                                <p:outputLabel value="To Date" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker value="#{reportController.toDate}"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            </div>
+                        </div>
 
-                            <p:spacer></p:spacer>
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Institution/Branch" >
+                                </p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    id="cmdInstitution"
+                                    value="#{reportController.institution}"
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100"
+                                    filter="true"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.items}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}"></f:selectItems>
 
-                            <p:outputLabel value="Service Group" />
-                            <p:selectOneMenu 
-                                value="null"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="Select Service Group"></f:selectItem>
-                                <f:selectItems value="#{serviceController.category.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
 
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Service Name" />
-                            <p:selectOneMenu 
+                            <div class="col-md-2">
+                                <p:outputLabel value="Service Group" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
+                                    value="null"
+                                    filter="true"
+                                    style="overflow-x: auto;"
+                                    class="w-100"
+                                    >
+                                    <f:selectItem itemLabel="Select Service Group"></f:selectItem>
+                                    <f:selectItems value="#{serviceController.category.items}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}"></f:selectItems>
+
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Service Name" />
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu 
                                     filter="true"
                                     id="acIx"
                                     class="w-100"
+                                    style=" max-width: 100%; overflow-x: auto; "
                                     converter="itemLightConverter"
                                     value="#{reportController.itemLight}" var="ix" >
                                     <f:selectItems value="#{reportController.investigationsAndServices}"
@@ -84,59 +111,75 @@
                                         <h:outputText value="#{ix.total}"></h:outputText>
                                     </p:column>
                                 </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Visit Type"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu value="null">
+                                    <f:selectItem itemLabel="All visits"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
 
-                            <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Visit Type"></p:outputLabel>
-                            <p:selectOneMenu value="null">
-                                <f:selectItem itemLabel="All visits"/>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Payment Mode"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.paymentMethod}">
-                                <f:selectItem itemLabel="All visits"/>
-                                <f:selectItem itemLabel="Select" />                           
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Payment Mode"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu value="#{reportController.paymentMethod}">
+                                    <f:selectItem itemLabel="All visits"/>
+                                    <f:selectItem itemLabel="Select" />                           
                                     <f:selectItems value="#{enumController.paymentMethods}" />  
-                            </p:selectOneMenu>
-                            
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Service Type"></p:outputLabel>
-                            <p:selectOneMenu value="null">
-                                <f:selectItem itemLabel="Select Type"/>
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
-                            </p:commandButton>
+                                </p:selectOneMenu>
+                            </div>
 
-                        </h:panelGrid>
+                            <div class="col-md-2">
+                                <p:outputLabel value="Service Type"></p:outputLabel>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu value="null">
+                                    <f:selectItem itemLabel="Select Type"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
                         
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Institution/Branch :  "/>
-                            <h:outputLabel value="#{reportController.institution}"  ></h:outputLabel>
 
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                            
-                            <h:outputLabel value="Service Group :  "/>
-                             <h:outputLabel value="null"  ></h:outputLabel>
-                             
-                             <h:outputLabel value="Service Name :  "/>
-                             <h:outputLabel value="null"  ></h:outputLabel>
-
-                             <h:outputLabel value="Visit Type :  "/>
-                             <h:outputLabel value="null"  ></h:outputLabel>
-                             
-                             <h:outputLabel value="Professional Fee :  "/>
-                             <h:outputLabel value="null"  ></h:outputLabel>
-
-
-                        </h:panelGrid>
+                        <!--                        <h:panelGrid columns="2">
+                                                    <h:outputLabel value="Institution/Branch :  "/>
+                                                    <h:outputLabel value="#{reportController.institution}"  ></h:outputLabel>
+                        
+                                                    <h:outputLabel value="From Date :  "/>
+                                                    <h:outputLabel value="#{reportController.fromDate}"  >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputLabel>
+                        
+                                                    <h:outputLabel value="To Date :  "/>
+                                                    <h:outputLabel value="#{reportController.toDate}"  >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                    </h:outputLabel>
+                                                    
+                                                    <h:outputLabel value="Service Group :  "/>
+                                                     <h:outputLabel value="null"  ></h:outputLabel>
+                                                     
+                                                     <h:outputLabel value="Service Name :  "/>
+                                                     <h:outputLabel value="null"  ></h:outputLabel>
+                        
+                                                     <h:outputLabel value="Visit Type :  "/>
+                                                     <h:outputLabel value="null"  ></h:outputLabel>
+                                                     
+                                                     <h:outputLabel value="Professional Fee :  "/>
+                                                     <h:outputLabel value="null"  ></h:outputLabel>
+                        
+                        
+                                                </h:panelGrid>-->
 
 
                         <p:dataTable value="#{reportController.bills}" var="c" >
@@ -158,37 +201,37 @@
                             <p:column headerText="Consultant No" >
                                 <h:outputText value="#{c.referredInstituteOrDoctor.name}" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Service Name" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Quantity" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Base Price" >
                                 <h:outputText value="#{c.total}" ></h:outputText>
                             </p:column>
-                            
+
                             //Base price means total//
-                            
+
                             <p:column headerText="Disc Amount" >
                                 <h:outputText value="#{c.discount}" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Hospital Fee" >
                                 <h:outputText value="#{c.hospitalFee}" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Sponser Payable" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Patient Payable" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Total Patient Pay" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
@@ -196,6 +239,8 @@
                         </p:dataTable>
 
                     </p:panel>
+
+
 
                 </h:form>
 
