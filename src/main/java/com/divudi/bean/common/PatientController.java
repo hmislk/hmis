@@ -716,7 +716,7 @@ public class PatientController implements Serializable {
             return "";
         }
         billPackageMedicalController.clearBillValues();
-        billPackageMedicalController.setSearchedPatient(getCurrent());
+        billPackageMedicalController.setPatient(getCurrent());
 //        appointmentController.prepereForInwardAppointPatient();
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
@@ -1334,6 +1334,11 @@ public class PatientController implements Serializable {
             patientSearched = null;
             JsfUtil.addErrorMessage("Pleace Select Patient");
         }
+    }
+
+    public void quickSearchNewPatient(ControllerWithPatient controller) {
+        quickSearchPatientList = null;
+        controller.setPatient(new Patient());
     }
 
     public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {

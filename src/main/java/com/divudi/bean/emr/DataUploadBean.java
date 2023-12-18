@@ -1,21 +1,13 @@
 package com.divudi.bean.emr;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
@@ -27,8 +19,10 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.PatientController;
+import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.lab.CollectingCentreController;
 import com.divudi.bean.lab.InvestigationCategoryController;
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.bean.lab.InvestigationTubeController;
@@ -39,6 +33,7 @@ import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.EncounterType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
@@ -52,6 +47,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.lab.Investigation;
@@ -66,7 +62,6 @@ import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.inject.Named;
@@ -140,6 +135,10 @@ public class DataUploadBean implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     ItemFeeController itemFeeController;
+    @Inject
+    CollectingCentreController collectingCentreController;
+    @Inject
+    RouteController routeController;
 
     @EJB
     PatientFacade patientFacade;
@@ -152,7 +151,9 @@ public class DataUploadBean implements Serializable {
     private String outputString;
     private List<Item> items;
     private List<ItemFee> itemFees;
+    private List<Institution> collectingCentres;
     private StreamedContent templateForItemWithFeeUpload;
+    private StreamedContent templateForCollectingCentreUpload;
 
     public UploadedFile getFile() {
         return file;
@@ -273,6 +274,142 @@ public class DataUploadBean implements Serializable {
         }
     }
 
+    public void uploadCollectingCentres() {
+        collectingCentres = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                collectingCentres = readCollectingCentresFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> collectingCentresList = new ArrayList<>();
+        Institution collectingCentre;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            collectingCentre = null;
+
+            String code = null;
+            String collectingCentreName = null;
+            Boolean active = null;
+            Boolean withCommissionStatus = null;
+            String routeName = null;
+            Double percentage = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            if (code == null || code.trim().equals("")) {
+                continue;
+            }
+
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                collectingCentreName = agentNameCell.getStringCellValue();
+
+            }
+            if (collectingCentreName == null || collectingCentreName.trim().equals("")) {
+                continue;
+            }
+
+            Cell activeCell = row.getCell(2);
+            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
+                active = activeCell.getBooleanCellValue();
+            }
+            if (active == null) {
+                active = false;
+            }
+
+            Cell withCommissionStatusCell = row.getCell(3);
+            if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
+                withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
+            }
+            if (withCommissionStatus == null) {
+                withCommissionStatus = false;
+            }
+
+            Cell routeNameCell = row.getCell(4);
+            if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
+                routeName = routeNameCell.getStringCellValue();
+
+            }
+            if (routeName == null || routeName.trim().equals("")) {
+                continue;
+            }
+
+            Cell percentageCell = row.getCell(5);
+            if (percentageCell != null && percentageCell.getCellType() == CellType.NUMERIC) {
+                percentage = percentageCell.getNumericCellValue();
+
+            }
+            if (percentage == null) {
+                percentage = 0.0;
+            }
+
+            if (code.trim().equals("")) {
+                continue;
+            }
+
+            if (collectingCentreName.trim().equals("")) {
+                continue;
+            }
+
+            collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
+            if (collectingCentre != null) {
+                continue;
+            }
+            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
+            if (collectingCentre != null) {
+                continue;
+            }
+            collectingCentre = new Institution();
+            collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
+            collectingCentre.setCode(code);
+            collectingCentre.setName(collectingCentreName);
+            if(withCommissionStatus){
+                collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
+            }else{
+                collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
+            }
+            
+            collectingCentre.setInactive(!active);
+            
+            Route r = routeController.findRouteByName(routeName);
+            if(r==null){
+                r = new Route();
+                r.setName(routeName);
+                r.setCreatedAt(new Date());
+                r.setCreater(sessionController.getLoggedUser());
+                routeController.save(r);
+            }
+            
+            collectingCentre.setRoute(r);
+            
+            collectingCentreController.save(collectingCentre);
+
+            collectingCentresList.add(collectingCentre);
+        }
+
+        return collectingCentresList;
+    }
+
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
@@ -301,8 +438,10 @@ public class DataUploadBean implements Serializable {
             try {
                 InputStream inputStream = file.getInputStream();
                 readDiagnosesFromExcel(inputStream);
+
             } catch (IOException ex) {
-                Logger.getLogger(DataUploadBean.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DataUploadBean.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -1410,7 +1549,6 @@ public class DataUploadBean implements Serializable {
 
         // Hiding the institution sheet
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
-
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
         String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Code", "Category", "Institution", "Department", "Inward Charge Type", "Item Type", "Hospital Fee", "Collecting Centre Fee"};
@@ -1449,6 +1587,49 @@ public class DataUploadBean implements Serializable {
                 .build();
     }
 
+    public StreamedContent getTemplateForCollectingCentreUpload() {
+        try {
+            createTemplateForCollectingCentreUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForCollectingCentreUpload;
+    }
+
+    public void createTemplateForCollectingCentreUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Collecting Centres");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Code", "Agent Name", "Active", "With Commission Status", "Route Name", "Percentage"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForCollectingCentreUpload = DefaultStreamedContent.builder()
+                .name("template_for_collecting_centres_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
     public String getOutputString() {
         return outputString;
     }
@@ -1471,6 +1652,14 @@ public class DataUploadBean implements Serializable {
 
     public void setItemFees(List<ItemFee> itemFees) {
         this.itemFees = itemFees;
+    }
+
+    public List<Institution> getCollectingCentres() {
+        return collectingCentres;
+    }
+
+    public void setCollectingCentres(List<Institution> collectingCentres) {
+        this.collectingCentres = collectingCentres;
     }
 
 }

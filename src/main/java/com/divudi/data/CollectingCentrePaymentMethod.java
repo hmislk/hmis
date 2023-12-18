@@ -10,7 +10,7 @@ package com.divudi.data;
  */
 public enum CollectingCentrePaymentMethod {
     FULL_PAYMENT_WITH_COMMISSION,
-    DEDUCTED_PAYMENT;
+    PAYMENT_WITHOUT_COMMISSION;
 
     public String getLabel(){
         return this.toString();

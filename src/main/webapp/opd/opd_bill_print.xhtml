@@ -32,8 +32,15 @@
                                         <p:printer target="groupPrint" />
                                     </p:commandButton>
 
+                                    <p:commandButton value="New OPD Bill" 
+                                                     class="ui-button-primary m-1"
+                                                     icon="fa fa-plus-circle"
+                                                     action="#{opdBillController.navigateToNewOpdBill()}"
+                                                     ajax="false">
+                                    </p:commandButton>
+
                                     <!-- Print Lookup Button -->
-                                    <p:commandButton value="Print Lookup" 
+                                    <p:commandButton value="Patient Lookup" 
                                                      class="ui-button-primary m-1"
                                                      icon="fa fa-search"
                                                      action="#{opdBillController.navigateToSearchPatients()}"

@@ -12,6 +12,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -112,6 +113,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     PaymentSchemeController paymentSchemeController;
 
     //</editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
 
@@ -145,53 +147,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     Institution referredByInstitution;
     String referralId;
 
+    private ItemLight itemLight;
+    private List<ItemLight> opdPackages;
+
     //</editor-fold>
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
-        return paymentMethodData;
-    }
-
-    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        this.paymentMethodData = paymentMethodData;
-    }
-
-    public Title[] getTitle() {
-        return Title.values();
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
-    }
-
-    public List<Bill> getBills() {
-        if (bills == null) {
-            bills = new ArrayList<Bill>();
-        }
-        return bills;
-    }
-
-    public void setBills(List<Bill> bills) {
-        this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
+    
     private void savePatient() {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient to save");
@@ -245,30 +205,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
-    }
-
-    public BillSessionFacade getBillSessionFacade() {
-        return billSessionFacade;
-    }
-
-    public void setBillSessionFacade(BillSessionFacade billSessionFacade) {
-        this.billSessionFacade = billSessionFacade;
-    }
-
-    public ServiceSessionBean getServiceSessionBean() {
-        return serviceSessionBean;
-    }
-
-    public void setServiceSessionBean(ServiceSessionBean serviceSessionBean) {
-        this.serviceSessionBean = serviceSessionBean;
-    }
-
-    public CashTransactionBean getCashTransactionBean() {
-        return cashTransactionBean;
-    }
-
-    public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
-        this.cashTransactionBean = cashTransactionBean;
     }
 
     private void saveBatchBill() {
@@ -365,16 +301,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         printPreview = true;
     }
 
-    private List<Packege> opdPackages;
-
-    public List<Packege> getOpdPackege() {
-        if (opdPackages == null) {
-            opdPackages = itemApplicationController.getPackages();
-        }
-        //System.out.println("Packege : " + opdPackages);
-        return opdPackages;
-    }
-
     private Bill saveBill(Department bt, BilledBill temp) {
 
         //getCurrent().setCashBalance(cashBalance); 
@@ -417,14 +343,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return temp;
 
-    }
-
-    public PaymentSchemeController getPaymentSchemeController() {
-        return paymentSchemeController;
-    }
-
-    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
-        this.paymentSchemeController = paymentSchemeController;
     }
 
     private boolean errorCheck() {
@@ -560,16 +478,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         calTotals();
     }
 
-    public String navigateToMedicalPakageBillingFromMenu() {
-        clearBillValues();
-        setPatient(getPatient());
-//        appointmentController.prepereForInwardAppointPatient();
-//        appointmentController.setSearchedPatient(getCurrent());
-//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
-//        appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/opd_bill_package_medical";
-    }
-
     public void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
@@ -627,6 +535,75 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
     }
 
+    @Override
+    public Patient getPatient() {
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="navigater">
+    String navigateToNewOpdPackageBill(Patient patient) {
+        clearBillItemValues();
+        clearBillValues();
+        printPreview = false;
+        this.patient = patient;
+        return "/opd/opd_bill_package?faces-redirect=true";
+    }
+    
+    public String navigateToMedicalPakageBillingFromMenu() {
+        clearBillValues();
+        setPatient(getPatient());
+//        appointmentController.prepereForInwardAppointPatient();
+//        appointmentController.setSearchedPatient(getCurrent());
+//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+//        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/opd_bill_package_medical?faces-redirect=true";
+    }
+    //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getter and Setter">
+    public List<ItemLight> getOpdPackages() {
+        if (opdPackages == null) {
+            opdPackages = itemApplicationController.getPackages();
+        }
+        //System.out.println("Packege : " + opdPackages);
+
+        return opdPackages;
+    }
+
+    public void setOpdPackages(List<ItemLight> opdPackages) {
+        this.opdPackages = opdPackages;
+    }
+    
+    public BillSessionFacade getBillSessionFacade() {
+        return billSessionFacade;
+    }
+
+    public void setBillSessionFacade(BillSessionFacade billSessionFacade) {
+        this.billSessionFacade = billSessionFacade;
+    }
+
+    public ServiceSessionBean getServiceSessionBean() {
+        return serviceSessionBean;
+    }
+
+    public void setServiceSessionBean(ServiceSessionBean serviceSessionBean) {
+        this.serviceSessionBean = serviceSessionBean;
+    }
+
+    public CashTransactionBean getCashTransactionBean() {
+        return cashTransactionBean;
+    }
+
+    public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
+        this.cashTransactionBean = cashTransactionBean;
+    }
+    
+    
     private BillFacade getEjbFacade() {
         return billFacade;
     }
@@ -669,16 +646,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
         calTotals();
-    }
-
-    @Override
-    public Patient getPatient() {
-        return patient;
-    }
-
-    @Override
-    public void setPatient(Patient patient) {
-        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -747,6 +714,52 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             lstBillEntries = new ArrayList<BillEntry>();
         }
         return lstBillEntries;
+    }
+    
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public Title[] getTitle() {
+        return Title.values();
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
+    }
+
+    public List<Bill> getBills() {
+        if (bills == null) {
+            bills = new ArrayList<Bill>();
+        }
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {
@@ -925,14 +938,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.referralId = referralId;
     }
 
-    String navigateToNewOpdPackageBill(Patient patient) {
-        clearBillItemValues();
-        clearBillValues();
-        printPreview = false;
-        this.patient = patient;
-        return "/opd/opd_bill_package";
-    }
-
     public Institution getCollectingCentre() {
         return collectingCentre;
     }
@@ -941,14 +946,26 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.collectingCentre = collectingCentre;
     }
 
-    public List<Packege> getOpdPackages() {
-        return opdPackages;
+    public ItemLight getItemLight() {
+
+        return itemLight;
     }
 
-    public void setOpdPackages(List<Packege> opdPackages) {
-        this.opdPackages = opdPackages;
+    public void setItemLight(ItemLight itemLight) {
+
+        this.itemLight = itemLight;
+    }
+    
+    public PaymentSchemeController getPaymentSchemeController() {
+        return paymentSchemeController;
     }
 
+    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
+        this.paymentSchemeController = paymentSchemeController;
+    }
+
+    //</editor-fold>
+    
     /**
      *
      */
@@ -957,7 +974,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.length() == 0){
                 return null;
             }
             BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().

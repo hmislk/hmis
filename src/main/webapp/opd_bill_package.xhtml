@@ -59,8 +59,8 @@
                                                 id="acIx"
                                                 class="w-100"
                                                 scrollHeight="200"
-                                                value="#{billPackageController.currentBillItem.item}" var="ix" >
-                                                <f:selectItems value="#{billPackageController.opdPackege}"
+                                                value="#{billPackageController.itemLight}" var="ix" >
+                                                <f:selectItems value="#{billPackageController.opdPackages}"
                                                                var="package" 
                                                                itemLabel="#{package.name}"
                                                                itemValue="#{package}" >

@@ -55,21 +55,40 @@
                             
                             <p:outputLabel value="Service Name" />
                             <p:selectOneMenu 
-                                value="null"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="Select Service Name"></f:selectItem>
-                                <f:selectItems value="#{serviceController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
-
-                            </p:selectOneMenu>
+                                    filter="true"
+                                    id="acIx"
+                                    class="w-100"
+                                    converter="itemLightConverter"
+                                    value="#{reportController.itemLight}" var="ix" >
+                                    <f:selectItems value="#{reportController.investigationsAndServices}"
+                                                   var="item" 
+                                                   itemLabel="#{item.name}"
+                                                   itemValue="#{item}" >
+                                    </f:selectItems>
+                                    <p:column  headerText="Name">
+                                        <f:facet name="header" >
+                                            Name
+                                        </f:facet>
+                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                            <h:outputText value=" (#{ix.fullName})" ></h:outputText>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column  headerText="Dept">
+                                        <h:outputText value="#{ix.departmentName}"></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Code">
+                                        <h:outputText value="#{ix.code}"></h:outputText>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Value">
+                                        <h:outputText value="#{ix.total}"></h:outputText>
+                                    </p:column>
+                                </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
                             
                             <p:outputLabel value="Visit Type"></p:outputLabel>
-                            <p:selectOneMenu value="">
+                            <p:selectOneMenu value="null">
                                 <f:selectItem itemLabel="All visits"/>
                             </p:selectOneMenu>
                             
@@ -82,10 +101,10 @@
                             
                             <p:spacer width="20"></p:spacer>
                             <p:outputLabel value="Service Type"></p:outputLabel>
-                            <p:selectOneMenu value="">
+                            <p:selectOneMenu value="null">
                                 <f:selectItem itemLabel="Select Type"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Process" action="null" >
+                            <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -120,24 +139,24 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable value="null" var="c">
+                        <p:dataTable value="#{reportController.bills}" var="c" >
                             <p:column headerText="MRN No" >
-                                <h:outputText value="" ></h:outputText>
+                                <h:outputText value="#{c.patient.phn}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Patient Name" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.patient.person.nameWithTitle}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Invoice No" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.deptId}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Invoice Date" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.billDate}" ></h:outputText>
                             </p:column>
                             <p:column headerText="BHT No" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.patientEncounter.bhtNo}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Consultant No" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.referredInstituteOrDoctor.name}" ></h:outputText>
                             </p:column>
                             
                             <p:column headerText="Service Name" >
@@ -149,15 +168,17 @@
                             </p:column>
                             
                             <p:column headerText="Base Price" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.total}" ></h:outputText>
                             </p:column>
                             
+                            //Base price means total//
+                            
                             <p:column headerText="Disc Amount" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.discount}" ></h:outputText>
                             </p:column>
                             
                             <p:column headerText="Hospital Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.hospitalFee}" ></h:outputText>
                             </p:column>
                             
                             <p:column headerText="Sponser Payable" >

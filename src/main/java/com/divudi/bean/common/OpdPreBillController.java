@@ -15,6 +15,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.ItemLight;
 import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
 import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
 import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION;
@@ -147,6 +148,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     //Temprory Variable
     List<Bill> bills;
     Bill bill;
+    private ItemLight itemLight;
     boolean foreigner = false;
     Date sessionDate;
     String strTenderedValue;
@@ -198,8 +200,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private List<BillEntry> lstBillEntriesPrint;
 
     List<BillFeePayment> billFeePayments;
+    private List<ItemLight> opdItems;
     
-    private List<Item> opdItems;
     // </editor-fold>
 
     public double getCashRemain() {
@@ -236,15 +238,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
     }
 
-    public List<Item> fillOpdItems() {
+    public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
             case ALL_ITEMS:
                 return itemApplicationController.getInvestigationsAndServices();
             case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
-                return itemMappingController.fillItemByDepartment(sessionController.getDepartment());
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
             case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
-                return itemMappingController.fillItemByInstitution(sessionController.getInstitution());
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
             case ITEMS_OF_LOGGED_DEPARTMENT:
                 return itemController.getDepartmentItems();
             case ITEMS_OF_LOGGED_INSTITUTION:
@@ -659,7 +661,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             return null;
         }
 
-        Patient p = savePatient(getPatient());
+        savePatient(getPatient());
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
@@ -1449,6 +1451,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     @Override
     public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+        }
         return patient;
     }
 
@@ -1951,11 +1956,24 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.commonController = commonController;
     }
 
-    public List<Item> getOpdItems() {
+    public List<ItemLight> getOpdItems() {
         if (opdItems == null) {
             opdItems = fillOpdItems();
         }
-
         return opdItems;
+    }
+
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
     }
 }

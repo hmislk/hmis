@@ -80,7 +80,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class BillPackageMedicalController implements Serializable {
+public class BillPackageMedicalController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -99,8 +99,7 @@ public class BillPackageMedicalController implements Serializable {
     private YearMonthDay yearMonthDay;
     //Interface Data
     private PaymentScheme paymentScheme;
-    private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private Doctor referredBy;
     private Institution creditCompany;
     private Staff staff;
@@ -246,18 +245,18 @@ public class BillPackageMedicalController implements Serializable {
 
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
-            getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(new Date());
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
 
-            getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
 
-            getPersonFacade().create(getNewPatient().getPerson());
-            getPatientFacade().create(getNewPatient());
-            tmpPatient = getNewPatient();
+            getPersonFacade().create(getPatient().getPerson());
+            getPatientFacade().create(getPatient());
+            tmpPatient = getPatient();
 
         } else if (getPatientTabId().equals("tabSearchPt")) {
-            tmpPatient = getSearchedPatient();
+            tmpPatient = getPatient();
         }
     }
 
@@ -317,7 +316,7 @@ public class BillPackageMedicalController implements Serializable {
     
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
-        setSearchedPatient(getNewPatient());
+        setPatient(getPatient());
 
         return "/opd_bill_package_medical";
     }
@@ -328,7 +327,7 @@ public class BillPackageMedicalController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        savePatient(getSearchedPatient());
+        savePatient(getPatient());
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
@@ -467,17 +466,17 @@ public class BillPackageMedicalController implements Serializable {
     private boolean errorCheck() {
         if (getPatientTabId().toString().equals("tabNewPt")) {
 
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
                 UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+            if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
                 UtilityController.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
+            if (getPatient().getPerson().getPhone().length() < 1) {
                 UtilityController.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
@@ -1000,8 +999,8 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void clearBillValues() {
-        setNewPatient(null);
-        setSearchedPatient(null);
+        setPatient(null);
+        setPatient(null);
         setReferredBy(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -1144,27 +1143,21 @@ public class BillPackageMedicalController implements Serializable {
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
             Person p = new Person();
 
-            newPatient.setPerson(p);
+            patient.setPerson(p);
         }
-        return newPatient;
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
+    public void setPatient(Patient newPatient) {
+        this.patient = newPatient;
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
-    }
-
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
-    }
+    
 
     public Doctor getReferredBy() {
 
@@ -1315,7 +1308,7 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 

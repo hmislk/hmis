@@ -21,14 +21,7 @@
                 </f:facet>
                 <div class="row" >
                     <div class="col-4" >
-                        <p:commandButton 
-                            value="View Clinical Data"
-                            action="#{patientController.toEmrPatientProfile}"
-                            ajax="false"
-                            styleClass="mb-2 w-100">
-                            <f:setPropertyActionListener value="#{p}" target="#{admissionController.current}" />
-                        </p:commandButton>
-                        <common:patient_details patient="#{admissionController.current.patient}" class="w-100"/>
+                        <common:patient_details controller="#{admissionController}" class="w-100"/>
                         <common:admission_details admission="#{admissionController.current}" class="w-100"></common:admission_details>
                     </div>
 
@@ -148,7 +141,20 @@
                             </div>
                         </p:panel>
 
-
+                        <p:panel header="Pharmaceuticals &amp; Consumables">
+                            <div class="d-grid gap-3">
+                                <p:commandButton 
+                                    value="Pharmacy BHT Request" 
+                                    action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                                    actionListener="#{pharmacySaleBhtController.resetAll}"
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
+                            </div>
+                        </p:panel>
 
                     </div>
                     <div class="col-4"> 
@@ -182,22 +188,76 @@
 
                                         />
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Add Surgeries" 
+                                    icon="fa fa-clock"
+                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        />
+                                </p:commandButton>
+                                <p:commandButton 
+
+                                    ajax="false"
+                                    value="Add Services for Surgeries" 
+
+                                    icon="fa fa-briefcase"
+                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+
+                                        target="#{billBhtController.patientEncounter}"
+
+                                        />
+                                </p:commandButton>
                             </div>
 
 
                         </p:panel>
 
-                        <p:panel header="Pharmaceuticals &amp; Consumables">
+                        <p:panel header="Clinical Data">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    value="Pharmacy BHT Request" 
-                                    action="#{admissionController.navigateToPharmacyBhtRequest}" 
-                                    actionListener="#{pharmacySaleBhtController.resetAll}"
+                                    value="Patient Clinical Data - Patient History"
+                                    action="#{patientController.toEmrPatientProfile}"
+                                    ajax="false"
+                                    styleClass="mb-2 w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current.patient}"
+                                        target="#{patientController.current}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Clinical Dashboard - This Admissions Clinical Details" 
+                                    action="#{admissionController.navigateToInpatientClinicalData}" 
                                     icon="fa fa-prescription-bottle-alt"
                                     class="w-100">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Drug Chart" 
+                                    action="#{admissionController.navigateToInpatientDrugChart()}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Investigations" 
+                                    action="#{admissionController.navigateToInpatientInvestigations()}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Images" 
+                                    action="#{admissionController.navigateToInpatientImages}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Diagnosis Card" 
+                                    action="#{admissionController.navigateToInpatientDiagnosisCard()}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
                                 </p:commandButton>
                             </div>
                         </p:panel>

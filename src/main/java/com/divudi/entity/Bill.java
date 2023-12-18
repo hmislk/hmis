@@ -168,6 +168,7 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
+    @Deprecated //User from Institution
     Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;

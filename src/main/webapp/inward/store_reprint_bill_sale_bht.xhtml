@@ -15,45 +15,49 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Reprint" >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
+                    </p:panel>
 
-                            <hr/>
+                    <div class=" d-flex justify-content-between m-1">
+                        <div>
                             <p:commandButton value="Reprint" ajax="false">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
-                                            action="/store/store_cancel_bill_retail_bht"
+                                             icon="fa fa-ban"
+                                             class="m-2 ui-button-danger"
+                                             action="/store/store_cancel_bill_retail_bht"
                                              disabled="#{storeBillSearch.bill.cancelled}"  >                           
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
-                                            action="/store/store_bill_return_bht_issue"   
+                                             action="/store/store_bill_return_bht_issue"   
                                              disabled="#{storeBillSearch.bill.cancelled eq true}"  >                                
                                 <f:setPropertyActionListener value="#{storeBillSearch.bill}" 
                                                              target="#{storeBhtIssueReturnController.bill}"  />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel" class="m-2 ui-button-success"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton> 
+                        </div>
+                        <div>
+                            <p:commandButton ajax="false" value="Mark As Checked"
+                                             icon="fa fa-check-square"
+                                             class="m-2 ui-button-success"
+                                             action="#{storeBillSearch.markAsChecked()}"
+                                             rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                            <p:commandButton ajax="false" value="Mark As Un Check"
+                                             icon="fa fa-square"
+                                             class="m-2 ui-button-warning"
+                                             action="#{storeBillSearch.markAsUnChecked()}"
+                                             rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                            <p:commandButton ajax="false" value="Back To Interim"
+                                             icon="fa fa-backward"
+                                             class="m-2"
+                                             action="/inward/inward_bill_intrim"  />
+                        </div>
+                    </div>
 
 
-                        </f:facet>
-
-
-
-                    </p:panel>
-
-                    <p:panel>
-                        <p:commandButton ajax="false" value="Mark As Checked"
-                                        action="#{storeBillSearch.markAsChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                        <p:commandButton ajax="false" value="Mark As Un Check"
-                                        action="#{storeBillSearch.markAsUnChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                        <p:commandButton ajax="false" value="Back To Interim"
-                                        action="/inward/inward_bill_intrim"  />
-                    </p:panel>
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Matrix Department"/>
