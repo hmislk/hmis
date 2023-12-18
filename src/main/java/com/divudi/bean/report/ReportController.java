@@ -317,6 +317,67 @@ public class ReportController implements Serializable {
         billItems = billItemFacade.findByJpql(jpql, m);
     }
 
+    public void processCollectingCentreStatementReport() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret"
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+//        if (route != null) {
+//            jpql += " and bi.bill.fromInstitution.route = :route ";
+//            m.put("route", route);
+//        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bi.bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+//        if (toDepartment != null) {
+//            jpql += " and bi.bill.toDepartment = :dep ";
+//            m.put("dep", toDepartment);
+//        }
+//
+//        if (phn != null && !phn.isEmpty()) {
+//            jpql += " and bi.bill.patient.phn = :phn ";
+//            m.put("phn", phn);
+//        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bi.bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+//
+//        if (referringDoctor != null) {
+//            jpql += " and bi.bill.referredBy = :refDoc ";
+//            m.put("refDoc", referringDoctor);
+//        }
+//
+//        if (status != null) {
+//            jpql += " and bi.billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        billItems = billItemFacade.findByJpql(jpql, m);
+    }
+    
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
@@ -410,6 +471,67 @@ public class ReportController implements Serializable {
     }
     
     public void processCollectingCentreTransactionReport() {
+        String jpql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret"
+                + " and bill.billDate between :fd and :td "
+                + " and bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+
+        if (referringDoctor != null) {
+            jpql += " and bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+//        if (status != null) {
+//            jpql += " and billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        bills = billFacade.findByJpql(jpql, m);
+    }
+    
+    public void processCollectingCentreReciptReport() {
         String jpql = "select bill "
                 + " from Bill bill "
                 + " where bill.retired=:ret"
