@@ -49,14 +49,17 @@
                             </p:selectOneMenu>
 
 
-                            <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreTestWiseCountReport}" >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{reportController.processCollectingCentreTestWiseCountReport}" >
                             </p:commandButton>
 
                         </h:panelGrid>
 
                         <h:panelGrid columns="2">
 
-                            
+
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -69,8 +72,8 @@
 
                             <h:outputLabel value="CC Name :  "/>
                             <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
-                            
-                            
+
+
 
                         </h:panelGrid>
 
@@ -82,7 +85,7 @@
                             <p:column headerText="Test Name" >
                                 <h:outputText value="#{c.testName}" ></h:outputText>
                             </p:column>
-                          
+
                             <p:column headerText="Count" >
                                 <h:outputText value="#{c.count}" ></h:outputText>
                             </p:column>
@@ -98,7 +101,7 @@
                             <p:column headerText="Total Amount" >
                                 <h:outputText value="#{c.total}" ></h:outputText>
                             </p:column>
-                            
+
                         </p:dataTable>
 
                     </p:panel>
