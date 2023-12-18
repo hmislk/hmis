@@ -26,7 +26,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.RouteFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.FileOutputStream;
@@ -59,64 +59,16 @@ import javax.servlet.http.HttpServletResponse;
 @SessionScoped
 public class ReportController implements Serializable {
     public void processCollectionCenterBalance() {
-        String jpql = "select cc "
-                + " from Institution cc "
+        String jpql = "select cc"
+                + " from Institution cc"
                 + " where cc.retired=:ret"
-                + " and cc.billDate between :fd and :td "
-                + " and bill.billType = :bType";
+                + " and cc = :i";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
+        m.put("i", collectingCentre);
 
-        if (route != null) {
-            jpql += " and bill.fromInstitution.route = :route ";
-            m.put("route", route);
-        }
-
-        if (institution != null) {
-            jpql += " and bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (collectingCentre != null) {
-            jpql += " and bill.fromInstitution = :cc ";
-            m.put("cc", collectingCentre);
-        }
-
-        if (toDepartment != null) {
-            jpql += " and bill.toDepartment = :dep ";
-            m.put("dep", toDepartment);
-        }
-
-        if (phn != null && !phn.isEmpty()) {
-            jpql += " and bill.patient.phn = :phn ";
-            m.put("phn", phn);
-        }
-
-        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and bill.deptId = :inv ";
-            m.put("inv", invoiceNumber);
-        }
-
-//        if (itemLight != null) {
-//            jpql += " and bi.item.id = :item ";
-//            m.put("item", itemLight.getId());
-//        }
-
-        if (referringDoctor != null) {
-            jpql += " and bill.referredBy = :refDoc ";
-            m.put("refDoc", referringDoctor);
-        }
-
-//        if (status != null) {
-//            jpql += " and billItemStatus = :status ";
-//            m.put("status", status);
-//        }
-
-        bills = billFacade.findByJpql(jpql, m);
+        collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
     
     public void processCollectingCentreBillWiseDetailReport() {
@@ -185,7 +137,10 @@ public class ReportController implements Serializable {
 
     @EJB
     BillFacade billFacade;
-   
+    
+    @EJB
+    InstitutionFacade institutionFacade;
+    
     @Inject
     private InstitutionController institutionController;
 
@@ -235,6 +190,7 @@ public class ReportController implements Serializable {
     private List<BillItem> billItems;
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
+    private List<Institution> collectionCenters;
 
     private Date warrentyStartDate;
     private Date warrentyEndDate;
@@ -422,8 +378,6 @@ public class ReportController implements Serializable {
 
         billItems = billItemFacade.findByJpql(jpql, m);
     }
-    
-   
     
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
@@ -1588,7 +1542,14 @@ public class ReportController implements Serializable {
         this.testWiseCounts = testWiseCounts;
     }
 
-   
+    public List<Institution> getCollectionCenters() {
+        return collectionCenters;
+    }
+
+    public void setCollectionCenters(List<Institution> collectionCenters) {
+        this.collectionCenters = collectionCenters;
+    }
+
     
    
 
