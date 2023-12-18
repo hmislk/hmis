@@ -1315,7 +1315,7 @@ public class ReportController implements Serializable {
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
-                + "count(bi.item), "
+                + "count(bi.item.name), "
                 + "sum(bi.hospitalFee) , "
                 + "sum(bi.collectingCentreFee), "
                 + "sum(bi.staffFee), "
@@ -1386,7 +1386,7 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
         
-        jpql += " group by bi.item";
+        jpql += " group by bi.item.name";
 
         
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
