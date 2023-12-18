@@ -50,10 +50,13 @@
                             </p:selectOneMenu>
 
 
+                            <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreTestWiseCountReport}" >
+
                             <p:commandButton 
                                 ajax="false" 
                                 value="Process" 
                                 action="#{reportController.processCollectingCentreTestWiseCountReport}" >
+
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -73,7 +76,6 @@
 
                             <h:outputLabel value="CC Name :  "/>
                             <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
-
 
 
                         </h:panelGrid>
