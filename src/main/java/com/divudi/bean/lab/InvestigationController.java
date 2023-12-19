@@ -1436,11 +1436,8 @@ public class InvestigationController implements Serializable {
             getItemFacade().create(sc);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        System.out.println("Before recreate model");
         recreateModel();
-        System.out.println("After recreate model");
         getItems();
-        System.out.println("Execute getItems()");
     }
     
     

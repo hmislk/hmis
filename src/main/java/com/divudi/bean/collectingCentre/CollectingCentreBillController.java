@@ -9,7 +9,6 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
-import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -52,7 +51,9 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -74,6 +75,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -117,6 +119,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    AgentReferenceBookFacade agentReferenceBookFacade;
     /**
      * Controllers
      */
@@ -142,10 +146,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
-    @Inject
-    ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
+    @Inject
+    CategoryController categoryController;
     /**
      * Properties
      */
@@ -163,6 +167,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private Doctor referredBy;
     private Institution referredByInstitution;
     String referralId;
+    private List<String> referralIds;
     private Institution creditCompany;
     private Staff staff;
     Staff toStaff;
@@ -208,10 +213,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             JsfUtil.addErrorMessage("Please select a collecting centre");
             return;
         }
-        listnerSelectLabBooks();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
-    
+
     public void deselectCollectingCentre() {
         collectingCentre = null;
         itemController.setCcInstitutionItems(null);
@@ -247,8 +252,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    private Patient tmpPatient;
+
     List<Bill> bills;
     List<Bill> selectedBills;
     Double grosTotal;
@@ -464,9 +468,59 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         calTotals();
     }
 
-    public void listnerSelectLabBooks() {
-        channelBillController.fetchRecentChannelBooks(collectingCentre);
+    public void fillAvailableAgentReferanceNumbers(Institution ins) {
+        String sql;
+        referralIds = new ArrayList<>();
+        HashMap m = new HashMap();
+        sql = "select a from AgentReferenceBook a "
+                + " where a.retired=false "
+                + " and a.institution=:ins"
+                + " and a.deactivate=false "
+                + " and a.fullyUtilized=false "
+                + " order by a.id ";
+        m.put("ins", ins);
+        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
+        // Fetch all used reference numbers for this institution in one query
+        Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
+        
+        if (agentReferenceBooks.isEmpty()) {
+            ins.setAgentReferenceBooks(null);
+            return;
+        }
+        ins.setAgentReferenceBooks(agentReferenceBooks);
 
+        for (AgentReferenceBook a : agentReferenceBooks) {
+            boolean leavesRemain = false;
+            int start = (int) a.getStartingReferenceNumber();
+            int end = (int) a.getEndingReferenceNumber();
+
+            for (int i = start; i <= end; i++) {
+                String bookNo = a.getStrbookNumber();
+                String leafNumber = String.format("%02d", i);
+                String refNo = bookNo + leafNumber;
+
+                if (!usedReferenceNumbers.contains(refNo)) {
+                    leavesRemain = true;
+                    referralIds.add(refNo);
+                }
+            }
+            if (!leavesRemain) {
+                a.setFullyUtilized(true);
+                agentReferenceBookFacade.edit(a);
+            }
+        }
+    }
+
+    public Set<String> fetchUsedReferenceNumbers(Institution ins) {
+        String sql;
+        Set<String> usedRefNumbers = new HashSet<>();
+        Map m = new HashMap();
+        // Adjust this query to fetch only the reference numbers
+        sql = "select b.referenceNumber from Bill b where b.retired=false and b.institution=:ins";
+        m.put("ins", ins);
+        List<String> resultList = billFacade.findString(sql, m);
+        usedRefNumbers.addAll(resultList);
+        return usedRefNumbers;
     }
 
     public String getStrTenderedValue() {
@@ -682,7 +736,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 }
             }
 
-            myBill.setReferralNumber(referralId);
+            myBill.setReferenceNumber(referralId);
 
             getBillFacade().edit(myBill);
 
@@ -729,7 +783,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void settleBill() {
         Date startTime = new Date();
-
         if (errorCheck()) {
             return;
         }
@@ -750,7 +803,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getBillBean().calculateBillItems(b, getLstBillEntries());
             b.setBalance(0.0);
 //            b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-            b.setReferralNumber(referralId);
+            b.setReferenceNumber(referralId);
 
             createPaymentsForBills(b, getLstBillEntries());
 
@@ -764,7 +817,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 }
             }
 
-            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferralNumber());
+            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferenceNumber());
             AgentHistory ah = billSearch.fetchCCHistory(b);
             billSearch.createCollectingCenterfees(b);
             b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
@@ -793,7 +846,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         agentHistory.setBill(bill);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setReferenceNo(refNo);
+        agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
         ins.setBallance(ins.getBallance() + transactionValue);
@@ -931,14 +984,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         temp.setFromInstitution(temp.getInstitution());
 
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getPatient());
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(getPaymentMethod());
@@ -979,14 +1032,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         return insId;
     }
 
-    private boolean institutionReferranceNumberExist(Institution ins) {
+    private boolean collectingCenterReferranceNumberAlreadyUsed(Institution ins) {
         String jpql;
         HashMap m = new HashMap();
         jpql = "Select b from Bill b"
                 + " where b.retired = false "
                 + " and b.billType=:bt "
                 + " and b.institution=:ins "
-                + " and (b.referralNumber) =:rid ";
+                + " and (b.referenceNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
@@ -1018,10 +1071,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         if (referralId == null || referralId.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a referrance number");
             return true;
-        } else if (institutionReferranceNumberExist(collectingCentre)) {
-            JsfUtil.addErrorMessage("Referral number alredy entered");
-            return true;
-        }
+        } 
+//        else if (collectingCenterReferranceNumberAlreadyUsed(collectingCentre)) {
+//            JsfUtil.addErrorMessage("Referral number alredy entered");
+//            return true;
+//        }
 
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("Add tests");
@@ -1045,17 +1099,17 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return true;
         }
 
-//        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
+//        if (agentReferenceBookController.numberHasBeenIssuedToTheAgent(getReferralId())) {
 //            UtilityController.addErrorMessage("Invaild Reference Number.");
 //            return true;
 //        }
-        if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
-            UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+        if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
+            UtilityController.addErrorMessage("This Reference Number is alredy Used.");
             setReferralId("");
             return true;
         }
 
-        if (agentReferenceBookController.checkAgentReferenceNumber(collectingCentre, getReferralId())) {
+        if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
             UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
@@ -1134,7 +1188,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return itemController.getAllItems();
         }
     }
-    
+
     public ItemLight getItemLight() {
         if (getCurrentBillItem().getItem() != null) {
             itemLight = new ItemLight(getCurrentBillItem().getItem());
@@ -1150,6 +1204,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void addToBill() {
+        
+        if (collectingCentre == null) {
+            UtilityController.addErrorMessage("Please Select Collecting Center");
+            return;
+        }
+
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1163,18 +1223,22 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
 
+        if(getCurrentBillItem().getItem().getInstitution()==null){
+            getCurrentBillItem().getItem().setInstitution(collectingCentre);
+            itemController.saveSelected(getCurrentBillItem().getItem());
+        }
+        
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set Department to Item");
+            Department dep = departmentController.getDefaultDepatrment(collectingCentre);
+            getCurrentBillItem().getItem().setDepartment(dep);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please set Category to Item");
-            return;
-        }
-
-        if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Center");
+            Category c = categoryController.findAndCreateCategoryByName("Other");
+            getCurrentBillItem().getItem().setCategory(c);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
@@ -1196,7 +1260,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            UtilityController.addErrorMessage("Please enter the fess");
             return;
         }
         clearBillItemValues();
@@ -1829,14 +1893,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.billFeeFacade = billFeeFacade;
     }
 
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
-    }
-
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
@@ -2125,6 +2181,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public List<String> getReferralIds() {
+        return referralIds;
+    }
+
+    public void setReferralIds(List<String> referralIds) {
+        this.referralIds = referralIds;
     }
 
 }

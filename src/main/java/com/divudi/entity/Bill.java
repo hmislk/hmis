@@ -130,8 +130,8 @@ public class Bill implements Serializable {
     String qutationNumber;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution referredByInstitution;
-    @Column(name = "referralID")
-    String referralNumber;
+    @Column
+    String referenceNumber; //referenceNumber
 
     //Values
     double margin;
@@ -168,7 +168,7 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Deprecated //User from Institution
+    @Deprecated //Use fromInstitution
     Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;
@@ -1910,12 +1910,12 @@ public class Bill implements Serializable {
         this.referredByInstitution = referredByInstitution;
     }
 
-    public String getReferralNumber() {
-        return referralNumber;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setReferralNumber(String referralNumber) {
-        this.referralNumber = referralNumber;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public boolean isTransError() {
