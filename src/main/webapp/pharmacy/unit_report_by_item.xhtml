@@ -70,10 +70,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue By Item(Batch)"/>
                                     &#13;&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>
-                                    <h:outputLabel class="mx-2" value="To "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
+                                    <h:outputLabel value="From  "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDepartment.name}"/>
+                                    <h:outputLabel  value="To "/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDepartment.name}"/>
                                     &#13;&nbsp;
+                                    <br></br>
                                     <h:outputLabel value="From  "/>
                                     <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDate}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
