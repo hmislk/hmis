@@ -423,8 +423,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 

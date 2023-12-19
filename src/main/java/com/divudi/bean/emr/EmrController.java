@@ -101,13 +101,11 @@ public class EmrController implements Serializable {
     }
 
     public int getActiveIndexOfOpdVisit() {
-        System.out.println("getting activeIndexOfOpdVisit = " + activeIndexOfOpdVisit);
         return activeIndexOfOpdVisit;
     }
 
     public void setActiveIndexOfOpdVisit(int activeIndexOfOpdVisit) {
         this.activeIndexOfOpdVisit = activeIndexOfOpdVisit;
-        System.out.println("setting activeIndexOfOpdVisit = " + activeIndexOfOpdVisit);
     }
 
 }

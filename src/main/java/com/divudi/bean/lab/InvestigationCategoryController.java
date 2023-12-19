@@ -264,6 +264,10 @@ public class InvestigationCategoryController implements Serializable {
     public String navigateToOpdServiceSubCategory() {
         return "/admin/items/opd_service_subcategory.xhtml";
     }
+    
+    public String navigateToItemsAndServices() {
+        return "/admin/items/items.xhtml";
+    }
 
     public String navigateToOpdService() {
         return "/admin/items/opd_service.xhtml";
