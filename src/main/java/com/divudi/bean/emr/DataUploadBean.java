@@ -913,6 +913,8 @@ public class DataUploadBean implements Serializable {
             }
             if (institutionName != null && !institutionName.trim().equals("")) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            }else{
+                institution = institutionController.findAndSaveInstitutionByName("Other");
             }
 
             Cell deptCell = row.getCell(6);
@@ -921,6 +923,10 @@ public class DataUploadBean implements Serializable {
             }
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
+            }
+            
+            if(department==null){
+                department=  departmentController.getDefaultDepatrment(institution);
             }
 
             Cell inwardCcCell = row.getCell(7);
