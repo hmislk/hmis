@@ -162,7 +162,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private PaymentScheme paymentScheme;
     private Institution collectingCentre;
     private PaymentMethod paymentMethod = PaymentMethod.Agent;
-    private Patient newPatient;
+//    private Patient newPatient;
     private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
@@ -1181,9 +1181,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             case ITEMS_OF_LOGGED_INSTITUTION:
                 return itemController.getInstitutionItems();
             case ITEMS_OF_SELECTED_DEPARTMENT:
-                return itemController.getCcDeptItems();
+                return itemController.fillItemsByDepartment(departmentController.getDefaultDepatrment(collectingCentre));
             case ITEMS_OF_SELECTED_INSTITUTIONS:
-                return itemController.getCcInstitutionItems();
+                return itemController.fillItemsByInstitution(collectingCentre);
             default:
                 return itemController.getAllItems();
         }
@@ -1273,7 +1273,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     private void clearBillValues() {
-        setNewPatient(null);
         setPatient(null);
         setReferredBy(null);
         setReferredByInstitution(null);
@@ -1401,6 +1400,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         paymentScheme = null;
         paymentMethod = PaymentMethod.Agent;
         collectingCentre = null;
+        opdItems=null;
     }
 
     public void prepareNewBillKeepingCollectingCenter() {
@@ -1496,13 +1496,13 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
-        setPatient(getNewPatient());
+        setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public String navigateToCollectingCenterBillingromCollectingCenterBilling() {
         prepareNewBillKeepingCollectingCenter();
-        setPatient(getNewPatient());
+        setPatient(getPatient());
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1665,19 +1665,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-
-            newPatient.setPerson(p);
-        }
-        return newPatient;
-    }
-
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
-    }
+//    public Patient getNewPatient() {
+//        if (newPatient == null) {
+//            newPatient = new Patient();
+//            Person p = new Person();
+//
+//            newPatient.setPerson(p);
+//        }
+//        return newPatient;
+//    }
+//
+//    public void setNewPatient(Patient newPatient) {
+//        this.newPatient = newPatient;
+//    }
 
     @Override
     public Patient getPatient() {
