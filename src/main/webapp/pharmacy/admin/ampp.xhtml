@@ -37,7 +37,7 @@
                             </p:selectOneListbox>-->
                             <div class="w-100">
                                 <p:autoComplete id="lstSelect" value="#{amppController.current}" completeMethod="#{amppController.completeAmpp}" 
-                                                forceSelection="true" var="i" itemLabel="#{i.name}" itemValue="#{i}" size="60" scrollHeight="300">
+                                                forceSelection="true" var="i" itemLabel="#{i.name}" itemValue="#{i}" size="60" scrollHeight="300" placeholder="Type here to search">
                                     <f:ajax event="itemSelect" execute="@this" render="gpDetail"/>
                                 </p:autoComplete>
                             </div>
