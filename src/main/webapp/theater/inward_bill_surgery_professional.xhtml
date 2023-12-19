@@ -15,7 +15,7 @@
                 <p:panel rendered="#{inwardProfessionalBillController.batchBill eq null}">
                     <f:facet name="header" >
                         <h:outputText styleClass="fas fa-briefcase" />
-                        <h:outputLabel value="Add Professional Fee" class="m-2"></h:outputLabel>
+                        <h:outputLabel value="Add Professional Fee" class="mx-4"></h:outputLabel>
                     </f:facet>
 
                     <h:outputLabel value="Type Surgery Name or BHT : "/>
@@ -46,11 +46,15 @@
 
 
                 <p:panel style="min-height: 600px; position:relative;" rendered="#{inwardProfessionalBillController.batchBill ne null}"  >
-                    <f:facet name="header" >              
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>Surgery Professional (Theatre)</span>
-                            <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" />
-                        </div>
+                    <f:facet name="header" >  
+                        <h:outputText styleClass="fa-solid fa-scissors" />
+                        <p:outputLabel value="Surgery Professional (Theatre)" class="mx-4"/>
+                        <p:commandButton value="New Bill" ajax="false" 
+                                         icon="fas fa-plus"
+                                         class="ui-button-warning"
+                                         style="float: right"
+                                         actionListener="#{inwardProfessionalBillController.makeNull()}" />
+
 
                     </f:facet>
 
@@ -58,7 +62,12 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <p:panel header="Patient Details">
+                            
+                            <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user" />
+                                    <h:outputText value="Patient Details" class="mx-4" />
+                                </f:facet>
 
 
                                 <br/>
@@ -69,15 +78,19 @@
                                     <in:surgeryDetail procedure="#{inwardProfessionalBillController.batchBill.procedure}"/>
                                 </h:panelGroup>
                             </p:panel>
-                            
-                            
+
+
                         </div>
                         <div class="col-md-6">
-                            
+
                             <h:panelGroup id="panelIx" >
 
 
-                                <p:panel id='pIxAdd' header="Professional Fee" style="min-height: 350px;"  >
+                                <p:panel id='pIxAdd' style="min-height: 350px;"  >
+                                    <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill" />
+                                    <h:outputText value="Professional Fee" class="mx-4" />
+                                </f:facet>
                                     <h:panelGrid columns="2" id="profPanel">
                                         <h:outputLabel value="Perfomance"/>
                                         <p:selectOneMenu class="mx-4 my-1" style="width: 565px" value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}" >
@@ -110,7 +123,9 @@
                                         <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
                                     </h:panelGrid><br/>
                                     <p:commandButton ajax="false" update="surgery"  
-                                                     value="Add Professional Fee"  
+                                                     value="Add Professional Fee"
+                                                     icon="fa-solid fa-check"
+                                                     class="ui-button-success"
                                                      action="#{inwardProfessionalBillController.addProfessionalFee()}"
                                                      disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
 
@@ -119,7 +134,11 @@
                             </h:panelGroup>
                             <h:panelGroup id="panelBillTotals" >
 
-                                <p:panel header="Bill Details" id="pBillDetails" class="w-100 my-1" >
+                                <p:panel id="pBillDetails" class="w-100 my-1" >
+                                    <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list" />
+                                    <h:outputText value="Bill Details" class="mx-4" />
+                                </f:facet>
                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel class="mx-4 my-1" id="tot" value="#{inwardProfessionalBillController.current.total}" >
@@ -129,66 +148,66 @@
 
                                 </p:panel>
                             </h:panelGroup>
-                            
+
 
                         </div>
                     </div>
                     <h:panelGroup id="panelBillItems" >
-                                <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
-                                    <p:column headerText="">
-                                        <h:outputLabel value="#{c.id}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Bill Id">
-                                        <h:outputLabel value="#{c.billFee.id}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Performance">
-                                        <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Name">
-                                        <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Fee">
-                                        <p:inputText autocomplete="off" style="width: 130px" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
-                                    </p:column>
-                                    <p:column headerText="Date Added" >
-                                        <h:outputLabel value="#{c.billFee.createdAt}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputLabel>                                                   
-                                        <br/>
-                                        <h:panelGroup rendered="#{c.billFee.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted at " />
-                                            <h:outputLabel style="color: red;"  value="#{c.billFee.retiredAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column headerText="Added By" >
-                                        <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>     
-                                        <br/>
-                                        <h:panelGroup rendered="#{c.billFee.retired}" >
-                                            <h:outputLabel style="color: red;" value="Deleted By " />
-                                            <h:outputLabel style="color: red;"  value="#{c.billFee.retirer.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>     
-                                    <p:column headerText="Update">
-                                        <p:commandButton ajax="false" value="Update"  
-                                                         action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
-                                                         disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
-                                    </p:column>
+                        <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
+                            <p:column headerText="">
+                                <h:outputLabel value="#{c.id}"></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Bill Id">
+                                <h:outputLabel value="#{c.billFee.id}"></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Performance">
+                                <h:outputLabel value="#{c.patientEncounterComponentType}"></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Name">
+                                <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Fee">
+                                <p:inputText autocomplete="off" style="width: 130px" value="#{c.billFee.feeValue}" disabled="#{c.billFee.paidValue!=0}" />
+                            </p:column>
+                            <p:column headerText="Date Added" >
+                                <h:outputLabel value="#{c.billFee.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputLabel>                                                   
+                                <br/>
+                                <h:panelGroup rendered="#{c.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted at " />
+                                    <h:outputLabel style="color: red;"  value="#{c.billFee.retiredAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Added By" >
+                                <h:outputLabel value="#{c.billFee.creater.webUserPerson.name}"/>     
+                                <br/>
+                                <h:panelGroup rendered="#{c.billFee.retired}" >
+                                    <h:outputLabel style="color: red;" value="Deleted By " />
+                                    <h:outputLabel style="color: red;"  value="#{c.billFee.retirer.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>     
+                            <p:column headerText="Update">
+                                <p:commandButton ajax="false" value="Update"  
+                                                 action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
+                                                 disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
+                            </p:column>
 
-                                    <p:column headerText="Remove">
-                                        <p:commandButton ajax="false" value="Remove"  
-                                                         rendered="#{c.billFee.id eq null}"
-                                                         action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
-                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
-                                        <p:commandButton ajax="false" value="Remove"  
-                                                         rendered="#{c.billFee.id ne null}"
-                                                         action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
-                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </h:panelGroup>
+                            <p:column headerText="Remove">
+                                <p:commandButton ajax="false" value="Remove"  
+                                                 rendered="#{c.billFee.id eq null}"
+                                                 action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
+                                                 disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
+                                <p:commandButton ajax="false" value="Remove"  
+                                                 rendered="#{c.billFee.id ne null}"
+                                                 action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
+                                                 disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
 
                 </p:panel>
 

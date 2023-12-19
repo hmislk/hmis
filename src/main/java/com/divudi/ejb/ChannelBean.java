@@ -782,7 +782,6 @@ public class ChannelBean {
     }
 
     public List<ServiceSessionInstance> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
-        System.out.println("fetchCreatedServiceSessions");
         String sql;
         Map m = new HashMap();
         List<ServiceSessionInstance> tmp = new ArrayList<>();

@@ -268,13 +268,13 @@ public class SearchController implements Serializable {
             BillSession bs = new BillSession();
             bs.getBill().getInsId();
             bs.getBill().getDeptId();
-            bs.getBill().getReferralNumber();
+            bs.getBill().getReferenceNumber();
             bs.getReferenceBillSession().getBill().getInsId();
             bs.getReferenceBillSession().getBill().getDeptId();
-            bs.getReferenceBillSession().getBill().getReferralNumber();
+            bs.getReferenceBillSession().getBill().getReferenceNumber();
             bs.getBill().getReferenceBill().getInsId();
             bs.getBill().getReferenceBill().getDeptId();
-            bs.getBill().getReferenceBill().getReferralNumber();
+            bs.getBill().getReferenceBill().getReferenceNumber();
         }
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false"
@@ -283,13 +283,13 @@ public class SearchController implements Serializable {
                 + " and ("
                 + "    (bs.bill.insId) like :txt "
                 + " or (bs.bill.deptId) like :txt "
-                + " or (bs.bill.referralNumber) like :txt "
+                + " or (bs.bill.referenceNumber) like :txt "
                 + " or (bs.referenceBillSession.bill.insId) like :txt "
                 + " or (bs.referenceBillSession.bill.deptId) like :txt "
-                + " or (bs.referenceBillSession.bill.referralNumber) like :txt "
+                + " or (bs.referenceBillSession.bill.referenceNumber) like :txt "
                 + " or (bs.bill.referenceBill.insId) like :txt "
                 + " or (bs.bill.referenceBill.deptId) like :txt "
-                + " or (bs.bill.referenceBill.referralNumber) like :txt "
+                + " or (bs.bill.referenceBill.referenceNumber) like :txt "
                 + " )"
                 + " order by bs.sessionDate, bs.serialNo ";
         HashMap hh = new HashMap();
@@ -4865,7 +4865,6 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientLabReports(Patient pt) {
-        System.out.println(pt.getPerson().getId());
 
         String sql = "select pi "
                 + "from PatientInvestigation pi "
@@ -5294,8 +5293,6 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
 
-        System.err.println("Sql " + jpql);
-        System.out.println("temMap = " + m);
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
 
     }
@@ -5337,8 +5334,6 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
 
-        System.err.println("Sql " + jpql);
-        System.out.println("temMap = " + m);
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
 
     }
@@ -5780,7 +5775,7 @@ public class SearchController implements Serializable {
          *
          *
          * temp.setStaff(staff); temp.setToStaff(toStaff);
-         * temp.setReferredBy(referredBy); temp.setReferralNumber(referralId);
+         * temp.setReferredBy(referredBy); temp.setReferenceNumber(referralId);
          * temp.setReferredByInstitution(referredByInstitution);
          * temp.setCreditCompany(creditCompany);
          * temp.setCollectingCentre(collectingCentre);
@@ -5988,7 +5983,6 @@ public class SearchController implements Serializable {
             Department fromDep,
             Institution toIns, 
             Department toDep ) {
-        System.out.println(toDep);
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -6060,8 +6054,6 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        System.err.println("Sql " + sql);
-        System.out.println("temMap = " + temMap);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }

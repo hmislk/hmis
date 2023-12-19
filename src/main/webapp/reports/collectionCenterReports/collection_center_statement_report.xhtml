@@ -122,13 +122,13 @@
                             <h:outputText value="#{bi.bill.fromInstitution.code}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Leaf No" >
-                            <h:outputText value="#{bi.bill.referralNumber}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
                         </p:column>
                         <p:column headerText="MRN" >
                             <h:outputText value="#{bi.bill.patient.phn}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Patient Name" >
-                            <h:outputText value="#{bi.bill.patient.person.name}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.patient.person.nameWithTitle}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Invoice Date" >
                             <h:outputText value="#{bi.bill.billDate}" ></h:outputText>

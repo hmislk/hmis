@@ -107,6 +107,7 @@ public class ItemController implements Serializable {
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
     List<ItemLight> allItems;
+    private ItemLight selectedItemLight;
     private List<ItemLight> departmentItems;
     private List<ItemLight> institutionItems;
     private List<ItemLight> ccDeptItems;
@@ -147,6 +148,11 @@ public class ItemController implements Serializable {
     public String navigateToListAllItems() {
         allItems = null;
         return "/item/reports/item_list";
+    }
+    
+    public String navigateToListAllItemsForAdmin() {
+        allItems = null;
+        return "/item/admin/list";
     }
 
     public void fillInvestigations() {
@@ -848,8 +854,6 @@ public class ItemController implements Serializable {
         tmpMap.put("mi", true);
         tmpMap.put("ret", false);
         jpql += " order by c.name";
-        System.out.println("tmpMap = " + tmpMap);
-        System.out.println("jpql = " + jpql);
         return getFacade().findByJpql(jpql, tmpMap);
     }
 
@@ -1639,6 +1643,8 @@ public class ItemController implements Serializable {
 
     }
 
+    
+    
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
         for (Item i : itemlist) {
@@ -1686,6 +1692,13 @@ public class ItemController implements Serializable {
      */
     public void prepareAdd() {
         current = new Item();
+    }
+    
+    public void prepareAddingInvestigation() {
+        current = new Investigation();
+    }
+    public void prepareAddingService() {
+        current = new Service();
     }
 
     /**
@@ -1861,6 +1874,9 @@ public class ItemController implements Serializable {
     }
 
     public List<ItemLight> getAllItems() {
+        if(allItems==null){
+            allItems = itemApplicationController.getItems();
+        }
         return allItems;
     }
 
@@ -2080,12 +2096,29 @@ public class ItemController implements Serializable {
         return null; // Or handle the case when no matching ItemLight is found
     }
 
+    public ItemLight getSelectedItemLight() {
+        if(getCurrent()==null){
+            selectedItemLight = null;
+        }else{
+            selectedItemLight = new ItemLight(getCurrent());
+        }
+        return selectedItemLight;
+    }
+
+    public void setSelectedItemLight(ItemLight selectedItemLight) {
+        this.selectedItemLight = selectedItemLight;
+        if(selectedItemLight==null){
+            setCurrent(null);
+        }else{
+            setCurrent(findItem(selectedItemLight.getId()));
+        }
+    }
+
     @FacesConverter("itemLightConverter")
     public static class ItemLightConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext context, UIComponent component, String value) {
-              System.out.println("Converting to Object: " + value);
             if (value == null || value.isEmpty()) {
                 return null;
             }
@@ -2101,7 +2134,6 @@ public class ItemController implements Serializable {
 
         @Override
         public String getAsString(FacesContext context, UIComponent component, Object value) {
-            System.out.println("Converting to String: " + value);
             if (value instanceof ItemLight) {
                 return ((ItemLight) value).getId().toString(); // Assuming getId() returns the ID
             }
