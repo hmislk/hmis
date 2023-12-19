@@ -2858,7 +2858,6 @@ public class Qb {
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
 
-        System.out.println("cInvList 1" + new Date());
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();

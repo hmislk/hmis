@@ -1464,7 +1464,7 @@ public class BillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setCollectingCentre(collectingCentre);
@@ -1549,7 +1549,7 @@ public class BillController implements Serializable {
         HashMap m = new HashMap();
         jpql = "Select b from Bill b where "
                 + "b.retired = false and "
-                + "(b.referralNumber) =:rid ";
+                + "(b.referenceNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         List<Bill> tempBills = getFacade().findByJpql(jpql, m);
         if (tempBills == null || tempBills.isEmpty()) {

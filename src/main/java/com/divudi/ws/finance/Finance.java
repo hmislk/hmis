@@ -318,8 +318,8 @@ public class Finance {
                 jSONObject.put("referred_by_id", bill.getReferredBy().getId());
                 jSONObject.put("referred_by", bill.getReferredBy().getPerson().getNameWithTitle());
             }
-            if (bill.getReferralNumber() != null) {
-                jSONObject.put("referral_number", bill.getReferralNumber());
+            if (bill.getReferenceNumber() != null) {
+                jSONObject.put("referral_number", bill.getReferenceNumber());
             }
 
             if (bill.getStaff() != null) {

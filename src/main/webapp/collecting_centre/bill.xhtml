@@ -27,7 +27,7 @@
                         <h:outputLabel  class="mx-4" value="#{collectingCentreBillController.collectingCentre.name}"/>
                         <p:commandButton 
                             ajax="false" 
-                            value="Select" 
+                            value="Change Collecting Centre" 
                             class="float-right"
                             action="#{collectingCentreBillController.deselectCollectingCentre}" ></p:commandButton>
                     </f:facet>
@@ -72,12 +72,13 @@
                                     <p:panel id='pIxAdd' >
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                            <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                            <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row">
                                             <div class="col-md-10" >
                                                 <p:selectOneListbox 
                                                     filter="true"
+                                                    filterMatchMode="contains"
                                                     id="acIx"
                                                     class="w-100"
                                                     scrollHeight="200"
@@ -115,11 +116,6 @@
                                                         <h:outputText value="#{ix.total}"></h:outputText>
                                                     </p:column>
                                                 </p:selectOneListbox>
-
-
-
-
-
                                             </div>
                                             <div class="col-md-2" >
                                                 <h:panelGrid id="txtQty">
@@ -136,7 +132,6 @@
                                                     class=" mx-1 ui-button-success" 
                                                     process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx :#{p:resolveFirstComponentWithId('acColl',view).clientId}"
                                                     update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
-
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
                                             </div>
@@ -155,7 +150,6 @@
                                                         id="tblRequests" 
                                                         rowIndexVar="rowIndex" 
                                                         value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
-
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
                                                                 #{rowIndex+1}
@@ -310,7 +304,7 @@
                                                 value="New Bill" 
                                                 icon="fa fa-plus" 
                                                 ajax="false" 
-                                                action="#{collectingCentreBillController.navigateToCollectingCenterBillingromCollectingCenterBilling}" 
+                                                action="#{collectingCentreBillController.navigateToCollectingCenterBillingromCollectingCenterBilling()}" 
                                                 class="ui-button-warning mx-1" >
                                             </p:commandButton>
                                             <p:commandButton 
@@ -352,8 +346,14 @@
                                             <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
                                         </div>
                                         <div class="col-md-9">
-                                            <p:inputText value="#{collectingCentreBillController.referralId}" class="w-100 mb-1">
-                                            </p:inputText>
+                                            <p:selectOneMenu
+                                                filter="true"
+                                                value="#{collectingCentreBillController.referralId}" 
+                                                class="w-100 mb-1">
+                                                <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
+                                                <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
+                                                               itemLabel="#{refId}" itemValue="#{refId}" />
+                                            </p:selectOneMenu>
                                         </div>
                                         <div class="col-md-3">
                                             <h:outputLabel id="ballance" value="Balance" class="my-1"  />
@@ -597,7 +597,7 @@
                                             <p:printer target="gpBillPreviewCoop" ></p:printer>
                                         </p:commandButton>
 
-                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                         </p:commandButton>
 
                                         <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
@@ -618,7 +618,7 @@
                                             <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
                                         </p:commandButton>
 
-                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                         </p:commandButton>
 
                                         <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
@@ -639,7 +639,7 @@
                                             <p:printer target="gpBillPreviewRmh" ></p:printer>
                                         </p:commandButton>
 
-                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                         </p:commandButton>
 
                                         <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
@@ -662,7 +662,7 @@
                                             <p:printer target="gpPosBill" ></p:printer>
                                         </p:commandButton>
 
-                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                         </p:commandButton>
 
                                         <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
@@ -693,7 +693,7 @@
                                             <p:printer target="gpPosBillWithoutLogo" ></p:printer>
                                         </p:commandButton>
 
-                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
                                         </p:commandButton>
 
                                         <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"

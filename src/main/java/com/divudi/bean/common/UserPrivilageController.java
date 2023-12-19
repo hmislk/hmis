@@ -543,7 +543,6 @@ public class UserPrivilageController implements Serializable {
 
     public void saveWebUserPrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
-        System.out.println("selectedPrivileges = " + selectedPrivileges);
 
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
             wup.setRetired(true);
@@ -558,7 +557,6 @@ public class UserPrivilageController implements Serializable {
         List<WebUserPrivilege> oldWups = new ArrayList<>();
 
         for (PrivilegeHolder ph : selectedPrivileges) {
-            System.out.println("ph = " + ph);
             if (ph.getPrivilege() == null) {
                 continue;
             }
@@ -590,13 +588,10 @@ public class UserPrivilageController implements Serializable {
     }
 
     public static List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
-        System.out.println("extractPrivileges");
-        System.out.println("selectedNodes = " + selectedNodes);
         List<PrivilegeHolder> privileges = new ArrayList<>();
         if (selectedNodes != null) {
             for (TreeNode node : selectedNodes) {
                 Object data = node.getData();
-                System.out.println("data = " + data);
                 if (data instanceof PrivilegeHolder) {
                     privileges.add((PrivilegeHolder) data);
                 }
