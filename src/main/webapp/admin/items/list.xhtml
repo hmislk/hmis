@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/admin/items/index.xhtml">
+
+            <ui:define name="item">
+                <f:view>
+
+
+                    <h:form>
+                        <p:panel style="height: 100vh">
+                            <f:facet name="header">
+                                <h:outputText value="Items and Services " />
+                            </f:facet>
+                            <div class="my-4 ">
+                                <div class="d-flex justify-content-end align-items-center">
+                                    <p:commandButton 
+                                        icon="fas fa-download"
+                                        class="ui-button-success"
+                                        value="Download" 
+                                        ajax="false"
+                                        >
+                                        <p:dataExporter target="tblExport" type="xlsx" fileName="item list" ></p:dataExporter>
+                                    </p:commandButton>
+
+
+                                    <p:commandButton value="Load Services"
+                                                     icon="fas fa-spinner"
+                                                     class="ui-button-warning mx-2"
+                                                     ajax="false"
+                                                     action="#{itemController.fillServices()}"
+                                                     >
+                                    </p:commandButton>
+
+                                    <p:commandButton value="Load Investigations"
+                                                     icon="fas fa-spinner"
+                                                     ajax="false"
+                                                     class="ui-button-warning"
+                                                     action="#{itemController.fillInvestigations()}"
+                                                     >
+                                    </p:commandButton>
+
+                                </div>
+                            </div>
+
+
+
+
+
+                            <p:dataTable value="#{itemController.allItems}" 
+                                         var="item"
+                                         paginator="true"
+                                         rows="10"
+                                         id="tblView"
+                                         >
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Category"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.categoryName}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Institution"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.institutionName}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Department"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.departmentName}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Name"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Code"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.code}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Barcode"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.barcode}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="PrintName"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.printName}"/>
+                                </p:column>
+
+                            </p:dataTable>
+                         
+                        </p:panel>
+                    </h:form>
+                </f:view>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

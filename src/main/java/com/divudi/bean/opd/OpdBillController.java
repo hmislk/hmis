@@ -326,25 +326,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToViewOpdBillByBillLight() {
-        System.out.println("navigateToViewOpdBillByBillLight");
-        System.out.println("billLight = " + billLight);
         if (billLight == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
-        System.out.println("billLight.getId() = " + billLight.getId());
         if (billLight.getId() == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
 
         Bill tb = getFacade().find(billLight.getId());
-        System.out.println("tb = " + tb);
         if (tb == null) {
             JsfUtil.addErrorMessage("No Bill");
             return null;
         }
-        System.out.println("tb.getBillType() = " + tb.getBillType());
         if (tb.getBillType() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
@@ -1546,7 +1541,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setCollectingCentre(collectingCentre);

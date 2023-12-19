@@ -1065,7 +1065,6 @@ public class BookingController implements Serializable {
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             List<Long> tmp = new ArrayList<>();
-            System.err.println("Time stage 2.1 = " + new Date());
             tmp = getServiceSessionFacade().findLongList(sql, m, TemporalType.DATE);
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());

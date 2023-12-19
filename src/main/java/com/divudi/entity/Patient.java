@@ -597,9 +597,7 @@ public class Patient implements Serializable {
             this.getPerson().setPhone(phoneNumberStringTransient);
             this.patientPhoneNumber = removeSpecialCharsInPhonenumber(phoneNumberStringTransient);  
             this.phoneNumberStringTransient = phoneNumberStringTransient;
-            System.err.println("Patient Phone Number : "+this.patientPhoneNumber);
         } catch (Exception e) {
-            System.err.println("Error Setting Phone Number !");
         }
     }
 

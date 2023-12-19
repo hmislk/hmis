@@ -14,8 +14,8 @@
 
                     <div class="container">
                         <div class="row mb-2">
-                            <div class="col-12">
-                                <h2>Collection Center Reports Print</h2>
+                            <div class="col-12 my-4">
+                                <h2>Collection Center Wise Transaction Reports</h2>
                             </div>
                         </div>
 
@@ -203,12 +203,21 @@
                             <div class="col-md-6">
                                 <p:commandButton ajax="false"
                                                  value="Process"
-                                                 action="#{reportController.processCollectingCentreReportsToPrint()}" />
+                                                 class="ui-button-warning"
+                                                 action="#{reportController.processCollectingCentreTransactionReport()}" />
+<!--                                <p:commandButton ajax="false"
+                                                 value="Download to Excel"
+                                                 class="mx-1 ui-button-success"
+                                                 ><p:dataExporter 
+                                        type="xls" 
+                                        target="tblExport"
+                                        fileName="c_transaction_reports"
+                                        /></p:commandButton>-->
                             </div>
                         </div>
                     </div>
 
-                    <p:dataTable value="#{reportController.billItems}" var="bi">
+                    <p:dataTable value="#{reportController.billItems}" var="bi" id="tblExport">
                         <!--                        //Mandatory filters
                         #{bi.bill.retired} - boolean - false
                         #{bi.retired} - boolean - false
@@ -232,56 +241,37 @@
 
                         -->
 
-
-
                         <p:column headerText="S. No" >
                             <h:outputText value="#{bi.id}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC Code" >
-                            <h:outputText value="#{bi.bill.fromInstitution.code}" ></h:outputText>
+                        <p:column headerText="Collecting center" >
+                            <h:outputText value="#{bi.bill.collectingCentre.name}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Leaf No" >
+                        <p:column headerText="Bill No" >
                             <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="MRN" >
-                            <h:outputText value="#{bi.bill.patient.phn}" ></h:outputText>
+                        <p:column headerText="Before Balance" >
+                            <h:outputText value="#{bi.bill.cashPaid}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Patient Name" >
-                            <h:outputText value="#{bi.bill.patient.person.nameWithTitle}" ></h:outputText>
+                        <p:column headerText="Transaction Value(Hospital Amount)" >
+                            <h:outputText value="#{bi.bill.hospitalFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Invoice Number" >
-                            <h:outputText value="#{bi.bill.deptId}" ></h:outputText>
+                        <p:column headerText="CC(%)" >
+                            <h:outputText value="#{bi.bill.discountPercent} %" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Order Date" >
-                            <h:outputText value="#{bi.bill.billDate}" ></h:outputText>
+                        <p:column headerText="CC Amount" >
+                            <h:outputText value="#{bi.bill.collectingCentre.ballance}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC Route" >
-                            <h:outputText value="#{bi.bill.fromInstitution.route.name}" ></h:outputText>
+                        <p:column headerText="After Balance" >
+                            <h:outputText value="#{bi.bill.paidAmount}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Referring Doctor Name" >
-                            <h:outputText value="#{bi.bill.referredInstituteOrDoctor}" ></h:outputText>
+                        <p:column headerText="Creater" >
+                            <h:outputText value="#{bi.bill.creater.name}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Service Name" >
-                            <h:outputText value="#{bi.item.name}" ></h:outputText>
+                        <p:column headerText="Created Date" >
+                            <h:outputText value="#{bi.bill.createdAt}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Result Status" >
-                            <h:outputText value="#{bi.billItemStatus.label}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Last printing time" >
-                            <h:outputText value="Will Be Done Later" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Print" >
-                            <h:outputText value="Will Be Done Later" ></h:outputText>
-                        </p:column>
-
                     </p:dataTable>
-
-
-
-
-
-
-
                 </h:form>
 
             </ui:define>

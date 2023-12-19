@@ -67,7 +67,6 @@ public class CommonController implements Serializable {
      * @return The formatted double value.
      */
     public static double formatDouble(Double number, String format) {
-        System.out.println("formatDouble");
         if (number == null) {
             return 0.0; // Handle null input gracefully by returning 0.0
         }
