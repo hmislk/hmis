@@ -148,6 +148,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     DepartmentController departmentController;
     @EJB
     StaffBean staffBean;
+    @Inject
+    CategoryController categoryController;
     /**
      * Properties
      */
@@ -467,7 +469,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void fillAvailableAgentReferanceNumbers(Institution ins) {
-        System.out.println("fillAvailableAgentReferanceNumbers");
         String sql;
         referralIds = new ArrayList<>();
         HashMap m = new HashMap();
@@ -479,10 +480,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 + " order by a.id ";
         m.put("ins", ins);
         List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
-        System.out.println("agentReferenceBooks = " + agentReferenceBooks);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
-        System.out.println("usedReferenceNumbers = " + usedReferenceNumbers);
         
         if (agentReferenceBooks.isEmpty()) {
             ins.setAgentReferenceBooks(null);
@@ -502,7 +501,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
                 if (!usedReferenceNumbers.contains(refNo)) {
                     leavesRemain = true;
-                    System.out.println("leavesRemain");
                     referralIds.add(refNo);
                 }
             }
@@ -1101,17 +1099,17 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return true;
         }
 
-//        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
+//        if (agentReferenceBookController.numberHasBeenIssuedToTheAgent(getReferralId())) {
 //            UtilityController.addErrorMessage("Invaild Reference Number.");
 //            return true;
 //        }
-        if (agentReferenceBookController.checkAgentReferenceNumberAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
+        if (agentReferenceBookController.agentReferenceNumberIsAlredyUsed(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
             UtilityController.addErrorMessage("This Reference Number is alredy Used.");
             setReferralId("");
             return true;
         }
 
-        if (agentReferenceBookController.checkAgentReferenceNumber(collectingCentre, getReferralId())) {
+        if (!agentReferenceBookController.numberHasBeenIssuedToTheAgent(collectingCentre, getReferralId())) {
             UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
             return true;
         }
@@ -1206,6 +1204,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void addToBill() {
+        
+        if (collectingCentre == null) {
+            UtilityController.addErrorMessage("Please Select Collecting Center");
+            return;
+        }
+
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1219,18 +1223,22 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
 
+        if(getCurrentBillItem().getItem().getInstitution()==null){
+            getCurrentBillItem().getItem().setInstitution(collectingCentre);
+            itemController.saveSelected(getCurrentBillItem().getItem());
+        }
+        
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set Department to Item");
+            Department dep = departmentController.getDefaultDepatrment(collectingCentre);
+            getCurrentBillItem().getItem().setDepartment(dep);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please set Category to Item");
-            return;
-        }
-
-        if (collectingCentre == null) {
-            UtilityController.addErrorMessage("Please Select Collecting Center");
+            Category c = categoryController.findAndCreateCategoryByName("Other");
+            getCurrentBillItem().getItem().setCategory(c);
+            itemController.saveSelected(getCurrentBillItem().getItem());
             return;
         }
 
@@ -1252,7 +1260,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            UtilityController.addErrorMessage("Please enter the fess");
             return;
         }
         clearBillItemValues();

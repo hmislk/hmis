@@ -72,12 +72,13 @@
                                     <p:panel id='pIxAdd' >
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus" /> <!-- FontAwesome Icon -->
-                                            <h:outputText value="Add New Items" class="mx-4"></h:outputText>
+                                            <h:outputText value="Add New Item" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row">
                                             <div class="col-md-10" >
                                                 <p:selectOneListbox 
                                                     filter="true"
+                                                    filterMatchMode="contains"
                                                     id="acIx"
                                                     class="w-100"
                                                     scrollHeight="200"

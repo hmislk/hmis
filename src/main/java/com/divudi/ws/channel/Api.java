@@ -1714,7 +1714,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(long agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;
@@ -1722,7 +1722,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(String agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;

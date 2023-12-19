@@ -196,7 +196,7 @@ public class AgentReferenceBookController implements Serializable {
         agentReferenceBook = null;
     }
 
-    public Boolean checkAgentReferenceNumber(Institution institution, String refNumber) {
+    public Boolean numberHasBeenIssuedToTheAgent(Institution institution, String refNumber) {
         if (institution == null || refNumber == null || refNumber.length() <= 2) {
             return false;
         }
@@ -228,8 +228,6 @@ public class AgentReferenceBookController implements Serializable {
         int start = (int) book.getStartingReferenceNumber();
         int end = (int) book.getEndingReferenceNumber();
 
-        System.out.println("Book Range: " + start + " to " + end);
-
 // Check if the leaf number is within the valid range of the found book
         return leafNumber >= start && leafNumber <= end;
     }
@@ -244,7 +242,7 @@ public class AgentReferenceBookController implements Serializable {
         }
     }
 
-    public Boolean checkAgentReferenceNumberAlredyUsed(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
+    public Boolean agentReferenceNumberIsAlredyUsed(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
         String sql;
         Map m = new HashMap();
         sql = " select ah from AgentHistory ah "

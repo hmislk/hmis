@@ -131,7 +131,7 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     Institution referredByInstitution;
     @Column
-    String referenceNumber;
+    String referenceNumber; //referenceNumber
 
     //Values
     double margin;

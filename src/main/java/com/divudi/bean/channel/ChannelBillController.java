@@ -984,7 +984,7 @@ public class ChannelBillController implements Serializable {
         if (bill.getPaymentMethod() == PaymentMethod.Agent) {
             cb.setPaymentMethod(cancelPaymentMethod);
 //            if (cancelPaymentMethod == PaymentMethod.Agent) {
-//                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
+//                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, billSession.getBillItem(), billSession, billSession.getBill().getreferenceNumber());
 //            }
         } else {
             cb.setPaymentMethod(bill.getPaymentMethod());
@@ -1209,7 +1209,7 @@ public class ChannelBillController implements Serializable {
         if (bill.getPaymentMethod() == PaymentMethod.Agent) {
             rb.setPaymentMethod(refundPaymentMethod);
 //            if (refundPaymentMethod == PaymentMethod.Agent) {
-//                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
+//                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getreferenceNumber());
 //            }
         } else {
             rb.setPaymentMethod(bill.getPaymentMethod());
@@ -1430,13 +1430,13 @@ public class ChannelBillController implements Serializable {
                     UtilityController.addErrorMessage("Invaild Reference Number.");
                     return true;
                 }
-                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                     UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                     setAgentRefNo("");
                     return true;
                 }
-                if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().numberHasBeenIssuedToTheAgent(institution, getAgentRefNo()) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
                     UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
                     return true;
