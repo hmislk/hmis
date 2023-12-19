@@ -129,7 +129,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String descreption;
     String accountNo;
     
+    @ManyToOne
     Institution bankBranch;
+    
+    @ManyToOne
+    private Institution parentInstitution;
+    
 
     String emailSendingUsername;
     String emailSendingPassword;
@@ -652,6 +657,15 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
         this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
     }
+
+    public Institution getParentInstitution() {
+        return parentInstitution;
+    }
+
+    public void setParentInstitution(Institution parentInstitution) {
+        this.parentInstitution = parentInstitution;
+    }
+    
     
     
 

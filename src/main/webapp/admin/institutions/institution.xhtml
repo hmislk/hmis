@@ -89,6 +89,14 @@
                                     <h:outputText id="lblAdress" value="Address" ></h:outputText>
                                     <p:inputTextarea id="txtAdress" value="#{institutionController.current.address}" styleClass="longText" style="width: 650px" ></p:inputTextarea>
 
+                                    <h:outputText id="lblParent" value="Parent" ></h:outputText>
+                                    <p:selectOneMenu value="#{institutionController.current.parentInstitution}" >
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.companies}" var="pi" itemLabel="#{pi.name}" itemValue="#{pi}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+                                    
+                                    
                                     <h:outputText id="lblWeb" value="Web" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  style="width: 650px"></p:inputText>
 
