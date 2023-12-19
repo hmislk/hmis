@@ -441,19 +441,14 @@ public class Lims {
 //                                + " and ps.collected=:ca
                         m = new HashMap();
                         m.put("tube", ixi.getTube());
-                        System.out.println("Tube: " + ixi.getTube().getName());
 
                         m.put("sample", ixi.getSample());
-                        System.out.println("Sample: " + ixi.getSample().getName());
 
                         m.put("machine", ixi.getMachine());
-                        System.out.println("Machine: " + ixi.getMachine().getName());
 
                         m.put("pt", b.getPatient());
-                        System.out.println("Patient: " + b.getPatient().getPerson().getName());
 
                         m.put("bill", b);
-                        System.out.println("Bill: " + b);
 //                        m.put("ca", false);
                         if (ix.isHasMoreThanOneComponant()) {
                             j += " and ps.investigationComponant=:sc ";
@@ -461,7 +456,6 @@ public class Lims {
                         }
 
                         PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                        System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
 
@@ -501,13 +495,10 @@ public class Lims {
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
                         m.put("pts", pts);
-                        System.out.println("Pts: " + pts);
 
                         m.put("bill", b);
-                        System.out.println("Bill: " + b);
 
                         m.put("pt", b.getPatient());
-                        System.out.println("Patient: " + b.getPatient());
 
                         m.put("ptix", ptix);
 

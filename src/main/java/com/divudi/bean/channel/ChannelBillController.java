@@ -1247,7 +1247,7 @@ public class ChannelBillController implements Serializable {
         agentHistory.setBillSession(billSession);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setReferenceNo(refNo);
+        agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
@@ -1430,7 +1430,7 @@ public class ChannelBillController implements Serializable {
                     UtilityController.addErrorMessage("Invaild Reference Number.");
                     return true;
                 }
-                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                     UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                     setAgentRefNo("");

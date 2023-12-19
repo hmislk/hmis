@@ -848,8 +848,6 @@ public class ItemController implements Serializable {
         tmpMap.put("mi", true);
         tmpMap.put("ret", false);
         jpql += " order by c.name";
-        System.out.println("tmpMap = " + tmpMap);
-        System.out.println("jpql = " + jpql);
         return getFacade().findByJpql(jpql, tmpMap);
     }
 
@@ -2085,7 +2083,6 @@ public class ItemController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext context, UIComponent component, String value) {
-              System.out.println("Converting to Object: " + value);
             if (value == null || value.isEmpty()) {
                 return null;
             }
@@ -2101,7 +2098,6 @@ public class ItemController implements Serializable {
 
         @Override
         public String getAsString(FacesContext context, UIComponent component, Object value) {
-            System.out.println("Converting to String: " + value);
             if (value instanceof ItemLight) {
                 return ((ItemLight) value).getId().toString(); // Assuming getId() returns the ID
             }

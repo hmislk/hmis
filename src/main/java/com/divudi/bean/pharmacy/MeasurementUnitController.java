@@ -237,7 +237,6 @@ public class MeasurementUnitController implements Serializable {
         if (doseUnits == null) {
             fillAllUnits();
         }
-        System.out.println("doseUnits = " + doseUnits);
         return doseUnits;
     }
 
@@ -257,29 +256,21 @@ public class MeasurementUnitController implements Serializable {
 
     public List<MeasurementUnit> getDoseUnitsForMedicine(Item medicine) {
         fillAllUnits(); //TODO - Optimize
-        System.out.println("getDoseUnitsForMedicine");
-        System.out.println("medicine = " + medicine);
         if (medicine == null) {
-            System.out.println("returning dose units");
 
             return getDoseUnits();
         }
         if (medicine instanceof Amp) {
-            System.out.println("is an amp");
 
             List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Amp amp = (Amp) medicine;
-            System.out.println("amp = " + amp);
-            System.out.println("amp.getIssueUnit() = " + amp.getIssueUnit());
             if (amp.getIssueUnit() != null) {
                 uniqueUnits.add(amp.getIssueUnit());
             }
-            System.out.println("amp.getStrengthUnit() = " + amp.getStrengthUnit());
             if (amp.getStrengthUnit() != null) {
                 uniqueUnits.add(amp.getStrengthUnit());
             }
-            System.out.println("amp.getVmp() = " + amp.getVmp());
             if (amp.getVmp() != null) {
                 if (amp.getVmp().getMeasurementUnit() != null) {
                     uniqueUnits.add(amp.getVmp().getMeasurementUnit());
@@ -288,7 +279,6 @@ public class MeasurementUnitController implements Serializable {
                     uniqueUnits.add(amp.getVmp().getStrengthUnit());
                 }
             }
-            System.out.println("uniqueUnits = " + uniqueUnits);
             us.addAll(uniqueUnits);
             return us;
         } else if (medicine instanceof Vmp) {
@@ -296,7 +286,6 @@ public class MeasurementUnitController implements Serializable {
             List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Vmp vmp = (Vmp) medicine;
-            System.out.println("vmp = " + vmp);
             if (vmp.getIssueUnit() != null) {
                 uniqueUnits.add(vmp.getIssueUnit());
             }
@@ -304,7 +293,6 @@ public class MeasurementUnitController implements Serializable {
                 uniqueUnits.add(vmp.getStrengthUnit());
             }
             us.addAll(uniqueUnits);
-            System.out.println("Vmp uniqueUnits = " + uniqueUnits);
             return us;
         } else {
             return getDoseUnits();

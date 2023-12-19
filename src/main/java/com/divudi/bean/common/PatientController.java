@@ -283,7 +283,6 @@ public class PatientController implements Serializable {
     }
 
     public void convertOldPersonPhoneToPatientPhoneLong() {
-        System.out.println("Working convertOldPersonPhoneToPatientPhoneLong()");
 
         String j = "select p "
                 + " from Patient p "
@@ -301,11 +300,9 @@ public class PatientController implements Serializable {
         h.put("ret", false);
         allPersonList = getPersonFacade().findByJpql(s, h);
 
-        System.out.println("allPatients : " + allPatientList.size() + "  allPersons : " + allPersonList.size());
 
         Map<String, Patient> patientMap = CreatePatientMap(allPatientList);
         if (patientMap.isEmpty() || allPersonList.isEmpty()) {
-            System.out.println("Patients or Persons Not Available");
         }
 
         for (Person person : allPersonList) {
@@ -1307,18 +1304,13 @@ public class PatientController implements Serializable {
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
-        System.out.println("quickSearchPatientLongPhoneNumber");
         Patient patientSearched = null;
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
         Long searchedPhoneNumber = removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
         m.put("pp", searchedPhoneNumber);
-        System.out.println("searchedPhoneNumber = " + searchedPhoneNumber);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         quickSearchPatientList = getFacade().findByJpql(j, m);
-        System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             return;
@@ -2448,7 +2440,6 @@ public class PatientController implements Serializable {
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
         Long duration = end - start;
-        System.out.println("Duration of Method 1 = " + duration + "ms");
     }
 
     public void searchByName2() {
@@ -2472,7 +2463,6 @@ public class PatientController implements Serializable {
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
         Long duration = end - start;
-        System.out.println("Duration of Method 2 = " + duration + "ms");
     }
 
     public void searchByName3() {
@@ -2487,7 +2477,6 @@ public class PatientController implements Serializable {
         searchedPatients = getFacade().findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
-        System.out.println("Duration of Method 3 = " + duration + "ms");
     }
 
     public void searchPersons1() {
@@ -2502,7 +2491,6 @@ public class PatientController implements Serializable {
         List<Person> pids = personFacade.findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
-        System.out.println("Duration of Persons = " + duration + "ms");
     }
 
     public void searchByNameOptimized() {
@@ -2522,7 +2510,6 @@ public class PatientController implements Serializable {
 
         Long end = new Date().getTime();
         Long duration = end - start;
-        System.out.println("Duration of Optimized Search = " + duration + "ms");
     }
 
     private void searchByPhone(String phone) {

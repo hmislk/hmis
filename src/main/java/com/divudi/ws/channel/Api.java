@@ -1685,7 +1685,7 @@ public class Api {
         agentHistory.setBillSession(billSession);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setReferenceNo(refNo);
+        agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
@@ -1714,7 +1714,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(long agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;
@@ -1722,7 +1722,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(String agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyUsed(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;

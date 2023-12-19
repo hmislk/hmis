@@ -87,13 +87,10 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void createItemFessForSelectedItems() {
-        System.out.println("createItemFessForSelectedItems" + this);
-        System.out.println("selectedList = " + selectedList);
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
             return;
         }
-        System.out.println("itemFee = " + itemFee);
         if (itemFee == null) {
             JsfUtil.addErrorMessage("No Item Fee");
             return;
@@ -284,9 +281,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
-        System.out.println("addNewFeeForItem");
-        System.out.println("inputItem = " + inputItem);
-        System.out.println("inputFee = " + inputFee);
         if (inputItem == null) {
             JsfUtil.addErrorMessage("Select Item ?");
             return;
@@ -344,9 +338,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {
-        System.out.println("updateTotal");
-        System.out.println("inputItemFees = " + inputItemFees);
-        System.out.println("inputItem = " + inputItem);
         if (inputItem == null) {
             return;
         }

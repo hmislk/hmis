@@ -102,10 +102,7 @@ public class CollectingCentreController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("t", InstitutionType.CollectingCentre);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         Institution cc = getFacade().findFirstByJpql(jpql, m);
-        System.out.println("cc = " + cc);
         if (cc == null) {
             return;
         }
@@ -114,7 +111,6 @@ public class CollectingCentreController implements Serializable {
     }
 
     public String newCode(String previousCode) {
-        System.out.println("previousCode = " + previousCode);
         if (previousCode == null || previousCode.isEmpty()) {
             return "CC1"; // Default code if there's no previous code, adjust as needed
         }
@@ -126,20 +122,16 @@ public class CollectingCentreController implements Serializable {
         }
 
         String prefix = previousCode.substring(0, i + 1);
-        System.out.println("prefix = " + prefix);
         String numberPart = previousCode.substring(i + 1);
-        System.out.println("numberPart = " + numberPart);
 
         // Parsing the numeric part to an integer and incrementing it
         int number;
         try {
             number = Integer.parseInt(numberPart);
-            System.out.println("number = " + number);
         } catch (NumberFormatException e) {
             return prefix + "1"; // Default to 1 if parsing fails
         }
         number++;
-        System.out.println("number = " + number);
 
         // Combining the incremented number with the prefix
         return prefix + number;

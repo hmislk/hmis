@@ -115,11 +115,6 @@
                                                         <h:outputText value="#{ix.total}"></h:outputText>
                                                     </p:column>
                                                 </p:selectOneListbox>
-
-
-
-
-
                                             </div>
                                             <div class="col-md-2" >
                                                 <h:panelGrid id="txtQty">
@@ -136,7 +131,6 @@
                                                     class=" mx-1 ui-button-success" 
                                                     process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx :#{p:resolveFirstComponentWithId('acColl',view).clientId}"
                                                     update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
-
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
                                             </div>
@@ -155,7 +149,6 @@
                                                         id="tblRequests" 
                                                         rowIndexVar="rowIndex" 
                                                         value="#{collectingCentreBillController.lstBillEntries}" var="bi" >
-
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
                                                                 #{rowIndex+1}
@@ -352,8 +345,14 @@
                                             <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
                                         </div>
                                         <div class="col-md-9">
-                                            <p:inputText value="#{collectingCentreBillController.referralId}" class="w-100 mb-1">
-                                            </p:inputText>
+                                            <p:selectOneMenu
+                                                filter="true"
+                                                value="#{collectingCentreBillController.referralId}" 
+                                                class="w-100 mb-1">
+                                                <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
+                                                <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
+                                                               itemLabel="#{refId}" itemValue="#{refId}" />
+                                            </p:selectOneMenu>
                                         </div>
                                         <div class="col-md-3">
                                             <h:outputLabel id="ballance" value="Balance" class="my-1"  />

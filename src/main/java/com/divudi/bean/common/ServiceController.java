@@ -464,9 +464,6 @@ public class ServiceController implements Serializable {
         String depPat = "";
         String chagPat = "";
 
-        System.out.println("ins : " + ins);
-        System.out.println("dep : " + dep);
-        System.out.println("charge : " + charge);
 
         if (ins != null) {
             insPat = ins.substring(0, 3);
