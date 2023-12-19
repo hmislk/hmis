@@ -8,7 +8,8 @@
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
 
@@ -30,7 +31,7 @@
                         <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
                     </p:panel>
 
-                    <p:panel rendered="#{!pharmacyWholeSaleController3.billPreview}" style="background-color: goldenrod; color: brown;"  >
+                    <p:panel rendered="#{!pharmacyWholeSaleController3.billPreview}"  style="background-color: goldenrod; color: brown;" >
                         <h:panelGroup id="panelError" >
                             <h:panelGroup  
                                 rendered="#{pharmacyWholeSaleController3.errorMessage ne null}"
@@ -38,6 +39,7 @@
                                 <p:outputLabel value="#{pharmacyWholeSaleController3.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
+
 
                         <div class="row">
                             <div class="col-md-7">
@@ -301,7 +303,7 @@
                                             <p:selectOneMenu   id="pay" value="#{pharmacyWholeSaleController3.paymentMethod}">    
                                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                                 <p:ajax process="@this cmbPs cmbPs2" 
-                                                        update="pBillDetails creditCard cheque slip tvPt" 
+                                                        update="pBillDetails creditCard cheque slip " 
                                                         event="change"  
                                                         listener="#{pharmacyWholeSaleController3.changeListener()}"/>
                                             </p:selectOneMenu>
@@ -399,8 +401,12 @@
                                         </p:panelGrid>
 
                                     </p:panel>
+                                    
+                                    <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacyWholeSaleController3}"/>
 
-                                    <p:panel header="Client Detail"> 
+<!--                                    <p:panel header="Client Detail"> 
 
 
 
@@ -494,14 +500,14 @@
 
 
 
-                                    </p:panel>
+                                    </p:panel>-->
 
 
 
                                 </p:panel>
-
                             </div>
                         </div>
+
 
 
 
