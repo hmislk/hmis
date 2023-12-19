@@ -8,7 +8,8 @@
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
 
@@ -366,8 +367,10 @@
                                 </p:panelGrid>
 
 
-
-                                <p:panel header="Bill Details" id="pBillDetails"  >
+                                    <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacyWholeSaleController2}"/>
+<!--                                <p:panel header="Bill Details" id="pBillDetails"  >
                                     <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel id="total" value="#{pharmacyWholeSaleController2.preBill.total}" >
@@ -392,7 +395,7 @@
                                         </h:outputLabel>
                                     </p:panelGrid>
 
-                                </p:panel>
+                                </p:panel>-->
 
                                 <p:panel header="Client Detail"> 
 
