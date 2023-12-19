@@ -81,9 +81,9 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable value="#{reportController.testWiseCounts}" var="c">
+                        <p:dataTable value="#{reportController.testWiseCounts}" var="c" rowIndexVar="rowIndex">
                             <p:column headerText="S. No" >
-                                <h:outputText value="#{c.serial}" ></h:outputText>
+                                <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Test Name" >
                                 <h:outputText value="#{c.testName}" ></h:outputText>
