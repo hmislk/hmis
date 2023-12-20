@@ -29,7 +29,7 @@
                                                  styleClass="longText"
                                                  value="#{institutionController.current.name}"   style="width: 650px"></p:inputText>
 
-                                    <h:outputText id="lblChqPrnName" value="Printi Name" ></h:outputText>
+                                    <h:outputText id="lblChqPrnName" value="Printing Name" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtChqPrnName" 
                                                  styleClass="longText"
                                                  value="#{institutionController.current.chequePrintingName}"  style="width: 650px"></p:inputText>
@@ -41,7 +41,7 @@
 
                                     <h:outputText value="Short Code" >                                        
                                     </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  style="width: 650px">
+                                    <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}" style="width: 650px" >
                                     </p:inputText> 
                                     
                                     <h:outputText id="lblRoute" value="Route" ></h:outputText>
@@ -51,7 +51,7 @@
                                                     itemLabel="#{r.name}"
                                                     itemValue="#{r}"
                                                     forceSelection="true"
-                                                    >
+                                                    style="width: 650px;">
                                     </p:autoComplete>
 
                                     <h:outputText value="Point of Issue No" >                                        
