@@ -96,12 +96,11 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     UserStockController userStockController;
     @Inject
     PaymentSchemeController PaymentSchemeController;
-
     @Inject
     SessionController sessionController;
-
     @Inject
     CommonController commonController;
+
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -134,6 +133,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
 /////////////////////////
+    PaymentMethod paymentMethod;
     Item selectedAvailableAmp;
     Item selectedAlternative;
     private PreBill preBill;
@@ -907,9 +907,10 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 //        return false;
 //
 //    }
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-    PaymentMethod paymentMethod;
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -2113,6 +2114,4 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
-    
-    
 }

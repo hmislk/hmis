@@ -176,6 +176,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public void putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -966,5 +971,4 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
-   
 }

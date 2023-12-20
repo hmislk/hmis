@@ -155,7 +155,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     int activeIndex;
 
-   
     private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabPt";
@@ -215,6 +214,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void prepareNewPharmacyBillForMembers() {
         clearNewBillForMembers();
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public void clearForNewBill() {
@@ -2265,6 +2269,5 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
-    
-    
+
 }

@@ -1313,17 +1313,21 @@ public class PatientController implements Serializable {
         quickSearchPatientList = getFacade().findByJpql(j, m);
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
+            controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
             JsfUtil.addErrorMessage("No Patient found !");
+            controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
             controller.setPatient(patientSearched);
+            controller.setPatientDetailsEditable(true);
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);
             patientSearched = null;
+            controller.setPatientDetailsEditable(false);
             JsfUtil.addErrorMessage("Pleace Select Patient");
         }
     }
@@ -1941,7 +1945,7 @@ public class PatientController implements Serializable {
         }
         p.setEditingMode(false);
     }
-
+    
     public String saveAndNavigateToProfile() {
         if (current == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");

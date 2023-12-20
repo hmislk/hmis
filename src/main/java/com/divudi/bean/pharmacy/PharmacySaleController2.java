@@ -112,7 +112,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     PaymentSchemeController paymentSchemeController;
 
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
@@ -150,7 +149,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     private CashTransactionBean cashTransactionBean;
 
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -1240,6 +1238,11 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         getBillFeePaymentFacade().create(bfp);
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     private boolean checkAllBillItem() {
         for (BillItem b : getPreBill().getBillItems()) {
 
@@ -2127,7 +2130,5 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
-    
-    
 
 }

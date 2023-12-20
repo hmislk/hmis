@@ -612,6 +612,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
     }
 
+    
+    @Override
+    public void toggalePatientEditable(){
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+    
     public Title[] getTitle() {
         return Title.values();
     }

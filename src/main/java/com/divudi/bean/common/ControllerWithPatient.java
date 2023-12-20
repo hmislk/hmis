@@ -7,4 +7,5 @@ public interface ControllerWithPatient {
     public void setPatient(Patient patient);
     public boolean isPatientDetailsEditable();
     public void setPatientDetailsEditable(boolean patientDetailsEditable) ;
+     public void toggalePatientEditable();
 }

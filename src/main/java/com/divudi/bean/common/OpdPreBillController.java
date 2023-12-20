@@ -238,6 +238,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
@@ -255,7 +260,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 return itemApplicationController.getInvestigationsAndServices();
         }
     }
-    
+
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -1451,7 +1456,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     @Override
     public Patient getPatient() {
-        if(patient==null){
+        if (patient == null) {
             patient = new Patient();
         }
         return patient;
@@ -1944,7 +1949,5 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
-    
-    
-    
+
 }

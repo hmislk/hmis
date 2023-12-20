@@ -417,6 +417,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
     }
@@ -482,7 +487,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
-        
+
         if (agentReferenceBooks.isEmpty()) {
             ins.setAgentReferenceBooks(null);
             return;
@@ -1071,7 +1076,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         if (referralId == null || referralId.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a referrance number");
             return true;
-        } 
+        }
 //        else if (collectingCenterReferranceNumberAlreadyUsed(collectingCentre)) {
 //            JsfUtil.addErrorMessage("Referral number alredy entered");
 //            return true;
@@ -1204,7 +1209,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void addToBill() {
-        
+
         if (collectingCentre == null) {
             UtilityController.addErrorMessage("Please Select Collecting Center");
             return;
@@ -1223,11 +1228,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
 
-        if(getCurrentBillItem().getItem().getInstitution()==null){
+        if (getCurrentBillItem().getItem().getInstitution() == null) {
             getCurrentBillItem().getItem().setInstitution(collectingCentre);
             itemController.saveSelected(getCurrentBillItem().getItem());
         }
-        
+
         if (getCurrentBillItem().getItem().getDepartment() == null) {
             Department dep = departmentController.getDefaultDepatrment(collectingCentre);
             getCurrentBillItem().getItem().setDepartment(dep);
@@ -1400,7 +1405,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         paymentScheme = null;
         paymentMethod = PaymentMethod.Agent;
         collectingCentre = null;
-        opdItems=null;
+        opdItems = null;
     }
 
     public void prepareNewBillKeepingCollectingCenter() {
@@ -1678,7 +1683,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //    public void setNewPatient(Patient newPatient) {
 //        this.newPatient = newPatient;
 //    }
-
     @Override
     public Patient getPatient() {
         if (patient == null) {
@@ -2200,7 +2204,5 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
-    
-    
 
 }
