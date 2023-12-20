@@ -77,12 +77,12 @@ public class InstitutionController implements Serializable {
 
     public String toListInstitutions() {
         fillItems();
-        return "/admin/institutions/institutions";
+        return "/admin/institutions/institutions?faces-redirect=true";
     }
 
     public String toAddNewInstitution() {
         current = new Institution();
-        return "/admin/institutions/institution";
+        return "/admin/institutions/institution?faces-redirect=true";
     }
 
     public String toEditInstitution() {
@@ -90,7 +90,7 @@ public class InstitutionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/institutions/institution";
+        return "/admin/institutions/institution?faces-redirect=true";
     }
 
     public String deleteInstitution() {
