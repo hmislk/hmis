@@ -17,6 +17,8 @@
                     <h:panelGrid id="gpDetail" columns="1">
                         <p:commandButton ajax="false" id="btnSave" value="Save" 
                                          action="#{institutionController.saveSelectedInstitution()}"
+                                         icon="fas fa-save"
+                                         class="ui-button-success"
                                          style="float: right;">
                         </p:commandButton>
                         <p:tabView >
@@ -43,7 +45,7 @@
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}" style="width: 650px" >
                                     </p:inputText> 
-                                    
+
                                     <h:outputText id="lblRoute" value="Route" ></h:outputText>
                                     <p:autoComplete value="#{institutionController.current.route}"
                                                     completeMethod="#{routeController.completeRoute}"
@@ -56,8 +58,10 @@
 
                                     <h:outputText value="Point of Issue No" >                                        
                                     </h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{institutionController.current.pointOfIssueNo}"  style="width: 650px">
-                                    </p:inputText> 
+                                    <p:inputText autocomplete="off"
+                                                 value="#{institutionController.current.pointOfIssueNo}"
+                                                 style="width: 650px;">
+                                    </p:inputText>
                                     <h:outputText value="Descreption" >                                        
                                     </h:outputText>
                                     <p:inputTextarea styleClass="longText" value="#{institutionController.current.descreption}"  style="width: 650px">
@@ -101,7 +105,7 @@
                                 </h:panelGrid>
                             </p:tab>
                             <p:tab title="Advanced" >
-                                <h:panelGrid columns="2" >
+                                <h:panelGrid columns="2" style="width: 1000px" >
                                     <h:outputText  value="Email Sending Account" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"  style="width: 650px"></p:inputText>
 
