@@ -13,14 +13,15 @@
 
             <ui:define name="admin">
 
-                <h:form style="width: 1000px">
+                <h:form style="width: 1050px">
+                    <p:commandButton ajax="false" id="btnSave" value="Save" 
+                                     action="#{institutionController.saveSelectedInstitution()}"
+                                     icon="fas fa-save"
+                                     class="ui-button-success my-2"
+                                     style="float: right;">
+                    </p:commandButton>
                     <h:panelGrid id="gpDetail" columns="1">
-                        <p:commandButton ajax="false" id="btnSave" value="Save" 
-                                         action="#{institutionController.saveSelectedInstitution()}"
-                                         icon="fas fa-save"
-                                         class="ui-button-success"
-                                         style="float: right;">
-                        </p:commandButton>
+
                         <p:tabView >
                             <p:tab title="Basic Details">
                                 <h:panelGrid id="gpDetailText" columns="2"  style="width: 1000px">
