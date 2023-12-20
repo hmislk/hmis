@@ -15,30 +15,28 @@
                 <h:form>
                     <p:panel header="Search Bills" >
 
-                        <h:panelGrid columns="8" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="mx-4 w-100 my-1" inputStyleClass="w-100" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
-                            <p:spacer width="70"/>
                             <h:outputLabel value="To Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                         </h:panelGrid>
-                        <h:panelGrid columns="4">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}"/>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        
+                        <h:panelGrid columns="4" class="my-4">
+                            <p:commandButton icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}"/>
+                            <p:commandButton class="ui-button-info mx-1" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="tblFee1" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-file-excel" ajax="false" value="Excel"  actionListener="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}">
                                 <p:dataExporter type="xlsx" target="tblFee1,
                                              tblFee2,
                                              tblFee3,
                                              tblFee4" fileName="BHT_payment_For_Doctor"  />
                             </p:commandButton> 
-                            <p:commandButton id="btnBack" ajax="false" value="Back" action="inward_professional_payment_discharged_or_notdischarged"/>
+                            <p:commandButton class="ui-button-secondary mx-1" icon="fas fa-arrow-left" id="btnBack" ajax="false" value="Back" action="inward_professional_payment_discharged_or_notdischarged"/>
                         </h:panelGrid>
 
 
@@ -406,7 +404,7 @@
                         </p:dataTable>
                     </p:panel>
                     <p:panel>
-                        <p:panelGrid columns="2">
+                        <p:panelGrid columns="2" class="w-100">
                             <p:outputLabel value="Doctor Payment Paid for Discharged Patients"></p:outputLabel>
                             <p:outputLabel value="#{inwardStaffPaymentBillController.totalDocFeePayDischarged}">
                                 <f:convertNumber pattern="#,##0.00"/>
