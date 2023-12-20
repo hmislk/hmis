@@ -38,9 +38,8 @@
                                     <h:panelGrid id="pg0" columns="2" style="text-align: left; ">
                                         <p:outputLabel for="txtName" value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <h:panelGrid columns="2" class="d-flex justify-content-between">
-                                            <div class="row d-flex ">
-                                                <div class="col-3">
-                                                    <p:selectOneMenu 
+                                            <div class="row ">
+                                                <p:selectOneMenu 
                                                         id="acTitle"
                                                         
                                                         required="false" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
@@ -49,8 +48,7 @@
                                                         <f:selectItem itemLabel="Select Title" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
                                                     </p:selectOneMenu>
-                                                </div>
-                                                <div class="col-9">
+                                                
                                                     <p:inputText id="txtName" 
                                                                  autocomplete="off"
                                                                  required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
@@ -58,7 +56,7 @@
                                                                  requiredMessage="Please enter a Name"
                                                                  >
                                                     </p:inputText>
-                                                </div>
+                                                
                                             </div>
 
 
