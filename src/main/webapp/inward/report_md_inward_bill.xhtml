@@ -9,32 +9,43 @@
 
     <ui:define name="subcontent">
         <h:form>
-            <p:panel>
-                <h:panelGrid columns="6" class="w-100 my-2">                    
+            <p:panel header="Report By Bill" style="height: 100vh">
+                
+                <h:panelGrid columns="8" class="my-4">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar styleClass="dateTimePicker mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar styleClass="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar styleClass="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
-
-
-                    <p:commandButton ajax="false" value="Process By Added Date" 
+                    <p:commandButton ajax="false"
+                                     value="Process By Added Date" 
+                                     icon="fas fa-cogs"
+                                     class=" ui-button-success"
                                      action="#{mdInwardReportController.createServiceBillsByAddedDate}"
-                                      />
-                    <p:commandButton ajax="false" value="Process By Discharge Date" 
+                                     /><br/>
+                    <p:commandButton ajax="false" 
+                                     icon="fas fa-cogs"
+                                     value="Process By Discharge Date" 
+                                     class="my-2 ui-button-success"
                                      action="#{mdInwardReportController.createServiceBillsByDischargeDate()}"
-                                       />
-
-                </h:panelGrid>   
-
-                <p:dataTable id="tbl" value="#{mdInwardReportController.bills}" rowIndexVar="i" var="bill" filteredValue="#{mdInwardReportController.fillterBill}" sortBy="#{bill.institution.id}"
+                                     />
+                </h:panelGrid>
+                
+                <p:dataTable id="tbl" 
+                             value="#{mdInwardReportController.bills}"
+                             rowIndexVar="i"
+                             var="bill"
+                             filteredValue="#{mdInwardReportController.fillterBill}"
+                             sortBy="#{bill.institution.id}"
                              rows="50"
                              paginator="true"
+                             paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="20,50,100">
+                    
                     <p:column headerText="Serial No">
                         #{i+1}
                     </p:column>
