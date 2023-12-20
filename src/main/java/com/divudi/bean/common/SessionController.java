@@ -382,7 +382,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
         currentPreference.setInstitution(null);
-        return "/admin/institutions/admin_mange_application_preferences";
+        return "/admin/institutions/admin_mange_application_preferences?faces-redirect=true";
     }
 
     public String toManageIntitutionPreferences() {
@@ -414,7 +414,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         currentPreference.setWebUser(null);
         currentPreference.setInstitution(null);
-        return "/admin/institutions/admin_mange_department_preferences";
+        return "/admin/institutions/admin_mange_department_preferences?faces-redirect=true";
     }
 
     public void updateUserPreferences() {
