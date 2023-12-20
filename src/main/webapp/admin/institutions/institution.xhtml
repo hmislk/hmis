@@ -51,10 +51,11 @@
                                     <p:autoComplete value="#{institutionController.current.route}"
                                                     completeMethod="#{routeController.completeRoute}"
                                                     var="r"
+                                                    style="width: 650px"
+                                                    inputStyleClass="w-100"
                                                     itemLabel="#{r.name}"
                                                     itemValue="#{r}"
-                                                    forceSelection="true"
-                                                    style="width: 650px;">
+                                                    forceSelection="true">
                                     </p:autoComplete>
 
                                     <h:outputText value="Point of Issue No" >                                        
