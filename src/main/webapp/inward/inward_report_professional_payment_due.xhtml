@@ -20,35 +20,35 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
 
                             <h:outputLabel value="Speciality"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+                            <p:inputText class="mx-4 w-100"  autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
 
                             <h:outputLabel value="Doctor Name"/>      
 
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                            <p:inputText autocomplete="off" class="mx-4 w-100" inputStyleClass="w-100" value="#{searchController.searchKeyword.staffName}" />
 
 
                             <h:outputLabel value="Admission Type"/>
-                            <p:selectOneMenu value="#{searchController.searchKeyword.admissionType}">
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.searchKeyword.admissionType}">
                                 <f:selectItem itemLabel="Select Admission Type"/>
                                 <f:selectItems  value="#{mdInwardReportController.admissionTy}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Payment Method"/>
-                            <p:selectOneMenu   id="cmbPs" value="#{searchController.searchKeyword.paymentMethod}">
+                            <p:selectOneMenu  class="mx-4 w-100" id="cmbPs" value="#{searchController.searchKeyword.paymentMethod}">
                                 <f:selectItem itemLabel="Select" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />                           
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Institution"/>
-                            <p:selectOneMenu  id="lstCc"   value="#{searchController.searchKeyword.ins}" >
+                            <p:selectOneMenu  class="mx-4 w-100" id="lstCc"   value="#{searchController.searchKeyword.ins}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -56,7 +56,7 @@
 
 
                             <h:outputLabel value="BHT No"/>
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{searchController.searchKeyword.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
                                             var="myItem" itemValue="#{myItem}" 
@@ -84,17 +84,17 @@
                         </h:panelGrid>
 
                        
-                        <p:panelGrid columns="3">
+                        <h:panelGrid columns="3" class="my-4">
                           
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}"  />
+                                <p:commandButton class="ui-button-primary" icon="fas fa-search" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}"  />
 
                                 <p:defaultCommand target="btnSearch" />
 
-                                <p:commandButton value="Excel" ajax="false" style="float: right;">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-file-excel" value="Excel" ajax="false" style="float: right;">
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="doctor_payment_due_report_inward"/>
                                 </p:commandButton>
                             
-                        </p:panelGrid>
+                        </h:panelGrid>
 
 
 
