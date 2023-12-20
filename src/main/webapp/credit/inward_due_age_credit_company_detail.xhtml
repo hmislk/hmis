@@ -9,7 +9,7 @@
 
     <h:body>
         <ui:composition template="/inward/inward_reports.xhtml">
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>            
                     <p:commandButton class="mx-1" id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}"  />
                     <p:commandButton class="mx-1" id="btnProcess" ajax="false" 

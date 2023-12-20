@@ -512,6 +512,8 @@ public class InwardProfessionalBillController implements Serializable {
     public BillEntryFacade getBillEntryFacade() {
         return billEntryFacade;
     }
+    
+  
 
     public void setBillEntryFacade(BillEntryFacade billEntryFacade) {
         this.billEntryFacade = billEntryFacade;
@@ -729,6 +731,25 @@ public class InwardProfessionalBillController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Service & Items/Add Outside Charges(/faces/inward/inward_bill_professional.xhtml)");
     }
 
+    public String navigateToAddProfessionalFeesFromMenu() {
+        makeNull();
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+    
+    public String navigateToAddProfessionalFeesFromInpatientProfile() {
+        return "/inward/inward_bill_professional?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFeeFromMenu() {
+        makeNull();
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    public String navigateToAddEstimatedProfessionalFeeFromInpatientProfile() {
+        return "/inward/inward_bill_professional_estimate?faces-redirect=true";
+    }
+
+    
     public void makeNullList() {
         currentBillFee = null;
         billItem = null;

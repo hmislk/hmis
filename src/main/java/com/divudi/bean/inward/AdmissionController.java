@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -60,14 +60,19 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class AdmissionController implements Serializable {
+public class AdmissionController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-
+    @Inject
+    RoomOccupancyController roomOccupancyController;
     @Inject
     private InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    RoomChangeController roomChangeController;
+    @Inject
+    InpatientClinicalDataController inpatientClinicalDataController;
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -81,6 +86,8 @@ public class AdmissionController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @Inject
+    BhtEditController bhtEditController;
     ////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -99,7 +106,7 @@ public class AdmissionController implements Serializable {
     private String bhtText = "";
     private String patientTabId = "tabNewPt";
     private int patientSearchTab;
-    private Patient newPatient;
+    private Patient patient;
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
@@ -135,9 +142,34 @@ public class AdmissionController implements Serializable {
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
     }
+    
+    public String navigateToInpatientClinicalData() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
+    public String navigateToInpatientDrugChart() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToDrugChart();
+    }
+    
+    public String navigateToInpatientInvestigations() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToInvestigations();
+    }
+    
+    public String navigateToInpatientImages() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToImages();
+    }
 
+    public String navigateToInpatientDiagnosisCard() {
+        inpatientClinicalDataController.setCurrent(current);
+        return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
     public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
     }
 
@@ -246,37 +278,44 @@ public class AdmissionController implements Serializable {
     }
 
     public String navigateToEditAdmission() {
+        bhtEditController.getCurrent().getPatient().setEditingMode(true);
         return "/inward/inward_edit_bht?faces-redirect=true";
     }
 
     public String navigateToRoomOccupancy() {
+        roomOccupancyController.setPatientRooms(null);
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
     public String navigateToRoomVacancy() {
+        roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
     }
 
     public String navigateToRoomChange() {
+//        roomChangeController.recreate();
+        roomChangeController.createPatientRoom();
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
     public String navigateToGuardianRoomChange() {
+//         roomChangeController.recreate();
+        roomChangeController.createGuardianRoom();
         return "/inward/inward_room_change_guardian?faces-redirect=true";
     }
 
-    // Services & Items Submenu Methods
-    public String navigateToAddServices() {
-        return "/inward/inward_bill_service?faces-redirect=true";
-    }
+//    // Services & Items Submenu Methods
+//    public String navigateToAddServices() {
+//        return "/inward/inward_bill_service?faces-redirect=true";
+//    }
 
-    public String navigateToAddOutsideCharge() {
-        return "/inward/inward_bill_outside_charge?faces-redirect=true";
-    }
+//    public String navigateToAddOutsideCharge() {
+//        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+//    }
 
-    public String navigateToAddProfessionalFee() {
-        return "/inward/inward_bill_professional?faces-redirect=true";
-    }
+//    public String navigateToAddProfessionalFee() {
+//        return "/inward/inward_bill_professional?faces-redirect=true";
+//    }
 
     public String navigateToAddEstimatedProfessionalFee() {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
@@ -308,6 +347,21 @@ public class AdmissionController implements Serializable {
     }
 
     public void searchAdmissions() {
+        if(fromDate == null||toDate==null){
+            UtilityController.addErrorMessage("Please select date");
+            return;
+        }
+        
+//        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
+//            return;
+//        }
+//        
+//        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
+//            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
+//            return;
+//        }
+        
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
@@ -369,8 +423,6 @@ public class AdmissionController implements Serializable {
             j += "  and c.institution=:ins ";
             m.put("ins", institutionForSearch);
         }
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
@@ -384,7 +436,7 @@ public class AdmissionController implements Serializable {
             return "";
         }
         current.getPatient().setEditingMode(false);
-        return "/inward/admission_profile";
+        return "/inward/admission_profile?faces-redirect?true";
     }
 
     public List<Admission> completeAdmission(String query) {
@@ -615,7 +667,7 @@ public class AdmissionController implements Serializable {
 
     public String navigateToAdmitFromMenu() {
         prepereToAdmitNewPatient();
-        getCurrent().setPatient(getNewPatient());
+        getCurrent().setPatient(getPatient());
         return "/inward/inward_admission";
     }
 
@@ -630,7 +682,7 @@ public class AdmissionController implements Serializable {
         patientSearchTab = 0;
         selectText = "";
         selectedItems = null;
-        newPatient = null;
+        patient = null;
         yearMonthDay = null;
         printPreview = false;
         bhtNumberCalculation();
@@ -646,7 +698,7 @@ public class AdmissionController implements Serializable {
         patientSearchTab = 1;
         selectText = "";
         selectedItems = null;
-        newPatient = null;
+        patient = null;
         yearMonthDay = null;
         printPreview = false;
         bhtNumberCalculation();
@@ -665,8 +717,8 @@ public class AdmissionController implements Serializable {
     }
 
     private void savePatient() {
-        Person person = getNewPatient().getPerson();
-        getNewPatient().setPerson(null);
+        Person person = getPatient().getPerson();
+        getPatient().setPerson(null);
 
         if (person != null) {
             person.setCreatedAt(Calendar.getInstance().getTime());
@@ -680,17 +732,17 @@ public class AdmissionController implements Serializable {
 
         }
 
-        getNewPatient().setCreatedAt(Calendar.getInstance().getTime());
-        getNewPatient().setCreater(getSessionController().getLoggedUser());
+        getPatient().setCreatedAt(Calendar.getInstance().getTime());
+        getPatient().setCreater(getSessionController().getLoggedUser());
 
-        if (getNewPatient().getId() == null) {
-            getPatientFacade().create(getNewPatient());
+        if (getPatient().getId() == null) {
+            getPatientFacade().create(getPatient());
         } else {
-            getPatientFacade().edit(getNewPatient());
+            getPatientFacade().edit(getPatient());
         }
 
-        getNewPatient().setPerson(person);
-        getPatientFacade().edit(getNewPatient());
+        getPatient().setPerson(person);
+        getPatientFacade().edit(getPatient());
     }
 
     private void saveGuardian() {
@@ -1020,13 +1072,13 @@ public class AdmissionController implements Serializable {
     }
 
     public String getAgeText() {
-        ageText = getNewPatient().getAge();
+        ageText = getPatient().getAge();
         return ageText;
     }
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
+        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -1085,17 +1137,22 @@ public class AdmissionController implements Serializable {
         this.patientTabId = patientTabId;
     }
 
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            Person p = new Person();
-            newPatient = new Patient();
-            newPatient.setPerson(p);
+    @Override
+    public Patient getPatient() {
+        if(current!=null){
+            patient = getCurrent().getPatient();
         }
-        return newPatient;
+        if (patient == null) {
+            Person p = new Person();
+            patient = new Patient();
+            patient.setPerson(p);
+        }
+        return patient;
     }
 
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public YearMonthDay getYearMonthDay() {
@@ -1299,16 +1356,29 @@ public class AdmissionController implements Serializable {
             }
             AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionController");
-            return controller.getEjbFacade().find(getKey(value));
+            if(controller == null){
+                return null;
+            }
+            Long l = getKey(value);
+            if(l == null){
+                return  null;
+            }
+            return controller.getEjbFacade().find(l);
         }
 
         java.lang.Long getKey(String value) {
+            if(value == null){
+                return null;
+            }
             java.lang.Long key;
             key = Long.valueOf(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
+            if(value == null){
+                return null;
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(value);
             return sb.toString();

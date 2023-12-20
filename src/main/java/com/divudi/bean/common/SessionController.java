@@ -791,7 +791,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean isFirstVisit() {
         String j = "Select w from WebUser w order by w.id";
         WebUser ws = getFacede().findFirstByJpql(j);
-        System.out.println("ws = " + ws);
         if (ws == null) {
             UtilityController.addSuccessMessage("First Visit");
             return true;
@@ -1114,10 +1113,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
-        System.out.println("userPrivilages = " + userPrivilages);
         if (userPrivilages == null || userPrivilages.isEmpty()) {
             userPrivilages = fillUserPrivileges(loggedUser, null, true);
-            System.out.println("userPrivilages = " + userPrivilages);
             createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
             logout();
         }
@@ -1521,8 +1518,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         m.put("ret", false);
         m.put("wu", twu);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
         return twups;
     }
@@ -1535,6 +1530,21 @@ public class SessionController implements Serializable, HttpSessionListener {
             userPrivilages = new ArrayList<>();
         }
         return userPrivilages;
+    }
+    
+    public void fillCurrentPreferences() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p from UserPreference p where p.department=:dep order by p.id desc";
+        m.put("dep", getDepartment());
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setDepartment(loggedUser.getDepartment());
+        }
+        currentPreference.setWebUser(null);
+        currentPreference.setInstitution(null);
+        
     }
 
     public String getBillNo() {
@@ -1893,7 +1903,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private void createUserPrivilegesForAllDepartments(WebUser tmpLoggedUser, Department loggedDept, List<Department> tmpLoggableDeps) {
-        System.out.println("createUserPrivilegesForAllDepartments");
         List<WebUserPrivilege> twups = fillUserPrivileges(tmpLoggedUser, null, true);
         if (tmpLoggedUser == null) {
             return;
@@ -1908,12 +1917,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
         List<Department> tds = tmpLoggableDeps;
-        System.out.println("tds = " + tds);
         tds.remove(loggedDept);
-        System.out.println("tds = " + tds);
         for (WebUserPrivilege twup : twups) {
             twup.setDepartment(loggedDept);
-            System.out.println("twup = " + twup.getDepartment().getName());
             getWebUserPrivilegeFacade().edit(twup);
             for (Department d : tds) {
                 WebUserPrivilege nwup = new WebUserPrivilege();

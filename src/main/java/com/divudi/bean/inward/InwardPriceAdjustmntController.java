@@ -77,6 +77,13 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         items = null;
     }
+    
+    public void preparedAdd(){
+        fromPrice = toPrice + 1;
+        toPrice = 0.0;
+        margin = 0;
+        items = null;
+    }
 
     public List<InwardPriceAdjustment> getInwardPriceAdjustments() {
         return inwardPriceAdjustments;

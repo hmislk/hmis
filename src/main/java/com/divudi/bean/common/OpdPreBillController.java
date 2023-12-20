@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -16,6 +15,12 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.ItemLight;
+import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_INSTITUTION;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT;
+import static com.divudi.data.ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -42,13 +47,12 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.membership.MembershipScheme;
-
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -85,15 +89,23 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class OpdPreBillController implements Serializable {
+public class OpdPreBillController implements Serializable, ControllerWithPatient {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-    @Inject
-    private CommonController commonController;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    CommonFunctions commonFunctions;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private PatientFacade patientFacade;
+    @EJB
+    private BillComponentFacade billComponentFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
     @EJB
@@ -106,13 +118,43 @@ public class OpdPreBillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    BillEjb billEjb;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    @Inject
+    private CommonController commonController;
     @Inject
     private EnumController enumController;
     @Inject
     private OpdPreBillController opdPreBillController;
+    @Inject
+    ItemMappingController itemMappingController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    SearchController searchController;
 
-    @EJB
-    BillEjb billEjb;
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    //Temprory Variable
+    List<Bill> bills;
+    Bill bill;
+    private ItemLight itemLight;
+    boolean foreigner = false;
+    Date sessionDate;
+    String strTenderedValue;
+    private YearMonthDay yearMonthDay;
+    private PaymentMethodData paymentMethodData;
+    private static final long serialVersionUID = 1L;
     private boolean printPreview;
     //Interface Data
     private PaymentScheme paymentScheme;
@@ -158,6 +200,9 @@ public class OpdPreBillController implements Serializable {
     private List<BillEntry> lstBillEntriesPrint;
 
     List<BillFeePayment> billFeePayments;
+    private List<ItemLight> opdItems;
+    
+    // </editor-fold>
 
     public double getCashRemain() {
         return cashRemain;
@@ -167,36 +212,50 @@ public class OpdPreBillController implements Serializable {
         this.cashRemain = cashRemain;
     }
 
-    @EJB
-    private PatientInvestigationFacade patientInvestigationFacade;
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CommonFunctions commonFunctions;
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private PatientFacade patientFacade;
-    @EJB
-    private BillComponentFacade billComponentFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    private Patient tmpPatient;
-    List<Bill> bills;
-    Bill bill;
-    boolean foreigner = false;
-    Date sessionDate;
-    String strTenderedValue;
-    private YearMonthDay yearMonthDay;
-    private Patient current;
-    private PaymentMethodData paymentMethodData;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
+    public List<Item> completeOpdItems(String query) {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemController.completeServicesPlusInvestigationsAll(query);
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, sessionController.getInstitution());
+            case ITEMS_MAPPED_TO_SELECTED_DEPARTMENT:
+                return itemMappingController.completeItemByDepartment(query, department);
+            case ITEMS_MAPPED_TO_SELECTED_INSTITUTION:
+                return itemMappingController.completeItemByInstitution(query, institution);
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, sessionController.getDepartment());
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.completeItemsByInstitution(query, sessionController.getInstitution());
+            case ITEMS_OF_SELECTED_DEPARTMENT:
+                return itemController.completeItemsByDepartment(query, department);
+            case ITEMS_OF_SELECTED_INSTITUTIONS:
+                return itemController.completeItemsByInstitution(query, institution);
+            default:
+                throw new AssertionError();
+        }
+    }
 
-    @Inject
-    SearchController searchController;
-
+    public List<ItemLight> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
+    }
+    
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -515,10 +574,8 @@ public class OpdPreBillController implements Serializable {
             getPatient().getPerson().setCreatedAt(new Date());
             getPersonFacade().create(getPatient().getPerson());
             getPatientFacade().create(getPatient());
-            tmpPatient = getPatient();
         } else {
             getPatientFacade().edit(getPatient());
-            tmpPatient = getPatient();
         }
     }
 
@@ -604,7 +661,7 @@ public class OpdPreBillController implements Serializable {
             return null;
         }
 
-        Patient p = savePatient(getPatient());
+        savePatient(getPatient());
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
@@ -656,7 +713,7 @@ public class OpdPreBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
-        
+
         return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
@@ -709,7 +766,7 @@ public class OpdPreBillController implements Serializable {
         PreBill tmp = new PreBill();
         tmp.setBillType(BillType.OpdBathcBillPre);
         tmp.setBillClassType(BillClassType.PreBill);
-        tmp.setPatient(tmpPatient);
+        tmp.setPatient(getPatient());
         tmp.setInstitution(getSessionController().getInstitution());
         tmp.setDepartment(getSessionController().getDepartment());
         tmp.setPaymentScheme(paymentScheme);
@@ -806,7 +863,7 @@ public class OpdPreBillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setComments(comment);
@@ -815,9 +872,9 @@ public class OpdPreBillController implements Serializable {
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getPatient());
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
+        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
@@ -897,7 +954,7 @@ public class OpdPreBillController implements Serializable {
         HashMap m = new HashMap();
         jpql = "Select b from Bill b where "
                 + "b.retired = false and "
-                + "(b.referralNumber) =:rid ";
+                + "(b.referenceNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         List<Bill> tempBills = getFacade().findByJpql(jpql, m);
         if (tempBills == null || tempBills.isEmpty()) {
@@ -993,13 +1050,12 @@ public class OpdPreBillController implements Serializable {
     }
 
     public String navigateToBillingForCashierFromMenu() {
-        if (current == null) {
+        if (patient == null) {
             JsfUtil.addErrorMessage("No patient selected");
-            Patient p = new Patient();
-            setCurrent(p);
+            patient = new Patient();
         }
         opdPreBillController.prepareNewBill();
-        opdPreBillController.setPatient(getCurrent());
+        opdPreBillController.setPatient(getPatient());
         return "/opd/opd_pre_bill";
 
     }
@@ -1393,12 +1449,15 @@ public class OpdPreBillController implements Serializable {
         calTotals();
     }
 
-    
-
+    @Override
     public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+        }
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
@@ -1586,14 +1645,6 @@ public class OpdPreBillController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
-    }
-
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
     }
 
     public PatientInvestigationFacade getPatientInvestigationFacade() {
@@ -1905,11 +1956,24 @@ public class OpdPreBillController implements Serializable {
         this.commonController = commonController;
     }
 
-    public Patient getCurrent() {
-        return current;
+    public List<ItemLight> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
     }
 
-    public void setCurrent(Patient current) {
-        this.current = current;
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
     }
 }

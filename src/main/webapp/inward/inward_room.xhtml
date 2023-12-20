@@ -34,6 +34,7 @@
                                                 return false;" 
                                     action="#{roomController.delete()}"  
                                     value="Delete"  >
+                                    
                                 </p:commandButton>
                                 <p:selectOneListbox  
                                     id="lstSelect" 
@@ -56,8 +57,7 @@
                                                          update="lstSelect"
                                                          class=" m-1 ui-button-warning w-25"
                                                          >
-                                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
-                                            </f:ajax>
+                                            
                                         </p:commandButton>
                                         <p:defaultCommand target="btnSave"/>
                                     </div>

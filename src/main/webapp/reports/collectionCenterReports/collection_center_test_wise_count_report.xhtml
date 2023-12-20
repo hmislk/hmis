@@ -41,22 +41,26 @@
                             <p:spacer></p:spacer>
 
                             <p:outputLabel value="Collecting Center Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccName}">
+                            <p:selectOneMenu value="#{reportController.collectingCentre}">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
                                 <f:selectItems value="#{collectingCentreController.items}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
 
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{reportController.processCollectingCentreTestWiseCountReport}" >
 
-                            <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
 
                         </h:panelGrid>
 
                         <h:panelGrid columns="2">
 
-                            
+
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -68,35 +72,36 @@
                             </h:outputLabel>
 
                             <h:outputLabel value="CC Name :  "/>
-                            <h:outputLabel value="#{reportController.ccName}"  ></h:outputLabel>
+                            <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
+
 
                         </h:panelGrid>
 
 
-                        <p:dataTable value="null" var="c">
+                        <p:dataTable value="#{reportController.testWiseCounts}" var="c" rowIndexVar="rowIndex">
                             <p:column headerText="S. No" >
-                                <h:outputText value="" ></h:outputText>
+                                <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Test Name" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.testName}" ></h:outputText>
                             </p:column>
-                          
+
                             <p:column headerText="Count" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.count}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Hos Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.hosFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.ccFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Professional Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.proFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Total Amount" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.total}" ></h:outputText>
                             </p:column>
-                            
+
                         </p:dataTable>
 
                     </p:panel>

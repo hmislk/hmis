@@ -54,14 +54,14 @@
                     <h:outputText value="#{i.id}" ></h:outputText>
                 </p:column>
                 <p:column 
-                    headerText="VMP Name" 
+                    headerText="Name (VMP)" 
                     sortBy="#{i.name}"
                     filterBy="#{i.name}"
                     filterMatchMode="contains">
                     <h:outputText value="#{i.name}" ></h:outputText>
                 </p:column>
                 <p:column 
-                    headerText="VTM Name" 
+                    headerText="Generic (VTM)" 
                     sortBy="#{i.vtm.name}"
                     filterBy="#{i.vtm.name}"
                     filterMatchMode="contains">
@@ -122,6 +122,35 @@
                 </p:column>
             </p:dataTable>
 
+
+            <p:panel header="Assign Issue Units" >
+
+                <p:outputLabel value="Issue Unit" ></p:outputLabel>
+                <p:selectOneMenu 
+                    required="true"
+                    requiredMessage="Issue Unit Required"
+                    value="#{pharmacyController.issueUnit}"
+                    filter="true"             
+                    class="w-100">
+                    <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
+                    <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                </p:selectOneMenu> 
+
+                <h:commandButton 
+                    value="Assign Issue Unit Selected" 
+                    class="btn btn-danger"
+                    action="#{pharmacyController.assignIssueUnitToMultipleVmps()}"
+                    onclick="if (!confirm('Are you sure you want to assign Issue Units to these VMPs?'))
+                                return false;" 
+                    />
+                
+                <h:commandButton 
+                    value="Fill Units" 
+                    class="btn btn-danger"
+                    action="#{measurementUnitController.fillAllUnits()}"
+                    />
+
+            </p:panel>
 
 
         </h:form>

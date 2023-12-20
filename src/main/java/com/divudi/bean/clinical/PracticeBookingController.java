@@ -312,7 +312,7 @@ public class PracticeBookingController implements Serializable {
             UtilityController.addErrorMessage("Can not create an opd encounter");
             return "";
         }
-        getPharmacySaleController().setSearchedPatient(opdVisit.getPatient());
+        getPharmacySaleController().setPatient(opdVisit.getPatient());
         getPharmacySaleController().setPatientSearchTab(1);
         getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
         getPharmacySaleController().setFromOpdEncounter(true);

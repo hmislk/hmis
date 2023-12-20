@@ -9,6 +9,10 @@
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
+                <h:form >
+                    <p:poll ></p:poll>
+                </h:form>
+                
                 <div class="container-fluid" >
                     <div class="card" >
                         <div class="card-header" >
@@ -22,6 +26,7 @@
                                 <p:commandButton value="Upload"
                                                  action="#{dataUploadBean.uploadAmps()}"
                                                  ajax="false"/>
+                                
                             </h:form>
 
                             <table class="table">

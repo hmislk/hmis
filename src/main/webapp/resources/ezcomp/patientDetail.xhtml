@@ -55,8 +55,7 @@
         <div class="row mt-2">
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Age" ></p:outputLabel>
-                <p:outputLabel id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100">
-                </p:outputLabel>
+                <p:inputText id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100" disabled="true"/>          
             </div>
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Date of Birth" ></p:outputLabel>
@@ -71,17 +70,19 @@
 
         <div class="row mt-2 ">
             <div class="col-12 p-1">
-                 <p:outputLabel value="Address" ></p:outputLabel>
-                <p:inputText  id="atxtNewPtArea" autocomplete="off" class="form-control w-100" value="#{cc.attrs.patient.person.address}"  placeholder="Address" ></p:inputText>
+                <p:outputLabel value="Address" ></p:outputLabel>
+                <p:inputText  id="atxtNewPtArea" autocomplete="off" class="form-control w-100" value="#{cc.attrs.patient.person.address}"  placeholder="Address" />
             </div>
         </div>
 
         <div class="row mt-2 ">
             <div class="col-md-6 p-1">
-                <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.phone}" placeholder="Mobile"></p:inputText>
+                <p:outputLabel value="Mobile No" ></p:outputLabel>
+                <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.phone}" placeholder="Mobile"/>
             </div>
             <div class="col-md-6 p-1">
-                <p:inputText id="txtNewPtNic" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.nic}" placeholder="NIC"></p:inputText>
+                <p:outputLabel value="NIC" ></p:outputLabel>
+                <p:inputText id="txtNewPtNic" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.nic}" placeholder="NIC"/>
             </div>
         </div>
 

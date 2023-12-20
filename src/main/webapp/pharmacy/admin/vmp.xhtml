@@ -95,6 +95,19 @@
                                 itemLabel="#{vt.name}" 
                                 itemValue="#{vt}" >
                             </p:autoComplete>
+                            
+                            <h:outputLabel value="Dosage Form" ></h:outputLabel>
+                            <p:selectOneMenu 
+                                filter="true"
+                                required="true"
+                                requiredMessage="Dosage Form Required"
+                                value="#{vmpController.current.dosageForm}" 
+                                class="w-100">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{categoryController.items}"
+                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                            </p:selectOneMenu>
+                            
 
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:selectOneMenu 
@@ -108,20 +121,13 @@
                                 <f:selectItems value="#{pharmaceuticalItemTypeController.items}"
                                                var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
                             </p:selectOneMenu>
-                            
-                            
-                            <h:outputLabel value="Dosage Form" ></h:outputLabel>
-                            <p:selectOneMenu 
-                                filter="true"
 
-                                required="true"
-                                requiredMessage="Dosage Form Required"
-                                value="#{vmpController.current.dosageForm}" 
-                                class="w-100">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
-                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                            </p:selectOneMenu>
+
+
+
+
+
+                            
 
                             <h:outputLabel value="Strength" >
                             </h:outputLabel>
@@ -152,8 +158,8 @@
                                 value="#{vmpController.current.issueUnit}"
                                 filter="true"             
                                 class="w-100">
-                                <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
-                                <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
+                                <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
                             </p:selectOneMenu>     
 
 

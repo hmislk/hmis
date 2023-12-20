@@ -4,11 +4,11 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.java.CommonFunctions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,15 +38,15 @@ import javax.xml.bind.annotation.XmlTransient;
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
+    
     Institution institution;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JsonIgnore
+    
     private Person contactPerson;
 
     static final long serialVersionUID = 1L;
     @Id
-    @JsonIgnore
+    
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
@@ -75,23 +75,25 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String cashierBillHeading;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
+    @Enumerated(EnumType.STRING)
+    private CollectingCentrePaymentMethod CollectingCentrePaymentMethod;
     @ManyToOne
     private Route route;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+    
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+    
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+    
     boolean retired;
     @ManyToOne
-    @JsonIgnore
+    
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+    
     Date retiredAt;
     String retireComments;
     double labBillDiscount;
@@ -117,17 +119,16 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @Transient
     private String transAddress7;
     @Transient
-    @JsonIgnore
     List<AgentReferenceBook> agentReferenceBooks;
     String pointOfIssueNo;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
+    
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
     String accountNo;
-    @JsonIgnore
+    
     Institution bankBranch;
 
     String emailSendingUsername;
@@ -642,6 +643,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setRoute(Route route) {
         this.route = route;
+    }
+
+    public CollectingCentrePaymentMethod getCollectingCentrePaymentMethod() {
+        return CollectingCentrePaymentMethod;
+    }
+
+    public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
+        this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
     }
     
     

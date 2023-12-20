@@ -13,7 +13,7 @@
                 <p:growl ></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
-                        <p:outputLabel value="Patient Details" ></p:outputLabel>
+                        <p:outputLabel value="Patient Clinical Data Profile" ></p:outputLabel>
                     </f:facet>
                     <div class="row" >
                         <div class="col-md-4 " >
@@ -83,7 +83,13 @@
                                                 styleClass="mx-1">
                                                 <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                             </p:commandButton>
-
+                                            <p:commandButton 
+                                                value="Patient Dashboard" 
+                                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                                ajax="false" 
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                            </p:commandButton>
                                             <p:commandButton 
                                                 style="float: right;"
                                                 value="Lookup" 
@@ -387,53 +393,136 @@
                                                 </div>
                                             </h:form>
                                         </p:tab>
-                                        <p:tab title="Visits" >
+                                        <p:tab title="Past Data" >
                                             <h:form>
-                                                <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                                    <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="Date / Time" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.encounterDate}" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                                        </h:outputText>
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="Comments" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.comments}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="VisitWeight" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.visitWeight}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="BP" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.bp}" />
-                                                    </p:column>
-                                                    <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
-                                                        <f:facet name="header">
-                                                            <h:outputText value="BMI" />
-                                                        </f:facet>
-                                                        <h:outputText value="#{visit.bmiFormatted}" />
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:commandButton value="View" 
-                                                                         ajax="false"
-                                                                         action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" 
-                                                                         onclick="this.form.target = '_blank'">
-                                                            <f:setPropertyActionListener value="#{visit}" 
-                                                                                         target="#{pastPatientEncounterController.current}" >
-                                                            </f:setPropertyActionListener>
-                                                        </p:commandButton>
+                                                <div class="row" >
+                                                    <div class="col-6" >
 
-                                                    </p:column>
-                                                </p:dataTable>
+                                                        <p:dataTable value="#{patientEncounterController.encounters}" var="visit">
+
+                                                            <p:column headerText="OPD Visits" >
+
+                                                                <h:commandLink action="#{pastPatientEncounterController.navigateToViewPastEncounter()}" >
+                                                                    <i class="fas fa-calendar-alt"></i> <!-- Calendar icon for date -->
+                                                                    <h:outputText value="#{visit.encounterDate}" class="m-2">
+                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                    </h:outputText>
+                                                                    <f:setPropertyActionListener value="#{visit}" target="#{pastPatientEncounterController.current}" />
+                                                                </h:commandLink>
+
+                                                                <!-- Display comments with icon -->
+                                                                <h:outputText value="#{visit.comments}" rendered="#{not empty visit.comments}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-comments"></i> #{visit.comments}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display weight with icon -->
+                                                                <h:outputText value="Weight: #{visit.visitWeight}" rendered="#{visit.visitWeight ne null}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-weight"></i> Weight: #{visit.visitWeight}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display BP with icon, check for non-empty -->
+                                                                <h:outputText rendered="#{visit.bp != null and visit.bp != ''}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-heartbeat"></i> BP: #{visit.bp}</span>
+                                                                </h:outputText>
+
+                                                                <!-- Display BMI with icon -->
+                                                                <h:outputText value="BMI: #{visit.bmiFormatted}" rendered="#{visit.bmi ne null}" styleClass="ml-2">
+                                                                    <span><i class="fas fa-ruler-combined"></i> BMI: #{visit.bmiFormatted}</span>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <p:dataTable 
+                                                            id="tblInves"
+                                                            value="#{patientEncounterController.investigations}" 
+                                                            var="pi" 
+                                                            rowIndexVar="#{pi.id}" >
+
+                                                            <p:column headerText="Tests Orders"  styleClass="alignTop" >
+                                                                <h:outputLabel value="#{pi.billItem.bill.billDate}" class="mx-4" >
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                                </h:outputLabel>
+                                                                <h:outputLabel value="#{pi.billItem.item.name}" >
+                                                                </h:outputLabel>
+
+                                                                <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
+                                                                    <p:commandLink id="cmdOldReportPrint"
+                                                                                   ajax="false" 
+                                                                                   action="/lab/patient_report_print"
+                                                                                   class="mx-4">
+                                                                        <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    </p:commandLink>
+                                                                </ui:repeat>
+
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6" >
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblBills" value="#{patientEncounterController.opdBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel value="#{bill.billTime}" >
+                                                                    <f:convertDateTime  
+                                                                        timeZone="Asia/Colombo" 
+                                                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}"  >                                
+                                                                <p:commandLink id="billNo" 
+                                                                               ajax="false" 
+                                                                               value="#{bill.insId}" 
+                                                                               action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                                                    <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <p:dataTable rowIndexVar="i" 
+                                                                     id="tblChannelBills" value="#{patientEncounterController.channelBills}" 
+                                                                     var="bill"  
+                                                                     style="min-width: 100%;"  
+                                                                     rowKey="#{bill.id}"
+                                                                     >
+                                                            <f:facet name="header" >
+                                                                <h:outputLabel value="Consultations" ></h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="Consultation At"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                             <p:column headerText="Consultatant"  sortBy="#{bill.billDate}"  >
+                                                                <p:outputLabel  value="#{bill.billDate}" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </p:column>
+                                                            <p:column headerText="Fee" sortBy="#{bill.netTotal}" 
+                                                                      styleClass="averageNumericColumn">
+                                                                <h:outputLabel value="#{bill.netTotal}" >
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>                         
+                                                        </p:dataTable>
+                                                    </div>
+
+
+                                                </div>
+
+
                                             </h:form>
 
                                         </p:tab>

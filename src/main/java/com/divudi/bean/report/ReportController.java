@@ -1,11 +1,16 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
+import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
+import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.ItemCount;
+import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
+import com.divudi.data.TestWiseCountReport;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
@@ -14,12 +19,16 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.light.common.BillLight;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.inject.Named;
@@ -38,6 +47,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.faces.context.FacesContext;
+import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -48,12 +58,96 @@ import javax.servlet.http.HttpServletResponse;
 @Named
 @SessionScoped
 public class ReportController implements Serializable {
+    public void processCollectionCenterBalance() {
+        String jpql = "select cc"
+                + " from Institution cc"
+                + " where cc.retired=:ret"
+                + " and cc = :i";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("i", collectingCentre);
+
+        collectionCenters = institutionFacade.findByJpql(jpql, m);
+    }
+    
+    public void processCollectingCentreBillWiseDetailReport() {
+        String jpql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret"
+                + " and bill.billDate between :fd and :td "
+                + " and bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+
+        if (referringDoctor != null) {
+            jpql += " and bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+//        if (status != null) {
+//            jpql += " and billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        bills = billFacade.findByJpql(jpql, m);
+    }
 
     @EJB
     BillItemFacade billItemFacade;
 
+    @EJB
+    BillFacade billFacade;
+    
+    @EJB
+    InstitutionFacade institutionFacade;
+    
     @Inject
     private InstitutionController institutionController;
+
+    @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
+    ItemController itemController;
 
     private int reportIndex;
     private Institution institution;
@@ -68,9 +162,10 @@ public class ReportController implements Serializable {
     private Item item;
     private Machine machine;
     private String processBy;
-    private String ccName;
-    private String ccRoute;
+    private Institution collectingCentre;
+    private Route route;
     private Date financialYear;
+    private String phn;
 
     private double investigationResult;
 
@@ -86,21 +181,28 @@ public class ReportController implements Serializable {
     private String priorityType;
     private String patientMrn;
 
-    private String status;
-    private String refDocName;
+    private BillItemStatus status;
+    private Doctor referringDoctor;
     private String totalAverage;
     private String visit;
 
     private List<Bill> bills;
+    private List<BillItem> billItems;
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
-    
+    private List<Institution> collectionCenters;
+
     private Date warrentyStartDate;
     private Date warrentyEndDate;
-    
+
     private Date amcStartDate;
     private Date amcEndDate;
     private PaymentMethod paymentMethod;
+
+    private String invoiceNumber;
+
+    private List<ItemLight> investigationsAndServices;
+    private ItemLight itemLight;
 
     public ReportController() {
     }
@@ -155,6 +257,128 @@ public class ReportController implements Serializable {
         reportList = new ArrayList<>(categoryReports.values());
     }
 
+    public void processCollectingCentreReportsToPrint() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret"
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bi.bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bi.bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bi.bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bi.bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+        if (itemLight != null) {
+            jpql += " and bi.item.id = :item ";
+            m.put("item", itemLight.getId());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " and bi.bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+        if (status != null) {
+            jpql += " and bi.billItemStatus = :status ";
+            m.put("status", status);
+        }
+
+        billItems = billItemFacade.findByJpql(jpql, m);
+    }
+
+    public void processCollectingCentreStatementReport() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret"
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+//        if (route != null) {
+//            jpql += " and bi.bill.fromInstitution.route = :route ";
+//            m.put("route", route);
+//        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bi.bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+//        if (toDepartment != null) {
+//            jpql += " and bi.bill.toDepartment = :dep ";
+//            m.put("dep", toDepartment);
+//        }
+//
+//        if (phn != null && !phn.isEmpty()) {
+//            jpql += " and bi.bill.patient.phn = :phn ";
+//            m.put("phn", phn);
+//        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bi.bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+//
+//        if (referringDoctor != null) {
+//            jpql += " and bi.bill.referredBy = :refDoc ";
+//            m.put("refDoc", referringDoctor);
+//        }
+//
+//        if (status != null) {
+//            jpql += " and bi.billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        billItems = billItemFacade.findByJpql(jpql, m);
+    }
+    
     public void processPharmacySaleItemCount() {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
@@ -246,6 +470,128 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
+    
+    public void processCollectingCentreTransactionReport() {
+        String jpql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret"
+                + " and bill.billDate between :fd and :td "
+                + " and bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+
+        if (referringDoctor != null) {
+            jpql += " and bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+//        if (status != null) {
+//            jpql += " and billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        bills = billFacade.findByJpql(jpql, m);
+    }
+    
+    public void processCollectingCentreReciptReport() {
+        String jpql = "select bill "
+                + " from Bill bill "
+                + " where bill.retired=:ret"
+                + " and bill.billDate between :fd and :td "
+                + " and bill.billType = :bType";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+//        if (itemLight != null) {
+//            jpql += " and bi.item.id = :item ";
+//            m.put("item", itemLight.getId());
+//        }
+
+        if (referringDoctor != null) {
+            jpql += " and bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+//        if (status != null) {
+//            jpql += " and billItemStatus = :status ";
+//            m.put("status", status);
+//        }
+
+        bills = billFacade.findByJpql(jpql, m);
+    }
 
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
@@ -255,7 +601,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -271,7 +617,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -287,7 +633,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -448,7 +794,7 @@ public class ReportController implements Serializable {
         return "/reports/assets/assest_transfer_report";
 
     }
-    
+
     public String navigateToAssetAmcExpiryReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -464,6 +810,7 @@ public class ReportController implements Serializable {
         return "/reports/assets/amc_report";
 
     }
+
     public String navigateToTurnAroundTimeHourly() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -489,28 +836,28 @@ public class ReportController implements Serializable {
 
         return "/reports/managementReports/surgery_wise_count";
     }
-    
+
     public String navigateToSurgeryCountDoctorWise() {
 
         return "/reports/managementReports/surgery_count_doctor_wise";
     }
-    
+
     public String navigateToLeaveReport() {
 
         return "/reports/HRReports/leave_report";
     }
-    
+
     public String navigateToLeaveReportSummery() {
 
         return "/reports/HRReports/leave_report_summery";
     }
-    
-     public String navigateToLateLeaveDetails() {
+
+    public String navigateToLateLeaveDetails() {
 
         return "/reports/HRReports/late_leave_details";
     }
-     
-      public String navigateToLeaveSummeryReport() {
+
+    public String navigateToLeaveSummeryReport() {
 
         return "/reports/HRReports/leave_summery_report";
     }
@@ -518,122 +865,122 @@ public class ReportController implements Serializable {
     public String navigateToDepartmentReports() {
 
         return "/reports/HRReports/department_report";
-    } 
-    
+    }
+
     public String navigateToEmployeeDetails() {
 
         return "/reports/HRReports/employee_details";
     }
-    
+
     public String navigateToEmployeeToRetired() {
 
         return "/reports/HRReports/employee_to_retired";
     }
-    
+
     public String navigateToStaffShiftReport() {
 
         return "/reports/HRReports/staff_shift_report";
     }
-    
+
     public String navigateToRosterTimeAndVerifyTime() {
 
         return "/reports/HRReports/rosterTabel_verify_time";
     }
-    
+
     public String navigateToEmployeeEndofProbation() {
 
         return "/reports/HRReports/employee_end_of_probation";
     }
-    
+
     public String navigateToAttendanceReport() {
 
         return "/reports/HRReports/attendance_report";
     }
-    
+
     public String navigateToLateInAndEarlyOut() {
 
         return "/reports/HRReports/late_in_and_early_out";
     }
-    
+
     public String navigateToStaffShiftDetailsByStaff() {
 
         return "/reports/HRReports/staff_shift_details_by_staff";
     }
-    
+
     public String navigateToVerifiedReport() {
 
         return "/reports/HRReports/verified_report";
     }
-    
+
     public String navigateToHeadCountReport() {
 
         return "/reports/HRReports/head_count";
     }
+
     public String navigateToFingerPrintRecordByLogged() {
 
         return "/reports/HRReports/fingerprint_record_by_logged";
     }
-    
+
     public String navigateToFingerPrintRecordByVerified() {
 
         return "/reports/HRReports/fingerprint_record_by_verified";
     }
-    
+
     public String navigateToFingerPrintRecordNoShiftSettled() {
 
         return "/reports/HRReports/fingerprint_record_no_shift_settled";
     }
-    
+
     public String navigateToEmployeeWorkedDayReport() {
 
         return "/reports/HRReports/employee_worked_day_report";
     }
-    
+
     public String navigateToEmployeeWorkedDayReportSalaryCycle() {
 
         return "/reports/HRReports/employee_worked_day_report_salary_cycle";
     }
-    
+
     public String navigateToMonthendEmployeeWorkingTimeAndOvertime() {
 
         return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
     }
-    
+
     public String navigateToMonthEndEmployeeNoPayReportByMinutes() {
 
         return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
     }
-    
+
     public String navigateToMonthEndEmployeeSummery() {
 
         return "/reports/HRReports/month_end_employee_summery";
     }
-    
+
     public String navigateToFingerAnalysisReportBySalaryCycle() {
 
         return "/reports/HRReports/finger_analysis_report_by_salary_cycle";
     }
-    
+
     public String navigateToFingerPrintApprove() {
 
         return "/reports/HRReports/fingerprint_approve";
     }
-    
+
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
     }
-    
+
     public String navigateToAdditionalFormReportVerification() {
 
         return "/reports/HRReports/additional_form_report_veification";
     }
-    
+
     public String navigateToOnlineFormStatus() {
 
         return "/reports/HRReports/online_form_status";
     }
-    
 
     public String navigateToAdmissionDischargeReport() {
 
@@ -644,77 +991,76 @@ public class ReportController implements Serializable {
 
         return "/reports/inventoryReports/good_in_transit";
     }
-    
+
     public String navigateToGrnReport() {
 
         return "/reports/inventoryReports/grn_report";
     }
-    
+
     public String navigateToSlowFastNoneMovement() {
 
         return "/reports/inventoryReports/slow_fast_none_movement";
     }
-    
+
     public String navigateToBeforeStockTaking() {
 
         return "/reports/inventoryReports/before_stock_taking";
     }
-    
+
     public String navigateToAfterStockTaking() {
 
         return "/reports/inventoryReports/after_stock_taking";
     }
-    
+
     public String navigateToStockLedger() {
 
         return "/reports/inventoryReports/stock_ledger";
     }
-    
+
     public String navigateToExpiryItem() {
 
         return "/reports/inventoryReports/expiry_item";
     }
-    
-     public String navigateToIpUnsettledInvoices() {
+
+    public String navigateToIpUnsettledInvoices() {
 
         return "/reports/inpatientReports/ip_unsettled_invoices";
     }
-     
-     public String navigateToconsumption() {
+
+    public String navigateToconsumption() {
 
         return "/reports/inventoryReports/consumption";
     }
-     
-     public String navigateToClosingStockReport() {
+
+    public String navigateToClosingStockReport() {
 
         return "/reports/inventoryReports/closing_stock_report";
     }
-     
-     public String navigateToAdmissionCategoryWiseAdmission() {
+
+    public String navigateToAdmissionCategoryWiseAdmission() {
 
         return "/reports/inpatientReports/admission_category_wise_admission";
     }
-     
-     public String navigateToStockTransferReport() {
+
+    public String navigateToStockTransferReport() {
 
         return "/reports/inventoryReports/stock_transfer_report";
     }
-     
-     public String navigateToCostOfGoodsSold() {
+
+    public String navigateToCostOfGoodsSold() {
 
         return "/reports/inventoryReports/cost_of_goods_sold";
     }
 
-     public String navigateToDiscount() {
+    public String navigateToDiscount() {
 
         return "/reports/financialReports/discount";
     }
-     
-     public String navigateToOutsidePayment() {
+
+    public String navigateToOutsidePayment() {
 
         return "/reports/financialReports/outside_payment";
     }
-
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -798,8 +1144,6 @@ public class ReportController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
-    
-    
 
     public Date getToDate() {
         if (toDate == null) {
@@ -858,22 +1202,6 @@ public class ReportController implements Serializable {
 
     public void setProcessBy(String processBy) {
         this.processBy = processBy;
-    }
-
-    public String getCcName() {
-        return ccName;
-    }
-
-    public void setCcName(String ccName) {
-        this.ccName = ccName;
-    }
-
-    public String getCcRoute() {
-        return ccRoute;
-    }
-
-    public void setCcRoute(String ccRoute) {
-        this.ccRoute = ccRoute;
     }
 
     public double getInvestigationResult() {
@@ -944,14 +1272,6 @@ public class ReportController implements Serializable {
         this.patientMrn = patientMrn;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getTotalAverage() {
         return totalAverage;
     }
@@ -963,18 +1283,9 @@ public class ReportController implements Serializable {
     public String getVisit() {
         return visit;
     }
-    
 
     public void setVisit(String visit) {
         this.visit = visit;
-    }
-
-    public String getRefDocName() {
-        return refDocName;
-    }
-
-    public void setRefDocName(String refDocName) {
-        this.refDocName = refDocName;
     }
 
     public Date getFinancialYear() {
@@ -1008,7 +1319,7 @@ public class ReportController implements Serializable {
         if (warrentyEndDate == null) {
             warrentyEndDate = CommonFunctions.getEndOfMonth(toDate);
         }
-      
+
         return warrentyEndDate;
     }
 
@@ -1031,7 +1342,7 @@ public class ReportController implements Serializable {
         if (amcEndDate == null) {
             amcEndDate = CommonFunctions.getEndOfMonth(toDate);
         }
-      
+
         return amcEndDate;
     }
 
@@ -1055,5 +1366,191 @@ public class ReportController implements Serializable {
         this.service = service;
     }
 
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public String getPhn() {
+        return phn;
+    }
+
+    public void setPhn(String phn) {
+        this.phn = phn;
+    }
+
+    public List<ItemLight> getInvestigationsAndServices() {
+        if (investigationsAndServices == null) {
+            itemApplicationController.getInvestigationsAndServices();
+        }
+        return investigationsAndServices;
+    }
+
+    public void setInvestigationsAndServices(List<ItemLight> investigationsAndServices) {
+        this.investigationsAndServices = investigationsAndServices;
+    }
+
+    public ItemLight getItemLight() {
+        if (item == null) {
+            itemLight = null;
+        } else {
+            itemLight = new ItemLight(item);
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight == null) {
+            item = null;
+        } else {
+            item = itemController.findItem(itemLight.getId());
+        }
+    }
+
+    public BillItemStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BillItemStatus status) {
+        this.status = status;
+    }
+
+    public Doctor getReferringDoctor() {
+        return referringDoctor;
+    }
+
+    public void setReferringDoctor(Doctor referringDoctor) {
+        this.referringDoctor = referringDoctor;
+    }
     
+    public void processCollectingCentreTestWiseCountReport() {
+        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+                + "bi.item.name, "
+                + "count(bi.item.name), "
+                + "sum(bi.hospitalFee) , "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi " 
+                + " where bi.retired=:ret"
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType = :bType ";
+
+        if (false){
+            BillItem bi = new BillItem();
+            bi.getItem();
+            bi.getHospitalFee();
+            bi.getCollectingCentreFee();
+            bi.getStaffFee();
+            bi.getNetValue();
+        }
+        
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (route != null) {
+            jpql += " and bi.bill.fromInstitution.route = :route ";
+            m.put("route", route);
+        }
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and bi.bill.fromInstitution = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment = :dep ";
+            m.put("dep", toDepartment);
+        }
+
+        if (phn != null && !phn.isEmpty()) {
+            jpql += " and bi.bill.patient.phn = :phn ";
+            m.put("phn", phn);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and bi.bill.deptId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+
+        if (itemLight != null) {
+            jpql += " and bi.item.id = :item ";
+            m.put("item", itemLight.getId());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " and bi.bill.referredBy = :refDoc ";
+            m.put("refDoc", referringDoctor);
+        }
+
+        if (status != null) {
+            jpql += " and bi.billItemStatus = :status ";
+            m.put("status", status);
+        }
+        
+        jpql += " group by bi.item.name";
+
+        
+        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+
+    }
+    
+    private List<TestWiseCountReport> testWiseCounts;
+
+    public List<TestWiseCountReport> getTestWiseCounts() {
+        return testWiseCounts;
+    }
+
+    public void setTestWiseCounts(List<TestWiseCountReport> testWiseCounts) {
+        this.testWiseCounts = testWiseCounts;
+    }
+
+    public List<Institution> getCollectionCenters() {
+        return collectionCenters;
+    }
+
+    public void setCollectionCenters(List<Institution> collectionCenters) {
+        this.collectionCenters = collectionCenters;
+    }
+
+    
+   
+
 }

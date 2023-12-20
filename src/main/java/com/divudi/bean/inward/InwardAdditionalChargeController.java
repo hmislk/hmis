@@ -67,6 +67,15 @@ public class InwardAdditionalChargeController implements Serializable {
         this.inwardBean = inwardBean;
     }
 
+      public String navigateToAddOutsideChargeFromMenu() {
+        makeNull();
+        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+    
+    public String navigateToAddOutsideChargeFromInpatientProfile() {
+        return "/inward/inward_bill_outside_charge?faces-redirect=true";
+    }
+    
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             UtilityController.addErrorMessage("Select BHT");

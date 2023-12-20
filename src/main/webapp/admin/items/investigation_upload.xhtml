@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    <h2>Upload Investigations</h2>
+                </div>
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadBean.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         action="#{dataUploadBean.uploadInvestigations()}"
+                                         ajax="false"/>
+
+                    </h:form>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Name</td>
+                                <td>Name. Required</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>Printing Name</td>
+                                <td>Printing Name name. (Trade Name) Required.</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Full Name</td>
+                                <td>Full Name</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Item Code</td>
+                                <td>Item Code  Optional</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Category</td>
+                                <td>Category name.  Required.</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Institution</td>
+                                <td>Institution. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Department</td>
+                                <td>Department. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Inward Charge Category</td>
+                                <td>Inward Charge Category. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>I</td>
+                                <td>Sample</td>
+                                <td>Sample Required. Please check the current samples before adding</td>
+                            </tr>
+                            <tr>
+                                <td>J</td>
+                                <td>Container</td>
+                                <td>Container Required. Please check the current containers before adding.</td>
+                            </tr>
+                            <tr>
+                                <td>K</td>
+                                <td>Analyser</td>
+                                <td>Analyser Required.Please check the current analysers before adding.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+
+<!--        <h:panelGroup>
+            <h:form id="form" enctype="multipart/form-data">
+                <p:growl />
+                <p:panel header="Upload OPD Services">
+                    <h:panelGrid columns="2">
+                        <h:outputText value="Service Category/Sub Category" ></h:outputText>
+                        <p:autoComplete 
+                            completeMethod="#{categoryController.completeServiceCategory}" 
+                            var="pta" 
+                            itemLabel="#{pta.name}"
+                            itemValue="#{pta}" 
+                            forceSelection="true" 
+                            value="#{serviceController.category}">
+                            <p:column>#{pta.name}</p:column>
+                            <p:column>#{pta.parentCategory}</p:column>                                        
+                        </p:autoComplete>
+
+                        <h:outputText value="Institution"></h:outputText>
+                        <p:selectOneMenu id="cmbIns" value="#{serviceController.institution}" class="form-control">
+                            <f:selectItem itemLabel="Please select an Institution"/>
+                            <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
+                        </p:selectOneMenu>
+
+                        <h:outputText value="Department"></h:outputText>
+                        <h:panelGroup  id="cmbDep"  >
+                            <p:selectOneMenu
+                                rendered="#{serviceController.institution ne null}"
+                                value="#{serviceController.department}" class="form-control">
+                                <f:selectItem itemLabel="Please select a Department"/>
+                                <f:selectItems value="#{departmentController.getInstitutionDepatrments(serviceController.institution)}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+
+                        <h:outputText value="Inward Charge Category"></h:outputText>
+                        <p:selectOneMenu
+                            filter="true"
+                            filterMatchMode="contains"
+                            id="cmbInward" 
+                            value="#{serviceController.current.inwardChargeType}" 
+                            class="form-control">
+                            <f:selectItem itemLabel="Please select Charge"/>
+                            <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                        </p:selectOneMenu>
+
+                         File Upload Section 
+                        <h:outputText value="Upload Excel"></h:outputText>
+                        <p:fileUpload value="#{serviceController.file}" mode="simple" />
+                    </h:panelGrid>
+
+                    <p:commandButton value="Upload &amp; Process" action="#{serviceController.uploadOpdItemNamesAndFee}" ajax="false" />
+                </p:panel>
+            </h:form>
+        </h:panelGroup>-->
+
+
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+
+        <div class="container-fluid" >
+            <div class="card" >
+                <div class="card-header" >
+                    <h2>Upload Item Fees</h2>
+                </div>
+
+                <div class="card-body" >
+                    <h:form enctype="multipart/form-data">
+                        <p:fileUpload value="#{dataUploadBean.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton value="Upload"
+                                         action="#{dataUploadBean.uploadAndUpdateItemFeesForCollectingCentres()}"
+                                         ajax="false"/>
+
+                    </h:form>
+
+                    <p>Please use xlsx file format. The xls format is NOT supported.</p>
+                    <p>Please use the first row as the header. Do not put any data in the first row. They will be ignored.</p>
+                    <p>We consider only the columns which contain the ID, Fee, and Foreigner Fee. All other columns will be ignored.</p>
+                    <p>The columns should match the exact data as described below.</p>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A</td>
+                                <td>Hospital Fee ID</td>
+                                <td>Unique ID of the Hospital item fees. This is Mandatory. This will be used to select the item fee and change the values. Required.</td>
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>COllecting Centre Item Fee ID</td>
+                                <td>Unique ID of the Hospital item fees. This is Mandatory. This will be used to select the item fee and change the values. Required.</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>Item Name</td>
+                                <td>Ignored.</td>
+                            </tr>
+                            <tr>
+                                <td>D</td>
+                                <td>Collecting Centre Name</td>
+                                <td>Ignored.</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
+                                <td>Institution Name</td>
+                                <td>Ignored.</td>
+                            </tr>
+                            <tr>
+                                <td>F</td>
+                                <td>Hospital Fee</td>
+                                <td>Required.</td>
+                            </tr>
+                            <tr>
+                                <td>G</td>
+                                <td>Collecting Centre Fee</td>
+                                <td>Required.</td>
+                            </tr>
+                            <tr>
+                                <td>H</td>
+                                <td>Hospital Fee for Foreigners</td>
+                                <td>Required.</td>
+                            </tr>
+                            <tr>
+                                <td>I</td>
+                                <td>Collecting Centre Fee for Foreigners</td>
+                                <td>Required.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+
+                </div>
+            </div>
+        </div>
+
+        <p:poll update="tblExport" interval="30"></p:poll>
+
+
+        <p:dataTable  value="#{dataUploadBean.itemFees}"
+                      id="tblExport"
+                      var="i"   
+                      rowKey="#{i.id}" 
+                      rowIndexVar="s"
+                      rows="20"
+                      paginator="true"
+                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                      rowsPerPageTemplate="20,50,100,500,1000,1500"
+                      >
+
+            <p:column  selectionMode="multiple" exportable="false" style="width: 10px;"> 
+
+            </p:column>
+
+            <p:column   sortBy="#{i.id}" width="80"
+                        filterMatchMode="contains" filterBy="#{i.name}" >  
+                <f:facet name="header">
+                    <h:outputLabel value="Item Id" />
+                </f:facet>
+                <h:outputLabel value="#{i.id}"/>
+            </p:column>
+
+            <p:column   sortBy="#{i.name}" width="80"
+                        filterMatchMode="contains" filterBy="#{i.name}" >  
+                <f:facet name="header">
+                    <h:outputLabel value="Item Name" />
+                </f:facet>
+                <h:outputLabel value="#{i.item.name}"/>
+            </p:column>
+
+            <p:column sortBy="#{i.institution.name}" width="100"
+                      filterMatchMode="contains" filterBy="#{i.institution.name}">
+                <f:facet name="header">
+                    <h:outputLabel value="Institution" />
+                </f:facet>
+                <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+            </p:column>
+
+            <p:column sortBy="#{i.department.name}" width="50"
+                      filterMatchMode="contains" filterBy="#{i.department.name}">
+                <f:facet name="header">
+                    <h:outputLabel value="Department" />
+                </f:facet>
+                <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
+            </p:column>
+
+            <p:column sortBy="#{i.staff.name}" width="120"
+                      filterMatchMode="contains" filterBy="#{i.staff.name}">
+                <f:facet name="header">
+                    <h:outputLabel value="Staff" />
+                </f:facet>
+                <h:outputLabel value="#{i.staff.name}" ></h:outputLabel>
+            </p:column>
+            <p:column sortBy="#{i.feeType.label}" width="120"
+                      filterMatchMode="contains" filterBy="#{i.staff.name}">
+                <f:facet name="header">
+                    <h:outputLabel value="Item Fee type" />
+                </f:facet>
+                <h:outputLabel value="#{i.feeType.label}" ></h:outputLabel>
+            </p:column>
+
+            <p:column sortBy="#{i.fee}" width="80"
+                      filterMatchMode="contains" filterBy="#{i.fee}">
+                <f:facet name="header">
+                    <h:outputLabel value="Total Fee" >
+
+                    </h:outputLabel>
+                </f:facet>
+                <h:outputLabel value="#{i.fee}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputLabel>
+            </p:column>
+
+            <p:column sortBy="#{i.ffee}" width="80"
+                      filterMatchMode="contains" filterBy="#{i.ffee}">
+                <f:facet name="header">
+                    <h:outputLabel value="Forigner Fee" >
+
+                    </h:outputLabel>
+                </f:facet>
+                <h:outputLabel value="#{i.ffee}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputLabel>
+            </p:column>
+
+
+            <p:column 
+                headerText="Actions" 
+                exportable="false" 
+                width="60">
+                <p:commandButton ajax="false" value="Edit" action="#{itemFeeManager.toManageItemFees()}"  actionListener="#{viewController.makeBulkFeesAsPreviousPage()}">
+                    <f:setPropertyActionListener value="#{i}" target="#{itemFeeManager.item}" ></f:setPropertyActionListener>
+                </p:commandButton>
+            </p:column>
+
+        </p:dataTable>
+
+    </ui:define>
+</ui:composition>

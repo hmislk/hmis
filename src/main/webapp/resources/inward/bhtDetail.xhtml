@@ -4,7 +4,9 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -15,42 +17,64 @@
     <cc:implementation>
         <div class="row">
             <div class="col-md-12">
-                <h:panelGrid  columns="2" rendered="#{cc.attrs.admission!=null}" >
-                    <h:outputLabel   value="BHT NO : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
-                    <h:outputLabel   value="Admission Type : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
-                    <h:outputLabel   value="Paymentmethod : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" />
-                    <h:outputLabel   value="Membership Scheme : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.membershipScheme.name}" />
-                    <h:outputLabel   value="Room : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
-                    <h:outputLabel   value="Name : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
-                    <h:outputLabel   value="Age : " />
-                    <h:outputLabel value="#{cc.attrs.admission.patient.age}" />
-                    <h:outputLabel  value="DOB : "  />
-                    <p:outputLabel value="#{cc.attrs.admission.patient.person.dob}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </p:outputLabel>           
-                    <h:outputLabel  value="Adress : " />
-                    <h:outputLabel  value="#{cc.attrs.admission.patient.person.address}" />
-                    <h:outputLabel  value="Date of Admission : "  />
-                    <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel>
-                    <h:outputLabel/>
+                <emr:patient patient="#{cc.attrs.admission.patient}" class="w-100"/>
+            </div> 
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="BHT No"/></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Payment Method"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Admission Date"  /></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        </h:outputLabel></div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                </div>
+
+
+                <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
                     <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
-                    <h:outputLabel/>
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill : "/>
+
+                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill  "/>
+
                     <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
-                    <h:outputLabel  value="Admission Fee : " rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
+                    <h:outputLabel  value="Admission Fee  " rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
+
                     <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
                     <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>
-           
 
-            </h:panelGrid>
+
+                </h:panelGrid>
             </div>
         </div>
     </cc:implementation>

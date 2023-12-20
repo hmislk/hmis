@@ -32,6 +32,10 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/collecting_centre";
     }
     
+    public String navigateToCollectingCenterUpload(){
+        return "/admin/institutions/collecting_centre_upload";
+    }
+    
     public String navigateToCreditCompany(){
         return "/admin/institutions/credit_company";
     }

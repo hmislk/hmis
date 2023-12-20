@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      
+
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -14,25 +14,23 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Unit Issue By Item"> 
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="4" class="w-100" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="From Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
-
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
-
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Item Category"/>
                             <p:autoComplete  value="#{reportsTransfer.category}" 
                                              forceSelection="true"
@@ -41,14 +39,29 @@
                             </p:autoComplete> 
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Fill" 
-                                         action="#{reportsTransfer.fillItemCountsWithOutMarginPharmacy()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tbl" fileName="unit_report_by_item"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" value="Fill" 
+                                icon="fa-solid fa-arrows-rotate"
+                                class="ui-button-warning"
+                                action="#{reportsTransfer.fillItemCountsWithOutMarginPharmacy()}" />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fa-solid fa-file-excel"
+                                class="ui-button-success mx-2"  >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="unit_report_by_item"  />
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa-solid fa-print"
+                                class="ui-button-info"  
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
+
 
                         <p:panel id="gpBillPreview" styleClass="noBorder normalFont">
                             <p:dataTable id="tbl"  value="#{reportsTransfer.itemCountWithOutMargins}"
@@ -57,17 +70,18 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Pharmacy Unit Issue Item Count With Net Total" />
                                     &#13;&nbsp;
-                                    <h:outputLabel value="Form"/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>
+                                    <h:outputLabel value="From"/>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDepartment.name}"/>
                                     <h:outputLabel value="To"/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>&#13;&nbsp;
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDepartment.name}"/>
+                                    <br></br>
                                     <h:outputLabel value="From  "/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDate}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                     <h:outputLabel value="To  "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                    <h:outputLabel class="mx-2" value="#{reportsTransfer.toDate}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Item">

@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Random;
 
 /**
  *
@@ -107,6 +108,7 @@ public class ServiceController implements Serializable {
     private Department department;
     private Category category;
     private InwardChargeType inwardChargeType;
+    private String genaratedServiceCode;
 
     public List<Service> getItemsToRemove() {
         return itemsToRemove;
@@ -116,10 +118,10 @@ public class ServiceController implements Serializable {
         this.itemsToRemove = itemsToRemove;
     }
 
-    public String navigateToDownloadItems(){
+    public String navigateToDownloadItems() {
         return "/admin/items/downloads";
     }
-    
+
     // Created by Dr M H B Ariyaratne with the help of ChatGPT by OpenAI
     public void downloadServicesAsExcel() {
         getItems();
@@ -205,7 +207,7 @@ public class ServiceController implements Serializable {
                 int feeColumnIndex = 19;
                 for (ItemFee f : sym.getItemFeesAuto()) {
                     row.createCell(feeColumnIndex++).setCellValue(f.getName());
-                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType()!= null ? f.getFeeType().getLabel() : "");
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType() != null ? f.getFeeType().getLabel() : "");
                     row.createCell(feeColumnIndex++).setCellValue(f.getFee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getFfee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getDepartment() != null ? f.getDepartment().getName() : "");
@@ -402,7 +404,7 @@ public class ServiceController implements Serializable {
      * @param name The full name of the service, item, or product.
      * @return A shortened code for the name.
      */
-    private String generateShortCode(String name) {
+    public String generateShortCode(String name) {
         // Initialize the code as an empty string.
         String code = "";
 
@@ -426,6 +428,100 @@ public class ServiceController implements Serializable {
         return code;
     }
 
+    public void genarateItemCode(List<Service> temp) {
+        Integer max = 0;
+        String itemPatternString = returnPatternForItemCode();
+        if (temp != null && !temp.isEmpty() && temp.size()!=0) {
+            for (Service service : temp) {
+                Integer itemCodeNumber = returnNumberForItemCode(service.getCode());
+                if (itemCodeNumber > max) {
+                    max = itemCodeNumber;
+                }
+            }
+        }
+        String ItemCode = itemPatternString + "" + (String.valueOf(max + 1));
+        setGenaratedServiceCode(ItemCode);
+
+    }
+
+    public Integer returnNumberForItemCode(String itemCode) {
+        Integer code = 0;
+        String[] parts = itemCode.split("\\D+");
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                return Integer.valueOf(part);
+            }
+        }
+        return code++;
+    }
+
+    public String returnPatternForItemCode() {
+        String pattern = "";
+        String ins = current.getInstitution().getName();
+        String dep = current.getDepartment().getName();
+        String charge = current.getInwardChargeType().getLabel();
+        String insPat = "";
+        String depPat = "";
+        String chagPat = "";
+
+        System.out.println("ins : " + ins);
+
+        if (ins != null) {
+            insPat = ins.substring(0, 3);
+        }
+
+        if (dep != null) {
+            depPat = dep.substring(0, 3);
+
+        }
+
+        if (charge != null) {
+            chagPat = charge.substring(0, 3);
+        }
+        pattern = insPat.toUpperCase() + "/" + depPat.toUpperCase() + "/" + chagPat.toUpperCase() + "/";
+        return pattern;
+    }
+
+    public void getItemsCategoryBased() {
+        List<Service> temp;
+        HashMap hash = new HashMap();
+        String sql = "select c from Service c "
+                + "where c.retired = false "
+                + "and c.category = :sCat "
+                + "order by c.id desc";
+
+        hash.put("sCat", getCurrent().getCategory());
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP, 10);
+        genarateItemCode(temp);
+
+    }
+
+    public void setServiceCode() {
+        getItemsCategoryBased();
+        String serviceCode = genaratedServiceCode;
+        if (serviceCode != null) {
+            getCurrent().setCode(serviceCode);
+        }
+    }
+
+    public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
+        List<Service> temp;
+        HashMap hash = new HashMap();
+        String sql = "select c from Service c "
+                + "where c.retired = false "
+                + "and c.code = :sCode "
+                + "and c.id != :id ";
+
+        hash.put("sCode", genaratedServiceCode);
+        hash.put("id", getCurrent().getId());
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
+        if (temp.size() != 0) {
+            return false;
+        }
+        return true;
+
+    }
+
     public void saveSelected() {
         if (getCurrent().getDepartment() == null) {
             UtilityController.addErrorMessage("Please Select Department");
@@ -444,9 +540,10 @@ public class ServiceController implements Serializable {
             if (getCurrent().getPrintName() == null) {
                 getCurrent().setPrintName(getCurrent().getName());
             }
-            if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
-                getCurrent().setCode(generateShortCode(getCurrent().getName()));
-            }
+        }
+
+        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
+            setServiceCode();
         }
 
 //        if (errorCheck()) {
@@ -468,13 +565,27 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Old Successfully");
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().edit(getCurrent());
+                UtilityController.addSuccessMessage("Saved Old Successfully");
+            }
+
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-            getFacade().create(getCurrent());
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().create(getCurrent());
+            }
+
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
@@ -483,8 +594,87 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
-            getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+
+            if (checkServiceCodeDuplicate(genaratedServiceCode)) {
+                getFacade().edit(getCurrent());
+                UtilityController.addSuccessMessage("Saved Successfully");
+            }
+
+        }
+        recreateModel();
+        getItems();
+    }
+
+    public void save(Service service) {
+        if (service == null) {
+            return;
+        }
+        if (service.getInwardChargeType() == null) {
+            return;
+        }
+        if (service == null || service.getName().isEmpty()) {
+            UtilityController.addErrorMessage("Please Enter a name");
+        } else {
+            if (service.getFullName() == null) {
+                service.setFullName(service.getName());
+            }
+            if (service.getPrintName() == null) {
+                service.setPrintName(service.getName());
+            }
+            if (service.getCode() == null || service.getCode().isEmpty()) {
+                service.setCode(genaratedServiceCode);
+            }
+        }
+
+//        if (errorCheck()) {
+//            return;
+//        }
+//        if (getServiceSubCategoryController().getParentCategory() != null) {
+//            service.setCategory(getServiceSubCategoryController().getParentCategory());
+//        }
+        ////// // System.out.println("service.getId() = " + service);
+        ////// // System.out.println("service.getId() = " + service.getId());
+        if (service.getId() != null && service.getId() > 0) {
+            //////// // System.out.println("1");
+            if (billedAs == false) {
+                //////// // System.out.println("2");
+                service.setBilledAs(service);
+
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("3");
+                service.setReportedAs(service);
+            }
+            getFacade().edit(service);
+            UtilityController.addSuccessMessage("Saved Old Successfully");
+        } else {
+            //////// // System.out.println("4");
+            service.setCreatedAt(new Date());
+            service.setCreater(getSessionController().getLoggedUser());
+
+            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().create(service);
+            }
+
+            if (billedAs == false) {
+                //////// // System.out.println("5");
+                service.setBilledAs(service);
+            }
+            if (reportedAs == false) {
+                //////// // System.out.println("6");
+                service.setReportedAs(service);
+            }
+
+            if (!checkServiceCodeDuplicate(genaratedServiceCode)) {
+                UtilityController.addErrorMessage("Service code is alredy used");
+                return;
+            } else {
+                getFacade().edit(service);
+                UtilityController.addSuccessMessage("Saved Successfully");
+            }
         }
         recreateModel();
         getItems();
@@ -539,13 +729,6 @@ public class ServiceController implements Serializable {
 
     public void delete() {
 
-        for (ItemFee it : getFees(current)) {
-            it.setRetired(true);
-            it.setRetiredAt(new Date());
-            it.setRetirer(getSessionController().getLoggedUser());
-            getItemFeeFacade().edit(it);
-        }
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -556,7 +739,9 @@ public class ServiceController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getSelectedItems();
+        getItems();
+        current = null;
+        getCurrent();
 
     }
 
@@ -675,7 +860,7 @@ public class ServiceController implements Serializable {
         Map<String, Double> resultMap = new HashMap<>();
 
         if (file != null) {
-            try ( InputStream input = file.getInputStream()) {
+            try (InputStream input = file.getInputStream()) {
                 Workbook workbook = new XSSFWorkbook(input);
                 Sheet sheet = workbook.getSheetAt(0);
                 for (Row row : sheet) {
@@ -951,6 +1136,14 @@ public class ServiceController implements Serializable {
 
     public void setInwardChargeType(InwardChargeType inwardChargeType) {
         this.inwardChargeType = inwardChargeType;
+    }
+
+    public String getGenaratedServiceCode() {
+        return genaratedServiceCode;
+    }
+
+    public void setGenaratedServiceCode(String genaratedServiceCode) {
+        this.genaratedServiceCode = genaratedServiceCode;
     }
 
     /**

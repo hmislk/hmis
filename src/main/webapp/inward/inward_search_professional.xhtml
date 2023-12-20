@@ -16,17 +16,31 @@
                             <div class="col-md-2">
                                <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control">
+                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control"
+                                                required="true" requiredMessage="Missing From Date"
+                                                maxdate="#{sessionController.currentDate}"
+                                                >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" >
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control" 
+                                                required="true" requiredMessage="Missing to Date"
+                                                maxdate="#{sessionController.currentDate}"
+                                                >
 
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardProBills()}" value="Search"  />
+                                    <p:commandButton ajax="false" 
+                                                     action="#{searchController.createInwardProBills()}" 
+                                                     value="Search"
+                                                     
+                                                     />
 
-                               <p:spacer height="10" width="5" ></p:spacer>
+                                    <p:spacer height="10" width="5" class="mt-2" ></p:spacer>
                                     <h:outputLabel value="Bill No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <h:outputLabel value="BHT No"/>
@@ -61,12 +75,12 @@
                                 <h:outputLabel value="#{bill.insId}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Bht No" >
+                            <p:column headerText="BHT No" >
                                 <h:outputLabel value="#{bill.patientEncounter.bhtNo}" ></h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Billed At" >   
-                                <h:outputLabel value="#{bill.createdAt}" />>
+                                <h:outputLabel value="#{bill.createdAt}" />
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -90,7 +104,7 @@
                             <p:column headerText="Client" >
                                 <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>         
-                            <p:column headerText="PaymentMethod">                            
+                            <p:column headerText="Payment Method">                            
                                 <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                   
                             </p:column>
                             <p:column headerText="Value" >                              

@@ -2,7 +2,9 @@ package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.ItemType;
+import com.divudi.data.dataStructure.ItemFeeRow;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.CashierItem;
@@ -43,13 +45,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
+import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -90,6 +95,8 @@ public class ItemController implements Serializable {
     ItemFeeController itemFeeController;
     @Inject
     ServiceController serviceController;
+    @Inject
+    ItemApplicationController itemApplicationController;
 
     /**
      * Properties
@@ -99,7 +106,12 @@ public class ItemController implements Serializable {
     private List<Item> items = null;
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
-    List<Item> allItems;
+    List<ItemLight> allItems;
+    private ItemLight selectedItemLight;
+    private List<ItemLight> departmentItems;
+    private List<ItemLight> institutionItems;
+    private List<ItemLight> ccDeptItems;
+    private List<ItemLight> ccInstitutionItems;
     List<ItemFee> allItemFees;
     List<Item> selectedList;
     List<ItemFee> selectedItemFeeList;
@@ -110,12 +122,37 @@ public class ItemController implements Serializable {
     private Machine machine;
     private List<Item> machineTests;
     private List<Item> investigationSampleComponents;
+    private List<ItemFee> ItemFeesList;
+    private List<ItemFeeRow> itemFeeRows;
+
+    boolean masterItem;
 
     ReportKeyWord reportKeyWord;
+
+    public List<ItemFee> fetchItemFeeList() {
+        List<ItemFee> itemFees = new ArrayList<>();
+        String sql;
+        sql = "select c from ItemFee c "
+                + " where c.retired=false order by c.name ";
+        ItemFeesList = getItemFeeFacade().findByJpql(sql);
+        return ItemFeesList;
+    }
+
+    private List<ItemFee> fetchItemFeesForItem(Item item) {
+        String sql = "select c from ItemFee c where c.item.id = :itemId and c.retired=false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", item.getId());
+        return getItemFeeFacade().findByJpql(sql, params);
+    }
 
     public String navigateToListAllItems() {
         allItems = null;
         return "/item/reports/item_list";
+    }
+    
+    public String navigateToListAllItemsForAdmin() {
+        allItems = null;
+        return "/item/admin/list";
     }
 
     public void fillInvestigations() {
@@ -215,6 +252,10 @@ public class ItemController implements Serializable {
         return item;
     }
 
+    public Item findItem(Long id) {
+        return getFacade().find(id);
+    }
+
     public Item findItemByCode(String code, String parentCode) {
         Item parentItem = findItemByCode(parentCode);
         String jpql;
@@ -285,6 +326,20 @@ public class ItemController implements Serializable {
             }
         }
         return item;
+    }
+
+    public Item findMasterItemByName(String name) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.isMasterItem=:mi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("mi", true);
+        return getFacade().findFirstByJpql(jpql, m);
     }
 
     public void fillInvestigationSampleComponents() {
@@ -784,6 +839,22 @@ public class ItemController implements Serializable {
             }
         }
         return lst;
+    }
+
+    public List<Item> completeMasterItems(String query) {
+        String jpql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        jpql = "select damith "
+                + " from Item damith "
+                + " where damith.retired=:ret ";
+        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+        jpql += " and damith.isMasterItem=:mi ";
+        tmpMap.put("q", "%" + query + "%");
+        tmpMap.put("mi", true);
+        tmpMap.put("ret", false);
+        jpql += " order by c.name";
+        return getFacade().findByJpql(jpql, tmpMap);
     }
 
     public List<Item> completeItem(String query) {
@@ -1362,7 +1433,6 @@ public class ItemController implements Serializable {
         return mySuggestions;
     }
 
-
     public List<Item> completeItemsByDepartment(String query, Department department) {
         List<Item> suggestions;
         HashMap<String, Object> parameters = new HashMap<>();
@@ -1373,13 +1443,35 @@ public class ItemController implements Serializable {
             jpql = "SELECT c FROM Item c "
                     + "WHERE c.retired = false "
                     + "AND (type(c)=:ser OR type(c)=:inv) "
-                    + "AND (LOWER(c.name) LIKE :q) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
                     + "AND c.department=:department "
                     + "ORDER BY c.name";
             parameters.put("ser", Service.class);
             parameters.put("inv", Investigation.class);
             parameters.put("q", "%" + query.toLowerCase() + "%");
             parameters.put("department", department);
+            suggestions = getFacade().findByJpql(jpql, parameters, 20);
+        }
+        return suggestions;
+    }
+
+    public List<Item> completeItemsByDepartment(String query, Institution institution) {
+        List<Item> suggestions;
+        HashMap<String, Object> parameters = new HashMap<>();
+        String jpql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            jpql = "SELECT c FROM Item c "
+                    + "WHERE c.retired = false "
+                    + "AND (type(c)=:ser OR type(c)=:inv) "
+                    + "AND (c.name LIKE :qry OR c.fullName LIKE :qry OR c.code LIKE :qry) "
+                    + "AND c.department.institution=:ins "
+                    + "ORDER BY c.name";
+            parameters.put("ser", Service.class);
+            parameters.put("inv", Investigation.class);
+            parameters.put("q", "%" + query.toLowerCase() + "%");
+            parameters.put("ins", institution);
             suggestions = getFacade().findByJpql(jpql, parameters, 20);
         }
         return suggestions;
@@ -1542,16 +1634,6 @@ public class ItemController implements Serializable {
         return itemFees;
     }
 
-    public void createMasterItemsList() {
-        allItems = new ArrayList<>();
-        allItems = fetchOPDItemList(false);
-    }
-
-    public void createAllItemsList() {
-        allItems = new ArrayList<>();
-        allItems = fetchOPDItemList(true);
-    }
-
     public void createAllItemsFeeList() {
         allItemFees = new ArrayList<>();
         allItemFees = fetchOPDItemFeeList(false, feeType);
@@ -1561,6 +1643,8 @@ public class ItemController implements Serializable {
 
     }
 
+    
+    
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
         for (Item i : itemlist) {
@@ -1608,6 +1692,13 @@ public class ItemController implements Serializable {
      */
     public void prepareAdd() {
         current = new Item();
+    }
+    
+    public void prepareAddingInvestigation() {
+        current = new Investigation();
+    }
+    public void prepareAddingService() {
+        current = new Service();
     }
 
     /**
@@ -1782,11 +1873,14 @@ public class ItemController implements Serializable {
         this.selectedList = selectedList;
     }
 
-    public List<Item> getAllItems() {
+    public List<ItemLight> getAllItems() {
+        if(allItems==null){
+            allItems = itemApplicationController.getItems();
+        }
         return allItems;
     }
 
-    public void setAllItems(List<Item> allItems) {
+    public void setAllItems(List<ItemLight> allItems) {
         this.allItems = allItems;
     }
 
@@ -1914,6 +2008,137 @@ public class ItemController implements Serializable {
 
     public void setSampleComponent(Item sampleComponent) {
         this.sampleComponent = sampleComponent;
+    }
+
+    public boolean isMasterItem() {
+        return masterItem;
+    }
+
+    public void setMasterItem(boolean masterItem) {
+        this.masterItem = masterItem;
+    }
+
+    public List<ItemFee> getItemFeesList() {
+        return ItemFeesList;
+    }
+
+    public void setItemFeesList(List<ItemFee> ItemFeesList) {
+        this.ItemFeesList = ItemFeesList;
+    }
+
+    public List<ItemLight> fillItemsByDepartment(Department dept) {
+        List<ItemLight> deptItems = new ArrayList<>();
+        for (ItemLight i : itemApplicationController.getItems()) {
+            if (i.getDepartmentId() != null && i.getDepartmentId().equals(dept.getId())) {
+                deptItems.add(i);
+            }
+        }
+        return deptItems;
+    }
+
+    public List<ItemLight> fillItemsByInstitution(Institution institution) {
+        List<ItemLight> insItems = new ArrayList<>();
+        for (ItemLight i : itemApplicationController.getItems()) {
+            if (Objects.equals(i.getInstitutionId(), institution.getId())) {
+                insItems.add(i);
+            }
+        }
+        return insItems;
+    }
+
+    public List<ItemLight> getDepartmentItems() {
+        if (departmentItems == null) {
+            departmentItems = fillItemsByDepartment(getSessionController().getDepartment());
+        }
+        return departmentItems;
+    }
+
+    public List<ItemLight> getInstitutionItems() {
+        if (institutionItems == null) {
+            institutionItems = fillItemsByInstitution(getSessionController().getInstitution());
+        }
+        return institutionItems;
+    }
+
+    public List<ItemLight> getCcDeptItems() {
+        return ccDeptItems;
+    }
+
+    public void setCcDeptItems(List<ItemLight> ccDeptItems) {
+        this.ccDeptItems = ccDeptItems;
+    }
+
+    public List<ItemLight> getCcInstitutionItems() {
+        return ccInstitutionItems;
+    }
+
+    public void setCcInstitutionItems(List<ItemLight> ccInstitutionItems) {
+        this.ccInstitutionItems = ccInstitutionItems;
+    }
+
+    public List<ItemFeeRow> getItemFeeRows() {
+        return itemFeeRows;
+    }
+
+    public void setItemFeeRows(List<ItemFeeRow> itemFeeRows) {
+        this.itemFeeRows = itemFeeRows;
+    }
+
+    public ItemLight findItemLightById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        for (ItemLight itemLight : itemApplicationController.getItems()) {
+            if (id.equals(itemLight.getId())) {
+                return itemLight;
+            }
+        }
+        return null; // Or handle the case when no matching ItemLight is found
+    }
+
+    public ItemLight getSelectedItemLight() {
+        if(getCurrent()==null){
+            selectedItemLight = null;
+        }else{
+            selectedItemLight = new ItemLight(getCurrent());
+        }
+        return selectedItemLight;
+    }
+
+    public void setSelectedItemLight(ItemLight selectedItemLight) {
+        this.selectedItemLight = selectedItemLight;
+        if(selectedItemLight==null){
+            setCurrent(null);
+        }else{
+            setCurrent(findItem(selectedItemLight.getId()));
+        }
+    }
+
+    @FacesConverter("itemLightConverter")
+    public static class ItemLightConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                ItemController controller = (ItemController) context.getApplication().getELResolver()
+                        .getValue(context.getELContext(), null, "itemController");
+                return controller.findItemLightById(id);
+            } catch (NumberFormatException e) {
+                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Conversion Error", "Invalid ItemLight ID"));
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value instanceof ItemLight) {
+                return ((ItemLight) value).getId().toString(); // Assuming getId() returns the ID
+            }
+            return null; // Or handle the error condition
+        }
     }
 
     @FacesConverter(forClass = Item.class)

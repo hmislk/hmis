@@ -150,7 +150,7 @@ public class CommonFunctions {
             m.put("{sex}", p.getPerson().getSex().toString());
             m.put("{phone}", p.getPerson().getPhone());
             m.put("{address}", p.getPerson().getAddress());
-            
+
         }
         return m;
     }
@@ -160,25 +160,25 @@ public class CommonFunctions {
         if (e == null) {
             return m;
         }
-        if(e.getBhtNo()!=null){
+        if (e.getBhtNo() != null) {
             m.put("{bht}", e.getBhtNo());
         }
-        if(e.getBhtNo()!=null){
+        if (e.getBhtNo() != null) {
             m.put("{bht}", e.getBhtNo());
         }
-        if(e.getDateOfAdmission()!=null){
+        if (e.getDateOfAdmission() != null) {
             m.put("{date_of_admission}", CommonFunctions.formatDate(e.getDateOfAdmission(), "dd/MMMM/yyyy"));
         }
-        if(e.getDateOfDischarge()!=null){
+        if (e.getDateOfDischarge() != null) {
             m.put("{date_of_discharge}", CommonFunctions.formatDate(e.getDateOfDischarge(), "dd/MMMM/yyyy"));
         }
-        if(e.getBhtNo()!=null){
+        if (e.getBhtNo() != null) {
             m.put("{bht}", e.getBhtNo());
         }
-        if(e.getOpdDoctor()!=null){
+        if (e.getOpdDoctor() != null) {
             m.put("{opd_doctor}", e.getOpdDoctor().getPerson().getNameWithTitle());
         }
-        if(e.getReferringDoctor()!=null){
+        if (e.getReferringDoctor() != null) {
             m.put("{referring_doctor}", e.getReferringDoctor().getPerson().getNameWithTitle());
         }
         if (e.getPatient() != null) {
@@ -458,17 +458,22 @@ public class CommonFunctions {
     }
 
     public static Date getEndOfDay(Date date) {
+        // If the provided date is null, use the current date and time
         if (date == null) {
             date = new Date();
         }
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
+
+        // Set the time to the last millisecond of the day
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
+
+        // Uncomment the following line for debugging
+        // System.out.println("calendar.getTime() = " + calendar.getTime());
         return calendar.getTime();
     }
 

@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Items and Services for Collecting Centres"></h:outputLabel>
+                    </f:facet>
+
+                    <h:panelGrid columns="1" styleClass="alignTop" >
+                        <h:panelGrid columns="5" >
+
+
+                            <p:commandButton 
+                                ajax="false" value="Fill Item Fees" 
+                                action="#{itemController.fillItemFeeRows()}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                class="ui-button-success" 
+                                value="Download" >
+                                <p:dataExporter 
+                                    target="tblExport" 
+                                    type="xlsx" 
+                                    fileName="collecting_centre_item_fees_list" >
+                                </p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable  
+                            value="#{itemController.itemFeeRows}" 
+                            id="tblExport"
+                            var="i"   
+                            rowKey="#{i.itemId}" 
+                            rowIndexVar="s"
+                            rows="20"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20,50,100,500,1000,1500"
+                            >
+
+
+                            <p:column   sortBy="#{i.hospitalFeeId}" width="80"
+                                        filterMatchMode="contains" filterBy="#{i.hospitalFeeId}" >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital Fee Id" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.hospitalFeeId}"/>
+                            </p:column>
+
+                            <p:column   sortBy="#{i.collectingCentreFeeId}" width="80"
+                                        filterMatchMode="contains" filterBy="#{i.collectingCentreFeeId}" >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Collecting Centre Fee Id" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.collectingCentreFeeId}"/>
+                            </p:column>
+
+                            <p:column   sortBy="#{i.itemName}" 
+                                        filterMatchMode="contains" filterBy="#{i.itemName}" >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Item Name" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemName}"/>
+                            </p:column>
+
+                            <p:column sortBy="#{i.itemInstitution}" width="100"
+                                      filterMatchMode="contains" filterBy="#{i.itemInstitution}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Collecting Centre" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemInstitution}" ></h:outputLabel>
+                            </p:column>
+                            
+                            <p:column sortBy="#{i.feeInstitution}" width="100"
+                                      filterMatchMode="contains" filterBy="#{i.feeInstitution}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Institution" />
+                                </f:facet>
+                                <h:outputLabel value="#{i.feeInstitution}" ></h:outputLabel>
+                            </p:column>
+
+
+                            <p:column sortBy="#{i.hospitalFee}" width="80"
+                                      filterMatchMode="contains" filterBy="#{i.hospitalFee}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital Fee" >
+
+                                    </h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{i.hospitalFee}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column sortBy="#{i.collectingCentreFee}" width="80"
+                                      filterMatchMode="contains" filterBy="#{i.collectingCentreFee}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Collecting Centre Fee" >
+
+                                    </h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{i.collectingCentreFee}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+
+
+                            <p:column sortBy="#{i.hospitalFeeForForeigners}" width="80"
+                                      filterMatchMode="contains" filterBy="#{i.hospitalFeeForForeigners}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital Fee for Foreigner" >
+
+                                    </h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{i.hospitalFeeForForeigners}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column sortBy="#{i.collectingCentreFeeForForeigners}" width="80"
+                                      filterMatchMode="contains" filterBy="#{i.collectingCentreFeeForForeigners}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Collecting Centre Fee for Foreigner" >
+
+                                    </h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{i.collectingCentreFeeForForeigners}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+
+
+
+                        </p:dataTable>
+
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

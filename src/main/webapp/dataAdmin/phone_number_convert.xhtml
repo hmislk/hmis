@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/dataAdmin/admin_data_administration.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form">
+                <p:panel class="m-1 ">
+                    <f:facet name="header">
+                        <h:outputLabel value="Convert Phone Number"/>
+                    </f:facet>
+                    <div class="d-flex justify-content-end mb-2">
+                        <div >
+                            <p:commandButton 
+                                value="Convert"
+                                ajax="false"
+                                action="#{patientController.convertOldPersonPhoneToPatientPhoneLong()}"> 
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

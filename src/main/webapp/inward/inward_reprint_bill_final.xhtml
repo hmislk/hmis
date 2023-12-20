@@ -15,28 +15,32 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel rendered="#{inwardSearch.patient.person ne null}">
-                        <p:panel header="Reprint" styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}">
-                            <h:panelGrid columns="1">
-
-
-                                <h:panelGrid columns="3">
-
+                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}" class="m-1">
+                            
+                                        <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-print"></h:outputText>
+                                        <h:outputLabel value="Reprints" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+                            <div class="row">
+                                <div class="col-md-6">
                                     <p:panel header="Bill Reprints"
                                              rendered="true">                            
-                                        <h:panelGrid columns="1">
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false">
-                                                <p:printer target="claimablePatientCopy2" ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false">
-                                                <p:printer target="professionalAndFinaBill" ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill(Duplicate)" ajax="false">
-                                                <p:printer target="professionalAndFinaBillDup" ></p:printer>
-                                            </p:commandButton>
-                                            <p:commandButton value="Print Credit Company Letter" ajax="false"  >
-                                                <p:printer target="letter" ></p:printer>
-                                            </p:commandButton>
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false" class="m-1">
+                                            <p:printer target="claimablePatientCopy2" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false" class="m-1">
+                                            <p:printer target="professionalAndFinaBill" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton value="Final Bill &amp; Profesional Bill(Duplicate)" ajax="false" class="m-1">
+                                            <p:printer target="professionalAndFinaBillDup" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton value="Print Credit Company Letter" ajax="false" class="m-1" >
+                                            <p:printer target="letter" ></p:printer>
+                                        </p:commandButton>
                                         </h:panelGrid>
+                                        
+
                                     </p:panel>
                                     <p:panel header="Claimable Bill Reprints" 
                                              rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
@@ -61,7 +65,7 @@
 
                                         </h:panelGrid>
                                     </p:panel>
-                                    
+
                                     <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Patient Copy without Professional" ajax="false">
@@ -106,20 +110,26 @@
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
+                                </div>
+                                <div class="col-md-2">
                                     <p:panel header="Actions">
                                         <p:commandButton ajax="false" value="To Cancel Bill" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
                                         <!--<p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />-->
                                         <!--<p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />-->
                                     </p:panel>
-                                </h:panelGrid>
+                                </div>
+                            </div>
 
-                            </h:panelGrid>
 
                         </p:panel>
 
-                        <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
+                        <div class="row">
+                            <div class="col-md-6">
                                 <p:panel header="Patient Detail" rendered="#{inwardSearch.patient.person ne null}">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-user"></h:outputText>
+                                        <h:outputLabel value="Patient Detail" class="mx-4"></h:outputLabel>
+                                    </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                         <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.name}" ></h:inputText>
@@ -148,10 +158,17 @@
                                         <h:outputLabel value="Patient ​Address" ></h:outputLabel>
                                         <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.address}" ></h:inputText>
 
-                                        <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
+
                                     </p:panelGrid>
+                                    <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false" class="m-1"></p:commandButton>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Detail" class="mx-4"></h:outputLabel>
+                                    </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
@@ -183,10 +200,15 @@
                                                          rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}"    />
                                     </p:panelGrid>
                                 </p:panel>
-                            </p:panelGrid>
+                            </div>
 
+                        </div>
+
+                        <div class="m-1">
                             <in:finalTable bill="#{inwardSearch.bill}"/>
-                        </p:panel>
+                        </div>
+
+
 
 
                         <h:panelGroup id="claimablePatientCopy"  rendered="false">                  

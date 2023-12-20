@@ -33,10 +33,10 @@
                                          rowsPerPageTemplate="5,10,20,50"
                                          emptyMessage="No VMP records found">
 
-                                <p:column headerText="VMP Name" filterBy="#{vmp.name}" filterMatchMode="contains" width="500">
+                                <p:column headerText="Name (VMP)" filterBy="#{vmp.name}" filterMatchMode="contains" width="500">
                                     <h:outputText value="#{vmp.name}"></h:outputText>
                                 </p:column>
-                                <p:column headerText="VTM Name" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
+                                <p:column headerText="Generic (VTM Name)" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
                                     <h:outputText value="#{vmp.vtm.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Dosage Form" filterBy="#{vmp.dosageForm.name}" filterMatchMode="contains">

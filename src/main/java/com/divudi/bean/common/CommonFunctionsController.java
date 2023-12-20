@@ -4,11 +4,18 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
+import static com.divudi.ejb.CommonFunctions.getEndOfDay;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
+import java.util.Date;
+import java.time.ZoneId;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  *
@@ -80,6 +87,10 @@ public class CommonFunctionsController {
         cal2.setTime(date);
         Long inDays = (cal1.getTimeInMillis() - cal2.getTimeInMillis()) / (1000 * 60 * 60 * 24);
         return inDays;
+    }
+
+    public Date getEndOfDay() {
+        return getEndOfDay(new Date());
     }
 
     public Long getDayCount(Date frm, Date to) {
@@ -208,15 +219,14 @@ public class CommonFunctionsController {
     }
 
     public static Date getEndOfDay(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
-        return calendar.getTime();
+        // Convert Date to LocalDate
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Set the time to the end of the day
+        LocalDateTime endOfDay = localDate.atTime(23, 59, 59, 999999999);
+
+        // Convert back to Date
+        return Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static Date getStartOfMonth(Date date) {

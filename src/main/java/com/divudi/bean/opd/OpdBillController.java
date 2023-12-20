@@ -9,6 +9,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -88,7 +89,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class OpdBillController implements Serializable {
+public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
 
@@ -136,6 +137,8 @@ public class OpdBillController implements Serializable {
     @Inject
     private ItemController itemController;
     @Inject
+    ItemApplicationController itemApplicationController;
+    @Inject
     ItemMappingController itemMappingController;
     @Inject
     private CommonController commonController;
@@ -162,6 +165,8 @@ public class OpdBillController implements Serializable {
     /**
      * Class Variables
      */
+    private ItemLight itemLight;
+    private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
     private Patient patient;
@@ -237,6 +242,8 @@ public class OpdBillController implements Serializable {
     private int opdSummaryIndex;
     private int opdAnalyticsIndex;
 
+    private List<ItemLight> opdItems;
+
     /**
      *
      * Navigation Methods
@@ -245,7 +252,7 @@ public class OpdBillController implements Serializable {
     public String navigateToSearchPatients() {
         patientController.clearSearchDetails();
         patientController.setSearchedPatients(null);
-        return "/opd/patient_search";
+        return "/opd/patient_search?faces-redirect=true";
     }
 
     public String navigateToOpdAnalyticsIndex() {
@@ -288,6 +295,24 @@ public class OpdBillController implements Serializable {
         }
     }
 
+    public List<ItemLight> fillOpdItems() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        switch (up.getOpdItemListingStrategy()) {
+            case ALL_ITEMS:
+                return itemApplicationController.getInvestigationsAndServices();
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                return itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                return itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                return itemController.getDepartmentItems();
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                return itemController.getInstitutionItems();
+            default:
+                return itemApplicationController.getInvestigationsAndServices();
+        }
+    }
+
     public void searchDepartmentOpdBillLights() {
         Date startTime = new Date();
         billLights = searchController.listBillsLights(
@@ -301,25 +326,20 @@ public class OpdBillController implements Serializable {
     }
 
     public String navigateToViewOpdBillByBillLight() {
-        System.out.println("navigateToViewOpdBillByBillLight");
-        System.out.println("billLight = " + billLight);
         if (billLight == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
-        System.out.println("billLight.getId() = " + billLight.getId());
         if (billLight.getId() == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
 
         Bill tb = getFacade().find(billLight.getId());
-        System.out.println("tb = " + tb);
         if (tb == null) {
             JsfUtil.addErrorMessage("No Bill");
             return null;
         }
-        System.out.println("tb.getBillType() = " + tb.getBillType());
         if (tb.getBillType() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
@@ -1169,12 +1189,14 @@ public class OpdBillController implements Serializable {
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
-            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPatient().getPerson().setCreatedAt(new Date());
-            try {
-                getPersonFacade().create(getPatient().getPerson());
-            } catch (Exception e) {
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
                 getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
             }
             try {
                 getPatientFacade().create(getPatient());
@@ -1182,7 +1204,15 @@ public class OpdBillController implements Serializable {
                 getPatientFacade().edit(getPatient());
             }
         } else {
-            getPatientFacade().edit(getPatient());
+            if (getPatient().getPerson().getId() != null) {
+//                getPatientFacade().edit(getPatient());
+                getPersonFacade().edit(getPatient().getPerson());
+            } else {
+                getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+                getPatient().getPerson().setCreatedAt(new Date());
+//                getPatientFacade().create(getPatient());
+                getPersonFacade().create(getPatient().getPerson());
+            }
         }
     }
 
@@ -1511,7 +1541,7 @@ public class OpdBillController implements Serializable {
         temp.setStaff(staff);
         temp.setToStaff(toStaff);
         temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
+        temp.setReferenceNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
         temp.setCollectingCentre(collectingCentre);
@@ -2060,13 +2090,12 @@ public class OpdBillController implements Serializable {
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
 
-        
-        if(getSessionController()!=null){
-            if(getSessionController().getLoggedPreference()!=null){
-                
+        if (getSessionController() != null) {
+            if (getSessionController().getLoggedPreference() != null) {
+
             }
         }
-        
+
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);
@@ -2162,6 +2191,7 @@ public class OpdBillController implements Serializable {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
+        
         return "/opd/opd_bill";
     }
 
@@ -2972,4 +3002,45 @@ public class OpdBillController implements Serializable {
         this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
+    public List<ItemLight> getOpdItems() {
+        if (opdItems == null) {
+            opdItems = fillOpdItems();
+        }
+        return opdItems;
+    }
+
+    // This is the setter for selectedItemLightId
+    public void setSelectedItemLightId(Long id) {
+        this.selectedItemLightId = id;
+        if (id != null) {
+            // Now use this ID to find the corresponding Item or ItemLight
+            Item item = itemController.findItem(id);
+            this.itemLight = new ItemLight(item);
+            getCurrentBillItem().setItem(item);// Assuming you have such a constructor or method
+            // Now itemLight is set to the corresponding ItemLight object
+        } else {
+            this.itemLight = null;
+        }
+    }
+
+    public Long getSelectedItemLightId() {
+        if (getCurrentBillItem().getItem() != null) {
+            selectedItemLightId = getCurrentBillItem().getItem().getId();
+        }
+        return selectedItemLightId;
+    }
+
+    public ItemLight getItemLight() {
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        return itemLight;
+    }
+
+    public void setItemLight(ItemLight itemLight) {
+        this.itemLight = itemLight;
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
+    }
 }

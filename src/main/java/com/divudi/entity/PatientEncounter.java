@@ -924,6 +924,7 @@ public class PatientEncounter implements Serializable {
 
     public void setHeight(Double height) {
         this.height = height;
+        calculateBmi();
     }
 
     public Double getWeight() {
@@ -932,6 +933,18 @@ public class PatientEncounter implements Serializable {
 
     public void setWeight(Double weight) {
         this.weight = weight;
+        calculateBmi();
+    }
+
+    private void calculateBmi() {
+        if (this.height == null || this.weight == null) {
+            return;
+        }
+
+        double heightInMeters = this.height / 100;
+        if (heightInMeters > 0) {
+            this.bmi = this.weight / Math.pow(heightInMeters, 2);
+        }
     }
 
 }

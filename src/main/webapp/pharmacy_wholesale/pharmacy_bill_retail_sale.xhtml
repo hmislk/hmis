@@ -8,7 +8,8 @@
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
 
@@ -299,7 +300,7 @@
                                             <p:selectOneMenu   id="pay" value="#{pharmacyWholeSaleController.paymentMethod}">    
                                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                                 <p:ajax process="@this cmbPs cmbPs2" 
-                                                        update="pBillDetails creditCard cheque slip tvPt" 
+                                                        update="pBillDetails creditCard cheque slip" 
                                                         event="change"  
                                                         listener="#{pharmacyWholeSaleController.changeListener()}"/>
                                             </p:selectOneMenu>
@@ -397,8 +398,12 @@
                                         </p:panelGrid>
 
                                     </p:panel>
+                                    
+                                     <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacyWholeSaleController}"/>
 
-                                    <p:panel header="Client Detail"> 
+<!--                                    <p:panel header="Client Detail"> 
 
 
 
@@ -492,7 +497,7 @@
 
 
 
-                                    </p:panel>
+                                    </p:panel>-->
 
 
 

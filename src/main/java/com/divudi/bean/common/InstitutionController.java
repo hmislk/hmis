@@ -69,7 +69,7 @@ public class InstitutionController implements Serializable {
     private List<Institution> institution;
     private String selectText = "";
     private Boolean codeDisabled = false;
-    private int managaeInstitutionIndex;
+    private int managaeInstitutionIndex = -1;
 
     public String toAdminManageInstitutions() {
         return "/admin/institutions/admin_institutions_index";
@@ -599,6 +599,10 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getItems() {
+        if (items == null) {
+            fillItems();
+        
+        }
         return items;
     }
 

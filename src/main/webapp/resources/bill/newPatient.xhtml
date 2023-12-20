@@ -15,20 +15,20 @@
     <cc:implementation>
         <h:panelGrid columns="2" >
             <h:outputLabel value="Title"/>
-            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}"  >
+            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.controller.searchedPatient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{cc.attrs.controller.title}"/>
             </p:selectOneMenu>
             <h:outputLabel value="Name"/>
-            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
+            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.controller.searchedPatient.person.name}" style="width: 200px;text-transform:capitalize;">
             </p:inputText>
             <h:outputLabel value="Sex"/>
-            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;">
+            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.controller.searchedPatient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>
                 <f:selectItems value="#{cc.attrs.controller.sex}"/>
             </p:selectOneMenu>
             <h:outputLabel value="Age"/>
-            <h:panelGroup>
+            <h:panelGroup class="d-flex">
                 <p:inputText autocomplete="off"  id="year" value="#{cc.attrs.controller.yearMonthDay.year}">
                     <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
                 </p:inputText>
@@ -42,13 +42,13 @@
                 </p:inputText>
             </h:panelGroup>
             <h:outputLabel value="Address"/>
-            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}" ></p:autoComplete>
+            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.searchedPatient.person.area}" ></p:autoComplete>
 
             <h:outputLabel value="Phone"/>
-            <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}">
+            <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.searchedPatient.person.phone}">
             </p:inputText>
             <h:outputLabel value="Date of Birth"/>
-            <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+            <p:calendar  value="#{cc.attrs.controller.searchedPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                 <f:ajax event="dateSelect" />
             </p:calendar>
 
