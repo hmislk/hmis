@@ -459,13 +459,22 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
         //System.err.println("fff " + b);
-
-        result.append(institution.getInstitutionCode());
-//        System.err.println("R1 " + result);
-        if (toDepartment != null) {
-            result.append(toDepartment.getDepartmentCode());
-//            System.err.println("R1 " + result);
+        String insCode = "";
+        if (institution.getInstitutionCode() == null) {
+            insCode = institution.getInstitutionCode();
+        } else if (institution.getCode() != null) {
+            insCode = institution.getCode();
         }
+        result.append(insCode);
+        String deptCode = "";
+        if (toDepartment != null) {
+            if(toDepartment.getDepartmentCode()!=null){
+                deptCode = toDepartment.getDepartmentCode();
+            }else if(toDepartment.getCode()!=null){
+                deptCode = toDepartment.getCode();
+            }
+        }
+        result.append(deptCode);
 
         if (BillNumberSuffix.NONE != billNumberSuffix) {
             result.append(billNumberSuffix);
@@ -1114,7 +1123,7 @@ public class BillNumberGenerator {
 
         return result.toString();
     }
-    
+
     public String departmentBillNumberGenerator(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
         BillNumber billNumber = fetchLastBillNumber(ins, dep, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
