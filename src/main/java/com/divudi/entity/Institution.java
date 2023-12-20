@@ -104,6 +104,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double allowedCredit;
     double maxCreditLimit;
     double standardCreditLimit;
+    private double percentage;
     @Transient
     String transAddress1;
     @Transient
@@ -478,6 +479,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getChequePrintingName() {
+        if (chequePrintingName == null || chequePrintingName.trim().equals("")){
+            chequePrintingName = name;
+        }
         return chequePrintingName;
     }
 
@@ -651,6 +655,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
         this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
+    }
+
+    public double getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(double percentage) {
+        this.percentage = percentage;
     }
     
     
