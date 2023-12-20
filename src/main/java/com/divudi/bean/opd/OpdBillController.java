@@ -243,6 +243,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private int opdAnalyticsIndex;
 
     private List<ItemLight> opdItems;
+    private boolean patientDetailsEditable;
 
     /**
      *
@@ -3008,6 +3009,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         return opdItems;
     }
+    
+    
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {
@@ -3042,5 +3045,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
         }
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 }

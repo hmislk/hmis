@@ -183,6 +183,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    private boolean patientDetailsEditable;
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
@@ -2255,4 +2256,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.commonController = commonController;
     }
 
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    
 }

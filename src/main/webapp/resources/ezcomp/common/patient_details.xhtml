@@ -93,15 +93,13 @@
             <h:panelGroup id="editPatient" >
                 <h:panelGroup rendered="#{cc.attrs.editable}" >
                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
-                        <h:panelGroup class="mb-1 w-100" id="panelPatient" 
-                                      rendered="#{cc.attrs.controller.patient.editingMode}">
+                        <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbTitle"
                                             class="form-control w-100"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
                                             value="#{cc.attrs.controller.patient.person.title}">
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
@@ -112,7 +110,7 @@
                                     </div>
                                     <div class="col-md-9 p-1">
                                         <p:inputText 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             autocomplete="off" 
                                             id="txtNewPtName" 
                                             placeholder="Enter the Name of the patient"
@@ -131,7 +129,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbSex" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             value="#{cc.attrs.controller.patient.person.sex}"
                                             class="form-control w-100">
                                             <f:selectItem itemLabel="Select Gender"/>
@@ -145,7 +143,7 @@
                                                     autocomplete="off" 
                                                     id="year" 
                                                     placeholder="Years"
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                                    
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="blur" execute="@this" render="dpDob" />
@@ -153,7 +151,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                                    
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
@@ -162,7 +160,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText 
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                                    
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
@@ -171,7 +169,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <p:datePicker 
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                                    
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
@@ -190,7 +188,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
                                             value="#{cc.attrs.controller.patient.person.mobile}"
@@ -204,7 +202,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtPhone" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             autocomplete="off" 
                                             placeholder="Phone Number"
                                             value="#{cc.attrs.controller.patient.person.phone}"
@@ -216,7 +214,7 @@
                                     </div>
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                                             value="#{cc.attrs.controller.patient.person.email}"
                                             class="form-control"
@@ -230,7 +228,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtNic"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
@@ -241,7 +239,7 @@
                                     <div class="col-md-8 p-1">
                                         <p:inputText
                                             id="txtAddress"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             placeholder="Address"
                                             value="#{cc.attrs.controller.patient.person.address}"
                                             class="form-control"/>
@@ -250,7 +248,7 @@
                                         <p:autoComplete 
 
                                             id="acNewPtArea" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+                                            
                                             placeholder="Search &amp; Select Area"
                                             completeMethod="#{areaController.completeArea}"
                                             var="pta" itemLabel="#{pta.name}"
@@ -289,15 +287,6 @@
                                 <h:panelGroup >
                                     <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
                                     <h:outputText value="Patient Details" class="mx-4"></h:outputText>
-                                    <!-- Toggle Edit Mode Link -->
-                                    <p:commandLink id="editLink"
-                                                   process="@this" 
-                                                   update="gpPatient headerFacet"
-                                                   actionListener="#{cc.attrs.controller.patient.toggleEditMode}" 
-                                                   styleClass="btn btn-link p-0 m-0"
-                                                   rendered="#{not cc.attrs.controller.patient.editingMode}">
-                                        <i class="fa fa-edit"></i>
-                                    </p:commandLink>
                                 </h:panelGroup>
                             </f:facet>
 

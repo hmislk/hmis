@@ -201,7 +201,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     List<BillFeePayment> billFeePayments;
     private List<ItemLight> opdItems;
-    
+    private boolean patientDetailsEditable;
     // </editor-fold>
 
     public double getCashRemain() {
@@ -1906,48 +1906,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
 
-//    /**
-//     *
-//     */
-//    @FacesConverter(forClass = Bill.class)
-//    public static class BillConverter implements Converter {
-//
-//        @Override
-//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-//            if (value == null || value.length() == 0) {
-//                return null;
-//            }
-//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-//                    getValue(facesContext.getELContext(), null, "billController");
-//            return controller.getBillFacade().find(getKey(value));
-//        }
-//
-//        java.lang.Long getKey(String value) {
-//            java.lang.Long key;
-//            key = Long.valueOf(value);
-//            return key;
-//        }
-//
-//        String getStringKey(java.lang.Long value) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(value);
-//            return sb.toString();
-//        }
-//
-//        @Override
-//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-//            if (object == null) {
-//                return null;
-//            }
-//            if (object instanceof Bill) {
-//                Bill o = (Bill) object;
-//                return getStringKey(o.getId());
-//            } else {
-//                throw new IllegalArgumentException("object " + object + " is of type "
-//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-//            }
-//        }
-//    }
     public CommonController getCommonController() {
         return commonController;
     }
@@ -1976,4 +1934,17 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
         }
     }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    
+    
 }

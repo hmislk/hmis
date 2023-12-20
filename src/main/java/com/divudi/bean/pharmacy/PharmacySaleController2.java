@@ -196,6 +196,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     PaymentMethod paymentMethod;
+    private boolean patientDetailsEditable;
     //</editor-fold>
 
     public String pharmacyRetailSale() {
@@ -2116,5 +2117,17 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    
 
 }

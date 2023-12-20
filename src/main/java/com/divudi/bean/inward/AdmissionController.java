@@ -121,6 +121,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private boolean patientDetailsEditable;
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -1342,6 +1343,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setPatientNumberForSearch(String patientNumberForSearch) {
         this.patientNumberForSearch = patientNumberForSearch;
     }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    
 
     /**
      *

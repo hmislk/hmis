@@ -197,7 +197,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     Department department;
     Institution institution;
     Category category;
-
+    private boolean patientDetailsEditable;
     //Print Last Bill
     Bill billPrint;
     List<Bill> billsPrint;
@@ -2190,5 +2190,17 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setReferralIds(List<String> referralIds) {
         this.referralIds = referralIds;
     }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    
 
 }

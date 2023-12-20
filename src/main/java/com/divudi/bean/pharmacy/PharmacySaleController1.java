@@ -179,6 +179,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    private boolean patientDetailsEditable;
 
     public String pharmacyRetailSale() {
         return "/pharmacy/pharmacy_bill_retail_sale_1";
@@ -2102,4 +2103,16 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         this.patient = patient;
     }
 
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    
+    
 }
