@@ -302,6 +302,7 @@ public class DataUploadBean implements Serializable {
             Row row = rowIterator.next();
 
             collectingCentre = null;
+            Route route = null;
 
             String code = null;
             String collectingCentreName = null;
@@ -348,6 +349,7 @@ public class DataUploadBean implements Serializable {
             Cell routeNameCell = row.getCell(4);
             if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
                 routeName = routeNameCell.getStringCellValue();
+                route = routeController.findAndCreateRouteByName(routeName);
 
             }
             if (routeName == null || routeName.trim().equals("")) {
@@ -391,16 +393,16 @@ public class DataUploadBean implements Serializable {
             
             collectingCentre.setInactive(!active);
             
-            Route r = routeController.findRouteByName(routeName);
-            if(r==null){
-                r = new Route();
-                r.setName(routeName);
-                r.setCreatedAt(new Date());
-                r.setCreater(sessionController.getLoggedUser());
-                routeController.save(r);
-            }
+//            Route r = routeController.findRouteByName(routeName);
+//            if(r==null){
+//                r = new Route();
+//                r.setName(routeName);
+//                r.setCreatedAt(new Date());
+//                r.setCreater(sessionController.getLoggedUser());
+//                routeController.save(r);
+//            }
             
-            collectingCentre.setRoute(r);
+            collectingCentre.setRoute(route);
             
             collectingCentreController.save(collectingCentre);
 

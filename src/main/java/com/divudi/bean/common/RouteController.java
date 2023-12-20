@@ -115,6 +115,35 @@ public class RouteController implements Serializable {
         m.put("n", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
+    
+    public Route findAndCreateRouteByName(String name){
+        Route r =null;
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Route c "
+                + " where c.retired=:ret "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        r =  getFacade().findFirstByJpql(jpql, m);
+        
+        if(r==null){
+            r = new Route();
+            r.setName(name);
+            r.setCreatedAt(new Date());
+            r.setCreater(sessionController.getLoggedUser());
+            getFacade().create(r);
+        }
+        recreateModel();
+        getItems();
+        return r;
+    }
 
     public void saveSelected() {
         if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
