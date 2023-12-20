@@ -17,207 +17,143 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
 
                     <h:form>
-                        <p:panel header="Add New User">
+
+
+                        <p:panel header="Add New User" >
                             <f:facet name="header" >
-                                <i class="fa fa-user-plus mt-2" aria-hidden="true"/>
-                                <h:outputText value="Add New User" class="mx-2 mt-2" ></h:outputText>
+                                <i class="fa fa-user-plus mx-2" aria-hidden="true"></i>
+                                <h:outputText value="Add New User" ></h:outputText>
                                 <p:commandButton
-                                    style="float: right;" ajax="false"
-                                    id="btnCreateUser" class="ui-button-success" 
-                                    icon="fa-solid fa-check" value="Save User" 
-                                    action="#{webUserController.saveNewUser()}"  >
+                                    style="float: right;"
+                                    id="btnCreateUser" 
+                                    icon="fa fa-check"
+                                    value="Save User" 
+                                    class="ui-button-success"
+                                    action="#{webUserController.saveNewUser()}" ajax="false" >
                                 </p:commandButton>
                             </f:facet>
-
-                            <p:tabView class="">
+                            
+                            <p:tabView >
                                 <p:tab title="Basic" >
-                                    
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel for="txtName" class="mt-2"  value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                            <div style="width: 600px;" class="d-flex gap-2">
-                                                <p:selectOneMenu 
-                                                    id="acTitle"  style="width: 8em;"
-                                                    required="false" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                    value="#{webUserController.current.webUserPerson.title}"
-                                                    requiredMessage="Please enter a Title">
-                                                    <f:selectItem itemLabel="Select Title" ></f:selectItem>
-                                                    <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
-                                                </p:selectOneMenu>
-                                                <p:inputText 
-                                                    id="txtName"
-                                                    autocomplete="off" class="w-100 "
-                                                    required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                    value="#{webUserController.current.webUserPerson.name}"
-                                                    requiredMessage="Please enter a Name"                                                
-                                                    >
-                                                </p:inputText>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel  for="txtAddress" value="Address" class="mt-2" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                            <p:inputText 
-                                                    autocomplete="off" id="txtAddress"
-                                                    style="width: 600px;" required="true" 
-                                                    rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                    value="#{webUserController.current.webUserPerson.address}"
-                                                    requiredMessage="Please enter an address.">
-                                                </p:inputText>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel for="txtPhone" class=" mt-2"  value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                            <p:inputText 
-                                                    id="txtPhone" style="width: 600px;" required="true" 
-                                                    rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                    value="#{webUserController.current.webUserPerson.mobile}"
-                                                    requiredMessage="Plase enter a phone number">
-                                                </p:inputText>
-                                        </div>
-                                    </div>
+                                    <h:panelGrid id="pg0" columns="2" style="text-align: left; ">
+                                        <p:outputLabel for="txtName" value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <h:panelGrid columns="2" style="width: 700px;">
+                                            <p:selectOneMenu 
+                                                id="acTitle" style="width: 146px;"
+                                                required="false" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                value="#{webUserController.current.webUserPerson.title}"
+                                                requiredMessage="Please enter a Title">
+                                                <f:selectItem itemLabel="Select Title" ></f:selectItem>
+                                                <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
+                                            </p:selectOneMenu>
 
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel  value="Speciality" class="mt-2"  rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                            <p:autoComplete   
-                                                forceSelection="true" id="speciality"
-                                                value="#{webUserController.speciality}"
-                                                completeMethod="#{specialityController.completeSpeciality}" 
-                                                var="mys" 
-                                                style="width: 600px;"
-                                                inputStyleClass="form-control"
-                                                itemLabel="#{mys.name}" 
-                                                itemValue="#{mys}"
-                                                disabled="#{webUserController.createOnlyUser}" 
-                                                rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                >              
-                                            </p:autoComplete>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel value="Institution" class="mt-2" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                            <p:autoComplete 
-                                                id="ins"
-                                                value="#{webUserController.institution}"
-                                                rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                completeMethod="#{institutionController.completeIns}"
-                                                var="ins"
-                                                style="width: 600px;"
-                                                inputStyleClass="form-control"
-                                                itemLabel="#{ins.name}"
-                                                itemValue="#{ins}">
-                                                <p:ajax event="itemSelect" update="dep"/>
-                                            </p:autoComplete>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel value="Department" class="mt-2" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                            <p:autoComplete 
-                                                id="dep"
-                                                style="width: 600px;"
-                                                inputStyleClass="form-control"
-                                                value="#{webUserController.department}" 
-                                                rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                completeMethod="#{departmentController.completeDeptWithIns}"
-                                                var="dept"
-                                                itemLabel="#{dept.name}"
-                                                itemValue="#{dept}">
-                                                <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
-                                            </p:autoComplete>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel for="txtUsername" class="mt-2" value="User Name"></p:outputLabel>
-                                            <p:inputText id="txtUsername"
-                                                         autocomplete="off" required="true" maxlength="50" 
-                                                         value="#{webUserController.current.name}"
-                                                         style="width: 600px;">
+                                            <p:inputText id="txtName" style="width: 550px;"
+                                                         autocomplete="off" 
+                                                         required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                         value="#{webUserController.current.webUserPerson.name}"
+                                                         requiredMessage="Please enter a Name"
+                                                         >
                                             </p:inputText>
-                                        </div>
-                                    </div>
+                                        </h:panelGrid>
+                                        <p:outputLabel for="txtAddress" value="Address"
+                                                       rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText autocomplete="off" 
+                                                     id="txtAddress"
+                                                     class="w-100 mt-1"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                     value="#{webUserController.current.webUserPerson.address}"
+                                                     requiredMessage="Please enter an address."></p:inputText>
+                                        <p:outputLabel for="txtPhone" 
+                                                       class="w-100"
+                                                       value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText id="txtPhone" 
+                                                     class="w-100 mt-1"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                     value="#{webUserController.current.webUserPerson.mobile}"
+                                                     requiredMessage="Plase enter a phone number"
+                                                     ></p:inputText>
+                                        <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+                                        <p:autoComplete   forceSelection="true" id="speciality"
+                                                          value="#{webUserController.speciality}"
+                                                          completeMethod="#{specialityController.completeSpeciality}" 
+                                                          var="mys" 
+                                                          class="w-100 mt-1"
+                                                          inputStyleClass="form-control"
+                                                          itemLabel="#{mys.name}" 
+                                                          itemValue="#{mys}"
+                                                          disabled="#{webUserController.createOnlyUser}" 
+                                                          rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                          >              
+                                        </p:autoComplete> 
 
-                                    <div class="row mt-2">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel for="pw1" class="mt-2" value="Password" ></p:outputLabel>
-                                            <p:password 
-                                                toggleMask="true" id="pw1" required="true" match="pw2"
-                                                validatorMessage="Passwords are NOT matching."  feedback="true" 
-                                                maxlength="15" value="#{webUserController.current.webUserPassword}" 
-                                                style="width: 600px;"
-                                                />
-                                        </div>
-                                    </div>
 
-                                    <div class="row mt-1">
-                                        <div class="col-7 d-flex justify-content-between">
-                                            <p:outputLabel value="Re-enter password" class="mt-2" for="pw2"></p:outputLabel>
-                                            <p:password 
-                                                toggleMask="true" id="pw2" required="true" maxlength="15" 
-                                                value="#{webUserController.current.webUserPassword}" 
-                                                style="width: 600px;"
-                                                />
-                                        </div>
-                                    </div>
+                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+                                        <p:autoComplete 
+                                            id="ins"
+                                            value="#{webUserController.institution}"
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins"
+                                            class="w-100 mt-1"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}">
+                                            <p:ajax event="itemSelect" update="dep"/>
+                                        </p:autoComplete>
 
+                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+
+                                        <p:autoComplete 
+                                            id="dep"
+                                            class="w-100 mt-1"
+                                            inputStyleClass="form-control"
+                                            value="#{webUserController.department}" 
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{departmentController.completeDeptWithIns}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
+                                        </p:autoComplete>
+
+
+
+
+                                        <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
+                                        <p:inputText id="txtUsername" class="mt-1  mb-1"
+                                                     autocomplete="off" required="true" maxlength="50" 
+                                                     value="#{webUserController.current.name}" style="width: 700px"></p:inputText>
+
+                                        <p:outputLabel for="pw1" value="Password" ></p:outputLabel>
+                                        <p:password toggleMask="true" id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
+
+                                        <p:outputLabel value="Re-enter password" for="pw2" style="width: 170px;"></p:outputLabel>
+                                        <p:password toggleMask="true" id="pw2" required="true" maxlength="15" 
+                                                    value="#{webUserController.current.webUserPassword}" 
+                                                    style="width: 700px" class=" mt-1"/>
+                                    </h:panelGrid>
                                 </p:tab>
                                 <p:tab title="Advance" >
+                                    <h:panelGrid id="pg1" columns="2" style="text-align: left;" >
+                                        
+                                        <p:outputLabel value="Add Only User" style="width: 250px" class=" mb-1"></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >
+                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        
+                                        <p:outputLabel value="Add User To Exsisting Staff" style="width: 250px" class=" mb-1"></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUserForExsistingUser}" >
+                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffForExsistingUserListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        
+                                        <p:outputLabel value="Staff" style="width: 250px" class=" mb-1" rendered="#{webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
+                                        <autocomplete:completeStaff value="#{webUserController.staff}" rendered="#{webUserController.createOnlyUserForExsistingUser}" />
+                                        
+                                        <h:outputLabel value="Code" style="width: 250px" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
+                                        <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
 
-                                    <h:panelGroup id="pg1"  style="text-align: left; border: hidden" >
-                                        <div class="row">
-                                            <div class="col-2">
-                                                <h:outputLabel value="Add Only User" ></h:outputLabel>
-                                            </div>
-                                            <div class="col-3">
-                                                <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >
-                                                    <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffListner()}" />
-                                                </p:selectBooleanCheckbox>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mt-2">
-                                            <div class="col-2">
-                                                <h:outputLabel value="Add User To Exsisting Staff" ></h:outputLabel>
-                                            </div>
-                                            <div class="col-3">
-                                                <p:selectBooleanCheckbox value="#{webUserController.createOnlyUserForExsistingUser}" >
-                                                    <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffForExsistingUserListner()}" />
-                                                </p:selectBooleanCheckbox>
-                                            </div>
-                                        </div>
-
-                                        <div class="row  mt-2">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Staff" rendered="#{webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                            </div>
-                                            <div class="col-3">
-                                                <autocomplete:completeStaff 
-                                                    value="#{webUserController.staff}" 
-                                                    rendered="#{webUserController.createOnlyUserForExsistingUser}" />
-                                            </div>
-                                        </div>
-
-                                        <div class="row  mt-2">
-                                            <div class="col-2">
-                                                <h:outputLabel value="Code" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
-                                            </div>
-                                            <div class="col-3">
-                                                <p:inputText 
-                                                    autocomplete="off" value="#{webUserController.current.code}" maxlength="10" 
-                                                    rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:inputText>
-                                            </div>
-                                        </div>
-                                    </h:panelGroup>
+                                        
+                                    </h:panelGrid>
                                 </p:tab>
                             </p:tabView>
                         </p:panel>
@@ -227,4 +163,3 @@
         </ui:composition>
     </h:body>
 </html>
-
