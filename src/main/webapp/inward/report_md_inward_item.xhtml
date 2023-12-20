@@ -18,27 +18,27 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="2" class="w-100 my-2">
-                    <h:panelGrid columns="2" class="w-100" >
+                    <h:panelGrid columns="2" class="" >
                         <h:outputLabel value="From"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <p:calendar class="mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <p:calendar class="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                         </p:calendar>
 
                         <p:outputLabel value="Institution" />
                         <p:autoComplete id="ins" value="#{mdInwardReportController.institution}"
                                         completeMethod="#{institutionController.completeIns}"
-                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="w-100">
+                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="w-100 mx-4">
                             <p:column>
                                 #{ix.name}
                             </p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Department" />
-                        <p:autoComplete inputStyle="w-100" id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
+                        <p:autoComplete class="mx-4" id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}"  >
                         </p:autoComplete>
                         <p:outputLabel value="Category" />
                         <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
@@ -46,11 +46,11 @@
                                         completeMethod="#{categoryController.completeCategoryService}"
                                         var="cat" itemLabel="#{cat.name}" 
                                         itemValue="#{cat}"
-                                        inputStyle="w-100">
+                                        class="mx-4 w-100">
                             <p:column headerText="Category">
                                 <h:outputLabel value="#{cat.name}"/>
                             </p:column>
-                            <p:column headerText="Parent Category">
+                            <p:column headerText="Parent Category" class="mx-4">
                                 <h:outputLabel value="#{cat.parentCategory.name}"/>
                             </p:column> 
                             <p:column headerText="TYPE">
@@ -67,7 +67,7 @@
                                          value="#{mdInwardReportController.item}"
                                          completeMethod="#{itemController.completeInwardItemsCategory}"
                                          var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                         inputStyle="w-100">
+                                          class="mx-4 w-100">
                             <p:column>
                                 <h:outputLabel value="#{ix.name}"/>
                             </p:column>
