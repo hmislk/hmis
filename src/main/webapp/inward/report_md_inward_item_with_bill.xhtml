@@ -14,23 +14,24 @@
                 <p:panel header="Item Report">   
 
                     <h:panelGrid columns="4" class="my-2">
-                        <h:outputLabel value="From"/>
-                        <p:calendar styleClass="dateTimePicker mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:calendar>
 
-                        <h:outputLabel value="To"/>
-                        <p:calendar class="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
-                        </p:calendar>
                     </h:panelGrid>
 
 
                     <h:panelGrid columns="2" class="w-100">
                         <h:panelGrid columns="2" >
+                            <h:outputLabel value="From"/>
+                            <p:calendar class="mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:calendar>
+
+                            <h:outputLabel value="To"/>
+                            <p:calendar class="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                            </p:calendar>
                             <h:outputLabel value="Institute"/>
                             <p:autoComplete id="ins" 
-                                            class="mx-2"
+                                            class="mx-4"
                                             value="#{mdInwardReportController.institution}"
                                             completeMethod="#{institutionController.completeIns}"
                                             var="ix" 
@@ -42,7 +43,7 @@
                             </p:autoComplete>
                             <h:outputLabel value="Department"/>
                             <p:autoComplete 
-                                class="mx-2"
+                                class="mx-4"
                                 id="dept" 
                                 completeMethod="#{departmentController.completeDept}" 
                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
@@ -55,7 +56,7 @@
                                             completeMethod="#{categoryController.completeCategoryService}"
                                             var="cat" itemLabel="#{cat.name}" 
                                             itemValue="#{cat}"
-                                            class="mx-2">
+                                            class="mx-4">
                                 <p:column headerText="Category">
                                     <h:outputLabel value="#{cat.name}"/>
                                 </p:column>
@@ -75,7 +76,7 @@
                             <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
                                              value="#{mdInwardReportController.item}"
                                              completeMethod="#{itemController.completeInwardItemsCategory}"
-                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="mx-2"
+                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="mx-4"
                                              >
                                 <p:column>
                                     <h:outputLabel value="#{ix.name}"/>
@@ -97,19 +98,34 @@
                             <p:watermark for="dept" value="Department"/>
                             <p:watermark for="ins" value="Institution"/>
                         </h:panelGrid>
-
-                        <p:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}" class="w-100"  />
-                            <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" class="w-100"    />
-                            <p:commandButton ajax="false" value="Process by Added Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" class="w-100"   />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" class="w-100"   >
-                                <p:printer target="reportPrint"/>
-                            </p:commandButton>
-                        </p:panelGrid>     
-                    </h:panelGrid>               
+                    </h:panelGrid>              
+                    <h:panelGrid columns="12" class="my-4" >
+                        <p:commandButton ajax="false"
+                                         value="Process by Bill Created Date" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}"
+                                         icon="fas fa-cogs"
+                                         class="w-100 ui-button-success "
+                                         />
+                        <p:commandButton ajax="false" 
+                                         value="Process by Discharge Date" 
+                                         icon="fas fa-cogs"
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" 
+                                         class="w-100 my-2 ui-button-success"    />
+                        
+                        <p:commandButton ajax="false" 
+                                         value="Process by Added Date" 
+                                         icon="fas fa-cogs"
+                                         class="ui-button-success w-100"
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" 
+                                         />
+                        
+                        <p:commandButton ajax="false" 
+                                         value="Print" 
+                                         icon="fas fa-print"
+                                         class="w-100 my-2 ui-button-info"   >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>
+                    </h:panelGrid>  
 
                 </p:panel>   
 

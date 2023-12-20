@@ -65,6 +65,11 @@
                                         <f:selectItem itemLabel="Select the Payment Method" />
                                         <f:selectItems value="#{collectingCentreController.collectingCentrePaymentMethod}"/>                                        
                                     </p:selectOneMenu>
+                                    
+                                    <h:outputText value="Percentage" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.percentage}"  class="w-100">
+                                    </p:inputText>
 
                                     <h:outputText id="lblRoute" value="Route" ></h:outputText>
                                     <p:selectOneMenu 
@@ -79,9 +84,14 @@
                                             itemValue="#{r}"/>                                        
                                     </p:selectOneMenu>
 
-                                    <h:outputText value="Credit Limit" >                                        
+                                    <h:outputText value="Standard Credit Limit" >                                        
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{collectingCentreController.current.allowedCredit}"  class="w-100">
+                                    </p:inputText>
+                                    
+                                    <h:outputText value="Max Credit Limit" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{collectingCentreController.current.maxCreditLimit}"  class="w-100">
                                     </p:inputText>
 
                                     <h:outputText id="lblPhone" value="Phone" ></h:outputText>
