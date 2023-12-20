@@ -16,13 +16,14 @@
                 <p:panel >
 
                     <p:panel class="mt-2" header="Timed Sevice" id="gpBillPreview">       
-                        <p:panel>
-                            <h:panelGrid columns="7" class="w-100">
+                       
+                            <h:panelGrid columns="2">
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="mx-2" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <p:calendar class="mx-4" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="mx-2" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                                <p:autoComplete class="mx-2" id="it" forceSelection="false" 
+                                <p:calendar class="mx-4" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="Timed Item" ></h:outputLabel>
+                                <p:autoComplete class="mx-4" id="it" forceSelection="false" 
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeInvest}" var="ix" 
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" >
@@ -32,22 +33,23 @@
                                     <p:column>
                                         #{ix.total}
                                     </p:column>
-
                                 </p:autoComplete>
                                 <p:watermark for="it" value="Timed Item"/>
-                                <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                                
                             </h:panelGrid>
 
-                            <div class="my-2">
-                                <p:commandButton value="Print" ajax="false" action="#" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton mx-2"  actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                            <div class="my-4">
+                                <p:commandButton ajax="false" class="ui-button-success" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                                
+                                <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-warning mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
                                     <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
                                 </p:commandButton>
+                                
+                                <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-info" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
                             </div>
-                        </p:panel>
+                      
 
                         <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
 
