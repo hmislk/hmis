@@ -94,20 +94,20 @@
                         ajax="false" 
                         value="Process by Added Date" 
                         icon="fas fa-cogs"
-                        class="ui-button-success w-100"     
+                        class="ui-button-warning w-100"     
                         action="#{mdInwardReportController.createItemWithFeeByAddedDate}" />
                     <p:commandButton 
                         ajax="false" 
                         value="Process by Discharge Date" 
                         icon="fas fa-cogs"
                         action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" 
-                        class="ui-button-success w-100 mx-2"  />
+                        class="ui-button-warning w-100 mx-2"  />
                     <p:commandButton 
                         ajax="false" 
                         icon="fas fa-file-excel"
                         value="Excel Admit Date"
                         actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate}" 
-                        class="w-100 ui-button-warning">
+                        class="w-100 ui-button-success">
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
                     </p:commandButton>
 
@@ -115,7 +115,7 @@
                         ajax="false" 
                         icon="fas fa-file-excel"
                         value="Excel Discharge Date" 
-                        class="w-100 ui-button-warning mx-2"  
+                        class="w-100 ui-button-success mx-2"  
                         actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate}">
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
                     </p:commandButton>

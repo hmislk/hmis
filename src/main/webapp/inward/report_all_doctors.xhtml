@@ -15,10 +15,10 @@
                 <h:form>
                     <p:panel header="Doctor Payment" >
                         <h:panelGrid columns="2" class="my-4">
-                            <p:commandButton class="ui-button-success" icon="fas fa-list" ajax="false" value="List" action="#{doctorController.listDoctors()}">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-list" ajax="false" value="List" action="#{doctorController.listDoctors()}">
                             </p:commandButton>
 
-                            <p:commandButton class="mx-1 ui-button-warning" icon="fas fa-print" value="Print" ajax="false" action="#" >
+                            <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                         </h:panelGrid>

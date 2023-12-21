@@ -86,13 +86,13 @@
                         <p:watermark for="scStaff" value="Staff / Doctor" />
 
                         <h:panelGrid columns="4" class="my-4" >
-                            <p:commandButton ajax="false" value="Fill By Paid Date" icon="fas fa-fill" class="ui-button-success" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}"   />
-                            <p:commandButton ajax="false" value="Fill By Discharge Date" icon="fas fa-fill" class="ui-button-success" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByDischargeDate}"   />
+                            <p:commandButton ajax="false" value="Fill By Paid Date" icon="fas fa-fill" class="ui-button-warning" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByCreatedDate}"   />
+                            <p:commandButton ajax="false" value="Fill By Discharge Date" icon="fas fa-fill" class="ui-button-warning" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeByDischargeDate}"   />
                             <p:commandButton value="Print" icon="fas fa-print" class="ui-button-info" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-warning"  >
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
 
