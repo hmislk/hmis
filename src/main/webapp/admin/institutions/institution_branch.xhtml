@@ -21,12 +21,14 @@
                 <p:panel header="Manage Institution Branch" >
                     <div class="row">
                         <div class="col-md-6">
-                            <p:commandButton id="btnAdd" value="Add" action="#{institutionBranchController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd"
+                            <p:commandButton id="btnAdd" value="Add New" 
+                                             icon="fas fa-plus"
+                                             action="#{institutionBranchController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd"
                                     update="lstSelect gpDetail" >
                             </p:commandButton>
                             <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{institutionBranchController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25" process="btnDelete"
-                                    update="lstSelect gpDetail msg">
+                                                update="lstSelect gpDetail msg" icon="fas fa-trash">
                             </p:commandButton>
                             <p:selectOneListbox  id="lstSelect"   value="#{institutionBranchController.current}" class="w-100" filter="true">
                                 <f:selectItems  value="#{institutionBranchController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
@@ -35,7 +37,7 @@
                             </p:selectOneListbox>
                         </div>
                         <div class="col-md-6">
-                            <p:panelGrid id="gpDetail" columns="1" class="w-100">
+                            <p:panel id="gpDetail" class="w-100" header="Details of the Branch" >
                                 <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                     <h:outputText  value="Branch Name" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionBranchController.current.name}"  class="w-100 p-1"  ></p:inputText>
@@ -49,14 +51,16 @@
                                         <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
-                               
-                                   
-                               
-                            </p:panelGrid>
-                             <p:commandButton id="btnSave" value="Save" action="#{institutionBranchController.saveSelected()}" process="btnSave gpDetail" 
+                               <p:commandButton id="btnSave" value="Save" 
+                                                icon="fas fa-save"
+                                                action="#{institutionBranchController.saveSelected()}" process="btnSave gpDetail" 
                                                          update="lstSelect msg" class=" m-1 ui-button-warning w-25">
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
+                                   
+                               
+                            </p:panel>
+                             
                         </div>
                     </div>
 

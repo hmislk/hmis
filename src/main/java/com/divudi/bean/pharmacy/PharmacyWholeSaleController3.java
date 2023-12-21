@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -77,7 +78,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacyWholeSaleController3 implements Serializable {
+public class PharmacyWholeSaleController3 implements Serializable, ControllerWithPatient {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -135,7 +136,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
     int activeIndex;
 
     private Patient newPatient;
-    private Patient searchedPatient;
+    private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
@@ -143,6 +144,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
     boolean fromOpdEncounter = false;
     String opdEncounterComments = "";
     int patientSearchTab = 0;
+    private boolean patientDetailsEditable;
 
     Staff toStaff;
     Institution toInstitution;
@@ -197,7 +199,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
         paymentMethod = null;
         activeIndex = 0;
         newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabNewPt";
         strTenderedValue = "";
@@ -253,7 +255,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
 
         if (!getPatientTabId().equals("tabSearchPt")) {
             if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
+                setPatient(null);
             }
         }
 
@@ -359,28 +361,45 @@ public class PharmacyWholeSaleController3 implements Serializable {
     }
 
     private Patient savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                if (!getNewPatient().getPerson().getName().trim().equals("")) {
-                    getNewPatient().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().setCreatedAt(new Date());
-                    getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().getPerson().setCreatedAt(new Date());
-                    if (getNewPatient().getPerson().getId() == null) {
-                        getPersonFacade().create(getNewPatient().getPerson());
-                    }
-                    if (getNewPatient().getId() == null) {
-                        getPatientFacade().create(getNewPatient());
-                    }
-                    return getNewPatient();
-                } else {
-                    return null;
-                }
-            case "tabSearchPt":
-                return getSearchedPatient();
+        if (!getPatient().getPerson().getName().trim().equals("")) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            if (getPatient().getPerson().getId() == null) {
+                getPersonFacade().create(getPatient().getPerson());
+            }
+            if (getPatient().getId() == null) {
+                getPatientFacade().create(getPatient());
+            }
+            return getPatient();
+        } else {
+            return null;
         }
-        return null;
     }
+//    private Patient savePatient() {
+//        switch (getPatientTabId()) {
+//            case "tabNewPt":
+//                if (!getNewPatient().getPerson().getName().trim().equals("")) {
+//                    getNewPatient().setCreater(getSessionController().getLoggedUser());
+//                    getNewPatient().setCreatedAt(new Date());
+//                    getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+//                    getNewPatient().getPerson().setCreatedAt(new Date());
+//                    if (getNewPatient().getPerson().getId() == null) {
+//                        getPersonFacade().create(getNewPatient().getPerson());
+//                    }
+//                    if (getNewPatient().getId() == null) {
+//                        getPatientFacade().create(getNewPatient());
+//                    }
+//                    return getNewPatient();
+//                } else {
+//                    return null;
+//                }
+//            case "tabSearchPt":
+//                return getSearchedPatient();
+//        }
+//        return null;
+//    }
 
     public Title[] getTitle() {
         return Title.values();
@@ -1502,7 +1521,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
@@ -1566,7 +1585,7 @@ public class PharmacyWholeSaleController3 implements Serializable {
         preBill = null;
         saleBill = null;
         newPatient = null;
-        searchedPatient = null;
+        patient = null;
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
@@ -1664,12 +1683,17 @@ public class PharmacyWholeSaleController3 implements Serializable {
         this.newPatient = newPatient;
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
     }
 
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public YearMonthDay getYearMonthDay() {
@@ -1937,6 +1961,28 @@ public class PharmacyWholeSaleController3 implements Serializable {
 
     public void setUserStockFacade(UserStockFacade userStockFacade) {
         this.userStockFacade = userStockFacade;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+        patientDetailsEditable = !patientDetailsEditable;
+
     }
 
 }

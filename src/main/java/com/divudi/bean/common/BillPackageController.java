@@ -113,7 +113,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     PaymentSchemeController paymentSchemeController;
 
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
 
@@ -149,9 +148,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     private ItemLight itemLight;
     private List<ItemLight> opdPackages;
+    private boolean patientDetailsEditable;
 
     //</editor-fold>
-    
     private void savePatient() {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient to save");
@@ -175,6 +174,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         } else {
             getPatientFacade().edit(getPatient());
         }
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public void putToBills() {
@@ -537,6 +541,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+            patientDetailsEditable=true;
+        }
         return patient;
     }
 
@@ -553,7 +561,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.patient = patient;
         return "/opd/opd_bill_package?faces-redirect=true";
     }
-    
+
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
         setPatient(getPatient());
@@ -578,7 +586,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setOpdPackages(List<ItemLight> opdPackages) {
         this.opdPackages = opdPackages;
     }
-    
+
     public BillSessionFacade getBillSessionFacade() {
         return billSessionFacade;
     }
@@ -602,14 +610,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
-    
-    
+
     private BillFacade getEjbFacade() {
         return billFacade;
-    }
-
-    private void setEjbFacade(BillFacade ejbFacade) {
-        this.billFacade = ejbFacade;
     }
 
     private SessionController getSessionController() {
@@ -715,7 +718,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return lstBillEntries;
     }
-    
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -955,7 +958,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         this.itemLight = itemLight;
     }
-    
+
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
@@ -964,48 +967,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.paymentSchemeController = paymentSchemeController;
     }
 
-    //</editor-fold>
-    
-    /**
-     *
-     */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0){
-                return null;
-            }
-            BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billPackageController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
-            }
-        }
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
     }
+
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
 }

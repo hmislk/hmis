@@ -18,7 +18,21 @@
                 <p:panel header="Patient Search" style="height: 100vh;" >
                     <h:form>
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <p:panel class="mb-2">
+                                    <p:inputText 
+                                        class="form-control" 
+                                        value="#{patientController.searchPatientPhoneNumber}"
+                                        placeholder="Phone Number"
+                                        />
+                                    <p:commandButton 
+                                        id="btnSearchbyPhoneNo"
+                                        value="Quick Search"
+                                        icon="fa-solid fa-search"
+                                        action="#{patientController.searchByPatientPhoneNumber()}" 
+                                        ajax="false" 
+                                        class="mt-2 w-100"/> 
+                                </p:panel>
 
                                 <div class="mb-3">
                                     <h:outputLabel value="Name" class="form-label" />
@@ -62,20 +76,22 @@
 
                                 </div>
                             </div>
-                            <div class="col-md-9">
-                                <div class="mb-3">
+                            <div class="col-md-10">
+                                <div class="mb-3 w-50">
                                     <p:commandButton 
                                         value="New"
-                                        styleClass="btn btn-warning"
+                                        icon="fa-solid fa-plus"
+                                        class=" m-1 ui-button-success w-25" 
                                         action="#{patientController.toAddNewPatient()}" />
                                     <p:commandButton 
                                         value="Search" 
+                                        icon="fa-solid fa-search"
                                         id="btnSearch" 
-                                        styleClass="btn btn-primary ms-2"
+                                        class=" m-1 ui-button-warning w-25" 
                                         ajax="false"
                                         action="#{patientController.searchPatient()}" />
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
-                                    <p:commandButton value="Clear" styleClass="btn btn-danger ms-2"
+                                    <p:commandButton value="Clear" icon="fa-solid fa-eraser" class="m-1 ui-button-danger w-25"
                                                      action="#{patientController.clearSearchDetails()}" />
                                 </div>
 

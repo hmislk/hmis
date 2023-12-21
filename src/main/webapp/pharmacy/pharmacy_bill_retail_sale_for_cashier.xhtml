@@ -8,7 +8,8 @@
       xmlns:bil="http://java.sun.com/jsf/composite/bill"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <h:body>
 
@@ -417,10 +418,12 @@
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </p:panel>
-
-                                <p:panel class="my-1">        
+                                <common:patient_details  
+                                                    editable="true"
+                                                    controller="#{pharmacySaleController}"/>
+<!--                                <p:panel class="my-1">        
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-user-circle" />  FontAwesome Icon 
                                         <h:outputText value="Patient Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <p:tabView id="tvPt" style="min-height: 250px;" activeIndex="#{pharmacySaleController.patientSearchTab}"  >
@@ -483,7 +486,7 @@
                                                 <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
                                             </div>
                                         </p:tab>                                    </p:tabView>
-                                </p:panel>
+                                </p:panel>-->
                             </div>
                         </div>
                     </p:panel>

@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -86,7 +87,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleWithoutStockController implements Serializable {
+public class PharmacySaleWithoutStockController implements Serializable, ControllerWithPatient {
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -153,7 +154,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
     PaymentScheme paymentScheme;
 
     int activeIndex;
-
+    private Patient patient;
     private Patient newPatient;
     private Patient searchedPatient;
     private YearMonthDay yearMonthDay;
@@ -238,7 +239,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         paymentMethod = null;
         activeIndex = 0;
         newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabNewPt";
         strTenderedValue = "";
@@ -267,7 +268,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         paymentMethod = null;
         activeIndex = 0;
         newPatient = null;
-        searchedPatient = null;
+        patient = null;
         yearMonthDay = null;
         patientTabId = "tabSearchPt";
         patientSearchTab = 1;
@@ -324,7 +325,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
         if (!getPatientTabId().equals("tabSearchPt")) {
             if (fromOpdEncounter == false) {
-                setSearchedPatient(null);
+                setPatient(null);
             }
         }
 
@@ -389,27 +390,21 @@ public class PharmacySaleWithoutStockController implements Serializable {
     }
 
     private Patient savePatient() {
-        switch (getPatientTabId()) {
-            case "tabNewPt":
-                if (!getNewPatient().getPerson().getName().trim().equals("")) {
-                    getNewPatient().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().setCreatedAt(new Date());
-                    getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                    getNewPatient().getPerson().setCreatedAt(new Date());
-                    if (getNewPatient().getPerson().getId() == null) {
-                        getPersonFacade().create(getNewPatient().getPerson());
-                    }
-                    if (getNewPatient().getId() == null) {
-                        getPatientFacade().create(getNewPatient());
-                    }
-                    return getNewPatient();
-                } else {
-                    return null;
-                }
-            case "tabSearchPt":
-                return getSearchedPatient();
+        if (!getPatient().getPerson().getName().trim().equals("")) {
+            getPatient().setCreater(getSessionController().getLoggedUser());
+            getPatient().setCreatedAt(new Date());
+            getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPatient().getPerson().setCreatedAt(new Date());
+            if (getPatient().getPerson().getId() == null) {
+                getPersonFacade().create(getPatient().getPerson());
+            }
+            if (getPatient().getId() == null) {
+                getPatientFacade().create(getPatient());
+            }
+            return getPatient();
+        } else {
+            return null;
         }
-        return null;
     }
 
     public Title[] getTitle() {
@@ -1497,7 +1492,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
@@ -1620,7 +1615,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         preBill = null;
         saleBill = null;
         newPatient = null;
-        searchedPatient = null;
+        patient = null;
         toInstitution = null;
         toStaff = null;
         patientTabId = "tabNewPt";
@@ -1729,12 +1724,17 @@ public class PharmacySaleWithoutStockController implements Serializable {
         this.newPatient = newPatient;
     }
 
-    public Patient getSearchedPatient() {
-        return searchedPatient;
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
     }
 
-    public void setSearchedPatient(Patient searchedPatient) {
-        this.searchedPatient = searchedPatient;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public YearMonthDay getYearMonthDay() {
@@ -2034,6 +2034,21 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }
