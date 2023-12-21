@@ -17,8 +17,6 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
 
                     <h:form>
-
-
                         <p:panel header="Add New User" >
                             <f:facet name="header" >
                                 <i class="fa fa-user-plus mx-2" aria-hidden="true"></i>
@@ -26,10 +24,7 @@
                                 <p:commandButton
                                     style="float: right;"
                                     id="btnCreateUser" 
-
-=======
                                     icon="fas fa-save"
-
                                     value="Save User" 
                                     class="ui-button-success"
                                     action="#{webUserController.saveNewUser()}" ajax="false" >
@@ -119,9 +114,6 @@
                                             <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
                                         </p:autoComplete>
 
-
-
-
                                         <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
                                         <p:inputText id="txtUsername" class="mt-1  mb-1"
                                                      autocomplete="off" required="true" maxlength="50" 
@@ -155,7 +147,6 @@
                                         <h:outputLabel value="Code" style="width: 250px" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
                                         <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
 
-                                        
                                     </h:panelGrid>
                                 </p:tab>
                             </p:tabView>
