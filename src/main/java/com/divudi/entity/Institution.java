@@ -62,6 +62,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String ownerName;
 
     @Lob
     String labBillHeading;
@@ -102,6 +103,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    private double allowedCreditLimit;
     double maxCreditLimit;
     double standardCreditLimit;
     private double percentage;
@@ -663,6 +665,22 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setPercentage(double percentage) {
         this.percentage = percentage;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public double getAllowedCreditLimit() {
+        return allowedCreditLimit;
+    }
+
+    public void setAllowedCreditLimit(double allowedCreditLimit) {
+        this.allowedCreditLimit = allowedCreditLimit;
     }
     
     
