@@ -24,12 +24,17 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-                        <p:commandButton id="btnSave" ajax="false" value="Save" class="m-1"
+                        <p:commandButton id="btnSave" 
+                                         ajax="false" 
+                                         value="Save" 
+                                         icon="fas fa-save"
+                                         class="ui-button-success mx-2"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
                         
-                        <p:commandButton value="List prefernces"
+                        <p:commandButton value="List preferences"
                                                  process="cmbInstitution cmbDepartment"
-                                                 class="ui-button-warning mx-1"
+                                                 icon="fas fa-list"
+                                                 class="ui-button-warning"
                                                  ajax="false"
                                                  action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
 
