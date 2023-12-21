@@ -43,7 +43,7 @@
                                     id="btnRefresh" 
                                     action="#{loginController.fillLogins()}"
                                     styleClass="noPrintButton" 
-                                    value="Process" icon=""
+                                    value="Process" icon="fa fa-refresh"
                                     class="ui-button-warning"
                                     style="float: right"
                                     ajax="false">                               
@@ -53,11 +53,13 @@
                         </div>
 
                         <p:panel styleClass="printBlock" id="printBlock" >
-<!--                        <h:outputLabel value="#{labels.topic}" styleClass="rh1" style="font-size: 18px;" /> 
-                            <br/>-->
+
+                            <h:outputLabel value="#{labels.topic}" styleClass="rh1" style="font-size: 18px;" /> 
+                            <br/>
+
                             <h:outputLabel value="Login Details Report"/>
                             <br/><br/>
-                            
+
                             <h:panelGrid columns="3">
                                 <h:outputLabel value="From Date" />
                                 <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
@@ -105,7 +107,7 @@
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
-                            
+
                         </p:panel>
                     </p:panel>
                 </h:form>
