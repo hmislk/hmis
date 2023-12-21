@@ -19,21 +19,21 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From  " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To  " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type  " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
+                            <p:selectOneMenu class="w-100 mx-4"  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT Type  " ></h:outputLabel>
-                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
+                            <p:selectOneMenu  class="w-100 mx-4"  id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Credit Company  " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
+                            <p:selectOneMenu class="w-100 mx-4"  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -42,15 +42,15 @@
 
 
                         </h:panelGrid>
-                        <h:panelGrid columns="4">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}"   ></p:commandButton>
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{inwardReportController1.process()}"   ></p:commandButton>
 
-                            <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}"   ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}"   ></p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
                             </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print" >
                                 <p:printer target="gpBillPreview"></p:printer>
                             </p:commandButton>
 
@@ -160,6 +160,7 @@
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
                                                      action="report_income_room" 
+                                                     icon="far fa-file-alt"
                                                      actionListener="#{inwardReportController1.processPatientRooms()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
@@ -327,6 +328,7 @@
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
                                                      action="inward_charge" 
+                                                     icon="far fa-file-alt"
                                                      actionListener="#{inwardReportController1.processInwardCharges()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
