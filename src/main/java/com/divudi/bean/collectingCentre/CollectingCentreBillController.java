@@ -1687,6 +1687,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }

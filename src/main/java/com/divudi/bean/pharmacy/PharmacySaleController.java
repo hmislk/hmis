@@ -1952,6 +1952,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }

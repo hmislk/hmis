@@ -1322,7 +1322,7 @@ public class PatientController implements Serializable {
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
             controller.setPatient(patientSearched);
-            controller.setPatientDetailsEditable(true);
+            controller.setPatientDetailsEditable(false);
             quickSearchPatientList = null;
         } else {
             controller.setPatient(null);
@@ -1335,6 +1335,7 @@ public class PatientController implements Serializable {
     public void quickSearchNewPatient(ControllerWithPatient controller) {
         quickSearchPatientList = null;
         controller.setPatient(new Patient());
+        controller.setPatientDetailsEditable(true);
     }
 
     public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {
@@ -1343,6 +1344,7 @@ public class PatientController implements Serializable {
             return;
         }
         controller.setPatient(current);
+        controller.setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
 

@@ -865,6 +865,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Person p = new Person();
         getPersonFacade().create(p);
         Patient pt = new Patient();
+        patientDetailsEditable=true;
         pt.setPerson(p);
         getPatientFacade().create(pt);
         getCurrent().setPatient(pt);
@@ -1147,6 +1148,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (patient == null) {
             Person p = new Person();
             patient = new Patient();
+            patientDetailsEditable=true;
             patient.setPerson(p);
         }
         return patient;

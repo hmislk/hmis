@@ -541,6 +541,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+            patientDetailsEditable=true;
+        }
         return patient;
     }
 

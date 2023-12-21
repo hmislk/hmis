@@ -2445,6 +2445,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (patient == null) {
             patient = new Patient();
             Person p = new Person();
+            patientDetailsEditable=true;
 
             patient.setPerson(p);
         }

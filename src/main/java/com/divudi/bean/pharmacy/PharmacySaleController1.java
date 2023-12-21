@@ -1797,6 +1797,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     public Patient gePatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
             Person p = new Person();
 
             patient.setPerson(p);
@@ -2095,6 +2096,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }

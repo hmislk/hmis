@@ -1141,6 +1141,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
             Person p = new Person();
 
             patient.setPerson(p);

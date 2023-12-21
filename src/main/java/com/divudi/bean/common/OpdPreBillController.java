@@ -1058,6 +1058,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (patient == null) {
             JsfUtil.addErrorMessage("No patient selected");
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getPatient());
@@ -1458,6 +1459,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }

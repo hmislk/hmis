@@ -1821,6 +1821,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
