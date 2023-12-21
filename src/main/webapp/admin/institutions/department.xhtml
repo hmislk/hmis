@@ -57,7 +57,9 @@
                                     </p:selectOneMenu>
 
                                     <h:outputText id="lblIns" value="Institution" ></h:outputText>
-                                    <p:autoComplete  completeMethod="#{institutionController.completeIns}" style="width: 650px" 
+                                    <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                                                     inputStyleClass="w-100"
+                                                     style="width: 650px" 
                                                      var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
 
 

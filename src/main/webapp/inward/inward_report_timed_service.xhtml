@@ -39,9 +39,9 @@
                             </h:panelGrid>
 
                             <div class="my-4">
-                                <p:commandButton ajax="false" class="ui-button-success" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
+                                <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
                                 
-                                <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-warning mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                                <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
                                     <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
                                 </p:commandButton>
                                 
