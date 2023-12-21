@@ -15,30 +15,22 @@
                 <h:form>
                     <p:panel header="Search Bills" >
 
-                        <h:panelGrid columns="8" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
-                            <p:spacer width="70"/>
                             <h:outputLabel value="To Date"/>
-                            <p:spacer width="30"/>
-                            <p:calendar id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                         </h:panelGrid>
-                        <h:panelGrid columns="3">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}"/>
-                            <p:commandButton value="To Print or Excel" ajax="false" action="inward_professional_payment_discharged_or_notdischarged_print" >
+                        <h:panelGrid columns="2" class="my-2">
+                            <p:commandButton id="btnSearch" icon="fas fa-search" ajax="false" value="Search" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}"/>
+                            <p:commandButton  class="mx-1 ui-button-info" icon="fas fa-print" value="To Print or Excel" ajax="false" action="inward_professional_payment_discharged_or_notdischarged_print" >
                             </p:commandButton>
-
-                            
                         </h:panelGrid>
-
-
-                        <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
-                        <p:tabView>
+                        <p:tabView class="my-4">
                             <p:tab title="Doctor Payments For Discharged patients">
                                 <p:dataTable rowIndexVar="i"  id="tblFee1" 
                                              value="#{inwardStaffPaymentBillController.docPayDischarged}" var="bi">
@@ -409,8 +401,8 @@
                             </p:tab>
                         </p:tabView>
                     </p:panel>
-                    <p:panel>
-                        <p:panelGrid columns="2">
+         
+                        <p:panelGrid columns="2" class="w-100 my-2" >
                             <p:outputLabel value="Doctor Payment Paid for Discharged Patients"></p:outputLabel>
                             <p:outputLabel value="#{inwardStaffPaymentBillController.totalDocFeePayDischarged}">
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -441,7 +433,7 @@
                             </p:outputLabel>
 
                         </p:panelGrid>
-                    </p:panel>
+          
 
                 </h:form>
             </ui:define>

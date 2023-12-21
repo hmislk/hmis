@@ -1977,7 +1977,7 @@ public class ReportsTransfer implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfMonth(new Date());
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

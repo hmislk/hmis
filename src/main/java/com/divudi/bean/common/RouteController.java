@@ -47,12 +47,12 @@ public class RouteController implements Serializable {
 
     public String toAddNewRoute() {
         current = new Route();
-        return "/admin/institutions/route";
+        return "/admin/institutions/route?faces-redirect=true";
     }
 
     public String toListRoutes() {
         fillItems();
-        return "/admin/institutions/routes";
+        return "/admin/institutions/routes?faces-redirect=true";
     }
 
     public String toEditRoute() {
@@ -114,6 +114,35 @@ public class RouteController implements Serializable {
         m.put("ret", false);
         m.put("n", name);
         return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    public Route findAndCreateRouteByName(String name){
+        Route r =null;
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Route c "
+                + " where c.retired=:ret "
+                + " and c.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        r =  getFacade().findFirstByJpql(jpql, m);
+        
+        if(r==null){
+            r = new Route();
+            r.setName(name);
+            r.setCreatedAt(new Date());
+            r.setCreater(sessionController.getLoggedUser());
+            getFacade().create(r);
+        }
+        recreateModel();
+        getItems();
+        return r;
     }
 
     public void saveSelected() {

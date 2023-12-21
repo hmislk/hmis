@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.ejb.PharmacyBean;
@@ -32,7 +33,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -89,6 +90,14 @@ public class AmppController implements Serializable {
         return a;
     }
 
+//    public List<Ampp> completeAmpp() {
+//        List<Ampp> a = null;
+//
+//        a = getFacade().findByJpql("select c from Ampp c where c.retired=false order by c.name");
+//
+//        return a;
+//    }
+
     public void prepareAdd() {
         current = new Ampp();
         current.setVmpp(new Vmpp());
@@ -106,7 +115,6 @@ public class AmppController implements Serializable {
 //            getVmppFacade().edit(getCurrent().getVmpp());
 //        }
 //    }
-
     public void saveSelected() {
         Vmpp tmp = getPharmacyBean().getVmpp(getCurrent(), getPackUnit());
         getCurrent().setVmpp(tmp);
@@ -219,9 +227,7 @@ public class AmppController implements Serializable {
     /**
      *
      */
-   
-    
-     @FacesConverter(forClass = Ampp.class)
+    @FacesConverter(forClass = Ampp.class)
     public static class AmppConverter implements Converter {
 
         @Override
