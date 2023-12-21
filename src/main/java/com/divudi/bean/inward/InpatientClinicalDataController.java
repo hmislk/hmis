@@ -568,7 +568,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addEncounterProcedure() {
-        System.out.println("addEncounterProcedure");
         if (current == null) {
             UtilityController.addErrorMessage("Please select a visit");
             return;
@@ -1171,9 +1170,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
-        System.out.println("generateDocumentFromTemplate");
-        System.out.println("e = " + e);
-        System.out.println("t = " + t);
 
         if (t == null) {
             return "";
@@ -1308,7 +1304,6 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
                 .replace("{bp}", bp);
-        System.out.println("output = " + output);
         return output;
 
     }
@@ -1449,19 +1444,14 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     private void updateOrGeneratePrescription() {
-        System.out.println("updateOrGeneratePrescription");
-        System.out.println("updateOrGeneratePrescription = " + userDocumentTemplates);
         if (userDocumentTemplates == null) {
             return;
         }
         if (encounterPrescreption != null) {
             encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
             if (encounterPrescreption.getId() == null) {
-                System.out.println("going to save");
-                System.out.println("encounterPrescreption = " + encounterPrescreption.getStringValue());
                 clinicalFindingValueFacade.create(encounterPrescreption);
             } else {
-                System.out.println("encounterPrescreption = " + encounterPrescreption.getStringValue());
                 clinicalFindingValueFacade.edit(encounterPrescreption);
             }
             return;
@@ -1487,7 +1477,6 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         for (DocumentTemplate dt : userDocumentTemplates) {
-            System.out.println("dt = " + dt);
             if (dt.isAutoGenerate()) {
                 for (ClinicalFindingValue cfv : getEncounterPrescreptions()) {
                     if (cfv.getDocumentTemplate().equals(dt)) {
@@ -2728,7 +2717,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
-        System.out.println("encounterReferral = " + encounterReferral);
         this.encounterReferral = encounterReferral;
     }
 

@@ -420,7 +420,7 @@ public class ApiMembership {
 //        temp.setStaff(staff);
 //        temp.setToStaff(toStaff);
 //        temp.setReferredBy(referredBy);
-//        temp.setReferralNumber(referralId);
+//        temp.setReferenceNumber(referralId);
 //        temp.setReferredByInstitution(referredByInstitution);
 //        temp.setCreditCompany(creditCompany);
 //        temp.setComments(comment);

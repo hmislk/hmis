@@ -428,7 +428,6 @@ public class DataUploadBean implements Serializable {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("e");
             }
         }
     }
@@ -914,6 +913,8 @@ public class DataUploadBean implements Serializable {
             }
             if (institutionName != null && !institutionName.trim().equals("")) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            }else{
+                institution = institutionController.findAndSaveInstitutionByName("Other");
             }
 
             Cell deptCell = row.getCell(6);
@@ -922,6 +923,10 @@ public class DataUploadBean implements Serializable {
             }
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
+            }
+            
+            if(department==null){
+                department=  departmentController.getDefaultDepatrment(institution);
             }
 
             Cell inwardCcCell = row.getCell(7);
@@ -1178,7 +1183,6 @@ public class DataUploadBean implements Serializable {
             if (code == null || code.trim().equals("")) {
                 continue;
             }
-            System.out.println(code);
             Cell categoryCell = row.getCell(4);
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
@@ -1223,7 +1227,6 @@ public class DataUploadBean implements Serializable {
                 continue;
             }
 
-            System.out.println("s" + sampleName);
 
             Cell containerCell = row.getCell(9);
             if (containerCell != null && containerCell.getCellType() == CellType.STRING) {
@@ -1234,7 +1237,6 @@ public class DataUploadBean implements Serializable {
             if (containerName == null || containerName.trim().equals("")) {
                 continue;
             }
-            System.out.println("i" + containerName);
 
             Cell analyserCell = row.getCell(10);
             if (analyserCell != null && analyserCell.getCellType() == CellType.STRING) {
@@ -1261,7 +1263,6 @@ public class DataUploadBean implements Serializable {
 
             investigation.setCreater(sessionController.getLoggedUser());
             investigation.setCreatedAt(new Date());
-            System.out.println(investigation.getName());
             investigationController.save(investigation);
             investigations.add(investigation);
 
@@ -1301,7 +1302,6 @@ public class DataUploadBean implements Serializable {
             Cell idCell = row.getCell(0);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
-                System.out.println("id = " + id);
                 amp.setItemId(id);
             }
 
@@ -1311,9 +1311,7 @@ public class DataUploadBean implements Serializable {
                 if (ampName == null || ampName.trim().equals("")) {
                     continue;
                 }
-                System.out.println("ampName = " + ampName);
                 amp = ampController.findAmpByName(ampName);
-                System.out.println("amp = " + amp);
                 if (amp == null) {
                     amp = new Amp();
                     amp.setName(ampName);
@@ -1335,18 +1333,13 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell vmpCell = row.getCell(4);
-            System.out.println("vmpCell = " + vmpCell);
             if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
                 vmpName = vmpCell.getStringCellValue();
-                System.out.println("vmpName = " + vmpName);
                 vmp = vmpController.findVmpByName(vmpName);
-                System.out.println("vmp = " + vmp);
                 if (vmp == null) {
-                    System.out.println("This VMP Name not found :  " + vmpName);
                     continue;
                 }
             } else {
-                System.out.println("VMP cell type is NOT a String = ");
             }
 
             Cell manufacturerCell = row.getCell(5);
@@ -1368,7 +1361,6 @@ public class DataUploadBean implements Serializable {
             amp.setName(ampName);
             amp.setCode("amp_" + CommonController.nameToCode(ampName));
 
-            System.out.println("vmp = " + vmp);
             if (vmp != null) {
                 amp.setVmp(vmp);
                 amp.setCategory(vmp.getCategory());
