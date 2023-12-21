@@ -310,6 +310,14 @@ public class DataUploadBean implements Serializable {
             Boolean withCommissionStatus = null;
             String routeName = null;
             Double percentage = null;
+            String collectingCentrePrintingName = null;
+            Double standardCreditLimit = null;
+            Double allowedCreditLimit = null;
+            Double maxCreditLimit = null;
+            String phone = null;
+            String email = null;
+            String ownerName = null;
+            String address = null;
 
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
@@ -330,7 +338,16 @@ public class DataUploadBean implements Serializable {
                 continue;
             }
 
-            Cell activeCell = row.getCell(2);
+            Cell agentPrintingNameCell = row.getCell(2);
+            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
+                collectingCentrePrintingName = agentNameCell.getStringCellValue();
+
+            }
+            if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
+                continue;
+            }
+
+            Cell activeCell = row.getCell(3);
             if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
                 active = activeCell.getBooleanCellValue();
             }
@@ -338,7 +355,7 @@ public class DataUploadBean implements Serializable {
                 active = false;
             }
 
-            Cell withCommissionStatusCell = row.getCell(3);
+            Cell withCommissionStatusCell = row.getCell(4);
             if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
                 withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
             }
@@ -346,7 +363,7 @@ public class DataUploadBean implements Serializable {
                 withCommissionStatus = false;
             }
 
-            Cell routeNameCell = row.getCell(4);
+            Cell routeNameCell = row.getCell(5);
             if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
                 routeName = routeNameCell.getStringCellValue();
                 route = routeController.findAndCreateRouteByName(routeName);
@@ -356,13 +373,79 @@ public class DataUploadBean implements Serializable {
                 continue;
             }
 
-            Cell percentageCell = row.getCell(5);
+            Cell percentageCell = row.getCell(6);
             if (percentageCell != null && percentageCell.getCellType() == CellType.NUMERIC) {
                 percentage = percentageCell.getNumericCellValue();
 
             }
             if (percentage == null) {
                 percentage = 0.0;
+            }
+
+            Cell contactNumberCell = row.getCell(7);
+            if (contactNumberCell != null) {
+                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
+                    phone = String.valueOf(contactNumberCell.getNumericCellValue());
+                } else if (contactNumberCell.getCellType() == CellType.STRING) {
+                    phone = contactNumberCell.getStringCellValue();
+                }
+            }
+            if (phone == null || phone.trim().equals("")) {
+                continue;
+            }
+
+            Cell emailAddressCell = row.getCell(8);
+            if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
+                email = emailAddressCell.getStringCellValue();
+
+            }
+            if (email == null || email.trim().equals("")) {
+                continue;
+            }
+
+            Cell ownerNameCell = row.getCell(9);
+            if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
+                ownerName = ownerNameCell.getStringCellValue();
+
+            }
+            if (ownerName == null || ownerName.trim().equals("")) {
+                continue;
+            }
+
+            Cell addressCell = row.getCell(10);
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                address = addressCell.getStringCellValue();
+
+            }
+            if (address == null || address.trim().equals("")) {
+                continue;
+            }
+
+            Cell standardCreditCell = row.getCell(11);
+            if (standardCreditCell != null && standardCreditCell.getCellType() == CellType.NUMERIC) {
+                standardCreditLimit = standardCreditCell.getNumericCellValue();
+
+            }
+            if (standardCreditLimit == null) {
+                standardCreditLimit = 0.0;
+            }
+
+            Cell allowedCreditCell = row.getCell(12);
+            if (allowedCreditCell != null && allowedCreditCell.getCellType() == CellType.NUMERIC) {
+                allowedCreditLimit = allowedCreditCell.getNumericCellValue();
+
+            }
+            if (allowedCreditLimit == null) {
+                allowedCreditLimit = 0.0;
+            }
+
+            Cell maxCreditCell = row.getCell(13);
+            if (maxCreditCell != null && maxCreditCell.getCellType() == CellType.NUMERIC) {
+                maxCreditLimit = maxCreditCell.getNumericCellValue();
+
+            }
+            if (maxCreditLimit == null) {
+                maxCreditLimit = 0.0;
             }
 
             if (code.trim().equals("")) {
@@ -385,15 +468,15 @@ public class DataUploadBean implements Serializable {
             collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
             collectingCentre.setCode(code);
             collectingCentre.setName(collectingCentreName);
-            if(withCommissionStatus){
+            if (withCommissionStatus) {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
-            }else{
+            } else {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
             }
-            
+
             collectingCentre.setInactive(!active);
-            
-//            Route r = routeController.findRouteByName(routeName);
+
+//            Route r = routeController.findRouteByName(routeName)
 //            if(r==null){
 //                r = new Route();
 //                r.setName(routeName);
@@ -401,9 +484,17 @@ public class DataUploadBean implements Serializable {
 //                r.setCreater(sessionController.getLoggedUser());
 //                routeController.save(r);
 //            }
-            
             collectingCentre.setRoute(route);
-            
+            collectingCentre.setChequePrintingName(collectingCentrePrintingName);
+            collectingCentre.setPercentage(percentage);
+            collectingCentre.setPhone(phone);
+            collectingCentre.setEmail(email);
+            collectingCentre.setOwnerName(ownerName);
+            collectingCentre.setAddress(address);
+            collectingCentre.setAllowedCredit(standardCreditLimit);
+            collectingCentre.setAllowedCreditLimit(allowedCreditLimit);
+            collectingCentre.setMaxCreditLimit(maxCreditLimit);
+
             collectingCentreController.save(collectingCentre);
 
             collectingCentresList.add(collectingCentre);
@@ -915,7 +1006,7 @@ public class DataUploadBean implements Serializable {
             }
             if (institutionName != null && !institutionName.trim().equals("")) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
-            }else{
+            } else {
                 institution = institutionController.findAndSaveInstitutionByName("Other");
             }
 
@@ -926,9 +1017,9 @@ public class DataUploadBean implements Serializable {
             if (departmentName != null && !departmentName.trim().equals("")) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
             }
-            
-            if(department==null){
-                department=  departmentController.getDefaultDepatrment(institution);
+
+            if (department == null) {
+                department = departmentController.getDefaultDepatrment(institution);
             }
 
             Cell inwardCcCell = row.getCell(7);
@@ -1228,7 +1319,6 @@ public class DataUploadBean implements Serializable {
             if (sampleName == null || sampleName.trim().equals("")) {
                 continue;
             }
-
 
             Cell containerCell = row.getCell(9);
             if (containerCell != null && containerCell.getCellType() == CellType.STRING) {
