@@ -16,7 +16,10 @@
             <f:facet name="header" >
                 <h:outputText value="Application Preferences" ></h:outputText>
                 <p:spacer height="1" width="30" ></p:spacer>
-                <p:commandButton id="btnSave" ajax="false" value="Save" 
+                <p:commandButton id="btnSave" 
+                                 icon="fas fa-save"
+                                         class="ui-button-success"
+                                 ajax="false" value="Save" 
                                  action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
             </f:facet>
 
