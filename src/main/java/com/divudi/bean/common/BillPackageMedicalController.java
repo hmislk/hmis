@@ -75,8 +75,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -87,7 +87,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     SessionController sessionController;
     @Inject
     private CommonController commonController;
-    
+
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @EJB
@@ -118,6 +118,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     private List<BillItem> lstBillItems;
     private List<BillEntry> lstBillEntries;
     private Integer index;
+    private boolean patientDetailsEditable;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
@@ -157,6 +158,11 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         billItems = null;
         currentBillItem = null;
         total = 0.0;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public PaymentMethodData getPaymentMethodData() {
@@ -268,7 +274,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         if (p.getPerson() == null) {
             return null;
         }
-        
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreater(sessionController.getLoggedUser());
             p.getPerson().setCreatedAt(new Date());
@@ -276,7 +282,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         } else {
             personFacade.edit(p.getPerson());
         }
-        
+
         if (p.getId() == null) {
             p.setCreater(sessionController.getLoggedUser());
             p.setCreatedAt(new Date());
@@ -284,9 +290,10 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         } else {
             patientFacade.edit(p);
         }
-        
+
         return p;
     }
+
     public void putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -313,14 +320,13 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
             bills.add(myBill);
         }
     }
-    
+
     public String navigateToMedicalPakageBillingFromMenu() {
         clearBillValues();
         setPatient(getPatient());
 
         return "/opd_bill_package_medical";
     }
-
 
     public void settleBill() {
 
@@ -697,7 +703,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         return tot;
     }
 
-    public void createMedicalPackageBillItems() { 
+    public void createMedicalPackageBillItems() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -705,7 +711,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -726,11 +732,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("createMedicalPackageBillItems()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-       
-        
-   
         createBillItems(new MedicalPackage());
-        
+
         commonController.printReportDetails(frmDate, toDate, startTime, "Medical package detail report(/reportCashier/report_opd_package_medical.xhtml)");
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -760,7 +763,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -781,15 +784,14 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("createOtherPackageBillItemsOld()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-      
+
         createBillItems(new Packege());
-        
+
         commonController.printReportDetails(frmDate, toDate, startTime, "Package detail report -by bill item(/reportCashier/report_opd_package.xhtml)");
 
     }
@@ -802,7 +804,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -823,10 +825,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("createOtherPackageBills()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-        
         createBills(new Packege());
-        
+
         commonController.printReportDetails(frmDate, toDate, startTime, " Package detail report - by bill(/reportCashier/report_opd_package_bill.xhtml?faces-redirect=true)");
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -848,8 +848,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         //billTotal = 0.0;
     }
-    
-    public String navigateToReportOpdPackage(){
+
+    public String navigateToReportOpdPackage() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -857,7 +857,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -878,7 +878,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("navigateToReportOpdPackage()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -886,8 +885,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_opd_package.xhtml?faces-redirect=true";
     }
-    
-     public String navigateToReportOpdPackageBill(){
+
+    public String navigateToReportOpdPackageBill() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -895,7 +894,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -916,7 +915,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("navigateToReportOpdPackageBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -924,8 +922,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_opd_package_bill.xhtml?faces-redirect=true";
     }
-     
-     public String navigateToReportOpdPackageMedical(){
+
+    public String navigateToReportOpdPackageMedical() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -933,7 +931,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -954,7 +952,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEvent.setEventTrigger("navigateToReportOpdPackageMedical()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -962,8 +959,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_opd_package_medical.xhtml?faces-redirect=true";
     }
-    
-    
 
     public void calTotals() {
         double tot = 0.0;
@@ -1146,6 +1141,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
             Person p = new Person();
 
             patient.setPerson(p);
@@ -1156,8 +1152,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     public void setPatient(Patient newPatient) {
         this.patient = newPatient;
     }
-
-    
 
     public Doctor getReferredBy() {
 
@@ -1468,44 +1462,14 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         this.commonController = commonController;
     }
 
-    
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillPackageMedicalController controller = (BillPackageMedicalController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billPackageMedicalController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillPackageMedicalController.class.getName());
-            }
-        }
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
     }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
 }

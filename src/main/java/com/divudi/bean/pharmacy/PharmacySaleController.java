@@ -155,7 +155,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     int activeIndex;
 
-   
     private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabPt";
@@ -183,6 +182,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    private boolean patientDetailsEditable;
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
@@ -214,6 +214,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void prepareNewPharmacyBillForMembers() {
         clearNewBillForMembers();
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public void clearForNewBill() {
@@ -1947,6 +1952,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
@@ -2253,6 +2259,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
 }

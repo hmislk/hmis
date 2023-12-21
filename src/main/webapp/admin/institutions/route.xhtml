@@ -15,7 +15,9 @@
 
                 <h:form style="width: 1000px">
                     <h:panelGrid id="gpDetail" columns="1">
-                        <p:commandButton ajax="false" id="btnSave" value="Save" 
+                        <p:commandButton ajax="false" id="btnSave" value="Save"
+                                         icon="fas fa-save"
+                                     class="ui-button-success my-2"
                                          action="#{routeController.saveSelected}"
                                          style="float: right;">
                         </p:commandButton>

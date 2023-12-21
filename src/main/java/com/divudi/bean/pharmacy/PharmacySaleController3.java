@@ -99,7 +99,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     @Inject
     SessionController sessionController;
-    
+
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -178,8 +178,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-    
-    
+    private boolean patientDetailsEditable;
 
     public String pharmacyRetailSale() {
         return "/pharmacy/pharmacy_bill_retail_sale_3";
@@ -723,6 +722,11 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public void addBillItemNew() {
         editingQty = null;
         errorMessage = null;
@@ -1135,7 +1139,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
         getBillFacade().edit(getSaleBill());
     }
-    
+
     private void saveSaleBillItems(List<BillItem> list, Payment p) {
         for (BillItem tbi : list) {
 
@@ -1173,7 +1177,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
         getBillFacade().edit(getSaleBill());
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -1398,19 +1402,19 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         } else if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
             double runningBalance;
             if (pt != null) {
-                if(pt.getRunningBalance()!=null){
-                 runningBalance=pt.getRunningBalance();
-                }else{
-                    runningBalance=0.0;
+                if (pt.getRunningBalance() != null) {
+                    runningBalance = pt.getRunningBalance();
+                } else {
+                    runningBalance = 0.0;
                 }
-                runningBalance+=netTotal;
+                runningBalance += netTotal;
                 pt.setRunningBalance(runningBalance);
             }
 
         }
 
         resetAll();
-        
+
         billPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale3.xhtml)");
 
@@ -1677,9 +1681,9 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
-       if (membershipScheme != null && discountAllowed) {
+        if (membershipScheme != null && discountAllowed) {
             PaymentMethod tpm = getPaymentMethod();
-            if(tpm==null){
+            if (tpm == null) {
                 tpm = PaymentMethod.Cash;
             }
             PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
@@ -1820,6 +1824,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
@@ -1828,8 +1833,6 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     public void setPatient(Patient Patient) {
         this.patient = Patient;
     }
-
-    
 
     public YearMonthDay getYearMonthDay() {
         if (yearMonthDay == null) {
@@ -2120,6 +2123,14 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
 }

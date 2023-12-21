@@ -15,43 +15,83 @@
                 <h:form>
                     <p:panel header="Search Bills" >
 
-                        <h:outputLabel value="From Date"/>
-
-                        <p:calendar styleClass="dateTimePicker mx-2" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                        </p:calendar>
-
-                        <h:outputLabel value="To Date"/>
-
-                        <p:calendar id="toDate" class="mx-2" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                        </p:calendar>
-
                         <h:panelGrid columns="2" class="mt-4 mb-2">
-                            <h:panelGrid columns="4">
-                                <h:outputLabel class="mx-4 my-2" value="Inward service Bill No"/>
-                                <p:inputText class="p-1 my-2" autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel class="mx-4 my-2" value="Patient Name"/>
-                                <p:inputText class="p-1 my-2" autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <h:outputLabel class="mx-4 my-2" value="Speciality"/> 
-                                <p:inputText class="p-1 my-2" autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                                <h:outputLabel class="mx-4 my-2" value="Doctor Name"/>    
-                                <p:inputText class="p-1 my-2" autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                                <h:outputLabel class="mx-4 my-2" value="Service Name"/>  
-                                <p:inputText class="p-1 my-2" autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                                <h:outputLabel class="mx-4 my-2" value="Charges"/>
-                                <p:inputText class="p-1 my-2" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                            </h:panelGrid>
+                            <div class="row w-100">
+                                <div class="col-6">
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="From Date" class="mx-4 w-100" />
+                                        <p:calendar 
+                                            class="mx-4 w-100 my-1" 
+                                            inputStyleClass="w-100" 
+                                            id="fromDate" 
+                                            value="#{searchController.fromDate}"
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                        </p:calendar>
+
+                                        <h:outputLabel value="To Date" class="mx-4 "/>
+                                        <p:calendar  
+                                            id="toDate" 
+                                            class="mx-4 w-100 my-1"
+                                            inputStyleClass="w-100" 
+                                            value="#{searchController.toDate}"
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                        </p:calendar>
+
+                                        <h:outputLabel class="mx-4 " value="Inward service Bill No"/>
+                                        <p:inputText 
+                                            class=" mx-4 w-100"  
+                                            autocomplete="off" 
+                                            
+                                            value="#{searchController.searchKeyword.billNo}" />
+
+                                        <h:outputLabel class="mx-4 " value="Patient Name"/>
+                                        <p:inputText 
+                                            class="p-1 w-100 mx-4"
+                                            autocomplete="off" 
+                                            value="#{searchController.searchKeyword.patientName}" />
+
+                                        <h:outputLabel class="mx-4 " value="Speciality"/> 
+                                        <p:inputText 
+                                            class="mx-4 w-100" 
+                                            autocomplete="off" 
+                                            value="#{searchController.searchKeyword.speciality}" />
+
+                                        <h:outputLabel class="mx-4 " value="Doctor Name"/>    
+                                        <p:inputText
+                                            class="mx-4 w-100 "
+                                            autocomplete="off" 
+                                            value="#{searchController.searchKeyword.staffName}" />
+
+                                        <h:outputLabel class="mx-4 " value="Service Name"/>  
+                                        <p:inputText 
+                                            class="mx-4 w-100" 
+                                            autocomplete="off" 
+                                            value="#{searchController.searchKeyword.itemName}" />
+
+                                        <h:outputLabel class="mx-4 " value="Charges"/>
+                                        <p:inputText
+                                            class="mx-4 w-100 "
+                                            autocomplete="off"
+                                            value="#{searchController.searchKeyword.total}"/>
+                                    </h:panelGrid>
+
+                                </div>
+                            </div>
+
 
 
 
 
                         </h:panelGrid>
-                        <h:panelGrid columns="3">
-                            <p:commandButton class="" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
-                            <p:commandButton  class="mx-1" value="Print" ajax="false" action="#" >
+                        <h:panelGrid class="mx-4" columns="3">
+                            <p:commandButton icon="fas fa-search" class="" id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}"/>
+                            <p:commandButton icon="fas fa-print" class="mx-1 ui-button-info" value="Print" ajax="false" action="#"  >
                                 <p:printer target="tblFee" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton  class="mx-1" ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{searchController.createDueFeeTableInwardAll()}">
+                            <p:commandButton icon="fas fa-file-excel" class="mx-1 ui-button-warning" ajax="false" value="Excel"   actionListener="#{searchController.createDueFeeTableInwardAll()}">
                                 <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton> 
                         </h:panelGrid>

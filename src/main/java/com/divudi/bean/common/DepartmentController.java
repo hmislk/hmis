@@ -105,12 +105,12 @@ public class DepartmentController implements Serializable {
 
     public String toListDepartments() {
         fillItems();
-        return "/admin/institutions/departments";
+        return "/admin/institutions/departments?faces-redirect=true";
     }
 
     public String toAddNewDepartment() {
         current = new Department();
-        return "/admin/institutions/department";
+        return "/admin/institutions/department?faces-redirect=true";
     }
 
     public String toEditDepartment() {

@@ -112,7 +112,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     PaymentSchemeController paymentSchemeController;
 
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
@@ -150,7 +149,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     private CashTransactionBean cashTransactionBean;
 
     //</editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -196,6 +194,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     PaymentMethod paymentMethod;
+    private boolean patientDetailsEditable;
     //</editor-fold>
 
     public String pharmacyRetailSale() {
@@ -1239,6 +1238,11 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         getBillFeePaymentFacade().create(bfp);
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     private boolean checkAllBillItem() {
         for (BillItem b : getPreBill().getBillItems()) {
 
@@ -1817,6 +1821,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
@@ -2115,6 +2120,16 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
 }

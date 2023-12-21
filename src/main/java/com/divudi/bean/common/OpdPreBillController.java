@@ -201,7 +201,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     List<BillFeePayment> billFeePayments;
     private List<ItemLight> opdItems;
-    
+    private boolean patientDetailsEditable;
     // </editor-fold>
 
     public double getCashRemain() {
@@ -238,6 +238,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public List<ItemLight> fillOpdItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getOpdItemListingStrategy()) {
@@ -255,7 +260,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 return itemApplicationController.getInvestigationsAndServices();
         }
     }
-    
+
     public void clear() {
         opdBill = new BilledBill();
         printPreview = false;
@@ -1053,6 +1058,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (patient == null) {
             JsfUtil.addErrorMessage("No patient selected");
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getPatient());
@@ -1451,8 +1457,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     @Override
     public Patient getPatient() {
-        if(patient==null){
+        if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
@@ -1906,48 +1913,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
 
-//    /**
-//     *
-//     */
-//    @FacesConverter(forClass = Bill.class)
-//    public static class BillConverter implements Converter {
-//
-//        @Override
-//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-//            if (value == null || value.length() == 0) {
-//                return null;
-//            }
-//            OpdPreBillController controller = (OpdPreBillController) facesContext.getApplication().getELResolver().
-//                    getValue(facesContext.getELContext(), null, "billController");
-//            return controller.getBillFacade().find(getKey(value));
-//        }
-//
-//        java.lang.Long getKey(String value) {
-//            java.lang.Long key;
-//            key = Long.valueOf(value);
-//            return key;
-//        }
-//
-//        String getStringKey(java.lang.Long value) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(value);
-//            return sb.toString();
-//        }
-//
-//        @Override
-//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-//            if (object == null) {
-//                return null;
-//            }
-//            if (object instanceof Bill) {
-//                Bill o = (Bill) object;
-//                return getStringKey(o.getId());
-//            } else {
-//                throw new IllegalArgumentException("object " + object + " is of type "
-//                        + object.getClass().getName() + "; expected type: " + OpdPreBillController.class.getName());
-//            }
-//        }
-//    }
     public CommonController getCommonController() {
         return commonController;
     }
@@ -1976,4 +1941,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
         }
     }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
 }
