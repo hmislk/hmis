@@ -50,13 +50,13 @@
 
 
                         <h:panelGrid columns="4" class="my-4">
-                            <p:commandButton class="ui-button-success" icon="fas fa-fill" ajax="false" value="Fill Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
-                            <p:commandButton class="ui-button-success" icon="fas fa-fill" ajax="false" value="Fill Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryCreatedDate()}"   ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillFeeSummeryDischargeDate()}"   ></p:commandButton>
                             <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-warning" icon="fas fa-file-excel" ajax="false" value="Excel"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
                                 <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </h:panelGrid>
