@@ -164,6 +164,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     boolean fromOpdEncounter = false;
     String opdEncounterComments = "";
     int patientSearchTab = 0;
+    private boolean patientDetailsEditable;
 
     Staff toStaff;
     Institution toInstitution;
@@ -2038,17 +2039,17 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
 
     @Override
     public boolean isPatientDetailsEditable() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return patientDetailsEditable;
     }
 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
     @Override
     public void toggalePatientEditable() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
 }
