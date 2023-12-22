@@ -27,28 +27,31 @@
                             <p:panel header="Add New Signature" >
                                 <h:form enctype="multipart/form-data" >
 
-                                    <div class="row mb-1">
+                                    <div class="row my-1">
                                         <div class="col-6 d-flex align-items-center">
                                             <h:outputLabel value="Name" >
                                             </h:outputLabel>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-6 d-flex justify-content-end">
                                             <autocomplete:completeStaff value="#{staffController.current}"/>
                                         </div>
                                     </div>
 
 
-
-                                    <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
-
+                                    <div class="row">
+                                        <div class="col-6">
+                                    <p:fileUpload value="#{staffImageController.file}" class="my-1" mode="simple"/>
+                                        </div>
+                                    <div class="col-6 d-flex justify-content-end">
                                     <p:commandButton ajax="false" 
                                                      id="btnSave" 
                                                      value="Save" 
                                                      icon="fas fa-save"
-                                                     class=" m-1 ui-button-warning w-25"
+                                                     class="my-1 ui-button-warning w-50 float-right"
                                                      action="#{staffImageController.saveSignature()}"/>
                                     <p:defaultCommand target="btnSave"/>
-
+                                    </div>
+                                    </div>
                                 </h:form>
                             </p:panel>
                         </div>

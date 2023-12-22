@@ -1,81 +1,90 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      template="/resources/template/template.xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
-
-    <!-- Sections designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
     <h:body>
-        <ui:composition template="/admin/users/index.xhtml">
-            <ui:define name="subcontent">
-
-                <!-- 1. Authorization Section -->
-                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not  sessionController.firstLogin }">
-                    You are NOT authorized
+        <ui:composition template="/admin/users/user_list.xhtml">
+            <ui:define name="users">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
+                    <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
 
-                <!-- 2. Authorized Panel -->
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }">
+                <p:panel header="Allow user to log on to Departments" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
+                    <f:facet name="header">
+                        <i class="fa fa-icons" />
+                        <h:outputLabel class="mx-2" value="Manage User Icons"/>
+                    </f:facet>
 
-                    <h:form id="form">
-
-
-                        <!-- 2.1 Display User Icons Section -->
-                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                        <h:panelGroup id="displayUserIcons">
-                            <p:dataTable var="userIcon" value="#{userIconController.userIcons}" rowKey="#{userIcon.id}">
-                                <p:column headerText="Icon">
-                                    <h:outputText value="#{userIcon.icon}" />
-                                </p:column>
-                                <p:column headerText="Order">
-                                    <h:outputText value="#{userIcon.orderNumber}" />
-                                </p:column>
-                                <p:column headerText="Actions">
-                                    <h:panelGroup id="combinedActions">
-                                        <p:commandButton 
-                                            value="Move Up" 
-                                            action="#{userIconController.moveSelectedUserIconUp}" 
-                                            update=":form:displayUserIcons" >
-                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                        <p:commandButton value="Move Down" action="#{userIconController.moveSelectedUserIconDown}" update=":form:displayUserIcons" >
-                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                        <p:commandButton value="Remove" action="#{userIconController.removeUserIcon()}" update=":form:displayUserIcons" >
-                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
-                                        </p:commandButton>
-                                    </h:panelGroup>
-                                </p:column>
-                            </p:dataTable>
-                        </h:panelGroup>
-
-
-                        <!-- 2.2 Combined Action Section (Move Up, Move Down, Remove) -->
-                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <p:selectOneMenu value="#{userIconController.icon}" style="width:450px">
+                            <f:selectItems value="#{userIconController.icons}" />
+                        </p:selectOneMenu>
+                        <p:commandButton 
+                            value="Add" icon="fa fa-plus" class="ui-button-success"
+                            action="#{userIconController.addUserIcon}" update="displayUserIcons" 
+                            />
+                    </div>
 
 
 
-                        <!-- 2.3 Add New Icon Section -->
-                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                        <h:panelGroup id="addNewIcon">
-                            <p:selectOneMenu value="#{userIconController.icon}" style="width:150px">
-                                <f:selectItems value="#{userIconController.icons}" />
-                            </p:selectOneMenu>
-                            <p:commandButton value="Add" action="#{userIconController.addUserIcon}" update="displayUserIcons" />
-                        </h:panelGroup>
+                    <p:dataTable var="userIcon" value="#{userIconController.userIcons}" rowKey="#{userIcon.id}" id="displayUserIcons">
+                        <p:column headerText="Icon">
+                            <h:outputText value="#{userIcon.icon}" />
+                        </p:column>
+                        <p:column headerText="Order">
+                            <h:outputText value="#{userIcon.orderNumber}" />
+                        </p:column>
+                        <p:column headerText="Actions" style="text-align: center; width: 200px;" >
+                            <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
+                                <p:commandButton 
+                                    id="up" 
+                                    icon="fa fa-arrow-up"
+                                    class="ui-button-warning"
+                                    action="#{userIconController.moveSelectedUserIconUp}" 
+                                    update="displayUserIcons" >
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
 
+                                <p:commandButton 
+                                    id="down" 
+                                    icon="fa fa-arrow-down"
+                                    class="mx-2 ui-button-warning"
+                                    action="#{userIconController.moveSelectedUserIconDown}" 
+                                    update="displayUserIcons" >
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="remove" 
+                                    icon="fa fa-trash"
+                                    action="#{userIconController.removeUserIcon()}" 
+                                    class="ui-button-danger"
+                                    update="displayUserIcons" >
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                                
+                                <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
+                            </h:panelGroup>
+                        </p:column>
+                    </p:dataTable>
 
-                    </h:form>
-
-                </h:panelGroup>
-
-
+                </p:panel>
             </ui:define>
         </ui:composition>
     </h:body>
-
 </html>
