@@ -21,9 +21,14 @@
                 <p:panel header="Manage Credit Companies" >
                     <div class="row">
                         <div class="col-md-6">
-                            <p:commandButton id="btnAdd" value="Add" action="#{creditCompanyController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd" update="gpDetail lstSelect">
+                            <p:commandButton id="btnAdd" 
+                                             value="Add New"
+                                             icon="fas fa-plus"
+                                             action="#{creditCompanyController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd" update="gpDetail lstSelect">
                             </p:commandButton>
-                            <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                            <p:commandButton id="btnDelete" 
+                                             icon="fas fa-trash"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{creditCompanyController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25"  process="btnDelete" update="gpDetail lstSelect">
                             </p:commandButton>
                             <p:selectOneListbox   id="lstSelect"  class="w-100" value="#{creditCompanyController.current}" filter="true">
@@ -33,7 +38,7 @@
                             </p:selectOneListbox>
                         </div>
                         <div class="col-md-6">
-                            <p:panelGrid id="gpDetail" columns="1">
+                            <p:panel id="gpDetail" class="w-100" header="Details of the Credit Company">
                                 <p:tabView>
                                     <p:tab title="Institution Detail"> 
                                         <h:panelGrid id="gpDetailText" columns="2" class="w-100">
@@ -80,12 +85,15 @@
                                         </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
+                                <p:commandButton id="btnSave" 
+                                                 icon="fas fa-save"
+                                                 value="Save" 
+                                                 action="#{creditCompanyController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect">
 
-                            </p:panelGrid>
-                            <p:commandButton id="btnSave" value="Save" action="#{creditCompanyController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect">
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </p:panel>
 
-                            </p:commandButton>
-                            <p:defaultCommand target="btnSave"/>
                         </div>
                     </div>
 

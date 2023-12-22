@@ -18,14 +18,18 @@
                         <h:outputLabel value="Department Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{departmentController.removeSelectedItems()}"
+                    <p:commandButton ajax="false" 
+                                     value="Remove Selected" 
+                                     icon="fas fa-trash"
+                                         class="ui-button-danger"
+                                     action="#{departmentController.removeSelectedItems()}"
                                      onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
                                      >
                     </p:commandButton>
 
                     <p:dataTable id="dtF" value="#{departmentController.items}" var="sv" 
                                  rowKey="#{sv.id}" selection="#{departmentController.itemsToRemove}" 
-                                 rows="100"
+                                 rows="10"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,50,100,500"
