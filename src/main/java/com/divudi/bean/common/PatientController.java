@@ -169,6 +169,8 @@ public class PatientController implements Serializable {
     BillPackageMedicalController billPackageMedicalController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+    @Inject
+           PatientController patientController;
 
     /**
      *
@@ -663,6 +665,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        patientController.setCurrent(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
