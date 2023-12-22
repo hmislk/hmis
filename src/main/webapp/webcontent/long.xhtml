@@ -14,6 +14,10 @@
 
                 <div class="row" >
                     <h:form >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Add New Long Contents"></h:outputLabel>
+                            </f:facet>
                         <div class="d-flex justify-content-end">
                         <p:commandButton 
                             class="form ui-button-warning my-2" 
@@ -57,7 +61,7 @@
                                 <h:inputText class="form form-control" id="txtOrder" value="#{webContentController.selected.orderNo}"></h:inputText>
                             </div>
                         </div>
-                        
+                        </p:panel>
                     </h:form>
 
 
