@@ -13,17 +13,21 @@
         <ui:composition template="/admin/staff/admin_manage_staff_index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <p:panel id="printer1" header="View Staff Signature" >
+                    <p:panel id="printer1" >
                         <p:dataTable value="#{staffController.items}" var="s" 
                                      rows="10"
                                      paginator="true"
+                                     paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      >
-                            <p:column headerText="Name" >
-                                <h:outputLabel value="#{s.person.nameWithTitle}" ></h:outputLabel>
+                            <p:column headerText="Name" sortBy="#{s.person.nameWithTitle}" filterBy="#{s.person.nameWithTitle}" filterMatchMode="contains">
+                                <h:outputText value="#{s.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Name" >
+<!--                            <p:column headerText="Name" >
+                                <h:outputLabel value="#{s.person.nameWithTitle}" ></h:outputLabel>
+                            </p:column>-->
+                            <p:column headerText="Signature">
                                 <p:graphicImage  value="#{staffImageController.signatureById}" style="height: 50px;" >
                                     <f:param name="id" value="#{s.id}" />
                                 </p:graphicImage>
