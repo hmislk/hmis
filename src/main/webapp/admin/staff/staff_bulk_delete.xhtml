@@ -18,50 +18,67 @@
                         <h:outputLabel value="Staff Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton class="my-2" ajax="false" value="Remove Selected" action="#{staffController.removeSelectedItems()}"
-                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
+                    <div class="w-25">
+                    <p:commandButton ajax="false" value="Remove Selected" icon="fa-solid fa-trash" action="#{staffController.removeSelectedItems()}"
+                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                 return false;"
+                                                  class="my-1 ui-button-danger w-75"
                                      >
                     </p:commandButton>
 
+                </div>
+                    
 
                     <p:dataTable id="dtF" value="#{staffController.items}" var="sv" 
                                  rowKey="#{sv.id}" 
                                  selection="#{staffController.itemsToRemove}" 
-                                 rows="100"
+                                 rows="10"
                                  paginator="true"
+                                 paginatorPosition="bottom"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="10,50,100,500"
+                                 rowsPerPageTemplate="5,10,15"
                                  >
                         <p:column id="colSelect"  selectionMode="multiple" >
                         </p:column>
 
                         <p:column headerText="Type" sortBy="#{sv.class}" filterBy="#{sv.class}" filterMatchMode="contains"
-                                  style="font-weight:normal ;color: black;text-align: left;" >
-                            <h:outputLabel value="#{sv.class}" />
+                                   >
+                            <h:outputLabel value="#{sv.class.name}" />
                         </p:column>
-                        <p:column headerText="Name" filterBy="#{sv.person.name}" filterMatchMode="contains" sortBy="#{sv.person.name}"
-                                  style="font-weight:normal ;color: black;text-align: left; width: 400px;overflow: hidden;">
+                        <p:column headerText="Name" filterBy="#{sv.person.name}" filterMatchMode="contains" sortBy="#{sv.person.nameWithTitle}"
+                                 >
                             <h:outputLabel value="#{sv.person.name}" />
                         </p:column>
                         <p:column headerText="Speciality" filterBy="#{sv.designation.name}" filterMatchMode="contains" sortBy="#{sv.designation.name}"
-                                  style="font-weight:normal ;color: black;text-align: left;overflow: hidden;">
+                               >
                             <h:outputLabel value="#{sv.designation.name}" />
                         </p:column>
 
                         <p:column headerText="Created By" 
-                                  style="font-weight:normal ;color: black;text-align: left;"
+                                  
                                   filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains"
                                   sortBy="#{sv.creater.webUserPerson.name}" >
                             <h:outputLabel value="#{sv.creater.webUserPerson.name}" />
                         </p:column>
 
                         <p:column headerText="Created At" 
-                                  style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
                             <h:outputLabel value="#{sv.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yy  hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
+<!--                         <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Actions"/>
+                                </f:facet>
+                               
+                                <p:commandButton icon="fas fa-trash" styleClass="ui-button-danger"
+                                                 action="#{staffController.deleteStaff()}" 
+                                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                             return false;">
+                                    <f:setPropertyActionListener value="#{sv}" target="#{staffController.current}" />
+                                </p:commandButton>
+                            </p:column>-->
 
                     </p:dataTable>
 

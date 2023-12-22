@@ -11,6 +11,7 @@
     <ui:define name="subcontent">
         <h:form>
             <p:panel header="Manage Person Institutions(Channeling)" >
+                <p:panel header="Manage Doctors">
                 <h:panelGrid columns="5">
                     <p:outputLabel class="mx-2" value="Instituion" />
                     <au:institution value="#{personInstitutionController.institution}"></au:institution>
@@ -18,10 +19,13 @@
                     <au:completeDoctorSpeciality value="#{personInstitutionController.speciality}" />
                     
                 </h:panelGrid>
-                <p:commandButton icon="fa-solid fa-fill"
-                                     class="ui-button-warning w-25 m-1" value="Fill Doctors" 
+                <div class="w-25">
+                    <p:commandButton icon="fa-solid fa-fill"
+                                     class="ui-button-warning w-50 m-1" value="Fill Doctors" 
                                      action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
-                <p:panel>
+                </div>
+                
+                
                     <p:dataTable  value="#{personInstitutionController.withOutInstitutionPersonsStaffs}" 
                                   var="s" 
                                   rowKey="#{s.id}" 
@@ -50,8 +54,11 @@
                             <h:outputLabel value="#{s.speciality.name}"/>
                         </p:column>
                     </p:dataTable>
+                    <div class="w-25">
                     <p:commandButton value="Add Doctors" icon="fa-solid fa-plus"
-                                                     class="ui-button-success w-25 mx-1" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                                                     class="ui-button-success w-75 mx-1" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                </div>
+                    
                 </p:panel>
                 <p:panel header="Person Institutions Search">
                     <h:panelGrid columns="2" class="w-100">

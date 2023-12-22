@@ -127,6 +127,16 @@ public class StaffController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
+    
+    public void deleteStaff() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return ;
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        fillItems() ;
+    }
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
@@ -1345,6 +1355,12 @@ public class StaffController implements Serializable {
             items = getFacade().findByJpql(temSql);
         }
         return items;
+    }
+    
+    public void fillItems() {
+            String temSql;
+            temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+            items = getFacade().findByJpql(temSql);
     }
 
     public PersonFacade getPersonFacade() {
