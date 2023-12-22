@@ -14,6 +14,7 @@
         <p:autoComplete   forceSelection="true" id="staff"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{staffController.completeStaffCode}" 
+                          scrollHeight="300" placeholder="Type here to search"
                           var="mys" 
                           itemLabel="#{mys.person.nameWithTitle}" 
                           itemValue="#{mys}"
