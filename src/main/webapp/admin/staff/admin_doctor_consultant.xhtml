@@ -22,7 +22,7 @@
                         <div class="col-6">
 
                             <p:commandButton id="btnAdd" value="Add"  
-                                             action="#{consultantController.prepareAdd()}" icon="fa-solid fa-plus" class="m-1 ui-button-success w-25" process="btnAdd"
+                                             action="#{consultantController.prepareAdd()}" icon="fa-solid fa-plus" class="ui-button-success w-25" process="btnAdd"
                                              update="gpDetail"/>                                   
                             <p:commandButton process="btnDelete"
                                              update="lstSelect gpDetail"
@@ -33,9 +33,9 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                value="Download" 
+                                value="Excel" 
                                 icon="fa-solid fa-file-excel"
-                                class="m-1 ui-button-success w-25"
+                                class="ui-button-success w-25"
                                 ajax="false"
                                 action="#{consultantController.downloadAsExcel()}"/>
 
