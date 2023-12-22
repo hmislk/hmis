@@ -11,22 +11,37 @@
             <p:panel header="Manage Shifts" >
                 <div class="row">
                     <div class="col-6">
-                        <h:panelGrid id="gpSelectButtons" columns="3" class="my-1" >
-                            <p:commandButton id="btnAdd" class="ui-button-success" icon="fas fa-plus" process="btnAdd" update="gpDetail" value="Add" action="#{shiftController.prepareAdd()}"   >
+                            <p:commandButton 
+                                id="btnAdd" 
+                                class="ui-button-success w-25"
+                                icon="fas fa-plus"
+                                process="btnAdd" 
+                                update="gpDetail" 
+                                value="Add"
+                                action="#{shiftController.prepareAdd()}"   >
                             </p:commandButton>
-                            <p:commandButton id="btnDelete" class="ui-button-danger" icon="fas fa-trash" process="btnDelete" update="gpDetail lstSelect" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                            <p:commandButton 
+                                id="btnDelete"
+                                class="ui-button-danger w-25 mx-1"
+                                icon="fas fa-trash"
+                                process="btnDelete" 
+                                update="gpDetail lstSelect" 
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{shiftController.delete()}"  value="Delete"  >
                             </p:commandButton>
-                        </h:panelGrid>
+                        
                         <p:selectOneListbox  id="lstSelect" filter="true"  value="#{shiftController.current}"
-                                             class="w-100" style="height: 300px;">
+                                             class="w-100 mt-2" style="height: 300px;">
                             <f:selectItems  value="#{shiftController.shiftList}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                             <p:ajax update="gpDetail" process="@this" >
                             </p:ajax>
                         </p:selectOneListbox>   
                     </div>
                     <div class="col-6">
-                        <p:panel id="gpDetail" class="my-5">
+                        <p:panel id="gpDetail">
+                            <f:facet name="header" >
+                                <h:outputText value="Shift Details" />
+                            </f:facet>
                             <h:panelGrid id="gpDetailText" columns="2">
                                 <h:outputText  value="Roster" ></h:outputText>
                                 <p:selectOneMenu filter="true" class="h-100 w-100 mx-4" id='roster' value="#{shiftController.currentRoster}" >
@@ -100,7 +115,7 @@
 
                             </h:panelGrid>
 
-                            <f:facet name="footer">
+                           
                                 <div class="d-flex align-items-center">
 
                                     <p:commandButton ajax="false" 
@@ -108,15 +123,15 @@
                                                      value="Save"  
                                                      process="btnSave gpDetail"
                                                      update="lstSelect"
-                                                     class="ui-button-warning"
+                                                     class="ui-button-warning w-25 mt-4"
                                                      action="#{shiftController.saveSelected}"  
                                                      />
                                 </div>
-                            </f:facet>
+                          
                         </p:panel>
 
                     </div>
-                    <p:panel styleClass="printOnly">
+                    <p:panel styleClass="printOnly" class="my-2">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h:outputLabel value="Shift Detail"/>    
