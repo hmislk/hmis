@@ -164,6 +164,7 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> patientDiagnosticImages;
 
     private ClinicalFindingValue encounterMedicine;
+    private ClinicalFindingValue dischargeMedicine;
     private ClinicalFindingValue encounterDiagnosticImage;
     private ClinicalFindingValue encounterDiagnosis;
     private ClinicalFindingValue encounterImage;
@@ -175,6 +176,7 @@ public class InpatientClinicalDataController implements Serializable {
     private ClinicalFindingValue encounterPrescreption;
 
     private List<ClinicalFindingValue> encounterMedicines;
+    private List<ClinicalFindingValue> dischargeMedicines;
     private List<ClinicalFindingValue> encounterDiagnosticImages;
     private List<ClinicalFindingValue> encounterDiagnoses;
     private List<ClinicalFindingValue> encounterImages;
@@ -942,6 +944,12 @@ public class InpatientClinicalDataController implements Serializable {
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
+    
+    public List<ClinicalFindingValue> fillDischargeMedicines(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDischargeMedicine);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
 
     public List<ClinicalFindingValue> fillPatientImages(Patient patient) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
@@ -1444,6 +1452,33 @@ public class InpatientClinicalDataController implements Serializable {
 
         JsfUtil.addSuccessMessage("Added");
     }
+    
+    public void addDischargeMedicine() {
+        if (getDischargeMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
+            return;
+        }
+        getDischargeMedicine().setEncounter(current);
+        getDischargeMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
+        if (getDischargeMedicine().getPrescription().getId() == null) {
+            prescriptionFacade.create(getDischargeMedicine().getPrescription());
+        } else {
+            prescriptionFacade.edit(getDischargeMedicine().getPrescription());
+        }
+        if (getDischargeMedicine().getId() == null) {
+            clinicalFindingValueFacade.create(getDischargeMedicine());
+        } else {
+            clinicalFindingValueFacade.edit(getDischargeMedicine());
+        }
+
+        getEncounterFindingValues().add(getDischargeMedicine());
+        encounterMedicines = fillDischargeMedicines(current);
+
+        updateOrGeneratePrescription();
+        setDischargeMedicine(null);
+
+        JsfUtil.addSuccessMessage("Added");
+    }
 
     private void updateOrGeneratePrescription() {
         if (userDocumentTemplates == null) {
@@ -1838,6 +1873,8 @@ public class InpatientClinicalDataController implements Serializable {
         return s;
     }
 
+    
+    
     public String getCurrentPatientEncountersWeightStrings() {
         String s = "";
         int i = 0;
@@ -2424,6 +2461,9 @@ public class InpatientClinicalDataController implements Serializable {
         this.patientDiagnosticImage = patientDiagnosticImage;
     }
 
+    
+    
+    
     public ClinicalFindingValue getRemovingClinicalFindingValue() {
         return removingClinicalFindingValue;
     }
@@ -2540,6 +2580,16 @@ public class InpatientClinicalDataController implements Serializable {
         if (encounterMedicine == null) {
             encounterMedicine = new ClinicalFindingValue();
             encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            Prescription p = new Prescription();
+            encounterMedicine.setPrescription(p);
+        }
+        return encounterMedicine;
+    }
+    
+    public ClinicalFindingValue getDischargeMedicine() {
+        if (encounterMedicine == null) {
+            encounterMedicine = new ClinicalFindingValue();
+            encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
             Prescription p = new Prescription();
             encounterMedicine.setPrescription(p);
         }
@@ -2869,6 +2919,8 @@ public class InpatientClinicalDataController implements Serializable {
     public List<DocumentTemplate> getUserDocumentTemplates() {
         return userDocumentTemplates;
     }
+    
+    
 
     public void setUserDocumentTemplates(List<DocumentTemplate> userDocumentTemplates) {
         this.userDocumentTemplates = userDocumentTemplates;
@@ -2888,6 +2940,18 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setInpatientClinicalDataTabIndex(int inpatientClinicalDataTabIndex) {
         this.inpatientClinicalDataTabIndex = inpatientClinicalDataTabIndex;
+    }
+
+    public List<ClinicalFindingValue> getDischargeMedicines() {
+        return dischargeMedicines;
+    }
+
+    public void setDischargeMedicines(List<ClinicalFindingValue> dischargeMedicines) {
+        this.dischargeMedicines = dischargeMedicines;
+    }
+
+    public void setDischargeMedicine(ClinicalFindingValue dischargeMedicine) {
+        this.dischargeMedicine = dischargeMedicine;
     }
     
     
