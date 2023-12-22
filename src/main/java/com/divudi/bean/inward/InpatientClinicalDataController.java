@@ -221,6 +221,8 @@ public class InpatientClinicalDataController implements Serializable {
     private InvestigationItem graphInvestigationItem;
 
     private UploadedFile uploadedFile;
+    
+    private int inpatientClinicalDataTabIndex;
 
     @Deprecated
     public void calculateBmi() {
@@ -2879,6 +2881,16 @@ public class InpatientClinicalDataController implements Serializable {
     public void setSelectedDocumentTemplate(DocumentTemplate selectedDocumentTemplate) {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
+
+    public int getInpatientClinicalDataTabIndex() {
+        return inpatientClinicalDataTabIndex;
+    }
+
+    public void setInpatientClinicalDataTabIndex(int inpatientClinicalDataTabIndex) {
+        this.inpatientClinicalDataTabIndex = inpatientClinicalDataTabIndex;
+    }
+    
+    
 
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {

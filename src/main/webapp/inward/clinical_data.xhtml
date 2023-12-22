@@ -21,36 +21,40 @@
 
                     <div class="row" >
                         <div class="col-12 px-4" >
-
                             <p:commandButton 
                                 action="#{inpatientClinicalDataController.saveSelected()}"
                                 ajax="false"
+                                value="Save"
                                 icon="pi pi-save"
                                 class="p-0 m-1" 
                                 title="Save"/>
-
                             <p:commandButton 
-                                class="p-0 m-1" 
-                                action="#{inpatientClinicalDataController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="#{inpatientClinicalDataController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
-                                <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${inpatientClinicalDataController.current}" />
-                            </p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                            <p:commandButton 
-                                ajax="false" value="To Patient Profile"
+                                ajax="false" 
+                                value="Patient Clinical Dashboard"
                                 action="#{patientController.toEmrPatientProfile()}"
-                                process="panelPt" update="panelPt" ></p:commandButton>
+                                ></p:commandButton>
                             <p:commandButton 
-                                id="btnCommentPrint"
-                                ajax="false"
-                                icon="pi pi-print"
+                                ajax="false" 
                                 class="p-0 m-1" 
-                                title="Print">
-                                <p:printer target=":formImage:tblView:txtComments"/>
+                                icon="fa fa-search"
+                                value="Patient Lookup" 
+                                action="#{patientController.navigateToSearchPatients()}" />
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fa fa-id-card"
+                                value="Inpatient Care Dashboard" 
+                                class="p-0 m-1"
+                                action="#{admissionController.navigateToAdmissionProfilePage}" >
+                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
-
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fa fa-user"
+                                value="Patient Profile" 
+                                class="m-1 p-0"
+                                action="#{patientController.navigateToOpdPatientProfile()}" >
+                                <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
 
                         </div>
                     </div>
@@ -59,13 +63,16 @@
                             <p:tabView id="tblView" activeIndex="#{emrController.activeIndexOfOpdVisit}">
                                 <p:ajax event="tabChange" listener="#{emrController.onTabChange}" process="tblView" />
                                 <p:tab title="Patient Details">
+                                    
+                                    
+                                    
                                     <div class="ui-g">
                                         <div class="ui-g-12 ui-md-2">
                                             <emr:patient_photo 
-                                                patient="#{patientController.current}"></emr:patient_photo>
+                                                patient="#{inpatientClinicalDataController.current.patient}"></emr:patient_photo>
                                         </div>
                                         <div class="ui-g-12 ui-md-3">
-                                            <emr:patient patient="#{patientController.current}"></emr:patient>
+                                            <emr:patient patient="#{inpatientClinicalDataController.current.patient}"></emr:patient>
                                         </div>
                                         <div class="ui-g-12 ui-md-3">
                                             <emr:patient_allergies 
