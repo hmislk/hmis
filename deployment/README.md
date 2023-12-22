@@ -14,7 +14,7 @@ All commands in subchapters assume you are in the `deployment` directory.
 docker compose up --build
 ```
 
-After some time the app will be automatically deployed to the server, including the creation of connection pooland JDBC resource. You can find the app at `localhost:8080/horizon`. Once you have 
+After some time the app will be automatically deployed to the server, including the creation of connection pool and JDBC resource. You can find the app at `localhost:8080/horizon`.
 
 ### Stopping the environment
 ```
