@@ -15,7 +15,8 @@
             <h:form id="form">
                 <p:panel class="m-1 ">
                     <f:facet name="header">
-                        <h:outputLabel value="Downloads"/>
+                        <i class="fa fa-download"/>
+                        <h:outputLabel value="Downloads" class="mx-2"/>
                     </f:facet>
 
                     <div class="d-flex justify-content-between mb-2">
@@ -31,7 +32,7 @@
                             <p:commandButton 
                                 value="Download Patients" 
                                 ajax="false"
-                                icon="fa fa-search"
+                                icon="fa fa-download"
                                 class="mx-2 ui-button-primary"
                                 action="#{patientController.downloadAllPatients}">
                             </p:commandButton>
