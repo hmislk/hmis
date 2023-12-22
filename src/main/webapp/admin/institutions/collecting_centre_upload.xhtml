@@ -20,13 +20,15 @@
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
+                                         icon="fas fa-upload"
+                                         class="ui-button-success"
                                          action="#{dataUploadBean.uploadCollectingCentres()}"
                                          ajax="false"/>
                         <p:commandButton value="Download Template" 
                                          ajax="false" 
-                                         class="mx-2"
-                                         onclick="PrimeFaces.monitorDownload(start, stop);" 
-                                         icon="ui-icon-arrowthick-1-s">
+                                         icon="fas fa-download"
+                                         class="ui-button-warning mx-2"
+                                         onclick="PrimeFaces.monitorDownload(start, stop);" >
                             <p:fileDownload value="#{dataUploadBean.templateForCollectingCentreUpload}" />
                         </p:commandButton>
 

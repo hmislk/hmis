@@ -60,7 +60,7 @@
                 <h:panelGrid columns="3" class="my-4">
                     <p:commandButton ajax="false" icon="fas fa-cogs" value="Process" 
                                      action="#{inwardReportController.createOutSideBills()}"
-                                     class="ui-button-success"/>
+                                     class="ui-button-warning"/>
                     <!--                    <p:commandButton ajax="false" value="Process By Added Date" 
                                                          action="#{inwardReportController.createOutSideBillsByAddedDate()}"
                                                          />
@@ -68,7 +68,7 @@
                                                          action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
                                                          />-->
 
-                    <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-warning" >
+                    <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
                     </p:commandButton>
 <!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton"  actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
