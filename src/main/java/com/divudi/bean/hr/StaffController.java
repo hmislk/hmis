@@ -1305,9 +1305,9 @@ public class StaffController implements Serializable {
         this.staffes = staffes;
     }
 
-    public String admin_staff_view_signature() {
+    public String navigateToAdminStaffViewSignature() {
         fillStaffes();
-        return "/admin/institutions/admin_staff_signature";
+        return "/admin/staff/admin_staff_view_signature?faces-redirect=true";
     }
 
     public String admin_edit_staff_balance() {
@@ -1491,9 +1491,7 @@ public class StaffController implements Serializable {
     public String navigateToManageStaff(){
         return "/admin/staff/admin_manage_staff_index.xhtml";
     }
-
-   
-
+  
     public CommonController getCommonController() {
         return commonController;
     }
