@@ -12,7 +12,8 @@
                 <h:form>
                     <p:panel class="m-1 ">
                         <f:facet name="header">
-                            <h:outputLabel value="List All Bills"/>
+                            <i class="fa fa-list"/>
+                            <h:outputLabel value="List All Bills" class="mx-2"/>
                         </f:facet>
 
                         <div class="d-flex justify-content-between mb-2">
@@ -30,25 +31,29 @@
                                                  action="#{searchController.listAllBills()}"
                                                  icon="fa fa-search"
                                                  class="mx-2 ui-button-primary"/>
-                                <p:commandButton value="Download" ajax="false" class="ui-button-success" icon="fa fa-download">
+                                <p:commandButton 
+                                    value="Download Excel" 
+                                    ajax="false" 
+                                    class="ui-button-success" 
+                                    icon="fa fa-file-excel">
                                     <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
                                 </p:commandButton>
                             </div>
                             <p:defaultCommand target="btnSearch" />
                         </div>
-                        
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" class="w-100"
-                                     rows="10"
-                                     paginator="true" paginatorPosition="both"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}">
 
-                            <p:column headerText="View" exportable="false">
-                                <p:commandButton value="View Bill" action="#{searchController.toViewBillSummery()}" ajax="false">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
-                                </p:commandButton>
-                            </p:column>
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill" 
+                            class="w-100"
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}">
 
                             <p:column headerText="ID">
                                 <p:outputLabel value="#{bill.id}" />
@@ -157,6 +162,17 @@
                                 </h:panelGroup>
                             </p:column>
                             
+                            <p:column headerText="Action" exportable="false">
+                                <p:commandButton 
+                                    id="viewBill"
+                                    icon="fa fa-file-invoice-dollar"
+                                    action="#{searchController.toViewBillSummery()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
+                                </p:commandButton>
+                                <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                            </p:column>
+
                         </p:dataTable>
                     </p:panel>
                 </h:form>
