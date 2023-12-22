@@ -29,43 +29,44 @@
                             <p:outputLabel class="form-control w-100" value="#{userPrivilageController.currentWebUser.name}"></p:outputLabel>
                             <p:outputLabel  value="Department" ></p:outputLabel>
                             <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
-                            <h:panelGrid  columns="2">
-                                <p:selectOneMenu 
-                                    id="cmbDepartment"
-                                    placeholder="Department"
-                                    value="#{userPrivilageController.department}" 
-                                    style="width: 502px"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                    <f:selectItems 
-                                        value="#{userPrivilageController.departments}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}" ></f:selectItems>
-                                </p:selectOneMenu>
+                            <p:selectOneMenu 
+                                id="cmbDepartment"
+                                placeholder="Department"
+                                value="#{userPrivilageController.department}" 
+                                style="width: 500px"
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{userPrivilageController.departments}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGrid>  
+
+
+                        <div class="w-100 mt-2 mb-2">
+                            
                                 <p:commandButton 
                                     value="List Privileges"
                                     process="cmbInstitution cmbDepartment"
-                                    class="ui-button-warning mx-1"
+                                    class="ui-button-success mx-1"
                                     ajax="false"
-                                    style="float: right"
                                     icon="fa fa-list"
                                     action="#{userPrivilageController.fillUserPrivileges}">
                                 </p:commandButton>
-                            </h:panelGrid> 
-                        </h:panelGrid>  
+                            
+                                <p:commandButton 
+                                    value="Update User Privilage"  
+                                    action="#{userPrivilageController.savePrivileges}"
+                                    class="ui-button-warning"
+                                    ajax="false" 
+                                    icon="fa fa-save"
+                                    style="float: right"
+                                    >  
+                                </p:commandButton> 
+                        </div>
 
-                        <h:panelGrid  columns="1" class="w-100">
-                            <p:commandButton 
-                                value="Update User Privilage"  
-                                action="#{userPrivilageController.savePrivileges}"
-                                class="ui-button-success mt-2 mb-2"
-                                ajax="false" 
-                                icon="fa fa-save"
-                                style="float: right;"
-                                >  
-                            </p:commandButton>
-                        </h:panelGrid>
                         <p:tree
                             id="tree"
                             selectionMode="checkbox"
