@@ -10,6 +10,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="editable" type="java.lang.Boolean"  />
+        <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
     </cc:interface>
 
@@ -33,47 +34,50 @@
                                 rendered="#{cc.attrs.controller.patient.id ne null}"
                                 value="Searched Patient Details" 
                                 ></h:outputText>
-
-                            <p:selectBooleanButton 
-                                value="#{cc.attrs.controller.patientDetailsEditable}" 
-                                offIcon="pi pi-pencil" 
-                                onIcon="pi pi-eye"                                 
-                                class="mx-4">
-                                <p:ajax 
-                                    process="@this" 
-                                    update="viewPatient editPatient" />
-                            </p:selectBooleanButton>
+                            <h:panelGroup rendered="#{cc.attrs.editable}" >
+                                <p:selectBooleanButton 
+                                    value="#{cc.attrs.controller.patientDetailsEditable}" 
+                                    offIcon="pi pi-pencil" 
+                                    onIcon="pi pi-eye"                                 
+                                    class="mx-4">
+                                    <p:ajax 
+                                        process="@this" 
+                                        update="viewPatient editPatient" />
+                                </p:selectBooleanButton>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
                     </h:panelGroup>
 
                     <!-- Right aligned quick search -->
-                    <h:panelGroup id="quickSearch" styleClass="form-inline">
-                        <p:inputText 
-                            id="txtQuickSearchPhoneNumber"
-                            style="width:12em; height: 2em; padding: 0.25em;"
-                            value="#{patientController.quickSearchPhoneNumber}"
-                            placeholder="Phone Number"
-                            class="form-control-sm mx-1"
-                            onfocus="this.select()" 
-                            />
-                        <p:commandButton 
-                            id="btnSearchbyPhoneNo"
-                            icon="fa fa-search" 
-                            title="Quick Search from Phone Number"
-                            action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
-                            process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                            update="ptImp selectPatient editPatient viewPatient"
-                            styleClass="btn-sm mx-1"/>
-                        <p:commandButton 
-                            id="btnAddNewPatient"
-                            icon="fa fa-plus-circle" 
-                            title="Add New Patient"
-                            action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
-                            process="btnAddNewPatient"
-                            update="ptImp selectPatient editPatient viewPatient"
-                            styleClass="btn-sm mx-1"/>
+                    <h:panelGroup id="quickSearch" >
+                        <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
+                            <p:inputText 
+                                id="txtQuickSearchPhoneNumber"
+                                style="width:12em; height: 2em; padding: 0.25em;"
+                                value="#{patientController.quickSearchPhoneNumber}"
+                                placeholder="Phone Number"
+                                class="form-control-sm mx-1"
+                                onfocus="this.select()" 
+                                />
+                            <p:commandButton 
+                                id="btnSearchbyPhoneNo"
+                                icon="fa fa-search" 
+                                title="Quick Search from Phone Number"
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
+                            <p:commandButton 
+                                id="btnAddNewPatient"
+                                icon="fa fa-plus-circle" 
+                                title="Add New Patient"
+                                action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                                process="btnAddNewPatient"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
             </f:facet>
