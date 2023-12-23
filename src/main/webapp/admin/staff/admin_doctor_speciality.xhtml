@@ -25,7 +25,7 @@
                                 value="Add" 
                                 action="#{doctorSpecialityController.prepareAdd()}" 
                                 icon="fa-solid fa-plus" 
-                                class="m-1 ui-button-success w-25"  
+                                class="ui-button-success w-25"  
                                 process="btnAdd"
                                 update="gpDetail" >
 
@@ -34,20 +34,20 @@
                                 id="btnDelete"
                                 icon="fa-solid fa-trash"
                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{doctorSpecialityController.delete()}"  value="Delete" class="m-1 ui-button-danger w-25" process="btnDelete"
+                                            return false;" action="#{doctorSpecialityController.delete()}"  value="Delete" class="mx-1 ui-button-danger w-25" process="btnDelete"
                                 update="lstSelect gpDetail" >
                             </p:commandButton>
 
                             <p:commandButton 
-                                value="Download" 
+                                value="Excel" 
                                 icon="fa fa-file-excel"
-                                class="m-1 ui-button-success w-25 float-right"
+                                class="ui-button-success w-25 float-right"
                                 ajax="false"
                                 action="#{doctorSpecialityController.downloadAsExcel()}" 
                                 />
 
 
-                            <p:selectOneListbox  id="lstSelect" filterMatchMode="contains" class="w-100" filter="true" value="#{doctorSpecialityController.current}">
+                            <p:selectOneListbox  id="lstSelect" filterMatchMode="contains" class="w-100 my-1" filter="true" value="#{doctorSpecialityController.current}">
                                 <f:selectItems  value="#{doctorSpecialityController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <f:ajax render=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" execute="lstSelect" >
 

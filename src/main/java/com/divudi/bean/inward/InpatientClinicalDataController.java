@@ -30,6 +30,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
+import com.divudi.entity.Upload;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.clinical.DocumentTemplate;
@@ -71,12 +72,16 @@ import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
@@ -164,6 +169,7 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> patientDiagnosticImages;
 
     private ClinicalFindingValue encounterMedicine;
+    private ClinicalFindingValue dischargeMedicine;
     private ClinicalFindingValue encounterDiagnosticImage;
     private ClinicalFindingValue encounterDiagnosis;
     private ClinicalFindingValue encounterImage;
@@ -175,6 +181,7 @@ public class InpatientClinicalDataController implements Serializable {
     private ClinicalFindingValue encounterPrescreption;
 
     private List<ClinicalFindingValue> encounterMedicines;
+    private List<ClinicalFindingValue> dischargeMedicines;
     private List<ClinicalFindingValue> encounterDiagnosticImages;
     private List<ClinicalFindingValue> encounterDiagnoses;
     private List<ClinicalFindingValue> encounterImages;
@@ -222,6 +229,11 @@ public class InpatientClinicalDataController implements Serializable {
 
     private UploadedFile uploadedFile;
 
+    private int inpatientClinicalDataTabIndex;
+
+    private Upload selectedDiagnosisCardTemplate;
+    private Upload selectedDiagnosisCard;
+
     @Deprecated
     public void calculateBmi() {
         if (current == null) {
@@ -237,6 +249,227 @@ public class InpatientClinicalDataController implements Serializable {
         Double wtInKgs = current.getWeight();
         Double bmi = wtInKgs / (Math.pow(htInMeters, 2));
         current.setBmi(bmi);
+    }
+
+    public StreamedContent downloadModifiedWordFile() {
+        if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getBaImage() == null) {
+            return null;
+        }
+
+        Map<String, String> replacements = createReplacementsMap(current);
+
+        selectedDiagnosisCard = findAndReplaceText(selectedDiagnosisCardTemplate, replacements);
+
+        return DefaultStreamedContent.builder()
+                .name(selectedDiagnosisCardTemplate.getFileName())
+                .contentType(selectedDiagnosisCardTemplate.getFileType())
+                .stream(() -> new ByteArrayInputStream(selectedDiagnosisCardTemplate.getBaImage()))
+                .build();
+    }
+
+    public Map<String, String> createReplacementsMap(PatientEncounter encounter) {
+        Map<String, String> replacements = new HashMap<>();
+
+        // Extracting information from the encounter
+        String name = encounter.getPatient().getPerson().getNameWithTitle();
+        String age = encounter.getPatient().getPerson().getAgeAsString() != null ? encounter.getPatient().getPerson().getAgeAsString() : "";
+        String sex = encounter.getPatient().getPerson().getSex() != null ? encounter.getPatient().getPerson().getSex().name() : "";
+        String address = encounter.getPatient().getPerson().getAddress() != null ? encounter.getPatient().getPerson().getAddress() : "";
+        String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
+        String visitDate = CommonController.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String height = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
+        String weight = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
+        String bmi = encounter.getBmiFormatted();
+        String bp = encounter.getBp();
+        String comments = encounter.getComments() != null ? encounter.getComments() : "";
+
+        // Add more replacement keys and values as needed
+        replacements.put("{name}", name);
+        replacements.put("{age}", age);
+        replacements.put("{sex}", sex);
+        replacements.put("{address}", address);
+        replacements.put("{phone}", phone);
+        replacements.put("{visit-date}", visitDate);
+        replacements.put("{height}", height);
+        replacements.put("{weight}", weight);
+        replacements.put("{bmi}", bmi);
+        replacements.put("{bp}", bp);
+        replacements.put("{comments}", comments);
+
+        // Further replacements based on medicines, investigations, allergies, etc.
+        // Use similar logic as in generateDocumentFromTemplate method to populate these values
+        return replacements;
+    }
+
+    public Upload findAndReplaceText(Upload upload, Map<String, String> replacements) {
+        if (upload == null || upload.getBaImage() == null || upload.getFileName() == null) {
+            throw new IllegalArgumentException("Invalid upload object or empty file content.");
+        }
+
+        if (!upload.getFileName().endsWith(".docx")) {
+            throw new IllegalArgumentException("Unsupported file type: " + upload.getFileName());
+        }
+
+        try ( XWPFDocument document = new XWPFDocument(new ByteArrayInputStream(upload.getBaImage()))) {
+            for (XWPFParagraph p : document.getParagraphs()) {
+                for (XWPFRun r : p.getRuns()) {
+                    String text = r.getText(0);
+                    for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                        text = text.replace(entry.getKey(), entry.getValue());
+                    }
+                    r.setText(text, 0);
+                }
+            }
+
+            try ( ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                document.write(out);
+                upload.setBaImage(out.toByteArray());
+            }
+        } catch (IOException e) {
+            // Handle exceptions
+            throw new RuntimeException("Error processing Word document", e);
+        }
+
+        return upload;
+    }
+
+    public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
+
+        if (t == null) {
+            return "";
+        }
+
+        if (t.getContents() == null) {
+            return "";
+        }
+
+        String input = t.getContents();
+        String output = "";
+
+        String name = e.getPatient().getPerson().getNameWithTitle();
+        String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
+        String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
+        String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
+        String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+
+        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
+        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String bmi = e.getBmiFormatted();
+        String bp = e.getBp();
+        String comments = e.getComments();
+        if (comments == null) {
+            comments = "";
+        }
+
+        for (ClinicalFindingValue cf : getPatientDiagnoses()) {
+            cf.getItemValue().getName();
+            cf.getItemValue().getComments();
+        }
+
+        String medicinesAsString = "Rx" + "<br/>";
+
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+
+                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String medicinesOutdoorAsString = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null) {
+                if (!cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
+            }
+        }
+
+        String medicinesIndoorAsString = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
+                if (cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
+            }
+        }
+
+        String ixAsString = "Ix" + "<br/>";
+        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
+            ixAsString += ix.getItemValue().getName();
+        }
+
+        String allergiesAsString = "";
+        for (ClinicalFindingValue cf : getPatientAllergies()) {
+            if (cf != null) {
+                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
+                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+
+        String routineMedicinesAsString = "";
+        for (ClinicalFindingValue rx : getPatientMedicines()) {
+            if (rx != null && rx.getPrescription() != null) {
+                String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
+                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
+                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
+                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
+                String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
+
+                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String diagnosesAsString = "";
+        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
+            if (dx != null) {
+                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+
+                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+
+        output = input.replace("{name}", name)
+                .replace("{age}", age)
+                .replace("{comments}", comments)
+                .replace("{sex}", sex)
+                .replace("{address}", address)
+                .replace("{phone}", phone)
+                .replace("{medicines}", medicinesAsString)
+                .replace("{outdoor}", medicinesOutdoorAsString)
+                .replace("{indoor}", medicinesIndoorAsString)
+                .replace("{ix}", ixAsString)
+                .replace("{past-dx}", diagnosesAsString)
+                .replace("{routine-medicines}", routineMedicinesAsString)
+                .replace("{allergies}", allergiesAsString)
+                .replace("{visit-date}", visitDate)
+                .replace("{height}", height)
+                .replace("{weight}", weight)
+                .replace("{bmi}", bmi)
+                .replace("{bp}", bp);
+        return output;
+
     }
 
     public StreamedContent getImage() throws IOException {
@@ -941,6 +1174,12 @@ public class InpatientClinicalDataController implements Serializable {
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
+    public List<ClinicalFindingValue> fillDischargeMedicines(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDischargeMedicine);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
     public List<ClinicalFindingValue> fillPatientImages(Patient patient) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientImage);
@@ -1050,8 +1289,8 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentEncounterLists(opdVisit);
         return "/emr/opd_visit";
     }
-    
-     public String navigateToEncounterClinicalData() {
+
+    public String navigateToEncounterClinicalData() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -1062,8 +1301,8 @@ public class InpatientClinicalDataController implements Serializable {
         generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data";
     }
-     
-     public String navigateToDiagnosisCard() {
+
+    public String navigateToDiagnosisCard() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -1074,7 +1313,8 @@ public class InpatientClinicalDataController implements Serializable {
         generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data_diagnosis_card";
     }
-     public String navigateToDrugChart() {
+
+    public String navigateToDrugChart() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -1085,7 +1325,8 @@ public class InpatientClinicalDataController implements Serializable {
         generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data_drug_chart";
     }
-     public String navigateToImages() {
+
+    public String navigateToImages() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -1096,7 +1337,8 @@ public class InpatientClinicalDataController implements Serializable {
         generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data_images";
     }
-     public String navigateToInvestigations() {
+
+    public String navigateToInvestigations() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -1107,22 +1349,18 @@ public class InpatientClinicalDataController implements Serializable {
         generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data_investigations";
     }
-     //clinical_data_investigations
-     //clinical_data_images
-     //clinical_data_drug_chart
-     //clinical_data_diagnosis_card
-     
-     
-     
-     
+    //clinical_data_investigations
+    //clinical_data_images
+    //clinical_data_drug_chart
+    //clinical_data_diagnosis_card
 
     public void fillCurrentPatientLists(Patient patient) {
         encounters = fillPatientEncounters(patient, 10);
 
         investigations = fillPatientInvestigations(patient);
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
-        opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient,10);
-        channelBills=searchController.fillBills(BillType.Channel, null, null, patient,10);
+        opdBills = searchController.fillBills(BillType.OpdBill, null, null, patient, 10);
+        channelBills = searchController.fillBills(BillType.Channel, null, null, patient, 10);
         patientAllergies = new ArrayList<>();
         patientDiagnoses = new ArrayList<>();
         patientImages = new ArrayList<>();
@@ -1160,6 +1398,7 @@ public class InpatientClinicalDataController implements Serializable {
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
         encounterFindingValues = fillCurrentEncounterFindingValues(encounter, null);
         encounterMedicines = fillEncounterMedicines(encounter);
+        dischargeMedicines = fillDischargeMedicines(encounter);
         encounterInvestigations = fillEncounterInvestigations(encounter);
         encounterProcedures = fillEncounterProcedures(encounter);
         encounterDiagnoses = fillEncounterDiagnoses(encounter);
@@ -1167,145 +1406,6 @@ public class InpatientClinicalDataController implements Serializable {
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
-    }
-
-    public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
-
-        if (t == null) {
-            return "";
-        }
-
-        if (t.getContents() == null) {
-            return "";
-        }
-
-        String input = t.getContents();
-        String output = "";
-
-        String name = e.getPatient().getPerson().getNameWithTitle();
-        String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
-        String sex = e.getPatient().getPerson().getSex() != null ? e.getPatient().getPerson().getSex().name() : "";
-        String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
-        String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
-
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String height = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
-        String bmi = e.getBmiFormatted();
-        String bp = e.getBp();
-        String comments = e.getComments();
-        if (comments == null) {
-            comments = "";
-        }
-
-        for (ClinicalFindingValue cf : getPatientDiagnoses()) {
-            cf.getItemValue().getName();
-            cf.getItemValue().getComments();
-        }
-
-        String medicinesAsString = "Rx" + "<br/>";
-
-        for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null) {
-                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-
-                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
-            }
-        }
-
-        String medicinesOutdoorAsString = "Rx" + "<br/>";
-        for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null) {
-                if (!cf.getPrescription().isIndoor()) {
-                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
-                }
-            }
-        }
-
-        String medicinesIndoorAsString = "Rx" + "<br/>";
-        for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
-                if (cf.getPrescription().isIndoor()) {
-                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
-                }
-            }
-        }
-
-        String ixAsString = "Ix" + "<br/>";
-        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
-        }
-
-        String allergiesAsString = "";
-        for (ClinicalFindingValue cf : getPatientAllergies()) {
-            if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
-            }
-        }
-
-        String routineMedicinesAsString = "";
-        for (ClinicalFindingValue rx : getPatientMedicines()) {
-            if (rx != null && rx.getPrescription() != null) {
-                String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
-                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
-                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
-                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
-                String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
-
-                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
-            }
-        }
-
-        String diagnosesAsString = "";
-        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
-            if (dx != null) {
-                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
-                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-
-                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
-            }
-        }
-
-        output = input.replace("{name}", name)
-                .replace("{age}", age)
-                .replace("{comments}", comments)
-                .replace("{sex}", sex)
-                .replace("{address}", address)
-                .replace("{phone}", phone)
-                .replace("{medicines}", medicinesAsString)
-                .replace("{outdoor}", medicinesOutdoorAsString)
-                .replace("{indoor}", medicinesIndoorAsString)
-                .replace("{ix}", ixAsString)
-                .replace("{past-dx}", diagnosesAsString)
-                .replace("{routine-medicines}", routineMedicinesAsString)
-                .replace("{allergies}", allergiesAsString)
-                .replace("{visit-date}", visitDate)
-                .replace("{height}", height)
-                .replace("{weight}", weight)
-                .replace("{bmi}", bmi)
-                .replace("{bp}", bp);
-        return output;
-
     }
 
     public void generateDocumentsFromDocumentTemplates(PatientEncounter encounter) {
@@ -1433,59 +1533,38 @@ public class InpatientClinicalDataController implements Serializable {
         } else {
             clinicalFindingValueFacade.edit(getEncounterMedicine());
         }
-
         getEncounterFindingValues().add(getEncounterMedicine());
         encounterMedicines = fillEncounterMedicines(current);
-
-        updateOrGeneratePrescription();
         setEncounterMedicine(null);
-
+        saveSelected();
         JsfUtil.addSuccessMessage("Added");
     }
 
-    private void updateOrGeneratePrescription() {
-        if (userDocumentTemplates == null) {
+    public void addDischargeMedicine() {
+        if (getDischargeMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
-        if (encounterPrescreption != null) {
-            encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
-            if (encounterPrescreption.getId() == null) {
-                clinicalFindingValueFacade.create(encounterPrescreption);
-            } else {
-                clinicalFindingValueFacade.edit(encounterPrescreption);
-            }
-            return;
+        getDischargeMedicine().setEncounter(current);
+        getDischargeMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
+        if (getDischargeMedicine().getPrescription().getId() == null) {
+            prescriptionFacade.create(getDischargeMedicine().getPrescription());
         } else {
-            DocumentTemplate prescTemplate = null;
-            for (DocumentTemplate dt : userDocumentTemplates) {
-                if (dt.isDefaultTemplate()) {
-                    prescTemplate = dt;
-                }
-            }
-            if (prescTemplate != null) {
-                encounterPrescreption = new ClinicalFindingValue();
-                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
-                encounterPrescreption.setDocumentTemplate(prescTemplate);
-                encounterPrescreption.setEncounter(current);
-                encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
-                encounterPrescreption.setPatient(current.getPatient());
-                encounterPrescreption.setPerson(current.getPatient().getPerson());
-                encounterPrescreption.setStringValue(prescTemplate.getName());
-                clinicalFindingValueFacade.create(encounterPrescreption);
-                getEncounterPrescreptions().add(encounterPrescreption);
-            }
+            prescriptionFacade.edit(getDischargeMedicine().getPrescription());
+        }
+        if (getDischargeMedicine().getId() == null) {
+            clinicalFindingValueFacade.create(getDischargeMedicine());
+        } else {
+            clinicalFindingValueFacade.edit(getDischargeMedicine());
         }
 
-        for (DocumentTemplate dt : userDocumentTemplates) {
-            if (dt.isAutoGenerate()) {
-                for (ClinicalFindingValue cfv : getEncounterPrescreptions()) {
-                    if (cfv.getDocumentTemplate().equals(dt)) {
-                        cfv.setLobValue(generateDocumentFromTemplate(dt, current));
-                        cfv.setStringValue(dt.getName());
-                    }
-                }
-            }
-        }
+        getEncounterFindingValues().add(getDischargeMedicine());
+        dischargeMedicines = fillDischargeMedicines(current);
+
+        setDischargeMedicine(null);
+        saveSelected();
+
+        JsfUtil.addSuccessMessage("Added");
     }
 
     public List<Bill> fillPatientBills(Patient patient) {
@@ -1541,7 +1620,7 @@ public class InpatientClinicalDataController implements Serializable {
         m.put("bts", billTypes);
         String sql;
         sql = "Select b from Bill b where b.patient=:p and b.billType in :bts order by b.id desc";
-        return getBillFacade().findByJpql(sql, m,10);
+        return getBillFacade().findByJpql(sql, m, 10);
     }
 
     public List<PatientInvestigation> fillPatientInvestigations(Patient patient) {
@@ -1554,7 +1633,7 @@ public class InpatientClinicalDataController implements Serializable {
                 + " where e.patient=:p "
                 + " and e.retired=:ret "
                 + "order by e.id desc";
-        return getPiFacade().findByJpql(sql, m,10);
+        return getPiFacade().findByJpql(sql, m, 10);
     }
 
     public List<PatientEncounter> fillPatientEncounters(Patient patient, Integer count) {
@@ -2544,6 +2623,16 @@ public class InpatientClinicalDataController implements Serializable {
         return encounterMedicine;
     }
 
+    public ClinicalFindingValue getDischargeMedicine() {
+        if (dischargeMedicine == null) {
+            dischargeMedicine = new ClinicalFindingValue();
+            dischargeMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
+            Prescription p = new Prescription();
+            dischargeMedicine.setPrescription(p);
+        }
+        return dischargeMedicine;
+    }
+
     public void setEncounterMedicine(ClinicalFindingValue encounterMedicine) {
         this.encounterMedicine = encounterMedicine;
     }
@@ -2879,6 +2968,44 @@ public class InpatientClinicalDataController implements Serializable {
     public void setSelectedDocumentTemplate(DocumentTemplate selectedDocumentTemplate) {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
     }
+
+    public int getInpatientClinicalDataTabIndex() {
+        return inpatientClinicalDataTabIndex;
+    }
+
+    public void setInpatientClinicalDataTabIndex(int inpatientClinicalDataTabIndex) {
+        this.inpatientClinicalDataTabIndex = inpatientClinicalDataTabIndex;
+    }
+
+    public List<ClinicalFindingValue> getDischargeMedicines() {
+        return dischargeMedicines;
+    }
+
+    public void setDischargeMedicines(List<ClinicalFindingValue> dischargeMedicines) {
+        this.dischargeMedicines = dischargeMedicines;
+    }
+
+    public void setDischargeMedicine(ClinicalFindingValue dischargeMedicine) {
+        this.dischargeMedicine = dischargeMedicine;
+    }
+
+    public Upload getSelectedDiagnosisCardTemplate() {
+        return selectedDiagnosisCardTemplate;
+    }
+
+    public void setSelectedDiagnosisCardTemplate(Upload selectedDiagnosisCardTemplate) {
+        this.selectedDiagnosisCardTemplate = selectedDiagnosisCardTemplate;
+    }
+
+    public Upload getSelectedDiagnosisCard() {
+        return selectedDiagnosisCard;
+    }
+
+    public void setSelectedDiagnosisCard(Upload selectedDiagnosisCard) {
+        this.selectedDiagnosisCard = selectedDiagnosisCard;
+    }
+    
+    
 
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {

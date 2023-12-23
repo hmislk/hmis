@@ -5,19 +5,27 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                
+
                 template="/admin/staff/admin_manage_staff_index.xhtml">
 
     <ui:define name="subcontent">
         <h:form>
             <p:panel header="Manage Person Institutions(Channeling)" >
-                <p:panel>
+                <p:panel header="Manage Doctors">
+                <h:panelGrid columns="5">
                     <p:outputLabel class="mx-2" value="Instituion" />
-                    <au:institution value="#{personInstitutionController.institution}" ></au:institution>
+                    <au:institution value="#{personInstitutionController.institution}"></au:institution>
+                    &nbsp;&nbsp;
                     <au:completeDoctorSpeciality value="#{personInstitutionController.speciality}" />
-                    <p:commandButton class="mx-1" value="Fill Doctors" action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
-                </p:panel>
-                <p:panel>
+                    
+                </h:panelGrid>
+                <div class="w-25">
+                    <p:commandButton icon="fa-solid fa-fill"
+                                     class="ui-button-warning w-50 m-1" value="Fill Doctors" 
+                                     action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
+                </div>
+                
+                
                     <p:dataTable  value="#{personInstitutionController.withOutInstitutionPersonsStaffs}" 
                                   var="s" 
                                   rowKey="#{s.id}" 
@@ -46,21 +54,34 @@
                             <h:outputLabel value="#{s.speciality.name}"/>
                         </p:column>
                     </p:dataTable>
-                    <p:commandButton class="my-2" value="Add Doctors" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                    <div class="w-25">
+                    <p:commandButton value="Add Doctors" icon="fa-solid fa-plus"
+                                                     class="ui-button-success w-75 mx-1" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                </div>
+                    
                 </p:panel>
                 <p:panel header="Person Institutions Search">
-                    <h:panelGrid columns="2">
+                    <h:panelGrid columns="2" class="w-100">
                         <p:outputLabel value="Instituion" />
                         <au:institution value="#{personInstitutionController.reportKeyWord.institution}" />
                         <p:outputLabel value="Speciality" />
                         <au:completeDoctorSpeciality value="#{personInstitutionController.reportKeyWord.speciality}" />
                         <p:outputLabel value="Staff" />
                         <au:completeConsultant value="#{personInstitutionController.reportKeyWord.staff}" />
-                        <p:commandButton class="my-2" value="Fill Person Institutions" action="#{personInstitutionController.fillStaffInstitutionPersons}" ajax="false" />
-                        <p:commandButton class="my-2" ajax="false" value="Excel"  >
+                        
+                    </h:panelGrid>
+                    <div class="w-50 m-1">
+                        <p:commandButton value="Fill Person Institutions" 
+                                         action="#{personInstitutionController.fillStaffInstitutionPersons}" 
+                                         icon="fa-solid fa-fill"
+                                          class="ui-button-warning w-50 mx-1"
+                                         ajax="false" />
+                        <p:commandButton  ajax="false" value="Excel" icon="fa fa-file-excel"
+                                                     class="ui-button-success w-25 mx-1" >
                             <p:dataExporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
                         </p:commandButton>
-                    </h:panelGrid>
+                    </div>
+                    
                     <p:dataTable  value="#{personInstitutionController.institutionPersons}" 
                                   var="pi" 
                                   id="tb1" styleClass="noBorder summeryBorder"

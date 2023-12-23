@@ -12,9 +12,10 @@
                 <h:form >
                     <p:panel class="mt-1 ">
                         <f:facet name="header">
-                            <h:outputLabel value="Search Any Bills"/>
+                            <i class="fa fa-search"/>
+                            <h:outputLabel value="Search Any Bills" class="mx-2"/>
                         </f:facet>
-                        
+
                         <div class="d-flex justify-content-between mb-2">
                             <div class="d-flex gap-3">
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" placeholder="Bill No(Ins ID)"/>
@@ -26,11 +27,16 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" placeholder="Bill ID" /> 
                             </div>
                             <div >
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
-                                                 action="#{searchController.createSearchBill()}"
-                                                 icon="fa fa-search"
-                                                 class="mx-2 ui-button-primary"/>
-                                <p:commandButton value="Download" ajax="false" class="ui-button-success" icon="fa fa-download">
+                                <p:commandButton 
+                                    id="btnSearch" ajax="false" value="Search" 
+                                    action="#{searchController.createSearchBill()}"
+                                    icon="fa fa-search"
+                                    class="mx-2 ui-button-primary"/>
+                                <p:commandButton 
+                                    value="Download Excel" 
+                                    ajax="false" 
+                                    class="ui-button-success" 
+                                    icon="fa fa-file-excel">
                                     <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
                                 </p:commandButton>
                             </div>
@@ -38,20 +44,20 @@
 
                         <p:defaultCommand target="btnSearch" />
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  class="w-100"
-                                     rows="10"
-                                     paginator="true" paginatorPosition="both"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill"  
+                            class="w-100"
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
 
-                                     >
-                            <p:column headerText="View" exportable="false">
-                                <p:commandButton value="View Bill" action="/bill_summery" ajax="false">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                </p:commandButton>
-                            </p:column>
-
+                            >
                             <p:column headerText="ID">
                                 <h:outputLabel  value="#{bill.id}" ></h:outputLabel>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -182,7 +188,17 @@
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                                  
-                            </p:column>                         
+                            </p:column>
+                            <p:column headerText="Action" exportable="false">
+                                <p:commandButton 
+                                    id="viewBill"
+                                    icon="fa fa-fw fa-file-invoice-dollar"
+                                    action="/bill_summery" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
                 </h:form>
