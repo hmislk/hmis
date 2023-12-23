@@ -60,7 +60,14 @@
                                         <p:inputText class="w-100 mx-4" autocomplete="off" value="#{gradeController.current.name}"  />
                                     </h:panelGrid>
                                 </h:panelGrid>
-                                <p:commandButton id="btnSave" class="mt-4 w-25 ui-button-warning" ajax="false" value="Save" action="#{gradeController.saveSelected()}" >
+                                <p:commandButton 
+                                    id="btnSave"
+                                    class="mt-4 w-25 ui-button-warning"
+                                    ajax="false" 
+                                    value="Save"
+                                    process="btnSave gpDetail"
+                                    update="lstSelect"
+                                    action="#{gradeController.saveSelected()}" >
                                     <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                     </f:ajax>
                                 </p:commandButton>
