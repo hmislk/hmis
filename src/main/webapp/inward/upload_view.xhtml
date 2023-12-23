@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:body>
+        <ui:composition  template="/inward/inward_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form enctype="multipart/form-data">
+                    <div class="row" >
+                        <div class="col form" >
+                            <p:panelGrid columns="2" class="w-100 border border-light">
+                                <f:facet name="header" >
+                                    View Uploaded Word Template
+                                </f:facet>
+                                <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
+                                <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
+
+                                <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.saveDiagnosisCardTemplateUpload()}" ></h:commandButton>
+
+                                <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"
+                                              class="btn btn-success fw-bold m-2 "/>
+                                <p:commandButton value="Submit" ajax="false" 
+                                                 action="#{uploadController.uploadDiagnosisCardTemplate}" class="btn btn-warning"/>
+                            </p:panelGrid>
+
+
+
+                            Selected is :
+                            <h:outputText
+                                rendered="true"
+                                value="#{uploadController.selected}" escape="false" />
+
+                        </div>
+                    </div>
+
+                    <p:commandButton value="Download Word File" ajax="false" icon="pi pi-download">
+                        <p:fileDownload value="#{uploadController.downloadModifiedWordFile()}" />
+                    </p:commandButton>
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
