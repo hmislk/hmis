@@ -17,6 +17,10 @@
 
 
                         <h:form>
+                            <p:panel id="gpDetail" >
+                            <f:facet name="header">
+                                <p:outputLabel value="List Routes"></p:outputLabel>
+                            </f:facet>
 
                             <p:dataTable 
                                 value="#{routeController.items}" var="item"
@@ -71,6 +75,7 @@
 
 
                             </p:dataTable>
+                            </p:panel>
                         </h:form>
                     </f:view>
 

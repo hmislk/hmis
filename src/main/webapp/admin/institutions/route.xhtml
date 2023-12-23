@@ -12,36 +12,42 @@
         <ui:composition template="admin_institutions_index.xhtml">
 
             <ui:define name="admin">
+                
+                <div class="row" >
+                    <h:form >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Add New Short Contents"></h:outputLabel>
+                            </f:facet>
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton 
+                                    class="form ui-button-warning my-2" 
+                                    icon="fas fa-save"
+                                    value="Save" 
+                                    action="#{routeController.saveSelected}" >
+                                </p:commandButton>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel class="form-label" for="txtName" value="Name" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-10">
+                                    <h:inputText class="form form-control" id="txtName" value="#{routeController.current.name}"></h:inputText>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel class="form-label" for="txtContents"  value="Description" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-10">
+                                    <h:inputTextarea  class="form form-control" id="txtDescription" value="#{routeController.current.description}"></h:inputTextarea>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:form>
 
-                <h:form style="width: 1000px">
-                    <h:panelGrid id="gpDetail" columns="1">
-                        <p:commandButton ajax="false" id="btnSave" value="Save"
-                                         icon="fas fa-save"
-                                     class="ui-button-success my-2"
-                                         action="#{routeController.saveSelected}"
-                                         style="float: right;">
-                        </p:commandButton>
-
-                        <h:panelGrid id="gpDetailText" columns="2"  style="width: 1000px">
-
-
-                            <h:outputText id="lblName" value="Name"   style="width: 800px"></h:outputText>
-                            <p:inputText autocomplete="off" id="txtName" 
-                                         styleClass="longText"
-                                         value="#{routeController.current.name}"   style="width: 650px"></p:inputText>
-                            <h:outputText value="Descreption" >                                        
-                            </h:outputText>
-                            <p:inputTextarea styleClass="longText" value="#{routeController.current.description}"  style="width: 650px">
-                            </p:inputTextarea> 
-
-
-                        </h:panelGrid>
-
-
-
-                    </h:panelGrid>
-                </h:form>
-
+                </div>
+                
 
             </ui:define>
 
