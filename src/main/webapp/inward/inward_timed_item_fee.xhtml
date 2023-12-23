@@ -124,7 +124,7 @@
                                     </p:column>
                                     <p:column headerText="Action" style="width: 100px">
                                         <p:commandButton 
-                                            id="edit" 
+                                            id="update" 
                                             ajax="false" 
                                             class=" ui-button-warning"
                                             icon="fa fa-pencil"
@@ -140,7 +140,7 @@
                                             <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee"  process="remove dtbFee" />
                                         </p:commandButton>
 
-                                        <p:tooltip for="edit" value="Edit"  showDelay="0" hideDelay="0"></p:tooltip>
+                                        <p:tooltip for="update" value="Update"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
                                     </p:column>
                                 </p:dataTable>
