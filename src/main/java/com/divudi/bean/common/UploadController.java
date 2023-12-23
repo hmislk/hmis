@@ -1,7 +1,6 @@
 package com.divudi.bean.common;
 
-
-
+import com.divudi.data.UploadType;
 import com.divudi.entity.Upload;
 import com.divudi.entity.WebContent;
 import com.divudi.facade.UploadFacade;
@@ -37,48 +36,86 @@ public class UploadController implements Serializable {
     @Inject
     WebContentController webContentController;
 
-
     private List<Upload> items = null;
     private Upload selected;
-  
+
     private UploadedFile file;
 
-   public String toAddNewUpload(){
-       selected = new Upload();
-       selected.setWebContent(new WebContent());
-       return "/webcontent/upload";
-   }
-   
-    public String toListUploads(){
-       listUploads();
-       return "/webcontent/uploads";
-   }
+    public String toAddNewWebImageUpload() {
+        selected = new Upload();
+        selected.setUploadType(UploadType.Web_Image);
+        selected.setWebContent(new WebContent());
+        return "/webcontent/upload";
+    }
     
+    public String toAddNewDiagnosisCardTemplateUpload() {
+        selected = new Upload();
+        selected.setUploadType(UploadType.Diagnosis_Card_Template);
+        selected.setWebContent(new WebContent());
+        return "/inward/upload";
+    }
     
-    
-    public String toViewUpload(){
-        if(selected==null){
+    public String toAddNewUpload() {
+        selected = new Upload();
+        selected.setWebContent(new WebContent());
+        return "/webcontent/upload";
+    }
+
+    public String toListWebImageUploads() {
+        listUploads(UploadType.Web_Image);
+        return "/webcontent/uploads";
+    }
+
+    public String toListUploads() {
+        listUploads(UploadType.Web_Image);
+        return "/webcontent/uploads";
+    }
+
+    public String toListDiagnosisCardUploads() {
+        listUploads(UploadType.Diagnosis_Card_Template);
+        return "/inward/uploads";
+    }
+
+    public String toViewUpload() {
+        if (selected == null) {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        if(selected.getWebContent()==null){
+        if (selected.getWebContent() == null) {
             selected.setWebContent(new WebContent());
         }
         return "/webcontent/upload";
     }
     
-    public void listUploads(){
-        String j ="select u "
+    public String toViewDiagnosisCardTemplateUpload() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        if (selected.getWebContent() == null) {
+            selected.setWebContent(new WebContent());
+        }
+        return "/inward/upload_view";
+    }
+
+    public void listUploads() {
+        listUploads(null);
+    }
+
+    public void listUploads(UploadType type) {
+        String j = "select u "
                 + " from Upload u "
-                + " where u.retired=:ret "
-                + " order by u.webContent.name";
+                + " where u.retired=:ret ";
         Map m = new HashMap();
         m.put("ret", false);
+        if (type != null) {
+            j += " and u.pploadType=:type ";
+            m.put("type", type);
+        }
+        j += " order by u.webContent.name";
         items = getFacade().findByJpql(j, m, TemporalType.DATE);
     }
 
-    
-    
     public String upload() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -94,31 +131,37 @@ public class UploadController implements Serializable {
             selected.setBaImage(bytes);
             selected.setFileName(file.getFileName());
             selected.setFileType(file.getContentType());
+            selected.setUploadType(UploadType.Web_Image);
             saveUpload(selected);
         } catch (IOException ex) {
         }
-        return toListUploads();
+        return toListWebImageUploads();
     }
-    
+
     public UploadController() {
     }
-    
-    public String save(){
+
+    public String save() {
         saveUpload(selected);
         listUploads();
-        return toListUploads();
+        return toListWebImageUploads();
     }
     
-    public void saveUpload(Upload u){
-        if(u==null){
+    public String saveDiagnosisCardTemplateUpload() {
+        saveUpload(selected);
+        return toListDiagnosisCardUploads();
+    }
+
+    public void saveUpload(Upload u) {
+        if (u == null) {
             return;
         }
-        if(u.getWebContent()!=null){
+        if (u.getWebContent() != null) {
             webContentController.saveWebContent(u.getWebContent());
         }
-        if(u.getId()==null){
+        if (u.getId() == null) {
             getFacade().create(u);
-        }else{
+        } else {
             getFacade().edit(u);
         }
     }
@@ -162,8 +205,6 @@ public class UploadController implements Serializable {
     public UploadFacade getEjbFacade() {
         return ejbFacade;
     }
-
- 
 
     public UploadedFile getFile() {
         return file;
