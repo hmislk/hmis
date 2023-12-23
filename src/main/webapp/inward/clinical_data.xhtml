@@ -372,7 +372,7 @@
                                         </div>
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel class="w-100 m-1 p-0">
+                                            <p:panel id="panelEncounterMedicines" class="w-100 m-1 p-0">
                                                 <f:facet name="header">
                                                     <p:outputLabel value="Ward Medications" />
                                                 </f:facet>
@@ -443,22 +443,13 @@
                                                             </div>
                                                         </div>
 
-                                                        <!-- Indoor/Outdoor Selection -->
-                                                        <div class="m-1 d-flex flex-column">
-                                                            <label for="chkIndoor">Location:</label>
-                                                            <p:selectBooleanButton id="chkIndoor"
-                                                                                   onLabel="Indoor"
-                                                                                   offLabel="Outdoor"
-                                                                                   value="#{inpatientClinicalDataController.encounterMedicine.prescription.indoor}" />
-                                                        </div>
-
                                                         <!-- Add Prescription Button -->
                                                         <div>
-                                                            <label for="chkIndoor" class="w-100"></label>
+                                                            <label  class="w-100">&nbsp;</label>
                                                             <p:commandButton value="Add"
                                                                              id="btnAddRx"
-                                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             process="btnAddRx  acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                             update="panelEncounterMedicines"
                                                                              action="#{inpatientClinicalDataController.addEncounterMedicine}" />
                                                         </div>
                                                     </div>
@@ -474,7 +465,7 @@
 
 
 
-                                            <p:panel class="w-100 m-1 p-0">
+                                            <p:panel id="panelDischargeMedicines" class="w-100 m-1 p-0">
                                                 <f:facet name="header">
                                                     <p:outputLabel value="Discharge Medications" />
                                                 </f:facet>
@@ -551,7 +542,7 @@
                                                             <p:commandButton value="Add"
                                                                              id="btnAddDischargeRx"
                                                                              process="btnAddDischargeRx acDischargeMedicine txtDischargeDose cmbDischargeDose cmbDischargeFrequency txtDischargeDuration cmbDischargeDuration"
-                                                                             update="tblDischargeRxx acDischargeMedicine txtDischargeDose cmbDischargeDose cmbDischargeFrequency txtDischargeDuration cmbDischargeDuration"
+                                                                             update="panelDischargeMedicines"
                                                                              action="#{inpatientClinicalDataController.addDischargeMedicine}" />
                                                         </div>
                                                     </div>

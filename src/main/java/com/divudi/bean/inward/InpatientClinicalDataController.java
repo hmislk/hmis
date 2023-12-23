@@ -1170,6 +1170,7 @@ public class InpatientClinicalDataController implements Serializable {
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
         encounterFindingValues = fillCurrentEncounterFindingValues(encounter, null);
         encounterMedicines = fillEncounterMedicines(encounter);
+        dischargeMedicines = fillDischargeMedicines(encounter);
         encounterInvestigations = fillEncounterInvestigations(encounter);
         encounterProcedures = fillEncounterProcedures(encounter);
         encounterDiagnoses = fillEncounterDiagnoses(encounter);
@@ -1443,13 +1444,10 @@ public class InpatientClinicalDataController implements Serializable {
         } else {
             clinicalFindingValueFacade.edit(getEncounterMedicine());
         }
-
         getEncounterFindingValues().add(getEncounterMedicine());
         encounterMedicines = fillEncounterMedicines(current);
-
-        updateOrGeneratePrescription();
         setEncounterMedicine(null);
-
+         saveSelected();
         JsfUtil.addSuccessMessage("Added");
     }
     
@@ -1472,58 +1470,16 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         getEncounterFindingValues().add(getDischargeMedicine());
-        encounterMedicines = fillDischargeMedicines(current);
+        dischargeMedicines = fillDischargeMedicines(current);
 
-        updateOrGeneratePrescription();
+
         setDischargeMedicine(null);
+        saveSelected();
 
         JsfUtil.addSuccessMessage("Added");
     }
 
-    private void updateOrGeneratePrescription() {
-        if (userDocumentTemplates == null) {
-            return;
-        }
-        if (encounterPrescreption != null) {
-            encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
-            if (encounterPrescreption.getId() == null) {
-                clinicalFindingValueFacade.create(encounterPrescreption);
-            } else {
-                clinicalFindingValueFacade.edit(encounterPrescreption);
-            }
-            return;
-        } else {
-            DocumentTemplate prescTemplate = null;
-            for (DocumentTemplate dt : userDocumentTemplates) {
-                if (dt.isDefaultTemplate()) {
-                    prescTemplate = dt;
-                }
-            }
-            if (prescTemplate != null) {
-                encounterPrescreption = new ClinicalFindingValue();
-                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
-                encounterPrescreption.setDocumentTemplate(prescTemplate);
-                encounterPrescreption.setEncounter(current);
-                encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
-                encounterPrescreption.setPatient(current.getPatient());
-                encounterPrescreption.setPerson(current.getPatient().getPerson());
-                encounterPrescreption.setStringValue(prescTemplate.getName());
-                clinicalFindingValueFacade.create(encounterPrescreption);
-                getEncounterPrescreptions().add(encounterPrescreption);
-            }
-        }
-
-        for (DocumentTemplate dt : userDocumentTemplates) {
-            if (dt.isAutoGenerate()) {
-                for (ClinicalFindingValue cfv : getEncounterPrescreptions()) {
-                    if (cfv.getDocumentTemplate().equals(dt)) {
-                        cfv.setLobValue(generateDocumentFromTemplate(dt, current));
-                        cfv.setStringValue(dt.getName());
-                    }
-                }
-            }
-        }
-    }
+    
 
     public List<Bill> fillPatientBills(Patient patient) {
         return fillPatientBills(patient, null, null);
@@ -2587,13 +2543,13 @@ public class InpatientClinicalDataController implements Serializable {
     }
     
     public ClinicalFindingValue getDischargeMedicine() {
-        if (encounterMedicine == null) {
-            encounterMedicine = new ClinicalFindingValue();
-            encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
+        if (dischargeMedicine == null) {
+            dischargeMedicine = new ClinicalFindingValue();
+            dischargeMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitDischargeMedicine);
             Prescription p = new Prescription();
-            encounterMedicine.setPrescription(p);
+            dischargeMedicine.setPrescription(p);
         }
-        return encounterMedicine;
+        return dischargeMedicine;
     }
 
     public void setEncounterMedicine(ClinicalFindingValue encounterMedicine) {
