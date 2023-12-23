@@ -34,7 +34,7 @@
                                             id="btnAdd" 
                                             value="Add"
                                             icon="fa fa-plus"
-                                            class="w-25 m-1 ui-button-success"
+                                            class="w-25 ui-button-success"
                                             action="#{admissionTypeController.prepareAdd()}" 
                                             update="lstSelect gpDetail detailFocus" 
                                             process="btnAdd" >
@@ -42,7 +42,7 @@
                                         <p:commandButton 
                                             id="btnDelete" 
                                             icon="fa fa-trash"
-                                            class="w-25 m-1 ui-button-danger"
+                                            class="w-25 mx-2 ui-button-danger"
                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                         return false;" 
                                             action="#{admissionTypeController.delete()}"  
@@ -57,7 +57,7 @@
                                                 id="lstSelect" 
                                                 value="#{admissionTypeController.current}" 
                                                 filter="true"
-                                                class="form-control h-100"> 
+                                                class="form-control mt-2 h-100"> 
                                                 <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                                 <f:ajax render="gpDetail" execute="lstSelect"></f:ajax>
                                             </p:selectOneListbox>
