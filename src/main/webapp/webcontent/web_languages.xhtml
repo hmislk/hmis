@@ -13,6 +13,10 @@
             <ui:define name="contents">
 
                 <h:form >
+                    <p:panel id="panalItem"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List Languages"></h:outputLabel>
+                    </f:facet>
                     <p:dataTable class="table table-striped " value="#{webLanguageController.items}" var="u" >
                         <p:column headerText="Name" >
                             <h:outputText value="#{u.name}" ></h:outputText>
@@ -24,18 +28,25 @@
                             <h:outputText value="#{u.orderNo}" ></h:outputText>
                         </p:column><!-- comment -->
                         <p:column headerText="Actions" >
-                            <h:commandButton value="Edit" action="#{webLanguageController.toEditWebLanguage()}" >
+                            <p:commandButton 
+                                icon="fas fa-pencil"
+                                class="ui-button-success"
+                                action="#{webLanguageController.toEditWebLanguage()}" >
                                 <f:setPropertyActionListener value="#{u}" target="#{webLanguageController.selected}" >
                                 </f:setPropertyActionListener>
-                            </h:commandButton>
-                            <h:commandButton value="Delete" action="#{webLanguageController.toDeleteWebLanguage()}"
+                            </p:commandButton>
+                            <p:commandButton 
+                                icon="fas fa-trash"
+                                class="ui-button-danger mx-2"
+                                action="#{webLanguageController.toDeleteWebLanguage()}"
                                              onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
                                              >
                                 <f:setPropertyActionListener value="#{u}" target="#{webLanguageController.selected}" >
                                 </f:setPropertyActionListener>
-                            </h:commandButton>
+                            </p:commandButton>
                         </p:column>
                     </p:dataTable >
+                    </p:panel>
                 </h:form>
 
 
