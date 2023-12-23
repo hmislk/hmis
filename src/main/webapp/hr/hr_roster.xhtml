@@ -52,17 +52,17 @@
                             <h:panelGrid id="gpDetail" columns="1" class="w-100">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText  value="Name" ></h:outputText>
-                                    <p:inputText class="w-100" autocomplete="off"  value="#{rosterController.current.name}"  />
+                                    <p:inputText class="w-100 mx-2" autocomplete="off"  value="#{rosterController.current.name}"  />
                                     <h:outputText  value="Department" ></h:outputText>
-                                    <p:selectOneMenu class="w-100" value="#{rosterController.current.department}">
+                                    <p:selectOneMenu class="w-100 mx-2" value="#{rosterController.current.department}">
                                         <f:selectItem itemLabel="Select Department"/>
                                         <f:selectItems value="#{departmentController.logedDepartments}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Start Time" rendered="false"/>                        
-                                    <p:calendar class="w-100" inputStyleClass="w-100" rendered="false" value="#{rosterController.current.startingTime}" navigator="true" pattern="HH:mm:ss" timeOnly="true">                            
+                                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" rendered="false" value="#{rosterController.current.startingTime}" navigator="true" pattern="HH:mm:ss" timeOnly="true">                            
                                     </p:calendar>    
                                     <h:outputLabel value="Shifts Per One Person Per Day"/>  
-                                    <p:inputText class="w-100" autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
+                                    <p:inputText class="w-100 mx-2" autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                                 <p:commandButton 
