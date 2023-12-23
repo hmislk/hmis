@@ -14,6 +14,10 @@
             <ui:define name="contents">
 
                 <h:form >
+                    <p:panel >
+                            <f:facet name="header" >
+                                <h:outputLabel value="List Web Contents"></h:outputLabel>
+                            </f:facet>
                     <p:dataTable class="table table-striped"
                                  value="#{webContentController.items}" 
                                  var="u"
@@ -38,13 +42,16 @@
                         </p:column>
 
                         <p:column headerText="Actions">
-                            <h:commandButton value="Edit" action="#{webContentController.toEditWebContent()}">
+                            <p:commandButton 
+                                icon="fas fa-pencil"
+                                class="ui-button-success"
+                                action="#{webContentController.toEditWebContent()}">
                                 <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}"/>
-                            </h:commandButton>
+                            </p:commandButton>
                         </p:column>
 
                     </p:dataTable>
-
+                    </p:panel>
                 </h:form>
 
 

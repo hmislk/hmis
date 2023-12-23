@@ -16,39 +16,48 @@
                         <h:form >
                             <p:panel header="Data Administration" >
                                 <p:accordionPanel>
-
                                     <p:tab title="System Administrator Functions"  >
-
+                                        
                                         <div class="d-grid gap-2">
-                                            <p:commandButton value="Search Any Bill" ajax="false"
-                                                             class="btn btn-block"
-                                                             action="#{searchController.toSearchBills}" 
-                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
-                                            <p:commandButton value="List All Bills"  ajax="false"
-                                                             class="btn btn-block"
-                                                             action="#{searchController.toListAllBills}" 
-                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+                                            <p:commandButton 
+                                                value="Search Any Bill" 
+                                                ajax="false"
+                                                class="w-100 "
+                                                icon="fa fa-search"
+                                                action="#{searchController.toSearchBills}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
 
+                                            <p:commandButton 
+                                                value="List All Bills"  
+                                                ajax="false"
+                                                icon="fa fa-list"
+                                                class="w-100"
+                                                action="#{searchController.toListAllBills}" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
 
-                                            <p:commandButton value="Downlods"
-                                                             ajax="false"
-                                                             class="btn btn-block"
-                                                             action="/dataAdmin/downloads" 
+                                            <p:commandButton 
+                                                value="Downlods"
+                                                ajax="false"
+                                                class="w-100"
+                                                icon="fa fa-download"
+                                                action="/dataAdmin/downloads" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
 
-                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
-                                                             
-                                            <p:commandButton value="Convert Phone Number"
-                                                             ajax="false"
-                                                             class="btn btn-block"
-                                                             action="/dataAdmin/phone_number_convert" 
-
-                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
-
-
+                                            <p:commandButton 
+                                                value="Convert Phone Number"
+                                                ajax="false"
+                                                icon="fa fa-phone"
+                                                class="w-100"
+                                                action="/dataAdmin/phone_number_convert" 
+                                                rendered="#{webUserController.hasPrivilege('Search')}">
+                                            </p:commandButton>
                                         </div>
-
-
+                                        
                                     </p:tab>
+                                    
                                     <p:tab title="System Administrator Functions" disabled="true" >
                                         <p:panel >
                                             <h:outputLabel 
@@ -159,15 +168,10 @@
 
                                         </p:panelGrid>
                                     </p:tab>
-
-
-
                                 </p:accordionPanel>
                             </p:panel>
-
                         </h:form>
                     </div>
-
                     <div class="col-md-9">
                         <ui:insert name="subcontent">
 
@@ -176,8 +180,6 @@
                 </div>
 
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

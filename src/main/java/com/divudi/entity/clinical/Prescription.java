@@ -135,9 +135,9 @@ public class Prescription implements Serializable {
         }
         
         if(indoor){
-             prescriptionText.append(" (indoor)").append(durationUnit.getName());
+             prescriptionText.append(" (indoor)");
         }else{
-             prescriptionText.append(" (outdoor)").append(durationUnit.getName());
+             prescriptionText.append(" (outdoor)");
         }
 
         return prescriptionText.toString();

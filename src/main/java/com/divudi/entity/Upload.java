@@ -53,9 +53,15 @@ public class Upload implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
     Long id;
 
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    @Basic(fetch = FetchType.LAZY)
+    byte[] baImage;
+    String fileName;
+    String fileType;
+    
     @ManyToOne
     private WebContent webContent;
     @ManyToOne
@@ -71,12 +77,7 @@ public class Upload implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    @Basic(fetch = FetchType.LAZY)
-    byte[] baImage;
-    String fileName;
-    String fileType;
+    
     @Lob
     String comments;
     @Enumerated(EnumType.STRING)

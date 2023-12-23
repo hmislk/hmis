@@ -11,8 +11,8 @@
             <p:panel header="Manage Rosters" >
                 <div class="row">
                     <div class="col-6">
-                        <h:panelGrid columns="2">
-                            <p:commandButton 
+                        <div>
+                             <p:commandButton 
                                 id="btnAdd" 
                                 ajax="false" 
                                 value="Add" 
@@ -20,23 +20,22 @@
                                 update="gpDetail lstSelect "
                                 action="#{rosterController.prepareAdd()}"
                                 icon="fas fa-plus"
-                                class="ui-button-success">
+                                class="ui-button-success w-25">
                             </p:commandButton>
-
-
                             <p:commandButton 
                                 id="btnDelete"
                                 ajax="false"
                                 process="btnDelete"
                                 update="gpDetail lstSelect"
-                                class="ui-button-danger"
+                                class="ui-button-danger w-25 mx-1"
                                 icon="fas fa-trash"
                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
                                             return false;" 
                                 action="#{rosterController.delete()}" 
                                 value="Delete"  >
                             </p:commandButton>
-                        </h:panelGrid>
+                        </div>
+                        
 
                         <p:selectOneListbox id="lstSelect" 
                                             filter="true"
@@ -66,7 +65,6 @@
                                     <p:inputText class="w-100" autocomplete="off" value="#{rosterController.current.shiftPerDay}"/>
                                 </h:panelGrid>
                             </h:panelGrid>
-                            <f:facet name="footer">
                                 <p:commandButton 
                                     id="btnSave"
                                     process="btnSave gpDetail"
@@ -74,10 +72,9 @@
                                     ajax="false" 
                                     value="Save" 
                                     action="#{rosterController.saveSelected()}"
-                                    class="ui-button-warning">
+                                    class="ui-button-warning w-25 mt-4">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
-                            </f:facet>
                         </p:panel>
                     </div>
                 </div>

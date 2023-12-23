@@ -13,7 +13,7 @@
         <h:panelGroup >
             <h:form  >
                 <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
+                <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
 
@@ -21,9 +21,8 @@
                 <p:panel header="Manage Paysheet Component" >
                     <div class="row">
                         <div class="col-6">
-                            <h:panelGrid id="gpSelect" columns="2" class="my-1" >
                                 <p:commandButton 
-                                    class="ui-button-success" 
+                                    class="ui-button-success w-25" 
                                     icon="fas fa-plus"
                                     id="btnAdd" 
                                     ajax="false"
@@ -35,7 +34,7 @@
                                    
                                 </p:commandButton>
                                 <p:commandButton 
-                                    class="ui-button-danger" 
+                                    class="ui-button-danger w-25 mx-1" 
                                     icon="fas fa-trash"
                                     id="btnDelete" 
                                     process="btnDelete"
@@ -45,9 +44,8 @@
                                     action="#{paysheetComponentController.delete()}" 
                                     value="Delete">
                                 </p:commandButton>
-                            </h:panelGrid>
 
-                            <p:selectOneListbox class="w-100" 
+                            <p:selectOneListbox class="w-100 mt-2" 
                                                 filter="true"  
                                                 id="lstSelect" 
                                                 value="#{paysheetComponentController.current}"
@@ -87,16 +85,14 @@
                                         <p:selectBooleanCheckbox class="mx-2" value="#{paysheetComponentController.current.includeForAllowance}" />
                                     </h:panelGrid>
                                 </h:panelGrid>
-                                <f:facet name="footer">
                                         <p:commandButton 
                                             id="btnSave"
                                             value="Save"
-                                            class="ui-button-warning"
+                                            class="ui-button-warning w-25 mt-4"
                                             process="btnSave gpDetail"
                                             update="lstSelect"
                                             action="#{paysheetComponentController.saveSelected()}">
                                         </p:commandButton>
-                                    </f:facet>
                             </p:panel>
                         </div>
                     </div>
