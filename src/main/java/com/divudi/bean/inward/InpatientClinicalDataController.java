@@ -86,6 +86,13 @@ import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 
 /**
  *
@@ -301,7 +308,7 @@ public class InpatientClinicalDataController implements Serializable {
         return replacements;
     }
 
-    public Upload findAndReplaceText(Upload upload, Map<String, String> replacements) {
+        public Upload findAndReplaceText(Upload upload, Map<String, String> replacements) {
         if (upload == null || upload.getBaImage() == null || upload.getFileName() == null) {
             throw new IllegalArgumentException("Invalid upload object or empty file content.");
         }
@@ -310,27 +317,45 @@ public class InpatientClinicalDataController implements Serializable {
             throw new IllegalArgumentException("Unsupported file type: " + upload.getFileName());
         }
 
-        try ( XWPFDocument document = new XWPFDocument(new ByteArrayInputStream(upload.getBaImage()))) {
-            for (XWPFParagraph p : document.getParagraphs()) {
-                for (XWPFRun r : p.getRuns()) {
-                    String text = r.getText(0);
-                    for (Map.Entry<String, String> entry : replacements.entrySet()) {
-                        text = text.replace(entry.getKey(), entry.getValue());
+        try {
+            File tempFile = saveToTemporaryFile(upload.getBaImage());
+            try (FileInputStream fis = new FileInputStream(tempFile);
+                 XWPFDocument document = new XWPFDocument(fis)) {
+
+                for (XWPFParagraph paragraph : document.getParagraphs()) {
+                    for (XWPFRun run : paragraph.getRuns()) {
+                        String runText = run.getText(0);
+                        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+                            runText = runText.replace(replacement.getKey(), replacement.getValue());
+                        }
+                        run.setText(runText, 0);
                     }
-                    r.setText(text, 0);
+                }
+
+                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                    document.write(out);
+                    upload.setBaImage(out.toByteArray());
                 }
             }
 
-            try ( ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                document.write(out);
-                upload.setBaImage(out.toByteArray());
-            }
+            // Delete temporary file
+            tempFile.delete();
+
         } catch (IOException e) {
             // Handle exceptions
             throw new RuntimeException("Error processing Word document", e);
         }
 
         return upload;
+    }
+
+    private File saveToTemporaryFile(byte[] content) throws IOException {
+        Path tempFilePath = Files.createTempFile("word_temp", ".docx");
+        File tempFile = tempFilePath.toFile();
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(content);
+        }
+        return tempFile;
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
