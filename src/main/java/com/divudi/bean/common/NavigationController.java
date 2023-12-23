@@ -28,6 +28,10 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/department_management?faces-redirect=true";
     }
     
+    public String navigateToManageInstitution(){
+        return "/admin/institutions/institution_management?faces-redirect=true";
+    }
+    
     public String navigateToCollectingCenter(){
         return "/admin/institutions/collecting_centre?faces-redirect=true";
     }
