@@ -12,7 +12,10 @@
 
             <ui:define name="contents">
                 <h:form>
-                    <h1>List of Templates</h1>
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="List Templates"></h:outputLabel>
+                        </f:facet>
                     <p:dataTable value="#{webTemplateController.items}" 
                                  var="i"
                                  >
@@ -24,7 +27,8 @@
                         </p:column>
                         <p:column headerText="Actions">
                             <p:commandButton ajax="false" 
-                                             value="Edit"
+                                             class="ui-button-success"
+                                             icon="fas fa-pencil"
                                              action="#{webTemplateController.navigateToEditTemplate()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
@@ -33,6 +37,7 @@
                             </p:commandButton>
                         </p:column>
                     </p:dataTable>
+                    </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
