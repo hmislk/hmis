@@ -5,59 +5,45 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
-
     <h:body>
-
-        <ui:composition template="/webcontent/index.xhtml">
-
-            <ui:define name="contents">
-
+        <ui:composition  template="/inward/inward_administration.xhtml">
+            <ui:define name="subcontent">
                 <h:form enctype="multipart/form-data">
-
                     <div class="row" >
-
                         <div class="col form" >
-                            <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
-                            <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
-
-                            <h:outputLabel class="form form-label" for="txtOrder" ></h:outputLabel>
-                            <h:inputText class="form form-control" id="txtOrder" value="#{uploadController.selected.webContent.orderNo}"></h:inputText>
-
-                            <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.saveDiagnosisCardTemplateUpload()}" ></h:commandButton>
-
-                        </div>
-
-
-                        <div class="col" >
-                            <p:graphicImage class="w-100"
-                                            cache="false"  value="#{streamedContentController.imageByUploadId}"  >
-                                <f:param name="id" value="#{uploadController.selected.idStr}" />
-                            </p:graphicImage>
-                        </div>
-                    </div>
-
-                    <div class="row" >
-                        <div class="col" >
-
-                            <h:panelGrid columns="2" class="w-100 border border-light">
+                            <p:panelGrid columns="2" class="w-100 border border-light">
                                 <f:facet name="header" >
-                                    File Upload (PDF/Images)
+                                    View Uploaded Word Template
                                 </f:facet>
+                                <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
+                                <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
+
+                                <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.saveDiagnosisCardTemplateUpload()}" ></h:commandButton>
+
                                 <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"
                                               class="btn btn-success fw-bold m-2 "/>
                                 <p:commandButton value="Submit" ajax="false" 
-                                                 action="#{uploadController.upload()}" class="btn btn-warning"/>
-                            </h:panelGrid>
+                                                 action="#{uploadController.uploadDiagnosisCardTemplate}" class="btn btn-warning"/>
+                            </p:panelGrid>
 
+
+
+                            Selected is :
+                            <h:outputText
+                                rendered="true"
+                                value="#{uploadController.selected}" escape="false" />
 
                         </div>
                     </div>
 
+                    <p:commandButton value="Download Word File" ajax="false" icon="pi pi-download">
+                        <p:fileDownload value="#{uploadController.downloadModifiedWordFile()}" />
+                    </p:commandButton>
+
+
+
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

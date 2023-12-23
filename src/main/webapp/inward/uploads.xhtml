@@ -8,17 +8,14 @@
 
     <h:body>
 
-        <ui:composition template="./index.xhtml">
+        <ui:composition  template="/inward/inward_administration.xhtml">
 
-            <ui:define name="contents">
+            <ui:define name="subcontent">
 
                 <h:form >
                     <p:dataTable class="table table-striped " value="#{uploadController.items}" var="u" >
                         <p:column headerText="Name" >
                             <h:outputText value="#{u.webContent.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Order No" >
-                            <h:outputText value="#{u.webContent.orderNo}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Actions" >
                             <h:commandButton value="Edit" action="#{uploadController.toViewDiagnosisCardTemplateUpload()}" >
