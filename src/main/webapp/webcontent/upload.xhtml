@@ -13,46 +13,62 @@
             <ui:define name="contents">
 
                 <h:form enctype="multipart/form-data">
-
-                    <div class="row" >
-
-                        <div class="col form" >
-                            <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
-                            <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
-
-                            <h:outputLabel class="form form-label" for="txtOrder" ></h:outputLabel>
-                            <h:inputText class="form form-control" id="txtOrder" value="#{uploadController.selected.webContent.orderNo}"></h:inputText>
-
-                            <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.save()}" ></h:commandButton>
-
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Add Web Image"></h:outputLabel>
+                        </f:facet>
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton 
+                                class="form ui-button-warning my-2" 
+                                icon="fas fa-save"
+                                value="Save" 
+                                action="#{uploadController.save()}">
+                            </p:commandButton>
                         </div>
+                        <div class="row">
+                            <div class="row p-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel class="form form-label" for="txtName" value="Name" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-10">
+                                    <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-md-2">
+                                    <h:outputLabel class="form form-label" for="txtOrder" value="Order" ></h:outputLabel>
+                                </div>
+                                <div class="col-md-10">
+                                    <h:inputText class="form form-control" id="txtOrder" value="#{uploadController.selected.webContent.orderNo}"></h:inputText>
+                                </div>
+                            </div>
+                            </div>
+                            <div class="col" >
+                                <p:graphicImage class="w-100"
+                                                cache="false"  value="#{streamedContentController.imageByUploadId}"  >
+                                    <f:param name="id" value="#{uploadController.selected.idStr}" />
+                                </p:graphicImage>
+                            </div>
+                        
 
 
-                        <div class="col" >
-                            <p:graphicImage class="w-100"
-                                            cache="false"  value="#{streamedContentController.imageByUploadId}"  >
-                                <f:param name="id" value="#{uploadController.selected.idStr}" />
-                            </p:graphicImage>
+                        <div class="row" >
+                            <div class="col" >
+
+                                <h:panelGrid columns="2" class="w-100 ">
+                                    <f:facet name="header" >
+                                        File Upload (PDF/Images)
+                                    </f:facet>
+                                    <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"/>
+                                    <p:commandButton value="Submit" ajax="false" icon="fas fa-upload"
+                                                     style="float: right"
+                                                     action="#{uploadController.upload()}" class="ui-button-success"/>
+                                </h:panelGrid>
+
+
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="row" >
-                        <div class="col" >
-
-                            <h:panelGrid columns="2" class="w-100 border border-light">
-                                <f:facet name="header" >
-                                    File Upload (PDF/Images)
-                                </f:facet>
-                                <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"
-                                              class="btn btn-success fw-bold m-2 "/>
-                                <p:commandButton value="Submit" ajax="false" 
-                                                 action="#{uploadController.upload()}" class="btn btn-warning"/>
-                            </h:panelGrid>
-
-
-                        </div>
-                    </div>
-
+                    </p:panel>
                 </h:form>
 
             </ui:define>
