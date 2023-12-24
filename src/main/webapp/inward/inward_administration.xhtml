@@ -60,16 +60,19 @@
                                     </p:tab>
                                     <p:tab title="Diagnosis Cards">
                                         <div class="d-grid gap-2">
-                                             <p:commandButton 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Add Diagnosis Card Template"
+                                                class="w-100" 
+                                                action="#{uploadController.toAddNewDiagnosisCardTemplateUpload()}" >
+                                            </p:commandButton> 
+                                            <p:commandButton 
                                                 ajax="false" 
                                                 value="Uploaded Diagnosis Card Templates"
                                                 class="w-100" 
-                                                action="#{uploadController.toListDiagnosisCardUploads()}" ></p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Upload Diagnosis Card Template"
-                                                class="w-100" 
-                                                action="#{uploadController.toAddNewDiagnosisCardTemplateUpload()}" ></p:commandButton>
+                                                action="#{uploadController.toListDiagnosisCardUploads()}" >
+                                             </p:commandButton>
+                                            
                                         </div>
                                     </p:tab>
 

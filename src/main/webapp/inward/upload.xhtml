@@ -12,32 +12,32 @@
                 <h:form enctype="multipart/form-data">
                     <div class="row" >
                         <div class="col form" >
-                            <p:panelGrid columns="2" class="w-100 border border-light">
+                            <p:panel class="w-100 m-1">
                                 <f:facet name="header" >
-                                    Diagnosis Card Template
+                                    <h:outputLabel value="Diagnosis Card Template" ></h:outputLabel>
+                                    
                                 </f:facet>
-                                <h:outputLabel class="form form-label" for="txtName" value="Name" ></h:outputLabel>
-                                <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
+                                <h:panelGrid columns="3">
+                                    <h:outputLabel class="form form-label" for="txtName" value="Name" ></h:outputLabel>
+                                    <h:outputLabel class=""  value=":" style="width: 50px; text-align: center"></h:outputLabel>
+                                    <h:inputText class="form form-control w-100" id="txtName" style="width: 500px;" value="#{uploadController.selected.webContent.name}"></h:inputText>
 
-                                <h:outputLabel class="form form-label" for="txtContents"
-                                               value="Contents"
-                                               ></h:outputLabel>
-                                <h:inputTextarea 
-                                    class="form form-control" 
-                                    id="txtContents" 
-                                    value="#{uploadController.selected.comments}"></h:inputTextarea>
-
-
-                                <p:commandButton value="Save" ajax="false" 
-                                                 action="#{uploadController.save()}" class="btn btn-warning"/>
-                            </p:panelGrid>
+                                    <h:outputLabel class="form form-label" for="txtContents" value="Contents"> </h:outputLabel>
+                                    <h:outputLabel class=""  value=":" style="width: 50px; text-align: center"></h:outputLabel>
+                                    <h:inputTextarea class="form form-control" style="width: 500px;" id="txtContents" rows="5" value="#{uploadController.selected.comments}"></h:inputTextarea>
+                                </h:panelGrid>
+                                
+                                <p:commandButton 
+                                    value="Save" 
+                                    ajax="false"
+                                    icon="fa fa-save"
+                                    action="#{uploadController.save()}" 
+                                    class="ui-button-warning"/>
+                            </p:panel>
                         </div>
                     </div>
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
