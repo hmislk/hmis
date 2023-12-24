@@ -570,7 +570,7 @@
                                     <p:selectOneMenu value="#{inpatientClinicalDataController.selectedDiagnosisCardTemplate}" >
                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems 
-                                            value="#{uploadController.items}"
+                                            value="#{uploadController.diagnosisCardTemplates}"
                                             var="i"
                                             itemLabel="#{i.fileName}"
                                             itemValue="#{i}"
@@ -581,6 +581,10 @@
                                     <p:commandButton value="Download Card" ajax="false" icon="pi pi-download">
                                         <p:fileDownload value="#{inpatientClinicalDataController.downloadModifiedWordFile()}" />
                                     </p:commandButton>
+                                    
+                                   
+                                    
+                                    
                                 </p:tab>
                             </p:tabView>
                         </div>
