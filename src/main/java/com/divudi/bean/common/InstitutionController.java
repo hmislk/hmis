@@ -67,6 +67,7 @@ public class InstitutionController implements Serializable {
     private List<Institution> collectingCentre = null;
     private List<Institution> collectingCentresAndManagedInstitutions = null;
     private List<Institution> institution;
+    private List<Institution> searchItems = null;
     private String selectText = "";
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
@@ -145,6 +146,39 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
+    }
+    
+    public List<Institution> getSearchItems() {
+        return searchItems;
+    }
+    
+    public void fillSearchItems() {
+        if (selectText == null || selectText.trim().equals("")) {
+            String jpql = "select i "
+                    + "from Institution i "
+                    + "where i.retired=:ret "
+                    + "order by i.name";
+
+            Map m = new HashMap();
+            m.put("ret", false);
+            searchItems = getFacade().findByJpql(jpql, m);
+
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
+        } else {
+            String sql = "Select i from Institution i where i.retired=false and (i.name) like :in order by i.name";
+            Map m = new HashMap();
+            m.put("in", "%" + selectText.toUpperCase() + "%");
+            searchItems = getFacade().findByJpql(sql, m);
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
+        }
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {

@@ -16,39 +16,53 @@
                                 <p:ajax process="@this"></p:ajax>
                                 <p:tab title="Manage" >
                                     <div class="d-grid gap-2">
-                                        <p:commandButton class="btn btn-primary"
+                                        <p:commandButton 
+                                            styleClass="linkButton" 
+                                            ajax="false" 
+                                            value="Manage Institutions" 
+                                            action="#{navigationController.navigateToManageInstitution()}" 
+                                            actionListener="#{institutionController.fillSearchItems()}" icon="fa-solid fa-building-user"/>
+                                        
+                                        <p:commandButton  
+                                            styleClass="linkButton" 
+                                            ajax="false" 
+                                            value="Manage Departments" 
+                                            action="#{navigationController.navigateToManageDepartment()}" 
+                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
+                                        
+<!--                                        <p:commandButton class="btn btn-primary"
                                                          action="#{institutionController.toAddNewInstitution()}" 
                                                          icon="fa-solid fa-building-user" value="Add New Institution">
-                                        </p:commandButton>
-                                        <p:commandButton styleClass="linkButton"  
+                                        </p:commandButton>-->
+<!--                                        <p:commandButton styleClass="linkButton"  
                                                          action="#{institutionController.toListInstitutions()}" 
                                                          icon="bi bi-list" value="List Institutions">
-                                        </p:commandButton>
-                                        <p:commandButton styleClass="linkButton"  
+                                        </p:commandButton>-->
+<!--                                        <p:commandButton styleClass="linkButton"  
                                                          action="#{departmentController.toAddNewDepartment()}" 
                                                          icon="fa-solid fa-building"
                                                           value="Add New Department">
-                                        </p:commandButton>
-                                        <p:commandButton styleClass="linkButton" 
+                                        </p:commandButton>-->
+<!--                                        <p:commandButton styleClass="linkButton" 
                                                          action="#{departmentController.toListDepartments()}" 
                                                          icon="bi bi-list"
                                                           value="List Departments">
-                                        </p:commandButton>
+                                        </p:commandButton>-->
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" actionListener="#{departmentController.fillSearchItems()}" icon="fa-regular fa-building"/>
+                                        
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" icon="fa-solid fa-warehouse" action="#{navigationController.navigateToCollectingCenter()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres Upload" icon="fas fa-upload" action="#{navigationController.navigateToCollectingCenterUpload()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" icon="bi bi-credit-card" action="#{navigationController.navigateToCreditCompany()}" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" icon="bi bi-geo-alt" action="#{navigationController.navigateToArea()}" />
-                                        <p:commandButton class="btn btn-primary"
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Areas" icon="fas fa-location-dot" action="#{navigationController.navigateToArea()}" />
+                                        <p:commandButton styleClass="linkButton" 
                                                          action="#{routeController.toAddNewRoute}" 
-                                                         icon="bi bi-geo-alt"
+                                                         icon="fas fa-map-location-dot"
                                                           value="Add New Route">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{routeController.toListRoutes()}" 
                                                          value="List Routes"
-                                                         icon="bi bi-list">
+                                                         icon="fas fa-list">
                                         </p:commandButton>
                                     </div>
                                 </p:tab>

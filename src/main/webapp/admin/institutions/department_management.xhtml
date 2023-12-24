@@ -18,13 +18,13 @@
 
                 <p:panel header="Manage Departments">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
 
                             <p:commandButton 
                                 id="btnAdd" 
                                 value="Add New" 
                                 action="#{departmentController.prepareAdd()}"
-                                class=" m-1 ui-button-success w-25"
+                                class="ui-button-success"
                                 update="lstSelect gpDetail" 
                                 icon="fa fa-plus"
                                 process="btnAdd">
@@ -58,13 +58,13 @@
 
                         </div>
 
-                        <div class="col-md-6">
-                            <p:panel class="w-100" header="Details of Selected Department">
+                        <div class="col-md-7">
+                            <p:panel class="w-100" id="gpDetail" header="Details of the Department">
 
-                                <p:tabView id="gpDetail" class="w-100">
+                                <p:tabView  class="w-100">
                                     <p:tab title="Basic Details" class="w-100" >
-                                        <h:panelGrid columns="1" class="w-100">
-                                            <h:panelGrid id="gpDetailText" columns="2">
+                                        
+                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                                 <h:outputText id="lblName" value="Name"  ></h:outputText>
                                                 <p:inputText autocomplete="off" 
                                                              id="txtName" value="#{departmentController.current.name}" 
@@ -97,28 +97,26 @@
                                                 </p:selectOneMenu>
 
                                                 <h:outputText id="lblIns" value="Institution" ></h:outputText>
-                                                <p:autoComplete  class="w-100" completeMethod="#{institutionController.completeCompany}" 
+                                                <p:autoComplete  class="w-100" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" 
                                                                  var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
 
 
                                             </h:panelGrid>
 
-
-                                        </h:panelGrid>
                                     </p:tab>
-                                    <p:tab title="Pricing Details">
-                                        <h:panelGrid columns="2" >
+                                    <p:tab title="Pricing Details" class="w-100">
+                                        <h:panelGrid columns="2" class="w-100">
                                             <h:outputText value="OPD Margin Percenttage " />                                   
                                             <p:inputText class="w-100" autocomplete="off"  value="#{departmentController.current.margin}"  />
-                                            <h:outputText class="w-100" value="Pharmacy Margin Percentage " />                                   
+                                            <h:outputText  value="Pharmacy Margin Percentage " />                                   
                                             <p:inputText class="w-100" autocomplete="off"  value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"  />
 
                                         </h:panelGrid>
                                     </p:tab>
-                                    <p:tab title="Editing Details" >
-                                        <h:panelGrid columns="2" >
+                                    <p:tab title="Editing Details" class="w-100" >
+                                        <h:panelGrid columns="2" class="w-100" >
                                             <h:outputText id="lblcre" value="Creater" ></h:outputText>
-                                            <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
+                                            <p:outputLabel class="w-100" value="#{institutionController.current.creater.webUserPerson.name}"/>
 
                                         </h:panelGrid>
                                     </p:tab>
