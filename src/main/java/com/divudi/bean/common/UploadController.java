@@ -70,6 +70,7 @@ public class UploadController implements Serializable {
     WebContentController webContentController;
 
     private List<Upload> items = null;
+    private List<Upload> diagnosisCardTemplates;
 
     private Upload selected;
     private UploadedFile file;
@@ -273,6 +274,10 @@ public class UploadController implements Serializable {
     }
 
     public void listUploads(UploadType type) {
+        items = fillUploads(type);
+    }
+
+    public List<Upload> fillUploads(UploadType type) {
         String j = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret ";
@@ -283,7 +288,7 @@ public class UploadController implements Serializable {
             m.put("type", type);
         }
         j += " order by u.webContent.name";
-        items = getFacade().findByJpql(j, m, TemporalType.DATE);
+        return getFacade().findByJpql(j, m, TemporalType.DATE);
     }
 
     public String upload() {
@@ -436,6 +441,17 @@ public class UploadController implements Serializable {
 
     public void setFile(UploadedFile file) {
         this.file = file;
+    }
+
+    public List<Upload> getDiagnosisCardTemplates() {
+        if (diagnosisCardTemplates == null) {
+            diagnosisCardTemplates = fillUploads(UploadType.Diagnosis_Card_Template);
+        }
+        return diagnosisCardTemplates;
+    }
+
+    public void setDiagnosisCardTemplates(List<Upload> diagnosisCardTemplates) {
+        this.diagnosisCardTemplates = diagnosisCardTemplates;
     }
 
     @FacesConverter(forClass = Upload.class)

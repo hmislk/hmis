@@ -12,18 +12,25 @@
                 <h:form enctype="multipart/form-data">
                     <div class="row" >
                         <div class="col form" >
-                            <h:panelGrid columns="2" class="w-100 border border-light">
+                            <p:panelGrid columns="2" class="w-100 border border-light">
                                 <f:facet name="header" >
-                                    File Upload (PDF/Images)
+                                    Diagnosis Card Template
                                 </f:facet>
-                                <h:outputLabel class="form form-label" for="txtName" ></h:outputLabel>
+                                <h:outputLabel class="form form-label" for="txtName" value="Name" ></h:outputLabel>
                                 <h:inputText class="form form-control" id="txtName" value="#{uploadController.selected.webContent.name}"></h:inputText>
-                                <h:commandButton class="form btn btn-success" value="Save" action="#{uploadController.saveDiagnosisCardTemplateUpload()}" ></h:commandButton>
-                                <p:fileUpload value="#{uploadController.file}" mode="simple" skinSimple="true"
-                                              class="btn btn-success fw-bold m-2 "/>
-                                <p:commandButton value="Submit" ajax="false" 
-                                                 action="#{uploadController.uploadDiagnosisCardTemplate()}" class="btn btn-warning"/>
-                            </h:panelGrid>
+
+                                <h:outputLabel class="form form-label" for="txtContents"
+                                               value="Contents"
+                                               ></h:outputLabel>
+                                <h:inputTextarea 
+                                    class="form form-control" 
+                                    id="txtContents" 
+                                    value="#{uploadController.selected.comments}"></h:inputTextarea>
+
+
+                                <p:commandButton value="Save" ajax="false" 
+                                                 action="#{uploadController.save()}" class="btn btn-warning"/>
+                            </p:panelGrid>
                         </div>
                     </div>
                 </h:form>
