@@ -238,7 +238,7 @@ public class PharmacyController implements Serializable {
             parameters.put("bts", billTypes);
 
             if (fromDate != null && toDate != null) {
-                jpql.append(" and b.billDate between :fd and :td");
+                jpql.append(" and b.createdAt between :fd and :td");
                 parameters.put("fd", fromDate);
                 parameters.put("td", toDate);
             }
@@ -251,7 +251,7 @@ public class PharmacyController implements Serializable {
             System.out.println("JPQL: " + jpql.toString());
             System.out.println("Parameters: " + parameters);
 
-            bills = billFacade.findByJpql(jpql.toString(), parameters);
+            bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
             System.out.println("Bills: " + bills);
         } catch (Exception e) {
             e.printStackTrace();

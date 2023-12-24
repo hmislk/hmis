@@ -82,6 +82,13 @@
                                       >
                                 <h:outputText  value="#{bill.billClass}"></h:outputText>
                             </p:column> 
+                             <p:column headerText="BILL Date" 
+                                      sortBy="#{bill.createdAt}"
+                                      filterBy="#{bill.createdAt}"
+                                      filterMatchMode="contains"
+                                      >
+                                 <h:outputText  value="#{bill.createdAt}"></h:outputText>
+                            </p:column> 
 
 
                             <p:column headerText="Dealer Name" 
