@@ -92,6 +92,15 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -259,19 +268,46 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public StreamedContent downloadModifiedWordFile() {
-        if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getBaImage() == null) {
+        if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
             return null;
         }
 
         Map<String, String> replacements = createReplacementsMap(current);
-
         selectedDiagnosisCard = findAndReplaceText(selectedDiagnosisCardTemplate, replacements);
 
-        return DefaultStreamedContent.builder()
-                .name(selectedDiagnosisCardTemplate.getFileName())
-                .contentType(selectedDiagnosisCardTemplate.getFileType())
-                .stream(() -> new ByteArrayInputStream(selectedDiagnosisCardTemplate.getBaImage()))
-                .build();
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Document document = new Document();
+            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+            document.open();
+            XMLWorkerHelper.getInstance().parseXHtml(writer, document,
+                    new ByteArrayInputStream(selectedDiagnosisCard.getComments().getBytes(StandardCharsets.UTF_8)));
+            document.close();
+
+            return DefaultStreamedContent.builder()
+                    .name(selectedDiagnosisCard.getFileName() + ".pdf")
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public StreamedContent downloadSampleWordFile() {
+        try {
+            selectedDiagnosisCard = createSimpleWordDocument(selectedDiagnosisCardTemplate);
+
+            return DefaultStreamedContent.builder()
+                    .name(selectedDiagnosisCard.getFileName())
+                    .contentType(selectedDiagnosisCard.getFileType())
+                    .stream(() -> new ByteArrayInputStream(selectedDiagnosisCard.getBaImage()))
+                    .build();
+        } catch (IOException ex) {
+            Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public Map<String, String> createReplacementsMap(PatientEncounter encounter) {
@@ -284,11 +320,44 @@ public class InpatientClinicalDataController implements Serializable {
         String address = encounter.getPatient().getPerson().getAddress() != null ? encounter.getPatient().getPerson().getAddress() : "";
         String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
         String visitDate = CommonController.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doa = CommonController.formatDate(encounter.getFromTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String dod = CommonController.formatDate(encounter.getToTime(), sessionController.getApplicationPreference().getLongDateFormat());
+        String bht = encounter.getBhtNo();
+
+        String room = "";
+        if (encounter.getCurrentPatientRoom() != null) {
+            encounter.getCurrentPatientRoom().getName();
+        }
+
         String height = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
         String weight = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
         String bp = encounter.getBp();
         String comments = encounter.getComments() != null ? encounter.getComments() : "";
+        
+        StringBuilder diagnosisTextBuilder = new StringBuilder();
+        for (ClinicalFindingValue dx : encounterDiagnoses) {
+            if (dx != null && dx.getItemValue() != null) {
+                diagnosisTextBuilder.append(dx.getItemValue().getName());
+                if (dx.getLobValue() != null) {
+                    diagnosisTextBuilder.append(" ").append(dx.getLobValue());
+                }
+                diagnosisTextBuilder.append("<br/>"); // Using <br> for new line in HTML
+            }
+        }
+        String diagnosisText = diagnosisTextBuilder.toString();
+        
+        StringBuilder rxTextBuilder = new StringBuilder();
+        for (ClinicalFindingValue dx : encounterDiagnoses) {
+            if (dx != null && dx.getPrescription() != null) {
+                rxTextBuilder.append(dx.getPrescription().getFormattedPrescriptionWithoutIndoorOutdoor());
+                if (dx.getLobValue() != null) {
+                    rxTextBuilder.append(" ").append(dx.getLobValue());
+                }
+                rxTextBuilder.append("<br/>"); // Using <br> for new line in HTML
+            }
+        }
+        String rxText = rxTextBuilder.toString();
 
         // Add more replacement keys and values as needed
         replacements.put("{name}", name);
@@ -297,6 +366,10 @@ public class InpatientClinicalDataController implements Serializable {
         replacements.put("{address}", address);
         replacements.put("{phone}", phone);
         replacements.put("{visit-date}", visitDate);
+        replacements.put("{doa}", doa);
+        replacements.put("{dod}", dod);
+        replacements.put("{room}", room);
+        replacements.put("{bht}", bht);
         replacements.put("{height}", height);
         replacements.put("{weight}", weight);
         replacements.put("{bmi}", bmi);
@@ -308,54 +381,43 @@ public class InpatientClinicalDataController implements Serializable {
         return replacements;
     }
 
-        public Upload findAndReplaceText(Upload upload, Map<String, String> replacements) {
-        if (upload == null || upload.getBaImage() == null || upload.getFileName() == null) {
-            throw new IllegalArgumentException("Invalid upload object or empty file content.");
+    public Upload createSimpleWordDocument(Upload upload) throws IOException {
+        if (upload == null) {
+            throw new IllegalArgumentException("Upload object cannot be null.");
         }
 
-        if (!upload.getFileName().endsWith(".docx")) {
-            throw new IllegalArgumentException("Unsupported file type: " + upload.getFileName());
+        // Create a new document
+        XWPFDocument document = new XWPFDocument();
+
+        // Create a new paragraph
+        XWPFParagraph paragraph = document.createParagraph();
+        XWPFRun run = paragraph.createRun();
+        run.setText("This is a sample Word document with some dummy text.");
+
+        // Write the document to a ByteArrayOutputStream
+        try ( ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            document.write(outputStream);
+            upload.setBaImage(outputStream.toByteArray());
         }
 
-        try {
-            File tempFile = saveToTemporaryFile(upload.getBaImage());
-            try (FileInputStream fis = new FileInputStream(tempFile);
-                 XWPFDocument document = new XWPFDocument(fis)) {
-
-                for (XWPFParagraph paragraph : document.getParagraphs()) {
-                    for (XWPFRun run : paragraph.getRuns()) {
-                        String runText = run.getText(0);
-                        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-                            runText = runText.replace(replacement.getKey(), replacement.getValue());
-                        }
-                        run.setText(runText, 0);
-                    }
-                }
-
-                try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                    document.write(out);
-                    upload.setBaImage(out.toByteArray());
-                }
-            }
-
-            // Delete temporary file
-            tempFile.delete();
-
-        } catch (IOException e) {
-            // Handle exceptions
-            throw new RuntimeException("Error processing Word document", e);
-        }
+        // Optionally set the filename, if your Upload object supports this
+        upload.setFileName("sample.docx");
 
         return upload;
     }
 
-    private File saveToTemporaryFile(byte[] content) throws IOException {
-        Path tempFilePath = Files.createTempFile("word_temp", ".docx");
-        File tempFile = tempFilePath.toFile();
-        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-            fos.write(content);
+    public Upload findAndReplaceText(Upload upload, Map<String, String> replacements) {
+        if (upload == null || upload.getComments() == null || upload.getComments().trim().isEmpty()) {
+            return null;
         }
-        return tempFile;
+
+        String updatedComments = upload.getComments();
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            updatedComments = updatedComments.replace(replacement.getKey(), replacement.getValue());
+        }
+        upload.setComments(updatedComments);
+
+        return upload;
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1323,7 +1385,6 @@ public class InpatientClinicalDataController implements Serializable {
         setStartedEncounter(current);
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
-        generateDocumentsFromDocumentTemplates(current);
         return "/inward/clinical_data";
     }
 
@@ -3029,8 +3090,6 @@ public class InpatientClinicalDataController implements Serializable {
     public void setSelectedDiagnosisCard(Upload selectedDiagnosisCard) {
         this.selectedDiagnosisCard = selectedDiagnosisCard;
     }
-    
-    
 
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {

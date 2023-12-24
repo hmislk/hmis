@@ -3,7 +3,8 @@
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
@@ -48,7 +49,9 @@
                     </ui:insert>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-                    <!--Need to redirect to /index1.xhtml-->
+<!--                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
+                        <f:event type="preRenderView" listener="#{sessionController.redirectToIndex1}" />
+                    </h:panelGroup>-->
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
