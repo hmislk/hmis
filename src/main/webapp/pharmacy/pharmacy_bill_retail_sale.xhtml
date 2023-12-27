@@ -25,21 +25,21 @@
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
                         <p:panel>
-                            <p:commandButton disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
 
                         <p:panel class="w-100">
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
-                                <h:outputLabel value="Pharmacy Retail Bill(Sale 1)" class="mx-4"></h:outputLabel>
+                                <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" class="mx-4"></h:outputLabel>
                             </f:facet>
 
                             <div class="row">
-                                <div class="col-6">
-                                    <p:panel header="Add Items" class="my-1">
+                                <div class="col-md-6">
+                                    <p:panel header="Add Items" class="">
 
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fas fa-cube" />
@@ -92,13 +92,18 @@
 
                                             <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Quantity" ></p:outputLabel>
-                                                <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleController.intQty}" style="width: 60px!important;">
+                                                <p:inputText  
+                                                    accesskey="q"  
+                                                    autocomplete="off" 
+                                                    id="txtQty" 
+                                                    value="#{pharmacySaleController.intQty}"
+                                                    class="w-100">
                                                     <p:ajax event="keyup"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                     <p:ajax event="blur"  listener="#{pharmacySaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                 </p:inputText>
                                             </h:panelGrid>
 
-                                            <h:panelGrid columns="1">
+                                            <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="" ></p:outputLabel>
                                                 <p:commandButton  accesskey="a" 
                                                                   id="btnAdd"
@@ -111,21 +116,20 @@
                                             </h:panelGrid>
 
                                             <h:panelGrid columns="1" class="w-100">
-                                                <p:outputLabel value="Rate" ></p:outputLabel>
-                                                <p:inputText 
+                                                <p:outputLabel  value="Rate" ></p:outputLabel>
+                                                <p:inputText  
                                                     id="txtRate" 
-                                                    value="#{pharmacySaleController.billItem.netRate}"
-                                                    style="width: 165px!important;">
+                                                    class="w-100"
+                                                    value="#{pharmacySaleController.billItem.netRate}" >
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </p:inputText>
+                                                </p:inputText >
                                             </h:panelGrid>
-
                                             <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Value" ></p:outputLabel>
-                                                <p:inputText 
+                                                <p:inputText  
                                                     id="txtVal" 
-                                                    value="#{pharmacySaleController.billItem.netValue}" 
-                                                    style="width:165px!important;">
+                                                    value="#{pharmacySaleController.billItem.netValue}"
+                                                    class="w-100">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </p:inputText>
                                             </h:panelGrid>
@@ -288,7 +292,7 @@
                                         </p:panelGrid>
                                     </p:panel> 
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <h:panelGrid id="sale" columns="1" class="alignTop" >
                                         <div class="row">
                                             <div class="col">
@@ -338,7 +342,9 @@
                                                                 </f:facet>
                                                             </p:commandButton>
 
-                                                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  
+                                                            <p:commandButton accesskey="n" 
+                                                                             icon="fa fa-plus"
+                                                                             value="New Bill"  
                                                                              ajax="false" action="pharmacy_bill_retail_sale"
                                                                              class="mx-1 ui-button-warning"
                                                                              actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
@@ -380,8 +386,8 @@
                                                                         completeMethod="#{doctorController.completeDoctor}" 
                                                                         var="ix" itemLabel="#{ix.person.name}" 
                                                                         itemValue="#{ix}" size="40" 
-                                                                        class="mx-4"
-                                                                        >
+                                                                        class="mx-4 w-100 mt-1"
+                                                                        inputStyleClass="form-control">
                                                         </p:autoComplete>
                                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                                         <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController.comment}" id="comment"/>
@@ -503,58 +509,75 @@
                                          action="#" style="display: none;" ></p:commandButton>
                         <!--<p:defaultCommand  target="btnPrint" />-->  
 
-                        <div   >
-                            <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale" 
-                                             actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
-                            <p:commandButton disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" style="margin-right: 100px" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                        <div   class="d-flex justify-content-between">
+                            <div>
+                                <p:commandButton 
+                                    accesskey="p" 
+                                    id="btnPrint" 
+                                    value="Print"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill"  
+                                    icon="fa fa-plus"    
+                                    ajax="false" 
+                                    action="pharmacy_bill_retail_sale" 
+                                    class="ui-button-warning mx-2"
+                                    actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
+                            </div>
                         </div>
 
-                        <h:panelGroup   id="gpBillPreview" >
+                        <!--                        <h:panelGroup   id="gpBillPreview" >
+                        
+                                                    <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                                        <div>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
+                                                                <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                                            </h:panelGroup>
+                                                        </div>
+                        
+                                                        <div>
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>
+                        
+                                                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                                        <div >
+                                                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                                                <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>
+                        
+                                                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                                        <div >
+                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                                <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                    </h:panelGroup>                            
+                        
+                                                </h:panelGroup>                     -->
 
-                            <h:panelGroup   id="gpBillPreviewSingle" >
-
+                        <div class="mt-5">
+                            <h:panelGroup   id="gpBillPreview"> 
+                                <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                             </h:panelGroup>
-
-                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
-                                    </h:panelGroup>
-                                </div>
-
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>                            
-
-                        </h:panelGroup>                     
-
+                        </div>
 
                     </p:panel>
 
