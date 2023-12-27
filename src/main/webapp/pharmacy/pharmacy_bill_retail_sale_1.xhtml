@@ -531,20 +531,25 @@
                                     id="btnPrint" 
                                     icon="fa fa-print"
                                     value="Print" 
+
                                     class="ui-button-info"
+
                                     ajax="false" 
                                     action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton 
                                     accesskey="n" 
+
                                     value="New Bill"  
+
                                     icon="fa fa-plus"
                                     class="ui-button-warning mx-2"
                                     ajax="false" 
                                     action="pharmacy_bill_retail_sale_1" 
                                     actionListener="#{pharmacySaleController1.resetAll()}" >
                                 </p:commandButton>
+
 
                             </div>
                             <div class="d-flex gap-3">
@@ -553,6 +558,7 @@
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                             </div>
+
                         </div>
 
                         <div class="mt-5">
@@ -560,6 +566,8 @@
                                 <phi:saleBill bill="#{pharmacySaleController1.printBill}"></phi:saleBill>
                             </h:panelGroup>
                         </div>
+
+
 
                     </p:panel>
                 </h:form>

@@ -517,7 +517,9 @@
                                     accesskey="p" 
                                     id="btnPrint" 
                                     icon="fa fa-print"
+
                                     class="ui-button-info"
+
                                     value="Print" 
                                     ajax="false" 
                                     action="#" >
@@ -525,13 +527,16 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     accesskey="n" 
+
                                     value="New Bill" 
+
                                     icon="fa fa-plus"
                                     class="ui-button-warning mx-2"
                                     ajax="false" 
                                     action="pharmacy_bill_retail_sale_2" 
                                     actionListener="#{pharmacySaleController2.resetAll()}" >
                                 </p:commandButton>
+
 
                             </div>
                             <div class="d-flex gap-3">
@@ -540,6 +545,7 @@
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+
 
                             </div>
                         </div>
