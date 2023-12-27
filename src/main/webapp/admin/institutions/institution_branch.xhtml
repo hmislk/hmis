@@ -20,10 +20,10 @@
 
                 <p:panel header="Manage Institution Branch" >
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <p:commandButton id="btnAdd" value="Add New" 
                                              icon="fas fa-plus"
-                                             action="#{institutionBranchController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd"
+                                             action="#{institutionBranchController.prepareAdd()}" class="ui-button-success" process="btnAdd"
                                     update="lstSelect gpDetail" >
                             </p:commandButton>
                             <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -36,7 +36,7 @@
                                 </p:ajax>
                             </p:selectOneListbox>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel id="gpDetail" class="w-100" header="Details of the Branch" >
                                 <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                     <h:outputText  value="Branch Name" ></h:outputText>

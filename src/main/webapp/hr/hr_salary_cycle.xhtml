@@ -21,9 +21,8 @@
                 <p:panel header="Manage Salary Cycle" >
                     <div class="row">
                         <div class="col-6">
-                            <h:panelGrid id="gpSelectButtons" columns="3" class="my-1"  >
                                 <p:commandButton
-                                    class="ui-button-warning" 
+                                    class="ui-button-warning w-25" 
                                     icon="fas fa-fill" 
                                     ajax="false" 
                                     value="Fill " 
@@ -33,7 +32,7 @@
                                    
                                     icon="fas fa-plus"
                                     id="btnAdd"
-                                    class="ui-button-success"
+                                    class="ui-button-success w-25 mx-1"
                                     value="Add"
                                     ajax="false" 
                                     action="#{salaryCycleController.prepareAdd()}" 
@@ -41,7 +40,7 @@
 
                                 </p:commandButton>
                                 <p:commandButton
-                                    class="ui-button-danger" 
+                                    class="ui-button-danger w-25" 
                                     icon="fas fa-trash"
                                     ajax="false" 
                                     id="btnDelete"
@@ -50,9 +49,8 @@
                                                 action="#{salaryCycleController.delete()}" 
                                                 value="Delete"  >
                                 </p:commandButton>
-                            </h:panelGrid>
 
-                            <p:selectOneListbox filter="true" class="w-100 "  id="lstSelect" value="#{salaryCycleController.current}" style="height:300px">
+                            <p:selectOneListbox filter="true" class="w-100 mt-2 "  id="lstSelect" value="#{salaryCycleController.current}" style="height:300px">
                                 <f:selectItems  value="#{salaryCycleController.salaryCycles}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <f:ajax render="gpDetail tbl" execute="lstSelect" >
                                 </f:ajax>
@@ -60,7 +58,7 @@
                         </div>
                         
                         <div class="col-6">
-                            <p:panel id="tbl" class="mt-5">
+                            <p:panel id="tbl" >
                                 <f:facet name="header">
                                     <p:outputLabel value="#{sessionController.institution.name}" />
                                     <br></br>
@@ -91,12 +89,11 @@
                                     </h:panelGrid>
 
                                 </h:panelGrid>
-                                <f:facet name="footer">
                                     <p:commandButton 
                                         ajax="false"
                                         id="btnSave"
                                         value="Save"
-                                        class="ui-button-warning"
+                                        class="ui-button-warning w-25 mt-4"
                                         action="#{salaryCycleController.saveSelected()}" 
                                        >
                                     </p:commandButton>
@@ -105,11 +102,10 @@
                                         value="Print" 
                                         ajax="false" 
                                         icon="fas fa-print"
-                                        class="ui-button-info mx-2"
+                                        class="ui-button-info mx-2 w-25 mt-4"
                                         action="#" >
                                         <p:printer target="tbl" ></p:printer>
                                     </p:commandButton>
-                                </f:facet>
                             </p:panel>
 
                         </div>
@@ -123,3 +119,4 @@
     </ui:define>
 
 </ui:composition>
+  

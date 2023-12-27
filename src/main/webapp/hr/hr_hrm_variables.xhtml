@@ -23,7 +23,7 @@
                                     <div class="d-flex justify-content-end">
                                         <p:commandButton 
                                             id="btnAdd"
-                                            class="ui-button-success"
+                                            class="ui-button-success" 
                                             icon="fas fa-plus" 
                                             ajax="false"
                                             process="btnAdd payeeDetails"
@@ -49,6 +49,9 @@
                         </div>
                         <div class="col-4">
                             <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText value="Details"/>
+                                </f:facet>
                                 <h:panelGrid id="gpDetail" columns="1">
                                     <h:panelGrid id="gpDetailText" columns="2">
                                         <h:outputText value="Epf Rate" ></h:outputText>
@@ -61,19 +64,20 @@
                                         <p:inputText autocomplete="off" value="#{hrmVariablesController.current.etfCompanyRate}"  />
                                     </h:panelGrid>
                                 </h:panelGrid>
-                                <f:facet name="footer">
                                     <p:commandButton 
                                         id="btnSave" 
-                                        class="ui-button-warning" 
+                                        class="ui-button-warning mt-4 w-25" 
                                         process="btnSave gpDetail"
                                         value="Save" 
                                         action="#{hrmVariablesController.saveSelected()}" >
                                     </p:commandButton>
-                                </f:facet>
                             </p:panel>
                         </div>
                         <div class="col-4">
                             <p:panel id="gpDetail2">
+                                 <f:facet name="header">
+                                    <h:outputText value="Pay Details"/>
+                                </f:facet>
                                 <p:dataTable value="#{hrmVariablesController.current.taxRanges}" var="tx">
                                     <p:column headerText="From" >
                                         <h:outputLabel value="#{tx.fromSalary}"/>

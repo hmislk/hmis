@@ -20,11 +20,11 @@
 
                 <p:panel header="Manage Area" >
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <p:commandButton id="btnAdd" ajax="false" 
                                              value="Add New"
                                              icon="fas fa-plus"
-                                             action="#{areaController.prepareAdd()}" class=" m-1 ui-button-success w-25" 
+                                             action="#{areaController.prepareAdd()}" class="  ui-button-success" 
                                              process="btnAdd" update="lstSelect gpDetail">
 
                             </p:commandButton>
@@ -41,7 +41,7 @@
                                 </p:ajax>
                             </p:selectOneListbox>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel id="gpDetail" header="Details of the Area" class="w-100">
                                 <h:panelGrid columns="2" class="w-100">
                                     <h:outputText value="Name" ></h:outputText>
@@ -50,7 +50,7 @@
                                 <p:commandButton id="btnSave" 
                                                  icon="fas fa-save"
                                                  ajax="false" 
-                                                 value="Save" action="#{areaController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect" >
+                                                 value="Save" action="#{areaController.saveSelected()}" class=" my-2 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect" >
 
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>

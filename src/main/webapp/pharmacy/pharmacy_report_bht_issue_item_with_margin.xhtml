@@ -21,9 +21,10 @@
                     </p:calendar>
                     
                         <p:commandButton ajax="false"
+                                         icon="fas fa-arrows-rotate"
+                                class="ui-button-warning mx-2"  
                                          value="Process by Bill Created Date" 
-                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}"
-                                         class="my-2"  />
+                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}"/>
                             
 
                 </p:panel>   
@@ -34,12 +35,12 @@
                             <h:outputLabel value="Item Report"/>
                            &#13;&nbsp;
                             <h:outputLabel value="From  "/>
-                            <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                                <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
-                            </h:outputLabel>&#13;&nbsp;
-                            <h:outputLabel value="To  "/>&#13;&nbsp;
-                            <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                                <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                            <h:outputLabel class="mx-2" value="#{pharmacySaleReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <h:outputLabel value="To  "/>
+                            <h:outputLabel class="mx-2" value="#{pharmacySaleReport.toDate}">
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" ></f:convertDateTime>
                             </h:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header">                           

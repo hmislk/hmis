@@ -17,7 +17,11 @@
 
                     <p:panel header="Transfer Recive Vs BHT Issue Quntity Totals By Item(Consider Theater)" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="4" class="w-100" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -28,21 +32,33 @@
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillTheaterTransfersReceiveWithBHTIssue()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill" 
+                                icon="fas fa-arrows-rotate"
+                        class="ui-button-warning"
+                                action="#{reportsTransfer.fillTheaterTransfersReceiveWithBHTIssue()}" ></p:commandButton>
+                                <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false"
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
-                            </p:commandButton>
+                            
                         </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
@@ -51,14 +67,14 @@
                                          >
 
                                 <f:facet name="header">
-                                        <h:outputLabel value="Issue From  #{reportsTransfer.fromDepartment.name} Recive To #{reportsTransfer.toDepartment.name} &amp; BHT Issue From #{reportsTransfer.toDepartment.name}"/>
-                                       &#13;&nbsp;
+                                        <h:outputLabel value="Issue From  #{reportsTransfer.fromDepartment.name} Receive To #{reportsTransfer.toDepartment.name} &amp; BHT Issue From #{reportsTransfer.toDepartment.name}"/>
+                                        <br></br>
                                         <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                        <h:outputLabel class="mx-2" value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                        <h:outputLabel class="mx-2" value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>                                 
                                 </f:facet>

@@ -22,9 +22,8 @@
 
                     <div class="row ">
                         <div class="col-6">
-                            <h:panelGrid columns="2" class="my-2">
                                 <p:commandButton
-                                    class="ui-button-success" 
+                                    class="ui-button-success w-25" 
                                     icon="fas fa-plus" 
                                     id="btnAdd" 
                                     process="btnAdd"
@@ -35,7 +34,7 @@
                                     
                                 </p:commandButton>
                                 <p:commandButton 
-                                    class="ui-button-danger" 
+                                    class="ui-button-danger mx-1 w-25" 
                                     icon="fas fa-trash" 
                                     id="btnDelete" 
                                     process="btnDelete"
@@ -44,9 +43,7 @@
                                                 return false;" 
                                                 action="#{paysheetComponentSystemController.delete()}"  value="Delete"  >
                                 </p:commandButton>
-                            </h:panelGrid>
-
-                            <p:selectOneListbox filter="true"  id="lstSelect"  value="#{paysheetComponentSystemController.current}" style="min-width: 223px;height: 300px;">
+                            <p:selectOneListbox class="mt-2" filter="true"  id="lstSelect"  value="#{paysheetComponentSystemController.current}" style="min-width: 223px;height: 300px;">
                                 <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <f:ajax render="gpDetail" execute="lstSelect" >
                                 </f:ajax>
@@ -55,6 +52,9 @@
                         </div>
                         <div class="col-6">
                             <p:panel>
+                                <f:facet name="header" >
+                                    <h:outputText value="Paysheet Component Details" />
+                                </f:facet>
                                 <h:panelGrid id="gpDetail" columns="1">
                                     <h:panelGrid id="gpDetailText" columns="2">
                                         <h:outputText value="Name#{paysheetComponentSystemController.current.id}" ></h:outputText>
@@ -83,9 +83,8 @@
                                         <p:selectBooleanCheckbox class="w-100 mx-2" value="#{paysheetComponentSystemController.current.includeForAllowance}" />
                                     </h:panelGrid>
                                 </h:panelGrid>
-                                <f:facet name="footer">
                                     <p:commandButton 
-                                        class="ui-button-warning" 
+                                        class="ui-button-warning w-25 mt-4" 
                                         id="btnSave" 
                                         process="btnSave gpDetail"
                                         update="lstSelect"
@@ -95,7 +94,6 @@
                                        
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
-                                </f:facet>
                             </p:panel>
                         </div>
                     </div>

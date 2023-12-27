@@ -39,6 +39,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -170,7 +171,7 @@ public class PatientController implements Serializable {
     @Inject
     CollectingCentreBillController collectingCentreBillController;
     @Inject
-           PatientController patientController;
+    PatientController patientController;
 
     /**
      *
@@ -301,7 +302,6 @@ public class PatientController implements Serializable {
         Map<String, Object> h = new HashMap<>();
         h.put("ret", false);
         allPersonList = getPersonFacade().findByJpql(s, h);
-
 
         Map<String, Patient> patientMap = CreatePatientMap(allPatientList);
         if (patientMap.isEmpty() || allPersonList.isEmpty()) {
@@ -1682,6 +1682,9 @@ public class PatientController implements Serializable {
     public void dobChangeListen() {
         yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
     }
+    
+    
+    
 
     public StreamedContent getPhoto(Patient p) {
         //////System.out.println("p is " + p);
@@ -1950,7 +1953,7 @@ public class PatientController implements Serializable {
         }
         p.setEditingMode(false);
     }
-    
+
     public String saveAndNavigateToProfile() {
         if (current == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
@@ -2128,6 +2131,7 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
+    @Deprecated
     public Patient findPatientByPatientId(Long pid) {
         String j = "select p "
                 + " from Patient p "
@@ -2135,6 +2139,25 @@ public class PatientController implements Serializable {
         Map m = new HashMap();
         m.put("pid", pid);
         return getFacade().findFirstByJpql(j, m);
+    }
+
+    public Patient findPatientById(Long pid) {
+        String j = "select p "
+                + " from Patient p "
+                + " where p.id=:pid";
+        Map m = new HashMap();
+        m.put("pid", pid);
+        return getFacade().findFirstByJpql(j, m);
+    }
+
+    public Patient findPatientById(String pidString) {
+        Long pid;
+        try {
+            pid = Long.parseLong(pidString);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        return findPatientById(pid);
     }
 
     public Patient getCurrent() {

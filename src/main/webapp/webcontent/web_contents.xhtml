@@ -22,6 +22,7 @@
                                  value="#{webContentController.items}" 
                                  var="u"
                                  paginator="true" rows="10" 
+                                 paginatorPosition="bottom"
                                  rowsPerPageTemplate="5,10,15">
 
                         <p:column headerText="Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">

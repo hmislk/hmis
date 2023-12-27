@@ -16,15 +16,23 @@
                             <h:outputLabel value="PHARMACY PURCHASE BILL WITH DEALER "/>                                 
                             <h:panelGrid columns="4" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" value="#{pharmacyController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{pharmacyController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
 
                                 <h:outputLabel value="Dealer"/>
                                 <p:autoComplete completeMethod="#{dealerController.completeDealor}" 
-                                                value="#{searchController.dealar}" 
+                                                value="#{pharmacyController.institution}" 
                                                 var="d"
                                                 itemValue="#{d}"
                                                 itemLabel="#{d.name}"
@@ -34,14 +42,18 @@
 
 
 
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPurchrseBill}"/>
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search Purchase Bills" 
+                                    action="#{pharmacyController.listPharmacyPurchaseBills}"/>
 
                             </h:panelGrid>
                             <p:defaultCommand target="btnSearch"/>
                         </f:facet>
-                      
 
-                        <p:dataTable rowIndexVar="i"  value="#{searchController.phamacypharchusebills}" var="bill" >
+
+                        <p:dataTable rowIndexVar="i"  value="#{pharmacyController.bills}" var="bill" >
                             <f:facet name="header">
                                 <h:outputLabel value="PURCHASE BILL SEARCH WITH DEALERS"/>
                             </f:facet>
@@ -50,12 +62,32 @@
                                       sortBy="#{bill.deptId}"
                                       filterBy="#{bill.deptId}"
                                       filterMatchMode="contains"
-                                      
                                       >
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
+                            </p:column> 
+                            <p:column headerText="BILL Type" 
+                                      sortBy="#{bill.billType}"
+                                      filterBy="#{bill.billType}"
+                                      filterMatchMode="contains"
+                                      >
+                                <h:outputText  value="#{bill.billType}"></h:outputText>
+                            </p:column> 
+                            <p:column headerText="BILL Class" 
+                                      sortBy="#{bill.billClass}"
+                                      filterBy="#{bill.billClass}"
+                                      filterMatchMode="contains"
+                                      >
+                                <h:outputText  value="#{bill.billClass}"></h:outputText>
+                            </p:column> 
+                             <p:column headerText="BILL Date" 
+                                      sortBy="#{bill.createdAt}"
+                                      filterBy="#{bill.createdAt}"
+                                      filterMatchMode="contains"
+                                      >
+                                 <h:outputText  value="#{bill.createdAt}"></h:outputText>
                             </p:column> 
 
 
@@ -63,11 +95,11 @@
                                       sortBy="#{bill.toInstitution.name}"
                                       filterBy="#{bill.toInstitution.name}"
                                       filterMatchMode="contains"
-                                      
+
                                       >
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.toInstitution.name}" rendered="#{bill.toInstitution.name eq null}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
                             </p:column> 
                             <p:column headerText="Billed at"  >
@@ -75,7 +107,7 @@
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -95,7 +127,7 @@
                                 <h:commandLink action="pharmacy_reprint_purchase" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -113,7 +145,7 @@
                             <p:column headerText="Payment Method" >
                                 <h:commandLink action="pharmacy_reprint_purchase" >
                                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
                             </p:column>                               
                             <p:column headerText="Net Value"  style="text-align: right;"  >
@@ -121,7 +153,7 @@
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyController.bill}"/>
                                 </h:commandLink>
                             </p:column>
 
