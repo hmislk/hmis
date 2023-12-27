@@ -403,8 +403,9 @@
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController1.preBill.referredBy}" 
                                                             completeMethod="#{doctorController.completeDoctor}" 
                                                             var="ix" itemLabel="#{ix.person.name}" 
-                                                            itemValue="#{ix}" size="40" class="mx-4 w-100"  
-                                                            >
+                                                            itemValue="#{ix}" size="40"
+                                                            class="mx-4 w-100 mt-1"
+                                                            inputStyleClass="form-control">
                                             </p:autoComplete>
                                             <p:outputLabel value="Comments" ></p:outputLabel>
                                             <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController1.comment}" id="comment"/>
@@ -559,7 +560,7 @@
                                 <phi:saleBill bill="#{pharmacySaleController1.printBill}"></phi:saleBill>
                             </h:panelGroup>
                         </div>
-                        
+
                     </p:panel>
                 </h:form>
 
