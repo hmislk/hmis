@@ -36,7 +36,7 @@
                         <p:panel class="w-100">
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
-                                <h:outputLabel value="Pharmacy Retail Bill(Sale 4)" class="mx-4"></h:outputLabel>
+                                <h:outputLabel value="Pharmacy Retail Bill (Sale 4)" class="mx-4"></h:outputLabel>
                             </f:facet>
 
 
@@ -467,11 +467,11 @@
                                             <p:watermark for="scStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
                                         </h:panelGrid>
                                     </p:panel>
-                                    
+
                                     <common:patient_details  
-                                                    editable="true"
-                                                    controller="#{pharmacySaleController3}"/>
-                                    
+                                        editable="true"
+                                        controller="#{pharmacySaleController3}"/>
+
                                 </div>
 
                             </div>
@@ -491,23 +491,41 @@
                                          action="#" style="display: none;" ></p:commandButton>
                         <!--<p:defaultCommand  target="btnPrint" />-->  
 
-                        <div class="nonPrintBlock" >
-                            <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                             ajax="false" action="pharmacy_bill_retail_sale_3" 
 
-                                             actionListener="#{pharmacySaleController3.resetAll()}" ></p:commandButton>
+                        <div   class="d-flex justify-content-between">
+                            <div>
+                                <p:commandButton 
+                                    accesskey="p" 
+                                    id="btnPrint" 
+                                    value="Print" 
+                                    icon="fa fa-print"
+                                    class="ui-button-success"
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Pharmacy Bill"  
+                                    class="ui-button-warning mx-2"
+                                    icon="fa fa-plus"
+                                    ajax="false" 
+                                    action="pharmacy_bill_retail_sale_3" 
+                                    actionListener="#{pharmacySaleController3.resetAll()}" >
+                                </p:commandButton>
 
-                            <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
+                            </div>
+                            <div class="d-flex gap-3">
+                                <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                <p:commandButton disabled="true" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
+                            </div>
                         </div>
-                        <div >
+
+                        <div class="mt-5">
                             <h:panelGroup   id="gpBillPreview"> 
                                 <phi:saleBill bill="#{pharmacySaleController3.printBill}"></phi:saleBill>
                             </h:panelGroup>
