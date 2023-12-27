@@ -341,7 +341,7 @@
 
                                     <div class="d-flex justify-content-between ">
                                         <div>
-                                            <p:selectOneMenu   id="pay" value="#{pharmacySaleController.paymentMethod}">    
+                                            <p:selectOneMenu style="width: 10em;"  id="pay" value="#{pharmacySaleController.paymentMethod}">    
                                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 <p:ajax process="@this cmbPs " 
                                                         update="pBillDetails creditCard cheque slip" 
