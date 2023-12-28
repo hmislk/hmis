@@ -605,7 +605,7 @@ public class PharmacyController implements Serializable {
     }
 
     public List<Item> completeAllStockItems(String qry) {
-        List<Item> items;
+        List<Item> items = null;
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
