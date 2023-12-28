@@ -10,7 +10,7 @@
     <ui:define name="subcontent">
         <h:form>
             <p:panel styleClass="noBorder summeryBorder" header="Transfer Issue Summary Report By Date">
-                <h:panelGrid columns="2" styleClass="noPrintButton">
+                <h:panelGrid columns="4" class="w-100">
                     <h:outputLabel value="From Date"/>
                     <p:calendar class="mx-4" value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
@@ -29,11 +29,25 @@
                 <p:watermark value="To Department" for="toDep"/>
 
                 <h:panelGrid columns="3" class="my-2">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createIssueReportByDate()}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{pharmacySaleReport.createIssueReportByDate()}" class="mx-1" >
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-arrows-rotate"
+                        class="ui-button-warning" 
+                        value="Process" 
+                        action="#{pharmacySaleReport.createIssueReportByDate()}"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Excel" 
+                        icon="fas fa-file-excel"
+                        class="ui-button-success mx-2"
+                        actionListener="#{pharmacySaleReport.createIssueReportByDate()}" >
                         <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Print" 
+                        icon="fas fa-print"
+                        class="ui-button-info" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
@@ -41,7 +55,7 @@
                 <p:panel id="panelPrint">
                     <h:panelGrid styleClass="printBlock" columns="2" class="my-2">
                         <h:outputLabel  value="#{pharmacySaleReport.department.name}"/>
-                        <h:outputLabel class="my-2" value=" DEPARTMENT ISSUE REPORT SUMMERY"/>                   
+                        <h:outputLabel class="m-1" value=" - DEPARTMENT ISSUE REPORT SUMMARY"/>                   
                         <h:outputLabel value="From Date "/>
                         <h:outputLabel class="mx-4" value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -58,15 +72,16 @@
                             &#13;&nbsp;
                             <h:outputLabel value="Form"/>&#13;&nbsp;
                             <h:outputLabel value="#{pharmacySaleReport.department.name}"/>&#13;&nbsp;
-                            <h:outputLabel value="To"/>
-                            <h:outputLabel value="#{pharmacySaleReport.toDepartment.name}"/>&#13;&nbsp;
+                            <h:outputLabel value="To"/>&#13;&nbsp;
+                            <h:outputLabel value="#{pharmacySaleReport.toDepartment.name}"/>
+                            <br></br>
                             <h:outputLabel value="From  "/>
-                            <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            <h:outputLabel class="mx-2" value="#{pharmacySaleReport.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="To  "/>
-                            <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            <h:outputLabel class="mx-2" value="#{pharmacySaleReport.toDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
 
                         </f:facet>
