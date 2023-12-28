@@ -295,18 +295,16 @@ public class InpatientClinicalDataController implements Serializable {
             return null;
         }
     }
-    
-    
+
     public void createDiagnosisCard() {
         System.out.println("createDiagnosisCard");
         if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
-            return ;
+            return;
         }
         Map<String, String> replacements = createReplacementsMap(current);
         selectedDiagnosisCard = findAndReplaceText(selectedDiagnosisCardTemplate, replacements);
         diagnosisCardText = selectedDiagnosisCard.getComments();
     }
-    
 
     public StreamedContent downloadSampleWordFile() {
         try {
@@ -325,7 +323,6 @@ public class InpatientClinicalDataController implements Serializable {
 
     public Map<String, String> createReplacementsMap(PatientEncounter encounter) {
         Map<String, String> replacements = new HashMap<>();
-
         // Extracting information from the encounter
         String name = encounter.getPatient().getPerson().getNameWithTitle();
         String age = encounter.getPatient().getPerson().getAgeAsString() != null ? encounter.getPatient().getPerson().getAgeAsString() : "";
@@ -334,20 +331,26 @@ public class InpatientClinicalDataController implements Serializable {
         String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
         String visitDate = CommonController.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
         String doa = CommonController.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
-        String dod = CommonController.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+        String dod;
+        if (encounter.getDateOfDischarge() == null) {
+            dod = CommonController.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+        } else {
+            dod = CommonController.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+        }
         String bht = encounter.getBhtNo();
-
         String room = "";
         if (encounter.getCurrentPatientRoom() != null) {
             encounter.getCurrentPatientRoom().getName();
         }
-
         String height = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
         String weight = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
         String bp = encounter.getBp();
         String comments = encounter.getComments() != null ? encounter.getComments() : "";
-        
+        if (comments == null) {
+            comments = "";
+        }
+
         StringBuilder diagnosisTextBuilder = new StringBuilder();
         for (ClinicalFindingValue dx : encounterDiagnoses) {
             if (dx != null && dx.getItemValue() != null) {
@@ -359,7 +362,7 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
         String diagnosisText = diagnosisTextBuilder.toString();
-        
+
         StringBuilder rxTextBuilder = new StringBuilder();
         for (ClinicalFindingValue dx : encounterDiagnoses) {
             if (dx != null && dx.getPrescription() != null) {
@@ -372,25 +375,151 @@ public class InpatientClinicalDataController implements Serializable {
         }
         String rxText = rxTextBuilder.toString();
 
+        for (ClinicalFindingValue cf : getPatientDiagnoses()) {
+            cf.getItemValue().getName();
+            cf.getItemValue().getComments();
+        }
+
+        String medicinesAsString = "Rx" + "<br/>";
+
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+
+                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String inpatientRx = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null) {
+                if (!cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    inpatientRx += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
+            }
+        }
+
+        String dischargeMedicines = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getDischargeMedicines()) {
+            if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
+                if (cf.getPrescription().isIndoor()) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    dischargeMedicines += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
+            }
+        }
+
+        String ixStart = "Ix" + "<br/>";
+        String ixAsString = ixStart;
+        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
+            ixAsString += ix.getItemValue().getName();
+        }
+        if (ixAsString.equals(ixStart)) {
+            ixAsString = "No investigations peformed";
+        }
+
+        String allergyStart = "Allergies " + "<br/>";
+        String allergiesAsString = allergyStart;
+        for (ClinicalFindingValue cf : getPatientAllergies()) {
+            if (cf != null) {
+                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
+                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+        if (allergiesAsString.equals(allergyStart)) {
+            allergiesAsString = "No Allergies";
+        }
+
+        String routeineMedicineStart = "Routeine Medicines " + "<br/>";
+        String routineMedicinesAsString = "";
+        for (ClinicalFindingValue rx : getPatientMedicines()) {
+            if (rx != null && rx.getPrescription() != null) {
+                String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
+                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
+                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
+                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
+                String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
+
+                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+        if (routineMedicinesAsString.equals(routeineMedicineStart)) {
+            routineMedicinesAsString = "Not on any routeine medicines";
+        }
+
+        String pastDxStart = "Past History " + "<br/>";
+        String pastDxAsString = pastDxStart;
+        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
+            if (dx != null) {
+                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+
+                pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+            }
+        }
+        if (pastDxAsString.equals(pastDxStart)) {
+            pastDxAsString = "No Significant Past History";
+        }
+
+        String currentDxAsString = "";
+        System.out.println("currentDxAsString = " + currentDxAsString);
+        System.out.println("getEncounterDiagnoses() = " + getEncounterDiagnoses());
+        for (ClinicalFindingValue dx : getEncounterDiagnoses()) {
+            System.out.println("dx = " + dx);
+            if (dx != null) {
+                System.out.println("dx.getItemValue() = " + dx.getItemValue());
+                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                System.out.println("dx.getStringValue() = " + dx.getStringValue());
+                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+
+                currentDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                System.out.println("currentDxAsString = " + currentDxAsString);
+            }
+        }
+
         // Add more replacement keys and values as needed
         replacements.put("{name}", name);
-        replacements.put("{age}", age);
-        replacements.put("{sex}", sex);
-        replacements.put("{address}", address);
-        replacements.put("{phone}", phone);
-        replacements.put("{visit-date}", visitDate);
+        replacements.put("{age}", age); // Duplicate removed
+        replacements.put("{sex}", sex); // Duplicate removed
+        replacements.put("{address}", address); // Duplicate removed
+        replacements.put("{phone}", phone); // Duplicate removed
+        replacements.put("{visit-date}", visitDate); // Duplicate removed
         replacements.put("{doa}", doa);
         replacements.put("{dod}", dod);
         replacements.put("{room}", room);
         replacements.put("{bht}", bht);
-        replacements.put("{height}", height);
-        replacements.put("{weight}", weight);
-        replacements.put("{bmi}", bmi);
-        replacements.put("{bp}", bp);
-        replacements.put("{comments}", comments);
+        replacements.put("{height}", height); // Duplicate removed
+        replacements.put("{weight}", weight); // Duplicate removed
+        replacements.put("{bmi}", bmi); // Duplicate removed
+        replacements.put("{bp}", bp); // Duplicate removed
+        replacements.put("{comments}", comments); // Duplicate removed
+        replacements.put("{medicines}", medicinesAsString);
+        replacements.put("{rx}", inpatientRx);
+        replacements.put("{drx}", dischargeMedicines);
+        replacements.put("{ix}", ixAsString);
+        replacements.put("{past-dx}", pastDxAsString);
+        replacements.put("{routine-medicines}", routineMedicinesAsString);
+        replacements.put("{allergies}", allergiesAsString);
+        replacements.put("{dx}", currentDxAsString);
 
-        // Further replacements based on medicines, investigations, allergies, etc.
-        // Use similar logic as in generateDocumentFromTemplate method to populate these values
         return replacements;
     }
 
@@ -497,7 +626,7 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
 
-        String dischargeMedicines = "Rx" + "<br/>";
+        String drxString = "Rx" + "<br/>";
         for (ClinicalFindingValue cf : getDischargeMedicines()) {
             if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
                 if (cf.getPrescription().isIndoor()) {
@@ -507,7 +636,7 @@ public class InpatientClinicalDataController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    dischargeMedicines += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    drxString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
                 }
             }
         }
@@ -517,7 +646,7 @@ public class InpatientClinicalDataController implements Serializable {
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
             ixAsString += ix.getItemValue().getName();
         }
-        if(ixAsString.equals(ixStart)){
+        if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
         }
 
@@ -530,11 +659,11 @@ public class InpatientClinicalDataController implements Serializable {
                 allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
-        if(allergiesAsString.equals(allergyStart)){
-            allergiesAsString="No Allergies";
+        if (allergiesAsString.equals(allergyStart)) {
+            allergiesAsString = "No Allergies";
         }
 
-        String routeineMedicineStart="Routeine Medicines " + "<br/>";
+        String routeineMedicineStart = "Routeine Medicines " + "<br/>";
         String routineMedicinesAsString = "";
         for (ClinicalFindingValue rx : getPatientMedicines()) {
             if (rx != null && rx.getPrescription() != null) {
@@ -548,7 +677,7 @@ public class InpatientClinicalDataController implements Serializable {
                 routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
             }
         }
-        if(routineMedicinesAsString.equals(routeineMedicineStart)){
+        if (routineMedicinesAsString.equals(routeineMedicineStart)) {
             routineMedicinesAsString = "Not on any routeine medicines";
         }
 
@@ -562,10 +691,10 @@ public class InpatientClinicalDataController implements Serializable {
                 pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
-        if(pastDxAsString.equals(pastDxStart)){
+        if (pastDxAsString.equals(pastDxStart)) {
             pastDxAsString = "No Significant Past History";
         }
-        
+
         String currentDxAsString = "";
         System.out.println("currentDxAsString = " + currentDxAsString);
         System.out.println("getEncounterDiagnoses() = " + getEncounterDiagnoses());
@@ -590,7 +719,7 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{phone}", phone)
                 .replace("{medicines}", medicinesAsString)
                 .replace("{rx}", inpatientRx)
-                .replace("{drx}", dischargeMedicines)
+                .replace("{drx}", drxString)
                 .replace("{ix}", ixAsString)
                 .replace("{past-dx}", pastDxAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
@@ -3145,9 +3274,6 @@ public class InpatientClinicalDataController implements Serializable {
         this.diagnosisCardText = diagnosisCardText;
     }
 
-    
-    
-   
 }
 
 enum ClinicalField {
