@@ -149,7 +149,7 @@ public class ItemController implements Serializable {
         allItems = null;
         return "/item/reports/item_list";
     }
-    
+
     public String navigateToListAllItemsForAdmin() {
         allItems = null;
         return "/item/admin/list";
@@ -1643,8 +1643,6 @@ public class ItemController implements Serializable {
 
     }
 
-    
-    
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
         for (Item i : itemlist) {
@@ -1693,10 +1691,11 @@ public class ItemController implements Serializable {
     public void prepareAdd() {
         current = new Item();
     }
-    
+
     public void prepareAddingInvestigation() {
         current = new Investigation();
     }
+
     public void prepareAddingService() {
         current = new Service();
     }
@@ -1874,7 +1873,7 @@ public class ItemController implements Serializable {
     }
 
     public List<ItemLight> getAllItems() {
-        if(allItems==null){
+        if (allItems == null) {
             allItems = itemApplicationController.getItems();
         }
         return allItems;
@@ -2038,11 +2037,21 @@ public class ItemController implements Serializable {
 
     public List<ItemLight> fillItemsByInstitution(Institution institution) {
         List<ItemLight> insItems = new ArrayList<>();
+        if (institution == null) {
+            return insItems;
+        }
+        if (institution.getId() == null) {
+            return insItems;
+        }
         for (ItemLight i : itemApplicationController.getItems()) {
+            if (i.getInstitutionId() == null) {
+                continue;
+            }
             if (Objects.equals(i.getInstitutionId(), institution.getId())) {
                 insItems.add(i);
             }
         }
+
         return insItems;
     }
 
@@ -2097,9 +2106,9 @@ public class ItemController implements Serializable {
     }
 
     public ItemLight getSelectedItemLight() {
-        if(getCurrent()==null){
+        if (getCurrent() == null) {
             selectedItemLight = null;
-        }else{
+        } else {
             selectedItemLight = new ItemLight(getCurrent());
         }
         return selectedItemLight;
@@ -2107,9 +2116,9 @@ public class ItemController implements Serializable {
 
     public void setSelectedItemLight(ItemLight selectedItemLight) {
         this.selectedItemLight = selectedItemLight;
-        if(selectedItemLight==null){
+        if (selectedItemLight == null) {
             setCurrent(null);
-        }else{
+        } else {
             setCurrent(findItem(selectedItemLight.getId()));
         }
     }
