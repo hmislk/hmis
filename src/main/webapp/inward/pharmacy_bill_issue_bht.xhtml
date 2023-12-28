@@ -48,7 +48,7 @@
                             <p:column>
                                 <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
-                            <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
+<!--                            <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />-->
                         </p:autoComplete>  
                         <p:commandButton id="btnSelect" value="Select"
                                          ajax="false"  />
@@ -93,11 +93,11 @@
                 
                                 </p:panel>-->
 
-                <p:panel>
+<!--                <p:panel>
                     <f:facet name="header">
                         <div class="row">
                             <div class="col-md-4">
-                                <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
+                                <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />  FontAwesome Icon 
                                 <p:outputLabel value="BHT Issue" class="mx-1"/>
                             </div>
                             <div class="col-md-8">
@@ -290,7 +290,7 @@
 
 
                     </div>
-                    <!--                    <h:panelGrid columns="6" >
+                                        <h:panelGrid columns="6" >
                                             <h:panelGrid columns="1" >
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                     
@@ -313,8 +313,8 @@
                     
                                            
                     
-                                        </h:panelGrid>-->
-                </p:panel>
+                                        </h:panelGrid>
+                </p:panel>-->
 
 
 
