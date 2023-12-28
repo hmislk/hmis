@@ -136,9 +136,18 @@
 
             </p:panel>   
             <p:panel rendered="#{transferRequestController.printPreview}" >
-                <p:commandButton value="New Bill" ajax="false" action="#{transferRequestController.recreate}" >
+                <p:commandButton 
+                    value="New Bill" 
+                    icon="fas fa-plus"
+                                class="ui-button-warning"
+                    ajax="false" 
+                    action="#{transferRequestController.recreate}" >
                 </p:commandButton>
-                <p:commandButton value="Reprint" ajax="false" >
+                <p:commandButton 
+                    value="Reprint"
+                    icon="fas fa-print"
+                                class="ui-button-info mx-2"
+                    ajax="false" >
                     <p:printer target="gpBillPreview"></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
