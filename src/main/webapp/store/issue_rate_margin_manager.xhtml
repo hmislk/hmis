@@ -14,72 +14,106 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Issue Margin">
+                        <div class="row">
+                            <div class="col-4">
+                                <p:panel header="Add new Issue Margin" >
+                                    <h:panelGrid columns="2" >
+                                        <h:outputLabel value="From Department " />
+                                        <au:department class="mx-4" value="#{issueRateMarginsController.fromDepartment}"/>
+                                        <h:outputLabel value="To Department " />
+                                        <au:department class="mx-4" value="#{issueRateMarginsController.issueRateMargins.toDepartment}"/>
+                                        <h:outputLabel value="At Purchase Rate" ></h:outputLabel>
+                                        <p:selectBooleanCheckbox class="mx-4" value="#{issueRateMarginsController.issueRateMargins.atPurchaseRate}" />                               
+                                        <h:outputLabel value="Margin" ></h:outputLabel>
+                                        <p:inputText class="mx-4 w-100" autocomplete="off" value="#{issueRateMarginsController.issueRateMargins.rateForPharmaceuticals}" />                                
+                                        <p:spacer width="100" />
+                                        <h:panelGrid columns="3" class="my-2 mx-4">
+                                            <p:commandButton value="Add" 
+                                                             class="ui-button-success"
+                                                             icon="fas fa-plus"
+                                                             ajax="false" 
+                                                             action="#{issueRateMarginsController.add()}" 
+                                                             >
+                                            </p:commandButton>
+                                            <p:commandButton ajax="false" 
+                                                             value="Fill" 
+                                                             class="ui-button-warning mx-1"
+                                                             icon="fas fa-fill-drip"
+                                                             action="#{issueRateMarginsController.createMargins()}" 
+                                                             />
 
-                        <p:panel header="Add new Issue Margin" >
-                            <p:panelGrid columns="2" >
-                                <h:outputLabel value="From Department :" />
-                                <au:department value="#{issueRateMarginsController.fromDepartment}"/>
-                                <h:outputLabel value="To Department :" />
-                                <au:department value="#{issueRateMarginsController.issueRateMargins.toDepartment}"/>
-                                <h:outputLabel value="At Purchase Rate" ></h:outputLabel>
-                                <p:selectBooleanCheckbox value="#{issueRateMarginsController.issueRateMargins.atPurchaseRate}" />                               
-                                <h:outputLabel value="Margin" ></h:outputLabel>
-                                <p:inputText autocomplete="off" value="#{issueRateMarginsController.issueRateMargins.rateForPharmaceuticals}" />                                
-                                <p:commandButton value="Add" ajax="false" action="#{issueRateMarginsController.add()}" 
-                                                  >
-                                </p:commandButton>
+                                            <p:commandButton ajax="false" 
+                                                             value="Add All" 
+                                                             class="ui-button-success"
+                                                             icon="fas fa-plus"
+                                                             action="#{issueRateMarginsController.addAllDep()}" 
+                                                             />
+                                        </h:panelGrid>
+                                    </h:panelGrid>   
 
-                            </p:panelGrid>                          
-                            <p:commandButton ajax="false" value="Fill" 
-                                            action="#{issueRateMarginsController.createMargins()}" 
-                                             />
-                            
-                             <p:commandButton ajax="false" value="Add All" 
-                                            action="#{issueRateMarginsController.addAllDep()}" 
-                                             />
-                           
+                                </p:panel>
+                            </div>
+                            <div class="col-8">
+                                <p:panel header="Price Matrix" >
+                                    <p:dataTable 
+                                        value="#{issueRateMarginsController.items}" 
+                                        var="a" 
+                                        paginator="true"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="5,10,15"
+                                        >
 
-                        </p:panel>
+                                        <p:column
+                                            headerText="From Department"
+                                            filterBy="#{a.fromDepartment.name}" 
+                                            filterMatchMode="contains" 
+                                            exportable="false"
+                                            style="width: 25%">
+                                            <au:department value="#{a.fromDepartment}"/>
+                                        </p:column>
+                                        <p:column
+                                            headerText="To Department" 
+                                            filterBy="#{a.toDepartment.name}"
+                                            filterMatchMode="contains"
+                                            exportable="false"
+                                            style="width: 25%">
+                                            <au:department value="#{a.toDepartment}"/>
+                                        </p:column>
 
-                        <p:panel header="Price Matrix" >
+                                        <p:column 
+                                            headerText="At Purchase Rate"
+                                            style="width: 25%">
+                                            <p:selectBooleanCheckbox value="#{a.atPurchaseRate}" />                               
+                                        </p:column>
 
-                            <p:dataTable 
-                                value="#{issueRateMarginsController.items}" 
-                                var="a" 
-                                paginator="true"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15"
-                                >
+                                        <p:column 
+                                            headerText="Margin"
+                                            style="width: 25%">
+                                            <h:inputText autocomplete="off" value="#{a.rateForPharmaceuticals}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:inputText>
+                                        </p:column>
 
-                                <p:column headerText="From Department" filterBy="#{a.fromDepartment.name}" filterMatchMode="contains" exportable="false">
-                                    <au:department value="#{a.fromDepartment}"/>
-                                </p:column>
-                                <p:column headerText="To Department" filterBy="#{a.toDepartment.name}" filterMatchMode="contains" exportable="false">
-                                    <au:department value="#{a.toDepartment}"/>
-                                </p:column>
-                                
-                                  <p:column headerText="At Purchase Rate">
-                                   <p:selectBooleanCheckbox value="#{a.atPurchaseRate}" />                               
-                                </p:column>
+                                        <p:column
+                                            style="width: 25%">
+                                            <p:commandButton ajax="false" value="Update" action="#{issueRateMarginsController.onEdit(a)}" /> 
+                                        </p:column>
+                                        <p:column
+                                            style="width: 25%">
+                                            <p:commandButton value="Delete" action="#{issueRateMarginsController.delete(a)}" >                                        
+                                            </p:commandButton>
+                                        </p:column>
 
-                                <p:column headerText="Margin">
-                                    <h:inputText autocomplete="off" value="#{a.rateForPharmaceuticals}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
-                                </p:column>
-
-                                <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{issueRateMarginsController.onEdit(a)}" /> 
-                                </p:column>
-                                <p:column>
-                                    <p:commandButton value="Delete" action="#{issueRateMarginsController.delete(a)}" >                                        
-                                    </p:commandButton>
-                                </p:column>
-
-                            </p:dataTable>
+                                    </p:dataTable>
 
 
-                        </p:panel>
+                                </p:panel>
+                            </div>
+                        </div>
+
+
+
 
                     </p:panel>
 
