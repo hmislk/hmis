@@ -311,7 +311,9 @@
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
 
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"  
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"  
                                      value="Sale" 
                                      rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                                      actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem> 
