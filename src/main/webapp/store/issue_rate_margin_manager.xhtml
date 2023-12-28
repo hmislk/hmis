@@ -13,15 +13,23 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Issue Margin">
+                    <p:panel header="Issue Margin" style="height: 100vh">
+                        <f:facet name="header" >
+                            <h:outputText  styleClass="fas fa-percent"/>
+                            <h:outputText class="mx-4" value="Issue Margin" />
+                        </f:facet>
                         <div class="row">
                             <div class="col-4">
                                 <p:panel header="Add new Issue Margin" >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-circle-plus"/>
+                                        <h:outputText class="mx-4" value="Add new Issue Margin" />
+                                    </f:facet>
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="From Department " />
-                                        <au:department class="mx-4" value="#{issueRateMarginsController.fromDepartment}"/>
+                                        <au:department class="mx-2" value="#{issueRateMarginsController.fromDepartment}"/>
                                         <h:outputLabel value="To Department " />
-                                        <au:department class="mx-4" value="#{issueRateMarginsController.issueRateMargins.toDepartment}"/>
+                                        <au:department class="mx-2" value="#{issueRateMarginsController.issueRateMargins.toDepartment}"/>
                                         <h:outputLabel value="At Purchase Rate" ></h:outputLabel>
                                         <p:selectBooleanCheckbox class="mx-4" value="#{issueRateMarginsController.issueRateMargins.atPurchaseRate}" />                               
                                         <h:outputLabel value="Margin" ></h:outputLabel>
@@ -55,6 +63,10 @@
                             </div>
                             <div class="col-8">
                                 <p:panel header="Price Matrix" >
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-th"/>
+                                        <h:outputText class="mx-4" value="Price Matrix" />
+                                    </f:facet>
                                     <p:dataTable 
                                         value="#{issueRateMarginsController.items}" 
                                         var="a" 
@@ -69,7 +81,7 @@
                                             filterBy="#{a.fromDepartment.name}" 
                                             filterMatchMode="contains" 
                                             exportable="false"
-                                            style="width: 25%">
+                                            style="width: 50%">
                                             <au:department value="#{a.fromDepartment}"/>
                                         </p:column>
                                         <p:column
@@ -77,31 +89,38 @@
                                             filterBy="#{a.toDepartment.name}"
                                             filterMatchMode="contains"
                                             exportable="false"
-                                            style="width: 25%">
+                                            style="width: 50%">
                                             <au:department value="#{a.toDepartment}"/>
                                         </p:column>
 
                                         <p:column 
                                             headerText="At Purchase Rate"
-                                            style="width: 25%">
+                                            style="width: 25%;text-align: center">
                                             <p:selectBooleanCheckbox value="#{a.atPurchaseRate}" />                               
                                         </p:column>
 
                                         <p:column 
                                             headerText="Margin"
                                             style="width: 25%">
-                                            <h:inputText autocomplete="off" value="#{a.rateForPharmaceuticals}" >
+                                            <h:inputText style="width: 100px" autocomplete="off" value="#{a.rateForPharmaceuticals}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:inputText>
                                         </p:column>
 
                                         <p:column
                                             style="width: 25%">
-                                            <p:commandButton ajax="false" value="Update" action="#{issueRateMarginsController.onEdit(a)}" /> 
+                                            <p:commandButton 
+                                                ajax="false"
+                                                value="Update"
+                                                class="ui-button-warning"
+                                                action="#{issueRateMarginsController.onEdit(a)}" /> 
                                         </p:column>
                                         <p:column
                                             style="width: 25%">
-                                            <p:commandButton value="Delete" action="#{issueRateMarginsController.delete(a)}" >                                        
+                                            <p:commandButton 
+                                                value="Delete"
+                                                action="#{issueRateMarginsController.delete(a)}"
+                                                class="ui-button-danger">                                        
                                             </p:commandButton>
                                         </p:column>
 
