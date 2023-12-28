@@ -62,6 +62,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String ownerName;
 
     @Lob
     String labBillHeading;
@@ -102,8 +103,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    private double allowedCreditLimit;
     double maxCreditLimit;
     double standardCreditLimit;
+    private double percentage;
     @Transient
     String transAddress1;
     @Transient
@@ -129,12 +132,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String descreption;
     String accountNo;
     
-    @ManyToOne
     Institution bankBranch;
-    
-    @ManyToOne
-    private Institution parentInstitution;
-    
 
     String emailSendingUsername;
     String emailSendingPassword;
@@ -483,6 +481,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getChequePrintingName() {
+        if (chequePrintingName == null || chequePrintingName.trim().equals("")){
+            chequePrintingName = name;
+        }
         return chequePrintingName;
     }
 
@@ -658,14 +659,29 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
     }
 
-    public Institution getParentInstitution() {
-        return parentInstitution;
+    public double getPercentage() {
+        return percentage;
     }
 
-    public void setParentInstitution(Institution parentInstitution) {
-        this.parentInstitution = parentInstitution;
+    public void setPercentage(double percentage) {
+        this.percentage = percentage;
     }
-    
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public double getAllowedCreditLimit() {
+        return allowedCreditLimit;
+    }
+
+    public void setAllowedCreditLimit(double allowedCreditLimit) {
+        this.allowedCreditLimit = allowedCreditLimit;
+    }
     
     
 

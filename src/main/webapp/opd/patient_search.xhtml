@@ -29,7 +29,8 @@
                                         />
                                     <p:commandButton 
                                         id="btnSearchbyPhoneNo"
-                                        value="Search"
+                                        icon="fa fa-search"
+                                        value="Quick Search"
                                         action="#{patientController.searchByPatientPhoneNumber()}" 
                                         ajax="false" 
                                         class="mt-2 w-100"/> 
@@ -87,23 +88,25 @@
                                 </div>
                             </div>
                             <div class="col-md-10">
-                                <div class="mb-3" >
+                                <div class="mb-3 w-50" >
                                     <p:commandButton value="New"
                                                      action="#{patientController.navigateToAddNewPatientForOpd()}" 
                                                      ajax="false"
-                                                     class="mx-1"/>
+                                                     icon="fa-solid fa-plus"
+                                        class=" m-1 ui-button-success w-25" />
 
                                     <p:commandButton id="btnSearch"
                                                      value="Search"
+                                                     icon="fa-solid fa-search"
                                                      action="#{patientController.searchPatientForOpd()}" ajax="false" 
-                                                     class="mx-1"/>
+                                                     class=" m-1 ui-button-warning w-25" />
 
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
 
                                     <p:commandButton value="Clear" 
                                                      action="#{patientController.clearSearchDetails()}"
                                                      ajax="false" 
-                                                     class="mx-1"/>
+                                                     icon="fa-solid fa-eraser" class="m-1 ui-button-danger w-25"/>
                                 </div>
 
                                 <p:dataTable value="#{patientController.searchedPatients}" var="p" 

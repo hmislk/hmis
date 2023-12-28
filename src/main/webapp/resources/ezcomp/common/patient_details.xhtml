@@ -10,6 +10,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="editable" type="java.lang.Boolean"  />
+        <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
     </cc:interface>
 
@@ -33,37 +34,50 @@
                                 rendered="#{cc.attrs.controller.patient.id ne null}"
                                 value="Searched Patient Details" 
                                 ></h:outputText>
+                            <h:panelGroup rendered="#{cc.attrs.editable}" >
+                                <p:selectBooleanButton 
+                                    value="#{cc.attrs.controller.patientDetailsEditable}" 
+                                    offIcon="pi pi-pencil" 
+                                    onIcon="pi pi-eye"                                 
+                                    class="mx-4">
+                                    <p:ajax 
+                                        process="@this" 
+                                        update="viewPatient editPatient" />
+                                </p:selectBooleanButton>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
                     </h:panelGroup>
 
                     <!-- Right aligned quick search -->
-                    <h:panelGroup id="quickSearch" styleClass="form-inline">
-                        <p:inputText 
-                            id="txtQuickSearchPhoneNumber"
-                            style="width:12em; height: 2em; padding: 0.25em;"
-                            value="#{patientController.quickSearchPhoneNumber}"
-                            placeholder="Phone Number"
-                            class="form-control-sm mx-1"
-                            onfocus="this.select()" 
-                            />
-                        <p:commandButton 
-                            id="btnSearchbyPhoneNo"
-                            icon="fa fa-search" 
-                            title="Quick Search from Phone Number"
-                            action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
-                            process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                            update="ptImp selectPatient editPatient viewPatient"
-                            styleClass="btn-sm mx-1"/>
-                        <p:commandButton 
-                            id="btnAddNewPatient"
-                            icon="fa fa-plus-circle" 
-                            title="Add New Patient"
-                            action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
-                            process="btnAddNewPatient"
-                            update="ptImp selectPatient editPatient viewPatient"
-                            styleClass="btn-sm mx-1"/>
+                    <h:panelGroup id="quickSearch" >
+                        <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
+                            <p:inputText 
+                                id="txtQuickSearchPhoneNumber"
+                                style="width:12em; height: 2em; padding: 0.25em;"
+                                value="#{patientController.quickSearchPhoneNumber}"
+                                placeholder="Phone Number"
+                                class="form-control-sm mx-1"
+                                onfocus="this.select()" 
+                                />
+                            <p:commandButton 
+                                id="btnSearchbyPhoneNo"
+                                icon="fa fa-search" 
+                                title="Quick Search from Phone Number"
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
+                            <p:commandButton 
+                                id="btnAddNewPatient"
+                                icon="fa fa-plus-circle" 
+                                title="Add New Patient"
+                                action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}" 
+                                process="btnAddNewPatient"
+                                update="ptImp selectPatient editPatient viewPatient"
+                                styleClass="btn-sm mx-1"/>
+                        </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
             </f:facet>
@@ -90,18 +104,18 @@
                     </p:dataTable>
                 </h:panelGroup>
             </h:panelGroup>
+
             <h:panelGroup id="editPatient" >
-                <h:panelGroup rendered="#{cc.attrs.editable}" >
+
+                <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
-                        <h:panelGroup class="mb-1 w-100" id="panelPatient" 
-                                      rendered="#{cc.attrs.controller.patient.editingMode}">
+                        <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbTitle"
                                             class="form-control w-100"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
                                             value="#{cc.attrs.controller.patient.person.title}">
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
@@ -112,7 +126,7 @@
                                     </div>
                                     <div class="col-md-9 p-1">
                                         <p:inputText 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             autocomplete="off" 
                                             id="txtNewPtName" 
                                             placeholder="Enter the Name of the patient"
@@ -131,7 +145,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:selectOneMenu 
                                             id="cmbSex" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             value="#{cc.attrs.controller.patient.person.sex}"
                                             class="form-control w-100">
                                             <f:selectItem itemLabel="Select Gender"/>
@@ -145,7 +159,7 @@
                                                     autocomplete="off" 
                                                     id="year" 
                                                     placeholder="Years"
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
                                                     class="form-control">
                                                     <f:ajax event="blur" execute="@this" render="dpDob" />
@@ -153,7 +167,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
                                                     class="form-control">
@@ -162,7 +176,7 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText 
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
                                                     class="form-control">
@@ -171,7 +185,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <p:datePicker 
-                                                    disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
@@ -190,7 +204,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
                                             value="#{cc.attrs.controller.patient.person.mobile}"
@@ -204,7 +218,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtPhone" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             autocomplete="off" 
                                             placeholder="Phone Number"
                                             value="#{cc.attrs.controller.patient.person.phone}"
@@ -216,7 +230,7 @@
                                     </div>
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                                             value="#{cc.attrs.controller.patient.person.email}"
                                             class="form-control"
@@ -230,7 +244,7 @@
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtNic"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
@@ -241,7 +255,7 @@
                                     <div class="col-md-8 p-1">
                                         <p:inputText
                                             id="txtAddress"
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             placeholder="Address"
                                             value="#{cc.attrs.controller.patient.person.address}"
                                             class="form-control"/>
@@ -250,7 +264,7 @@
                                         <p:autoComplete 
 
                                             id="acNewPtArea" 
-                                            disabled="#{!cc.attrs.controller.patient.editingMode}"
+
                                             placeholder="Search &amp; Select Area"
                                             completeMethod="#{areaController.completeArea}"
                                             var="pta" itemLabel="#{pta.name}"
@@ -281,80 +295,53 @@
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
-                <h:panelGroup rendered="#{not cc.attrs.editable}" >
+
+                <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
-                        <p:panel class="my-1" id="panelPatientDisplay" >
+                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+                            <h:outputLabel value="Name " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
 
-                            <f:facet name="header">
-                                <h:panelGroup >
-                                    <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
-                                    <h:outputText value="Patient Details" class="mx-4"></h:outputText>
-                                    <!-- Toggle Edit Mode Link -->
-                                    <p:commandLink id="editLink"
-                                                   process="@this" 
-                                                   update="gpPatient headerFacet"
-                                                   actionListener="#{cc.attrs.controller.patient.toggleEditMode}" 
-                                                   styleClass="btn btn-link p-0 m-0"
-                                                   rendered="#{not cc.attrs.controller.patient.editingMode}">
-                                        <i class="fa fa-edit"></i>
-                                    </p:commandLink>
-                                </h:panelGroup>
-                            </f:facet>
+                            <h:outputLabel value="Gender " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.sex}" />
 
+                            <h:outputLabel value="Date of Birth " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.dob}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputText>
 
+                            <h:outputLabel value="Age  " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.ageAsString}" />
 
-                            <h:panelGroup rendered="#{cc.attrs.controller.patient ne null}">
-                                <h:panelGrid columns="3"  >
+                            <h:outputLabel value="Mobile No. " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.mobile}" />
 
-                                    <h:outputLabel value="Name " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
+                            <h:outputLabel value="Phone No. " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.phone}" />
 
-                                    <h:outputLabel value="Gender " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.sex}" />
+                            <h:outputLabel value="Email " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
 
-                                    <h:outputLabel value="Date of Birth " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.dob}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </h:outputText>
+                            <h:outputLabel value="National ID No. " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
 
-                                    <h:outputLabel value="Age  " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.ageAsString}" />
+                            <h:outputLabel value="Address " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
 
-                                    <h:outputLabel value="Mobile No. " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.mobile}" />
+                            <h:outputLabel value="Area " class="mx-3"/>
+                            <h:outputLabel value=" : " class="mx-3"/>
+                            <h:outputText value="#{cc.attrs.controller.patient.person.area.name}" />
 
-                                    <h:outputLabel value="Phone No. " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.phone}" />
-
-                                    <h:outputLabel value="Email " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
-
-                                    <h:outputLabel value="National ID No. " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
-
-                                    <h:outputLabel value="Address " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
-
-                                    <h:outputLabel value="Area " class="mx-3"/>
-                                    <h:outputLabel value=" : " class="mx-3"/>
-                                    <h:outputText value="#{cc.attrs.controller.patient.person.area.name}" />
-
-                                </h:panelGrid>
-
-
-                            </h:panelGroup>
-
-
-                        </p:panel>
+                        </h:panelGrid>
                     </h:panelGroup>
                 </h:panelGroup>
 

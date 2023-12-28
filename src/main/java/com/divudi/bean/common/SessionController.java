@@ -63,6 +63,7 @@ import org.primefaces.model.DashboardModel;
 import org.primefaces.model.DefaultDashboardColumn;
 import org.primefaces.model.DefaultDashboardModel;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
@@ -161,6 +162,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String navigateToLoginPage() {
 
         return "/index1.xhtml";
+    }
+    
+    public void redirectToIndex1(ComponentSystemEvent event) {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/index1.xhtml");
+            } catch (IOException e) {
+                // Handle the exception (e.g., logging)
+            }
+        }
     }
 
     public String getActionForIcon(Icon icon) {
@@ -382,7 +393,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
         currentPreference.setInstitution(null);
-        return "/admin/institutions/admin_mange_application_preferences";
+        return "/admin/institutions/admin_mange_application_preferences?faces-redirect=true";
     }
 
     public String toManageIntitutionPreferences() {
@@ -414,7 +425,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         currentPreference.setWebUser(null);
         currentPreference.setInstitution(null);
-        return "/admin/institutions/admin_mange_department_preferences";
+        return "/admin/institutions/admin_mange_department_preferences?faces-redirect=true";
     }
 
     public void updateUserPreferences() {

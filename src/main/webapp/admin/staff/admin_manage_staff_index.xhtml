@@ -19,7 +19,7 @@
                                     <p:tab title="Metadata">
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Doctor Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
-                                            <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="#{navigationController.navigateToDoctorSpecilaity()}"/>
                                         </div>
                                     </p:tab>
 
@@ -28,7 +28,7 @@
                                             <p:commandButton  class="w-100" ajax="false" value="Doctors" action="#{navigationController.navigateToAdminDoctor()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Consultant" action="#{navigationController.navigateToAdminDoctorConsultant()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Staff" action="../../hr/hr_staff_admin"/>
-                                            <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{navigationController.navigateToViewStaffSignatures()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.navigateToAdminStaffViewSignature()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
                                         </div>
                                     </p:tab>
@@ -39,10 +39,10 @@
                                             <p:commandButton  class="w-100" ajax="false" value="Staff List " action="#{navigationController.navigateToStaffList()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>
                                             <p:commandButton  class="w-100" ajax="false" value="Bulk Delete Staff" action="#{navigationController.navigateToStaffBulkDelete()}" />
-                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
-                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
-                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
-                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="/channel/maintanance/consultant/List" value="Show All Consultant Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="/channel/maintanance/doctor/List" value="Show All Doctor Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="/channel/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="/channel/maintanance/speciality/List" value="Show All Speciality Items"/>
                                         </div>
                                     </p:tab>
 

@@ -121,6 +121,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
     private AdmissionStatus admissionStatusForSearch;
+    private boolean patientDetailsEditable;
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -142,22 +143,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
     }
-    
+
     public String navigateToInpatientClinicalData() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
-    
+
     public String navigateToInpatientDrugChart() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToDrugChart();
     }
-    
+
     public String navigateToInpatientInvestigations() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToInvestigations();
     }
-    
+
     public String navigateToInpatientImages() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToImages();
@@ -167,7 +168,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
     }
-    
+
     public void dateChangeListen() {
         getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
 
@@ -308,15 +309,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //    public String navigateToAddServices() {
 //        return "/inward/inward_bill_service?faces-redirect=true";
 //    }
-
 //    public String navigateToAddOutsideCharge() {
 //        return "/inward/inward_bill_outside_charge?faces-redirect=true";
 //    }
-
 //    public String navigateToAddProfessionalFee() {
 //        return "/inward/inward_bill_professional?faces-redirect=true";
 //    }
-
     public String navigateToAddEstimatedProfessionalFee() {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
     }
@@ -347,11 +345,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void searchAdmissions() {
-        if(fromDate == null||toDate==null){
+        if (fromDate == null || toDate == null) {
             UtilityController.addErrorMessage("Please select date");
             return;
         }
-        
+
 //        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
 //            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
 //            return;
@@ -361,7 +359,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
 //            return;
 //        }
-        
         String j;
         HashMap m = new HashMap();
         j = "select c from Admission c "
@@ -868,6 +865,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Person p = new Person();
         getPersonFacade().create(p);
         Patient pt = new Patient();
+        patientDetailsEditable=true;
         pt.setPerson(p);
         getPatientFacade().create(pt);
         getCurrent().setPatient(pt);
@@ -1060,6 +1058,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.patientList = patientList;
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
     public PatientRoom getPatientRoom() {
         if (patientRoom == null) {
             patientRoom = new PatientRoom();
@@ -1139,12 +1142,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     @Override
     public Patient getPatient() {
-        if(current!=null){
+        if (current != null) {
             patient = getCurrent().getPatient();
         }
         if (patient == null) {
             Person p = new Person();
             patient = new Patient();
+            patientDetailsEditable=true;
             patient.setPerson(p);
         }
         return patient;
@@ -1343,6 +1347,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.patientNumberForSearch = patientNumberForSearch;
     }
 
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
     /**
      *
      */
@@ -1356,18 +1370,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
             AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionController");
-            if(controller == null){
+            if (controller == null) {
                 return null;
             }
             Long l = getKey(value);
-            if(l == null){
-                return  null;
+            if (l == null) {
+                return null;
             }
             return controller.getEjbFacade().find(l);
         }
 
         java.lang.Long getKey(String value) {
-            if(value == null){
+            if (value == null) {
                 return null;
             }
             java.lang.Long key;
@@ -1376,7 +1390,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         String getStringKey(java.lang.Long value) {
-            if(value == null){
+            if (value == null) {
                 return null;
             }
             StringBuilder sb = new StringBuilder();

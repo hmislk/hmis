@@ -13,17 +13,18 @@
             <ui:define name="admin">
 
 
-                <h:form >
-                    <p:tabView id="gpDetail" style="width: 1050px">
-                        <p:tab title="Basic Details" >
-                            <h:panelGrid columns="1">
+                <h:form style="width: 1050px">
+                    <p:commandButton ajax="false" id="btnSave" value="Save" 
+                                     icon="fas fa-save"
+                                     class="ui-button-success my-2"
+                                     action="#{departmentController.saveSelectedDepartment()}"
+                                     style="float: right;">
+                    </p:commandButton>
+                    <h:panelGrid id="gpDetail" columns="1">
 
-                                <p:commandButton ajax="false" id="btnSave" value="Save" 
-                                                 action="#{departmentController.saveSelectedDepartment()}"
-                                                 style="float: right;">
-                                </p:commandButton>
-
-                                <h:panelGrid id="gpDetailText" columns="2">
+                        <p:tabView >
+                            <p:tab title="Basic Details">
+                                <h:panelGrid id="gpDetailText" columns="2"  style="width: 1000px">
                                     <h:outputText id="lblName" value="Name"  ></h:outputText>
                                     <p:inputText autocomplete="off" 
                                                  id="txtName" value="#{departmentController.current.name}" 
@@ -56,23 +57,26 @@
                                     </p:selectOneMenu>
 
                                     <h:outputText id="lblIns" value="Institution" ></h:outputText>
-                                    <p:autoComplete  completeMethod="#{institutionController.completeIns}" style="width: 650px" 
+                                    <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                                                     inputStyleClass="w-100"
+                                                     style="width: 650px" 
                                                      var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
 
 
                                 </h:panelGrid>
 
 
-                            </h:panelGrid>
-                        </p:tab>
-                        <p:tab title="Editing Details" >
-                            <h:panelGrid columns="2" >
-                                <h:outputText id="lblcre" value="Creater" ></h:outputText>
-                                <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
 
-                            </h:panelGrid>
-                        </p:tab>
-                    </p:tabView>
+                            </p:tab>
+                            <p:tab title="Editing Details" >
+                                <h:panelGrid columns="2" style="width: 1000px">
+                                    <h:outputText id="lblcre" value="Creater" ></h:outputText>
+                                    <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
+
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+                    </h:panelGrid>
                 </h:form>
 
 

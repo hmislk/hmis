@@ -17,6 +17,10 @@
 
 
                         <h:form>
+                            <p:panel id="gpDetail" >
+                            <f:facet name="header">
+                                <p:outputLabel value="List Routes"></p:outputLabel>
+                            </f:facet>
 
                             <p:dataTable 
                                 value="#{routeController.items}" var="item"
@@ -24,7 +28,7 @@
                                 class="w-100"
 
                                 rows="10"
-                                paginator="true" paginatorPosition="both"
+                                paginator="true" paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
@@ -32,7 +36,7 @@
                                 >
 
 
-                                
+
 
                                 <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                                     <f:facet name="header">
@@ -51,24 +55,27 @@
                                     <f:facet name="header">
                                         <h:outputText value="Actions"/>
                                     </f:facet>
-                                    <h:commandButton class="btn btn-success" value="Edit" 
+                                    <p:commandButton icon="fas fa-pencil"
+                                                     class="ui-button-success" 
                                                      action="#{routeController.toEditRoute()}" 
                                                      >
                                         <f:setPropertyActionListener value="#{item}" target="#{routeController.current}" >
                                         </f:setPropertyActionListener>
-                                    </h:commandButton>
-                                    <h:commandButton class="btn btn-danger" value="Delete" 
+                                    </p:commandButton>
+                                    <p:commandButton icon="fas fa-trash"
+                                                     class="ui-button-danger mx-2"
                                                      action="#{routeController.delete()}" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                                  return false;"
                                                      >
                                         <f:setPropertyActionListener value="#{item}" target="#{routeController.current}" >
                                         </f:setPropertyActionListener>
-                                    </h:commandButton>
+                                    </p:commandButton>
                                 </p:column>
 
 
                             </p:dataTable>
+                            </p:panel>
                         </h:form>
                     </f:view>
 
