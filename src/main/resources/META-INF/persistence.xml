@@ -6,8 +6,7 @@
     <properties>
       <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
        <!-- EclipseLink Logging -->
-      <property name="eclipselink.logging.level" value="FINE"/>
-      <property name="eclipselink.logging.parameters" value="true"/>
+      
     </properties>
   </persistence-unit>
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
