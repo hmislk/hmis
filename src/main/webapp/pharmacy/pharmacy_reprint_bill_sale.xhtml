@@ -15,72 +15,71 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Sale Bill" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill_retail" disabled="#{pharmacyBillSearch.bill.cancelled}"
-                                             rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
-                            </p:commandButton>
-                            
-                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                           ajax="false" action="pharmacy_bill_retail_sale" 
-                                             
-                                            actionListener="#{pharmacySaleController.resetAll()}" 
-                                             style="font-size: 18px!important; font-weight: bold!important; float: right"></p:commandButton>
+                            <h:outputLabel value="Reprint Sale Bill" class="mt-2" ></h:outputLabel>
+
+                            <div class="d-flex" style="float: right">
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill"  
+                                    ajax="false" 
+                                    class="ui-button-warning"
+                                    action="pharmacy_bill_retail_sale" 
+                                    icon="fa fa-plus"
+                                    actionListener="#{pharmacySaleController.resetAll()}" 
+                                    >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Reprint" 
+                                    icon="fa fa-print"
+                                    class="mx-2 ui-button-success"
+                                    ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Cancel"
+                                    icon="fa fa-cancel"
+                                    class="ui-button-danger"
+                                    action="pharmacy_cancel_bill_retail" 
+                                    disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                </p:commandButton>
+                            </div>
 
                         </f:facet>
 
+                        <h:panelGroup   id="gpBillPreview"  > 
 
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                        <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></ph:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+
+                            </h:panelGroup>
+                        </h:panelGroup>
                     </p:panel>
-
-
-
-                    <h:panelGroup   id="gpBillPreview"  > 
-
-                        <h:panelGroup   id="gpBillPreviewSingle" >
-
-                            
-
-                        </h:panelGroup>
-
-                        <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                            <div >
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                    <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill>
-                                </h:panelGroup>
-                            </div>
-                            
-                            <div >
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                    <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></ph:saleBill_prabodha>
-                                </h:panelGroup>
-                            </div>
-
-                        </h:panelGroup>
-
-                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
-                            <div >
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                    <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
-                                </h:panelGroup>
-                            </div>
-
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-
-
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

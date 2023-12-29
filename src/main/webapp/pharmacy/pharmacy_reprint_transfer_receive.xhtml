@@ -17,10 +17,20 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Recieve Reprint" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <p:commandButton 
+                                value="Reprint" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_transfer_receive" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel" 
+                                icon="fas fa-cancel"
+                                class="ui-button-danger mx-2 mb-2"
+                                action="pharmacy_cancel_transfer_receive" 
+                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>     
                         </f:facet>
 
@@ -39,7 +49,7 @@
                         <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                             <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
                         </h:panelGroup>
-                        
+
                     </h:panelGroup>
 
 

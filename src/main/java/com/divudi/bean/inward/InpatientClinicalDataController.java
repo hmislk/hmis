@@ -356,9 +356,10 @@ public class InpatientClinicalDataController implements Serializable {
             inpatientRx = "No inpatient treatment";
         }
 
-        String drxString = "Rx" + "<br/>";
+        String drxStart = "Rx" + "<br/>";
+        String drxAsString=drxStart;
         for (ClinicalFindingValue cf : getDischargeMedicines()) {
-            if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
+            if (cf != null && cf.getPrescription() != null ) {
                 if (cf.getPrescription().isIndoor()) {
                     String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
                     String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
@@ -366,15 +367,18 @@ public class InpatientClinicalDataController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    drxString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    drxAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
                 }
             }
+        } 
+        if (drxAsString.equals(drxStart)) {
+            drxAsString="No Discharge Treatment";
         }
 
-        String ixStart = "Ix" + "<br/>";
+        String ixStart = " " + "<br/>";
         String ixAsString = ixStart;
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
+            ixAsString += ix.getItemValue().getName()+ixStart;
         }
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
@@ -417,7 +421,6 @@ public class InpatientClinicalDataController implements Serializable {
             if (dx != null) {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-
                 pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
@@ -426,8 +429,14 @@ public class InpatientClinicalDataController implements Serializable {
         }
         
         //Procedures - {procedures}
-        getEncounterProcedures();
-        
+        String prStart = " " + "<br/>";
+        String prAsString = prStart;
+        for (ClinicalFindingValue pr : getEncounterProcedures()) {
+            prAsString += pr.getItemValue().getName();
+        }
+        if (prAsString.equals(prStart)) {
+            prAsString = "No Procedures peformed";
+        }
         //
 
         // Add more replacement keys and values as needed
@@ -447,9 +456,10 @@ public class InpatientClinicalDataController implements Serializable {
         replacements.put("{bp}", bp); // Duplicate removed
         replacements.put("{comments}", comments); // Duplicate removed
         replacements.put("{rx}", inpatientRx);
-        replacements.put("{drx}", drxString);
+        replacements.put("{drx}", drxAsString);
         replacements.put("{ix}", ixAsString);
-        replacements.put("{pmhx}", pastDxAsString);
+        replacements.put("{procedures}", prAsString);
+        replacements.put("{past-dx}", pastDxAsString);
         replacements.put("{routine-medicines}", routineMedicinesAsString);
         replacements.put("{allergies}", allergiesAsString);
         replacements.put("{dx}", diagnosisText);
@@ -584,6 +594,18 @@ public class InpatientClinicalDataController implements Serializable {
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
         }
+        
+        //Procedures - {procedures}
+        String prStart = " " + "<br/>";
+        String prAsString = prStart;
+        for (ClinicalFindingValue pr : getEncounterProcedures()) {
+            prAsString += pr.getItemValue().getName();
+        }
+        if (prStart.equals(prStart)) {
+            prAsString = "No Procedures peformed ";
+        }
+        //
+        
 
         String allergyStart = "Allergies " + "<br/>";
         String allergiesAsString = allergyStart;
@@ -616,13 +638,13 @@ public class InpatientClinicalDataController implements Serializable {
             routineMedicinesAsString = "Not on any routeine medicines";
         }
 
-        String pastDxStart = "Past History " + "<br/>";
+        String pastDxStart = " " + "<br/>";
         String pastDxAsString = pastDxStart;
         for (ClinicalFindingValue dx : getPatientDiagnoses()) {
             if (dx != null) {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-
+                System.out.println("diagnosios name :"+diagnosisName+" "+details  );
                 pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
@@ -656,6 +678,7 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{rx}", inpatientRx)
                 .replace("{drx}", drxString)
                 .replace("{ix}", ixAsString)
+                .replace("{procedures}", ixAsString)
                 .replace("{past-dx}", pastDxAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
@@ -3177,6 +3200,9 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public List<ClinicalFindingValue> getDischargeMedicines() {
+        if (dischargeMedicines == null) {
+            dischargeMedicines = new ArrayList<>();
+        }
         return dischargeMedicines;
     }
 
