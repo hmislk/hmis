@@ -19,13 +19,17 @@
                 <div class="row">
                     <div class="col-6">
                         <p:panel header="Purchasing Details">
-                            <h:panelGrid columns="2">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-shopping-basket"/>
+                                <h:outputText class="mx-4" value="Purchasing Details"/>
+                            </f:facet>
+                            <h:panelGrid columns="2" class="w-100">
                                 <p:outputLabel value="Select Dealor"/>
-                                <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
+                                <p:autoComplete class=" w-100" inputStyleClass="w-100" converter="deal" value="#{pharmacyPurchaseController.bill.fromInstitution}" 
                                                 forceSelection="true"
                                                 completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                                 <h:outputLabel value="Purchasing Institution"/>
-                                <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" value="#{pharmacyPurchaseController.bill.referenceInstitution}"
+                                <p:autoComplete class=" w-100" inputStyleClass="w-100" value="#{pharmacyPurchaseController.bill.referenceInstitution}"
                                                 completeMethod="#{institutionController.completeCompany}" 
                                                 forceSelection="true"
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
@@ -64,26 +68,20 @@
                     </div>
                 </div>
                 <div class="row w-100">
-                    <div class="col-8">
-                        <p:panel id="itemselectgrid" class="my-2 w-100 " rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
+                    <div class="col-12">
+                        <p:panel id="itemselectgrid" class="my-1 w-100" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq false}" header="Add Item">
                             <f:facet name="header" > 
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                 <h:outputText  class="mx-4" value="Add Items" />  
                             </f:facet>
                             <p:focus id="focusItem" for="acItem" ></p:focus>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <h:panelGrid id="itemSelectgrid1" columns="8" style="width: 100%" >                       
+                            <div class="row w-100 d-flex align-items-center">
+                                <div class="col-4">
                                     <h:outputLabel value="Select Item"/>
-                                    <h:outputLabel value="Qty"/>
-                                    <h:outputLabel value="Free"/>
-                                    <h:outputLabel value="Purchase Rate"></h:outputLabel>
-                                    <h:outputLabel value="Sale Price"></h:outputLabel>
-                                    <h:outputLabel value="DOE(dd mm yy)"/>
-                                    <h:outputLabel value="Bathch No"/>
-
-                                    <h:outputLabel/>
-
-                                    <p:autoComplete class="w-100" inputStyleClass="w-100" id="acItem"   value="#{pharmacyPurchaseController.currentBillItem.item}" 
+                                    <p:autoComplete class="w-100"
+                                                    inputStyleClass="w-100" 
+                                                    id="acItem"  
+                                                    value="#{pharmacyPurchaseController.currentBillItem.item}" 
                                                     forceSelection="true"
                                                     completeMethod="#{itemController.completeAmpItem}" 
                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
@@ -107,25 +105,59 @@
                                         </p:column>
 
                                     </p:autoComplete>
-                                    <p:inputText  autocomplete="off" id="txtQty" styleClass="numericTxt" value="#{pharmacyPurchaseController.currentBillItem.tmpQty}" style="width:100%" />  
-                                    <p:inputText autocomplete="off" id="txtFreeQty"  styleClass="numericTxt" 
-                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" style="width:100%" /> 
-                                    <p:inputText autocomplete="off" id="txtPrate"  styleClass="numericTxt" 
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Qty"/><br/>
+                                    <p:inputText  
+                                        autocomplete="off"
+                                        id="txtQty" 
+                                        styleClass="numericTxt"
+                                        value="#{pharmacyPurchaseController.currentBillItem.tmpQty}"
+                                        style="width:100%" />  
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Free"/>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtFreeQty" 
+                                                 styleClass="numericTxt" 
+                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
+                                                 style="width:100%" /> 
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtPrate"  
+                                                 styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-
                                         <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
                                     </p:inputText>
-                                    <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Sale Price"></h:outputLabel>
+                                    <p:inputText autocomplete="off" 
+                                                 id="tmpRetail" 
+                                                 styleClass="numericTxt" 
                                                  value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </p:inputText>  
-
+                                </div>
+                                <div class="col-2">
+                                    <h:outputLabel value="DOE(dd mm yy)"/>
                                     <p:calendar navigator="true"
-                                                id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
+                                                id="calDoe"
+                                                pattern="dd MM yy" 
+                                                value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
                                         <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{pharmacyPurchaseController.setBatch()}"/>
                                     </p:calendar> 
-                                    <p:inputText autocomplete="off"  styleClass="numericTxt" 
-                                                 id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
+                                </div>
+                                <div class="col-1">
+                                    <h:outputLabel value="Bathch No"/>
+                                    <p:inputText autocomplete="off" 
+                                                 styleClass="numericTxt" 
+                                                 id="tmp"
+                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  /> 
+                                </div>
+                                <div class="col-1">
                                     <p:commandButton id="btnAdd" 
                                                      value="Add" 
                                                      class="ui-button-success"
@@ -133,11 +165,12 @@
                                                      action="#{pharmacyPurchaseController.addItem}" 
 
                                                      process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
-                                </h:panelGrid>
+
+                                </div>
                             </div>
                         </p:panel>
                     </div>
-                    <div class="col-4 my-2" >
+                    <div class="my-2" >
                         <p:panel id="PnlAdd" header="Add Item" rendered="#{sessionController.loggedPreference.pharmayPurchaseWithLastRate eq true}" >
                             <h:panelGrid columns="2" style="width: 100%">
                                 <p:autoComplete class="w-100" inputStyleClass="w-100" id="exItem" value="#{pharmacyPurchaseController.currentBillItem.item}"
@@ -159,18 +192,7 @@
                             </h:panelGrid>
                         </p:panel>
                         <div>
-                            <p:panel header="Invoice Details">
-                                <f:facet name="header" > 
-                                    <h:outputText styleClass="fas fa-file-invoice"/>
-                                    <h:outputText  class="mx-4" value="Invoice Details" />  
-                                </f:facet>
-                                <h:panelGrid columns="2">
-                                    <p:outputLabel value="Invoice No  "/>
-                                    <p:inputText class="mx-4 w-100" autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
-                                    <p:outputLabel value="Invoice Date"/>
-                                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100" value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
-                                </h:panelGrid>
-                            </p:panel>
+
                         </div>
 
                     </div>
@@ -259,37 +281,55 @@
                     </p:column>
 
                 </p:dataTable> 
+                <div class="row">
+                    <div class="col-6">
+                        <p:panel header="Bill details" >
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fas fa-receipt"/>
+                                <h:outputText  class="mx-4" value="Bill Details" />  
+                            </f:facet>
 
-                <p:panel header="Bill details" >
-                    <f:facet name="header" > 
-                        <h:outputText styleClass="fas fa-receipt"/>
-                        <h:outputText  class="mx-4" value="Bill Details" />  
-                    </f:facet>
-                    
-                    <h:panelGrid columns="2" style="min-width: 100%">
-                        <h:panelGrid columns="2" id="tot" style="min-width: 100%;font-weight: bolder">
-                            <p:outputLabel value="Gross Total"/>
-                            <p:outputLabel id="gro"  value="#{pharmacyPurchaseController.bill.total}" /> 
-                            <p:outputLabel value="Tax"/>
-                            <p:inputText autocomplete="off" id="tx" value="#{pharmacyPurchaseController.bill.tax}" > 
-                                <p:ajax process="gro tx dis" update="net" event="keyup"/>
-                            </p:inputText>
-                            <p:outputLabel value="Discount"/>
-                            <p:inputText autocomplete="off" id="dis" value="#{pharmacyPurchaseController.bill.discount}" >
-                                <p:ajax process="@this" update="gro tx net" event="blur" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
-                            </p:inputText>
-                            <p:outputLabel value="Net Total"/>
-                            <h:outputLabel id="net"  value="#{pharmacyPurchaseController.bill.netTotal}" > 
-                                <f:convertNumber pattern="#,##0.00"/> 
-                            </h:outputLabel>
-                            <p:outputLabel value="Sale Value"/>
-                            <h:outputLabel id="saleValue"  value="#{pharmacyPurchaseController.bill.saleValue}" > 
-                                <f:convertNumber pattern="#,##0.00"/> 
-                            </h:outputLabel>
+                            <h:panelGrid columns="2" style="min-width: 100%">
+                                <h:panelGrid columns="2" id="tot" style="min-width: 100%;font-weight: bolder">
+                                    <p:outputLabel value="Gross Total"/>
+                                    <p:outputLabel id="gro"  value="#{pharmacyPurchaseController.bill.total}" /> 
+                                    <p:outputLabel value="Tax"/>
+                                    <p:inputText autocomplete="off" id="tx" value="#{pharmacyPurchaseController.bill.tax}" > 
+                                        <p:ajax process="gro tx dis" update="net" event="keyup"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Discount"/>
+                                    <p:inputText autocomplete="off" id="dis" value="#{pharmacyPurchaseController.bill.discount}" >
+                                        <p:ajax process="@this" update="gro tx net" event="blur" listener ="#{pharmacyPurchaseController.calNetTotal()}"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Net Total"/>
+                                    <h:outputLabel id="net"  value="#{pharmacyPurchaseController.bill.netTotal}" > 
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:outputLabel>
+                                    <p:outputLabel value="Sale Value"/>
+                                    <h:outputLabel id="saleValue"  value="#{pharmacyPurchaseController.bill.saleValue}" > 
+                                        <f:convertNumber pattern="#,##0.00"/> 
+                                    </h:outputLabel>
 
-                        </h:panelGrid>
-                    </h:panelGrid>
-                </p:panel>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                    <div class="col-6">
+                        <p:panel header="Invoice Details">
+                            <f:facet name="header" > 
+                                <h:outputText styleClass="fas fa-file-invoice"/>
+                                <h:outputText  class="mx-4" value="Invoice Details" />  
+                            </f:facet>
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Invoice No  "/>
+                                <p:inputText class="mx-4 w-100" autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
+                                <p:outputLabel value="Invoice Date"/>
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
 
                 <p:commandButton 
                     id="nullButton" 

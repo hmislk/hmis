@@ -983,8 +983,56 @@
 
                 <h:form>
 
-
+                    
                     <p:panel  rendered="#{pharmacyWholeSaleController.billPreview}" >
+
+                        <p:commandButton id="nullButton3" value="No Action"
+                                         action="#" style="display: none;" ></p:commandButton>
+                        <!--<p:defaultCommand  target="btnPrint" />-->  
+
+                        <div   class="d-flex justify-content-between">
+                            <div>
+                                <p:commandButton 
+                                    accesskey="p" 
+                                    id="btnPrint" 
+                                    icon="fa fa-print"
+                                    value="Print" 
+                                    class="ui-button-info"
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill"  
+                                    icon="fa fa-plus"
+                                    class="ui-button-warning mx-2"
+                                    ajax="false" 
+                                    action="pharmacy_bill_retail_sale_1" 
+                                    actionListener="#{pharmacyWholeSaleController.resetAll()}" >
+                                </p:commandButton>
+
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton icon="fas fa-file-invoice" class="ui-button-success" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" disabled="true" actionListener="#{pharmacyWholeSaleController.pharmacyWholeRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" class="ui-button-success"  value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" class="ui-button-success" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeRetailSale()}" />
+                                <p:commandButton icon="fas fa-file-invoice" class="ui-button-success" value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController3.pharmacyWholeRetailSale()}" />
+
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <h:panelGroup   id="gpBillPreview"> 
+                                <phi:saleBill bill="#{pharmacyWholeSaleController.printBill}"></phi:saleBill>
+                            </h:panelGroup>
+                        </div>
+                        
+                    </p:panel>
+                    
+                    
+
+<!--                    <p:panel  rendered="#{pharmacyWholeSaleController.billPreview}" >
 
 
 
@@ -1041,7 +1089,7 @@
                         </h:panelGroup>                     
 
 
-                    </p:panel>
+                    </p:panel>-->
 
 
 

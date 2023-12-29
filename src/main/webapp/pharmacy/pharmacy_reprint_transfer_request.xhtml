@@ -16,8 +16,20 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Request Reprint" ></h:outputLabel>
-                            <p:commandButton ajax="false" action="pharmacy_transfer_request_list" actionListener="#{pharmacyBillSearch.makeNull()}" value="Requested List"/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_transfer_request_list" 
+                                icon="fas fa-list"
+                                style="float: right"
+                                class="ui-button-warning"
+                                actionListener="#{pharmacyBillSearch.makeNull()}" 
+                                value="Requested List"/>
+                            <p:commandButton 
+                                value="Reprint" 
+                                icon="fas fa-print"
+                                style="float: right"
+                                class="ui-button-info mx-2"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                         </f:facet>
@@ -74,7 +86,12 @@
 
 
                         <p:panel >
-                            <p:commandButton value="New Bill" ajax="false" action="#{pharmacyBillSearch.makeNull()}" >
+                            <p:commandButton 
+                                value="New Bill" 
+                                icon="fas fa-plus"
+                                class="ui-button-warning"
+                                ajax="false" 
+                                action="#{pharmacyBillSearch.makeNull()}" >
                             </p:commandButton>
                             <h:panelGroup id="gpBillPreview">
                                 <pharmacy:transferRequest  bill="#{pharmacyBillSearch.bill}" />
