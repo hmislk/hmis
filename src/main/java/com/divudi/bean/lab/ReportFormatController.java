@@ -117,7 +117,7 @@ public class ReportFormatController implements Serializable {
     }
 
     public void uploadPhoto(FileUploadEvent event) {
-        if (getUpload()== null || getUpload().getId() == null) {
+        if (getUpload() == null || getUpload().getId() == null) {
             JsfUtil.addErrorMessage("Select Category");
             return;
         }
@@ -125,9 +125,8 @@ public class ReportFormatController implements Serializable {
         try {
             uploadedFile = event.getFile();
             fileBytes = uploadedFile.getContent();
-            System.out.println("com.divudi.bean.lab.ReportFormatController.fileBytes()"+fileBytes);
+            System.out.println("com.divudi.bean.lab.ReportFormatController.fileBytes()" + fileBytes);
             getUpload().setBaImage(fileBytes);
-            
 
             // Extracting the file extension and setting the file name
             String fileName = uploadedFile.getFileName();
@@ -136,13 +135,14 @@ public class ReportFormatController implements Serializable {
 
             getUpload().setFileType(event.getFile().getContentType());
             uploadController.saveUpload(getUpload());
-            System.out.println("com.divudi.bean.lab.ReportFormatController.getBaImage()"+getUpload().getBaImage());
+            System.out.println("com.divudi.bean.lab.ReportFormatController.getBaImage()" + getUpload().getBaImage());
         } catch (Exception ex) {
             Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage("Error");
             return;
         }
     }
+
     public ReportFormat getCurrent() {
         if (current == null) {
             current = new ReportFormat();
@@ -152,6 +152,18 @@ public class ReportFormatController implements Serializable {
 
     public void setCurrent(ReportFormat current) {
         this.current = current;
+        if (current != null && current.getId()!=null) {
+            upload = uploadController.findUpload(current);
+            if (upload == null) {
+                upload = new Upload();
+                upload.setCategory(current);
+                upload.setCreater(sessionController.getLoggedUser());
+                upload.setCreatedAt(new Date());
+                uploadController.saveUpload(upload);
+            }
+        }else{
+            upload = null;
+        }
     }
 
     public void delete() {
@@ -180,7 +192,7 @@ public class ReportFormatController implements Serializable {
         if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
             // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
             return DefaultStreamedContent.builder().build();
-        } else if (getUpload()== null) {
+        } else if (getUpload() == null) {
             return DefaultStreamedContent.builder().build();
         } else {
             String imageType = getUpload().getFileType();
@@ -215,19 +227,6 @@ public class ReportFormatController implements Serializable {
     }
 
     public Upload getUpload() {
-        if (getCurrent()==null){
-            upload =null;
-        }
-        else {
-            upload = uploadController.findUpload(current);
-            if (upload == null){
-                upload = new Upload();
-                upload.setCategory(current);
-                upload.setCreater(sessionController.getLoggedUser());
-                upload.setCreatedAt(new Date());
-                uploadController.saveUpload(upload);
-            }
-        }
         return upload;
     }
 
