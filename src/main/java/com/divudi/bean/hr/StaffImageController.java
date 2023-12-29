@@ -190,6 +190,7 @@ public class StaffImageController implements Serializable {
             }
         }
     }
+    
 
     public StreamedContent getSignatureFromPatientReport() {
         FacesContext context = FacesContext.getCurrentInstance();
