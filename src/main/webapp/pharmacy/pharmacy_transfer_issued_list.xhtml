@@ -29,7 +29,7 @@
                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" /> 
                     <h:outputLabel value="Staff "/>
                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />  
-                    
+
                 </h:panelGrid>
 
                 <p:commandButton 
@@ -133,8 +133,13 @@
                                 </h:outputLabel>                                  
                             </p:column>
                             <p:column>
-                                <p:commandButton ajax="false" value="View Recieve Note" action="pharmacy_reprint_transfer_receive" 
-                                                 disabled="#{b.creater eq null}">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    icon="fas fa-eye"
+                                    class="ui-button-info"
+                                    value="View Recieve Note" 
+                                    action="pharmacy_reprint_transfer_receive" 
+                                    disabled="#{b.creater eq null}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
