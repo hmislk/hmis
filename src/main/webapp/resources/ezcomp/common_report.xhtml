@@ -18,11 +18,14 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
+        <p:graphicImage  
+            value="#{uploadViewController.categoryUploadById}" 
+            cache="false" 
+            style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; ">
+            <f:param name="id" value="#{cc.attrs.commonReportFormat.idStr}" />
+        </p:graphicImage>
 
         <ui:repeat rendered="#{cc.attrs.patientReport ne null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
             <div style="#{myCli.outerCssStyle}">
@@ -49,12 +52,6 @@
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
                               layout="block" style=" #{myCli.description}"    >
                 </h:panelGroup>
-
-                <p:graphicImage
-                    id="image"
-                    value="#{commonReportItemController.image}" 
-                    cache="false" style="width: 100%; height: 100%; object-fit: cover;">
-                </p:graphicImage>
 
                 <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
@@ -104,6 +101,7 @@
                                 value="#{staffImageController.signatureFromPatientReport}" style="width: #{myCli.wtPix};overflow: visible; display: block;" 
                                 height="#{myCli.htPix}" width="#{myCli.wtPix}">
                 </p:graphicImage>
+
 
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
                               >
