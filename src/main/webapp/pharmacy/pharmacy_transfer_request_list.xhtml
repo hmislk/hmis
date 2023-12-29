@@ -73,13 +73,12 @@
                             </h:outputLabel>
                         </h:panelGroup>
                     </p:column>  
-                    <p:column width="100px" >
-                        <p:commandButton ajax="false" icon="far fa-eye" value="View" class="ui-button-info" action="pharmacy_reprint_transfer_request">
+                    <p:column width="100px" headerText="Action" >
+                        <p:commandButton ajax="false" icon="far fa-eye" class="ui-button-info " action="pharmacy_reprint_transfer_request">
                             <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                         </p:commandButton>
-                    </p:column>
-                    <p:column width="100px">
-                        <p:commandButton ajax="false" icon="fas fa-check" value="Issue" class="ui-button-success" action="pharmacy_transfer_issue"
+                    
+                        <p:commandButton ajax="false" icon="fas fa-check" class="ui-button-success mx-2" action="pharmacy_transfer_issue"
                                          disabled="#{p.cancelled eq true}">
                             <f:setPropertyActionListener target="#{transferIssueController.requestedBill}" value="#{p}"/>
                         </p:commandButton>
@@ -87,10 +86,10 @@
 
                     <p:column headerText="Issued" style="text-align: center;" >                   
                         <p:dataTable var="b" value="#{p.forwardReferenceBills}">                           
-                            <p:column  >                                                               
+                            <p:column headerText="Issue No." >                                                               
                                 <h:outputLabel  value="#{b.deptId}"/>                                   
                             </p:column>
-                            <p:column >
+                            <p:column headerText="Date/Time" >
                                 <h:outputLabel value="#{b.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
@@ -103,7 +102,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>                               
                             </p:column>                             
-                            <p:column >
+                            <p:column headerText="Issued By" >
                                 <h:outputLabel value="#{b.creater.webUserPerson.name}"/>     
                                 <br/>
                                 <h:panelGroup rendered="#{b.cancelled}" >
@@ -112,15 +111,15 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 
-                            <p:column >                              
+                            <p:column headerText="Issued To" >                              
                                 <h:outputLabel value="#{b.toStaff.person.nameWithTitle}"/>                                   
                             </p:column> 
-                            <p:column >
+                            <p:column headerText="Total" >
                                 <h:outputLabel value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                  
                             </p:column>
-                            <p:column>
+                            <p:column headerText="Action">
                                 <p:commandButton 
                                     ajax="false" 
                                     icon="far fa-eye"

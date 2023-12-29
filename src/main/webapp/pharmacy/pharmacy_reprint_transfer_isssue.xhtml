@@ -17,11 +17,27 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Issue Reprint" ></h:outputLabel>
                             <hr/>
-                            <p:commandButton ajax="false" action="/pharmacy/pharmacy_transfer_request_list" actionListener="#{pharmacyBillSearch.makeNull()}" value="Issued List"/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fas fa-list"
+                                class="ui-button-warning"
+                                action="/pharmacy/pharmacy_transfer_request_list" 
+                                actionListener="#{pharmacyBillSearch.makeNull()}" 
+                                value="Issued List"/>
+                            <p:commandButton 
+                                value="Reprint" 
+                                icon="fas fa-print"
+                                class="ui-button-info mx-2"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_transfer_issue" rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel" 
+                                icon="fas fa-cancel"
+                                class="ui-button-danger"
+                                action="pharmacy_cancel_transfer_issue" 
+                                rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>     
                         </f:facet>
 
