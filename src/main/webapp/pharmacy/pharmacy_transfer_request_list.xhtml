@@ -74,12 +74,12 @@
                         </h:panelGroup>
                     </p:column>  
                     <p:column width="100px" >
-                        <p:commandButton ajax="false" value="View" class="ui-button-info" action="pharmacy_reprint_transfer_request">
+                        <p:commandButton ajax="false" icon="far fa-eye" value="View" class="ui-button-info" action="pharmacy_reprint_transfer_request">
                             <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                         </p:commandButton>
                     </p:column>
                     <p:column width="100px">
-                        <p:commandButton ajax="false" value="Issue" class="ui-button-success" action="pharmacy_transfer_issue"
+                        <p:commandButton ajax="false" icon="fas fa-check" value="Issue" class="ui-button-success" action="pharmacy_transfer_issue"
                                          disabled="#{p.cancelled eq true}">
                             <f:setPropertyActionListener target="#{transferIssueController.requestedBill}" value="#{p}"/>
                         </p:commandButton>
@@ -123,6 +123,7 @@
                             <p:column>
                                 <p:commandButton 
                                     ajax="false" 
+                                    icon="far fa-eye"
                                     value="View Issued Note" 
                                     class="ui-button-info"
                                     action="pharmacy_reprint_transfer_isssue" >

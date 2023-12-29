@@ -15,25 +15,28 @@
                 <f:facet name="header" >                                  
                     <h:panelGrid columns="4">
                         <f:facet name="header">
-                            <h:outputLabel value="Department :#{transferIssueController.requestedBill.department.name}" />
+                            <h:outputLabel value="To Department : &nbsp; #{transferIssueController.requestedBill.department.name}" class="mb-1"/>
                         </f:facet>
-                        <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" styleClass="noPrintButton"
-                                        forceSelection="true"
+                        <h:outputLabel value="Select Staff Name :" />&nbsp;
+                        <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                        forceSelection="true" 
                                         var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                         value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
-                        <p:commandButton  value="Issue" action="#{transferIssueController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                        <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" ajax="false" class="ui-button-success mx-2" >
                         </p:commandButton>                        
                     </h:panelGrid>
                 </f:facet>
 
-
+                <p:panel class="my-2">
+                    <f:facet name="header" >  
+                        <h:outputLabel styleClass="fas fa-list" />
+                        <h:outputLabel value="Requested Items" class="mx-4" />
+                    </f:facet>
                 <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
                              value="#{transferIssueController.billItems}" 
                              id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
 
-                    <f:facet name="header">  
-                        Requested Item 
-                    </f:facet>  
+                     
 
                     <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
                     <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
@@ -84,8 +87,8 @@
                         </p:commandButton>
                     </p:column>
                 </p:dataTable>  
-
-                <p:spacer height="50"/>
+                </p:panel>
+                
                 <ph:history/>
 
             </p:panel>
