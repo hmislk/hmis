@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.UploadType;
+import com.divudi.entity.Category;
 import com.divudi.entity.Upload;
 import com.divudi.entity.WebContent;
 import com.divudi.facade.UploadFacade;
@@ -289,6 +290,19 @@ public class UploadController implements Serializable {
         }
         j += " order by u.webContent.name";
         return getFacade().findByJpql(j, m, TemporalType.DATE);
+    }
+    
+    public Upload findUpload(Category category) {
+        String j = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.category=:cat";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("cat", category);
+       
+        
+        return getFacade().findFirstByJpql(j, m, TemporalType.DATE);
     }
 
     public String upload() {
