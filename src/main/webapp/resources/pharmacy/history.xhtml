@@ -32,7 +32,7 @@
                 </p:calendar>
                 <p:commandButton update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId} :#{p:resolveFirstComponentWithId('depIssue',view).clientId}" 
                                  action="#{pharmacyController.createTable()}"
-                                class="ui-button-info" value="View Detail"/>
+                                class="ui-button-info" icon="far fa-eye" value="View Detail"/>
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >
@@ -46,7 +46,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        QTY
+                                        Qty
                                     </f:facet>
                                 </p:column>
                             </p:row>
@@ -107,7 +107,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        QTY
+                                        Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >
@@ -227,7 +227,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        QTY
+                                        Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >
@@ -312,7 +312,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        QTY
+                                        Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >
@@ -397,7 +397,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        Sent QTY
+                                        Sent Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >
@@ -483,7 +483,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        Received QTY
+                                        Received Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >
@@ -569,7 +569,7 @@
                                 </p:column>
                                 <p:column >
                                     <f:facet name="header">
-                                        Sent QTY
+                                        Sent Qty
                                     </f:facet>
                                 </p:column>
                                 <p:column >

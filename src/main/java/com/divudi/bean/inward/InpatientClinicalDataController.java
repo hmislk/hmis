@@ -395,7 +395,8 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
 
-        String inpatientRx = "Rx" + "<br/>";
+        String inpatientRxStrat =  "Rx" + "<br/>";
+        String inpatientRx = inpatientRxStrat;
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null) {
                 if (!cf.getPrescription().isIndoor()) {
@@ -409,8 +410,12 @@ public class InpatientClinicalDataController implements Serializable {
                 }
             }
         }
+        if(inpatientRx.equals(inpatientRxStrat)){
+            inpatientRx = "No inpatient treatment";
+        }
 
-        String dischargeMedicines = "Rx" + "<br/>";
+        
+        String drxString = "Rx" + "<br/>";
         for (ClinicalFindingValue cf : getDischargeMedicines()) {
             if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
                 if (cf.getPrescription().isIndoor()) {
@@ -420,7 +425,7 @@ public class InpatientClinicalDataController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    dischargeMedicines += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    drxString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
                 }
             }
         }
@@ -513,7 +518,7 @@ public class InpatientClinicalDataController implements Serializable {
         replacements.put("{comments}", comments); // Duplicate removed
         replacements.put("{medicines}", medicinesAsString);
         replacements.put("{rx}", inpatientRx);
-        replacements.put("{drx}", dischargeMedicines);
+        replacements.put("{drx}", drxString);
         replacements.put("{ix}", ixAsString);
         replacements.put("{past-dx}", pastDxAsString);
         replacements.put("{routine-medicines}", routineMedicinesAsString);
