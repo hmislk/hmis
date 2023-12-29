@@ -119,6 +119,12 @@
                                             ajax="false" 
                                             value="Report Template Availability" 
                                             action="/admin/lims/report_template_availability" />
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Report Template Image Upload" 
+                                            action="/admin/lims/report_template_image_upload"
+                                            rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
 
                                     </div>
                                 </h:panelGroup>
