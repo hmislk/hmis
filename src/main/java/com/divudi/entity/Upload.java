@@ -63,17 +63,21 @@ public class Upload implements Serializable {
     String fileType;
     
     @ManyToOne
+    private Category category;
+    @ManyToOne
     private WebContent webContent;
     @ManyToOne
     Institution institution;
     @ManyToOne
     WebUser creater;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
     WebUser retirer;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
@@ -259,6 +263,14 @@ public class Upload implements Serializable {
             }
         }
         return pdf;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }
