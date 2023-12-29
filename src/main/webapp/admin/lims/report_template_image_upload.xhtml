@@ -17,7 +17,10 @@
 
                         <p:outputLabel value="Name of the Template"/>
 
-                        <p:selectOneMenu   id="lstSelect"   value="#{reportFormatController.current}" styleClass="listBox">
+                        <p:selectOneMenu  
+                            id="lstSelect"  
+                            value="#{reportFormatController.current}" 
+                            styleClass="listBox">
                             <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                             <p:ajax  process="lstSelect" update="image"  >
                             </p:ajax>
