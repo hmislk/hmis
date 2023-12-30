@@ -80,7 +80,8 @@ public class UserIconController implements Serializable {
             ui.setOrderNumber(newOrder);
             ui.setDepartment(department);
             save(ui);
-            JsfUtil.addSuccessMessage("Save Success");
+            JsfUtil.addSuccessMessage("Save Success ");
+            
             getUserIcons().add(ui);
             reOrderUserIcons();
         } else {
