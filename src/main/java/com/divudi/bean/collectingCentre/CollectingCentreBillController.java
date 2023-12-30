@@ -207,6 +207,40 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
     private List<ItemLight> opdItems;
+    private List<AgentReferenceBook> agentReferenceBooks;
+
+    public List<AgentReferenceBook> getAgentReferenceBooks() {
+        return agentReferenceBooks;
+    }
+
+    public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
+        this.agentReferenceBooks = agentReferenceBooks;
+    }
+    
+    class CollectingCenterBook{
+        private String bookName;
+        private Integer bookNumber;
+        
+        
+
+        public String getBookName() {
+            return bookName;
+        }
+
+        public void setBookName(String bookName) {
+            this.bookName = bookName;
+        }
+
+        public Integer getBookNumber() {
+            return bookNumber;
+        }
+
+        public void setBookNumber(Integer bookNumber) {
+            this.bookNumber = bookNumber;
+        }
+        
+        
+    }
 
     public void selectCollectingCentre() {
         if (collectingCentre == null) {
@@ -484,7 +518,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 + " and a.fullyUtilized=false "
                 + " order by a.id ";
         m.put("ins", ins);
-        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
 
@@ -2205,5 +2239,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
+    
+    
 
 }
