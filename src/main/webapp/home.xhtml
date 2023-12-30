@@ -6,10 +6,44 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
 
-    
+
     <ui:define name="content">
-       
-        
+
+        <div class="row" >
+            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+                <h:panelGroup 
+                    id="panelPatientAddNew" 
+                    rendered="#{ui.icon eq 'Patient_Lookup'}"
+                    layout="block"
+                    class="col-md-3"
+                    >
+                    <p:panel
+                        class="m-1 w-100"
+                        header="Patient Lookup">
+                        sdfsdf
+                    </p:panel>
+                </h:panelGroup>
+            </ui:repeat>
+            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+                <h:panelGroup 
+                    id="panelPatientAddNew" 
+                    rendered="#{ui.icon eq 'Patient_Add_New'}"
+                    layout="block"
+                    class="col-md-3"
+                    >
+                    <p:panel
+                        class="m-1 w-100"
+                        header="Add New Patient">
+                        dfsdf
+                    </p:panel>
+                </h:panelGroup>
+
+            </ui:repeat>
+
+        </div>
+
+
+
     </ui:define>
 
 </ui:composition>
