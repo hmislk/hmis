@@ -54,8 +54,10 @@
                             </p:autoComplete>
                         </div>
                         <div class="col-md-3">
-                            <p:commandButton ajax="false" value="Select" 
-                                             action="#{collectingCentreBillController.selectCollectingCentre()}" ></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Select" 
+                                action="#{collectingCentreBillController.selectCollectingCentre()}" ></p:commandButton>
                         </div>
                     </h:panelGroup>
 
@@ -130,8 +132,8 @@
                                                     icon="fa fa-plus" 
                                                     action="#{collectingCentreBillController.addToBill()}"  
                                                     class=" mx-1 ui-button-success" 
-                                                    process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx :#{p:resolveFirstComponentWithId('acColl',view).clientId}"
-                                                    update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+                                                    process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx"
+                                                    update="msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
                                             </div>
@@ -348,6 +350,7 @@
                                         <div class="col-md-9">
                                             <p:selectOneMenu
                                                 filter="true"
+                                                filterMatchMode="contains"
                                                 value="#{collectingCentreBillController.referralId}" 
                                                 class="w-100 mb-1">
                                                 <f:selectItem itemLabel="Select" itemValue="" /> <!-- Default empty selection -->
@@ -381,23 +384,27 @@
                                         </div>
                                     </div>
                                     <h:panelGrid columns="2" class="w-100 ">
-                                        <p:dataTable class="mt-2" emptyMessage="No Book"  id="tblAgentBooks" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
+                                        <p:dataTable 
+                                            class="mt-2"
+                                            emptyMessage="No Book"  
+                                            id="tblAgentBooks" 
+                                            value="#{collectingCentreBillController.bookSummeryRows}" 
+                                            var="a" 
+                                            styleClass="noBorder summeryBorder">
                                             <p:column>
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="S.R.N." />
+                                                    <p:outputLabel value="Book Number" />
                                                 </f:facet>
-                                                <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                <p:outputLabel value="#{a.bookName}" >
                                                     <f:convertNumber pattern="00000" />
                                                 </p:outputLabel>
-                                            </p:column>.
-                                        </p:dataTable>
-                                        <p:dataTable  id="tblAgentBooks2" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
+                                            </p:column>
+
                                             <p:column>
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="E.R.N." />
+                                                    <p:outputLabel value="Number Of Leaves" />
                                                 </f:facet>
-                                                <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                    <f:convertNumber pattern="00000" />
+                                                <p:outputLabel value="#{a.bookNumber}" >
                                                 </p:outputLabel>
                                             </p:column>
                                         </p:dataTable>
