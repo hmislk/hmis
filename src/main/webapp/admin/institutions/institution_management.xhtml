@@ -45,7 +45,7 @@
                                                  value="#{institutionController.current}" 
                                                  style="w-100"
                                                  filter="true">
-                                <f:selectItems  value="#{institutionController.searchItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:selectItems  value="#{institutionController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <p:ajax update="gpDetail" process="lstSelect" >
                                 </p:ajax>
                             </p:selectOneListbox>
@@ -110,7 +110,7 @@
                                                             itemLabel="#{dept.name}"
                                                             itemValue="#{dept}"
                                                             forceSelection="true" 
-                                                            value="#{cc.attrs.value}"/>
+                                                            value="#{institutionController.current.bankBranch}"/>
                                             <h:outputText  value="Account No." ></h:outputText>
                                             <p:inputText  autocomplete="off" class="w-100" value="#{institutionController.current.accountNo}"  ></p:inputText>
                                         </h:panelGrid>
@@ -142,7 +142,6 @@
 
                                 <p:commandButton 
                                     id="btnSave" 
-
                                     value="Save" 
                                     action="#{institutionController.saveSelected()}" 
                                     process="btnSave gpDetail" 
