@@ -54,6 +54,7 @@ public class UserIconController implements Serializable {
     private WebUser user;
     private Icon icon;
     private Department department;
+    private List<Department> departments;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void addUserIcon() {
@@ -81,31 +82,32 @@ public class UserIconController implements Serializable {
             ui.setDepartment(department);
             save(ui);
             JsfUtil.addSuccessMessage("Save Success ");
-            
-            getUserIcons().add(ui);
+            fillDepartmentIcon();
             reOrderUserIcons();
         } else {
             JsfUtil.addErrorMessage("Icon already exists at this position");
         }
+
     }
-    
-//    public  void fillDepartmentIcon() {
-//        if (user == null) {
-//            JsfUtil.addErrorMessage("User?");
-//        }
-//        String jpql = "SELECT i "
-//                + " FROM usericon i "
-//                + " where i.webuser=:u "
-//                + " and i.retired=:ret "
-//                + " and i.department=:dep";
-//        Map m = new HashMap();
-//        m.put("wu", user);
-//        m.put("ret", false);
-//        m.put("dep", department);
-//
-//        userIcons = getEjbFacade().findByJpql(jpql, m);
-//    }
-    
+
+    public void fillDepartmentIcon() {
+        if (user == null) {
+            JsfUtil.addErrorMessage("User?");
+        }
+        Map m = new HashMap();
+        String jpql = "SELECT i "
+                + " FROM UserIcon i "
+                + " where i.webUser=:u "
+                + " and i.retired=:ret ";
+        if (department != null) {
+            jpql += " and i.department=:dep";
+            m.put("dep", department);
+        }
+        m.put("u", user);
+        m.put("ret", false);
+        userIcons = getEjbFacade().findByJpql(jpql, m);
+    }
+
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void moveSelectedUserIconUp() {
         if (current == null) {
@@ -282,6 +284,14 @@ public class UserIconController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
 
     /**
