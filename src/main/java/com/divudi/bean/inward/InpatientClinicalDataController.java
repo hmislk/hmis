@@ -94,7 +94,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.tool.xml.XMLWorkerHelper;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -268,34 +267,7 @@ public class InpatientClinicalDataController implements Serializable {
         current.setBmi(bmi);
     }
 
-    public StreamedContent downloadModifiedWordFile() {
-        if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
-            return null;
-        }
-
-        Map<String, String> replacements = createReplacementsMap(current);
-        selectedDiagnosisCard = findAndReplaceText(selectedDiagnosisCardTemplate, replacements);
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-            document.open();
-            XMLWorkerHelper.getInstance().parseXHtml(writer, document,
-                    new ByteArrayInputStream(selectedDiagnosisCard.getComments().getBytes(StandardCharsets.UTF_8)));
-            document.close();
-
-            return DefaultStreamedContent.builder()
-                    .name(selectedDiagnosisCard.getFileName() + ".pdf")
-                    .contentType("application/pdf")
-                    .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
-                    .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
+  
     public void createDiagnosisCard() {
         System.out.println("createDiagnosisCard");
         if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
