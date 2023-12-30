@@ -635,7 +635,6 @@ public class InstitutionController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             fillItems();
-        
         }
         return items;
     }
