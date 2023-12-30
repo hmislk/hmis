@@ -11,6 +11,7 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
+                <!--<h1>#{ui.icon}</h1>-->
                 <h:panelGroup 
                     id="panelPatientAddNew" 
                     rendered="#{ui.icon eq 'Patient_Lookup'}"
