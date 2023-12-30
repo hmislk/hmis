@@ -207,6 +207,16 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
     private List<ItemLight> opdItems;
+    private List<AgentReferenceBook> agentReferenceBooks;
+    private List<CollectingCenterBookSummeryRow> bookSummeryRows;
+
+    public List<AgentReferenceBook> getAgentReferenceBooks() {
+        return agentReferenceBooks;
+    }
+
+    public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
+        this.agentReferenceBooks = agentReferenceBooks;
+    }
 
     public void selectCollectingCentre() {
         if (collectingCentre == null) {
@@ -474,6 +484,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void fillAvailableAgentReferanceNumbers(Institution ins) {
+        bookSummeryRows = new ArrayList<>();
         String sql;
         referralIds = new ArrayList<>();
         HashMap m = new HashMap();
@@ -484,7 +495,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 + " and a.fullyUtilized=false "
                 + " order by a.id ";
         m.put("ins", ins);
-        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 2);
         // Fetch all used reference numbers for this institution in one query
         Set<String> usedReferenceNumbers = fetchUsedReferenceNumbers(ins);
 
@@ -495,6 +506,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         ins.setAgentReferenceBooks(agentReferenceBooks);
 
         for (AgentReferenceBook a : agentReferenceBooks) {
+            CollectingCenterBookSummeryRow row = new CollectingCenterBookSummeryRow();
+            row.setBookName(a.getStrbookNumber());
+            row.setBookNumber(0);
+
             boolean leavesRemain = false;
             int start = (int) a.getStartingReferenceNumber();
             int end = (int) a.getEndingReferenceNumber();
@@ -507,11 +522,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 if (!usedReferenceNumbers.contains(refNo)) {
                     leavesRemain = true;
                     referralIds.add(refNo);
+                    row.setBookNumber(row.getBookNumber() + 1);
                 }
             }
             if (!leavesRemain) {
                 a.setFullyUtilized(true);
                 agentReferenceBookFacade.edit(a);
+            } else {
+                bookSummeryRows.add(row);
             }
         }
     }
@@ -1209,12 +1227,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void addToBill() {
-
         if (collectingCentre == null) {
             UtilityController.addErrorMessage("Please Select Collecting Center");
             return;
         }
-
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1269,7 +1285,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        UtilityController.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -1687,7 +1703,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
         }
         return patient;
     }
@@ -2204,6 +2220,37 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<CollectingCenterBookSummeryRow> getBookSummeryRows() {
+        return bookSummeryRows;
+    }
+
+    public void setBookSummeryRows(List<CollectingCenterBookSummeryRow> bookSummeryRows) {
+        this.bookSummeryRows = bookSummeryRows;
+    }
+
+    public class CollectingCenterBookSummeryRow {
+
+        private String bookName;
+        private Integer bookNumber;
+
+        public String getBookName() {
+            return bookName;
+        }
+
+        public void setBookName(String bookName) {
+            this.bookName = bookName;
+        }
+
+        public Integer getBookNumber() {
+            return bookNumber;
+        }
+
+        public void setBookNumber(Integer bookNumber) {
+            this.bookNumber = bookNumber;
+        }
+
     }
 
 }

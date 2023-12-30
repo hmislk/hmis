@@ -87,15 +87,21 @@ public class Category implements Serializable {
     private String entityClass;
     @JsonIgnore
     boolean filled;
-    
+
     @ManyToOne
     private Institution institution;
-
 
     // @ManyToOne
     //   private Department department;
     public boolean isFilled() {
         return filled;
+    }
+
+    public String getIdStr() {
+        if (this.id == null) {
+            return null;
+        }
+        return id + "";
     }
 
     public void setFilled(boolean filled) {
@@ -109,8 +115,6 @@ public class Category implements Serializable {
     public void setSymanticType(SymanticHyrachi symanticType) {
         this.symanticType = symanticType;
     }
-    
-    
 
     @XmlTransient
     public List<Category> getChildCategories() {
@@ -215,9 +219,6 @@ public class Category implements Serializable {
         this.retireComments = retireComments;
     }
 
-
-    
-    
     public Date getRetiredAt() {
         return retiredAt;
     }

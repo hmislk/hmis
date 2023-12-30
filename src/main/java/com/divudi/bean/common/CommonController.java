@@ -202,6 +202,14 @@ public class CommonController implements Serializable {
         return s;
     }
 
+    public static Long convertStringToLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
     public static double extractDoubleValue(String input) {
         String cleanedInput = input.replaceAll(",", ""); // Remove commas
         cleanedInput = cleanedInput.trim(); // Trim leading and trailing whitespace

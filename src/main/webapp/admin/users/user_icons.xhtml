@@ -20,13 +20,46 @@
                         <h:outputLabel class="mx-2" value="Manage User Icons"/>
                     </f:facet>
 
-                    <div class="d-flex justify-content-between mb-2">
-                        <p:selectOneMenu value="#{userIconController.icon}" style="width:450px">
+                    <div class="row mb-2">
+                        <p:selectOneMenu 
+                                id="cmbDepartment"
+                                placeholder="Department"
+                                value="#{userPrivilageController.department}" 
+                                style="width: 400px"
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{userPrivilageController.departments}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                        <p:commandButton 
+                            value="LIst Icon"
+                            process="cmbInstitution cmbDepartment"
+                            class="ui-button-warning mx-2 col-2"
+                            ajax="false"
+                            icon="fa fa-list"
+                            
+                            >
+                        </p:commandButton>
+                    </div>
+
+                    <div class="row">
+                        <p:selectOneMenu value="#{userIconController.icon}" style="width:400px">
                             <f:selectItems value="#{userIconController.icons}" />
                         </p:selectOneMenu>
+                    </div>
+
+                    <div class="row">
+
                         <p:commandButton 
-                            value="Add" icon="fa fa-plus" class="ui-button-success"
-                            action="#{userIconController.addUserIcon}" update="displayUserIcons" 
+                            value="Add Icon" 
+                            icon="fa fa-plus" 
+                            class="ui-button-success mt-2 mb-3 w-25"
+                            action="#{userIconController.addUserIcon}" 
+                            update="displayUserIcons" 
+
                             />
                     </div>
 
@@ -75,7 +108,7 @@
                                         target="#{userIconController.current}" >
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
-                                
+
                                 <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>

@@ -94,7 +94,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.tool.xml.XMLWorkerHelper;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -268,34 +267,6 @@ public class InpatientClinicalDataController implements Serializable {
         current.setBmi(bmi);
     }
 
-    public StreamedContent downloadModifiedWordFile() {
-        if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
-            return null;
-        }
-
-        Map<String, String> replacements = createReplacementsMap(current);
-        selectedDiagnosisCard = findAndReplaceText(selectedDiagnosisCardTemplate, replacements);
-
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-            document.open();
-            XMLWorkerHelper.getInstance().parseXHtml(writer, document,
-                    new ByteArrayInputStream(selectedDiagnosisCard.getComments().getBytes(StandardCharsets.UTF_8)));
-            document.close();
-
-            return DefaultStreamedContent.builder()
-                    .name(selectedDiagnosisCard.getFileName() + ".pdf")
-                    .contentType("application/pdf")
-                    .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
-                    .build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public void createDiagnosisCard() {
         System.out.println("createDiagnosisCard");
         if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
@@ -363,8 +334,6 @@ public class InpatientClinicalDataController implements Serializable {
         }
         String diagnosisText = diagnosisTextBuilder.toString();
 
-               
-
         String inpatientRxStrat = "Rx" + "<br/>";
         String inpatientRx = inpatientRxStrat;
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
@@ -385,28 +354,28 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         String drxStart = "Rx" + "<br/>";
-        String drxAsString=drxStart;
+        String drxAsString = drxStart;
         for (ClinicalFindingValue cf : getDischargeMedicines()) {
-            if (cf != null && cf.getPrescription() != null ) {
-                if (cf.getPrescription().isIndoor()) {
-                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    drxAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
-                }
+            if (cf != null && cf.getPrescription() != null) {
+
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                drxAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+
             }
-        } 
+        }
         if (drxAsString.equals(drxStart)) {
-            drxAsString="No Discharge Treatment";
+            drxAsString = "No Discharge Treatment";
         }
 
         String ixStart = " " + "<br/>";
         String ixAsString = ixStart;
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName()+ixStart;
+            ixAsString += ix.getItemValue().getName() + ixStart;
         }
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
@@ -455,7 +424,7 @@ public class InpatientClinicalDataController implements Serializable {
         if (pastDxAsString.equals(pastDxStart)) {
             pastDxAsString = "No Significant Past History";
         }
-        
+
         //Procedures - {procedures}
         String prStart = " " + "<br/>";
         String prAsString = prStart;
@@ -491,7 +460,6 @@ public class InpatientClinicalDataController implements Serializable {
         replacements.put("{routine-medicines}", routineMedicinesAsString);
         replacements.put("{allergies}", allergiesAsString);
         replacements.put("{dx}", diagnosisText);
- 
 
         return replacements;
     }
@@ -622,7 +590,7 @@ public class InpatientClinicalDataController implements Serializable {
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
         }
-        
+
         //Procedures - {procedures}
         String prStart = " " + "<br/>";
         String prAsString = prStart;
@@ -633,7 +601,6 @@ public class InpatientClinicalDataController implements Serializable {
             prAsString = "No Procedures peformed ";
         }
         //
-        
 
         String allergyStart = "Allergies " + "<br/>";
         String allergiesAsString = allergyStart;
@@ -672,7 +639,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (dx != null) {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-                System.out.println("diagnosios name :"+diagnosisName+" "+details  );
+                System.out.println("diagnosios name :" + diagnosisName + " " + details);
                 pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }

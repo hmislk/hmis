@@ -9,8 +9,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.Icon;
+import com.divudi.entity.Department;
 import com.divudi.entity.UserIcon;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.UserIconFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
@@ -19,8 +21,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -49,6 +53,7 @@ public class UserIconController implements Serializable {
     private List<Icon> icons;
     private WebUser user;
     private Icon icon;
+    private Department department;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void addUserIcon() {
@@ -56,10 +61,15 @@ public class UserIconController implements Serializable {
             JsfUtil.addErrorMessage("Select Icon");
             return;
         }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Select Department");
+            return;
+        }
         if (user == null) {
             JsfUtil.addErrorMessage("Program Error. Cannot have this page without a user. Create an issue in GitHub");
             return;
         }
+
         double newOrder = getUserIcons().size() + 1;
         UserIcon existingUI = findUserIconByOrder(newOrder);
 
@@ -68,14 +78,34 @@ public class UserIconController implements Serializable {
             ui.setWebUser(user);
             ui.setIcon(icon);
             ui.setOrderNumber(newOrder);
+            ui.setDepartment(department);
             save(ui);
+            JsfUtil.addSuccessMessage("Save Success ");
+            
             getUserIcons().add(ui);
             reOrderUserIcons();
         } else {
             JsfUtil.addErrorMessage("Icon already exists at this position");
         }
     }
-
+    
+//    public  void fillDepartmentIcon() {
+//        if (user == null) {
+//            JsfUtil.addErrorMessage("User?");
+//        }
+//        String jpql = "SELECT i "
+//                + " FROM usericon i "
+//                + " where i.webuser=:u "
+//                + " and i.retired=:ret "
+//                + " and i.department=:dep";
+//        Map m = new HashMap();
+//        m.put("wu", user);
+//        m.put("ret", false);
+//        m.put("dep", department);
+//
+//        userIcons = getEjbFacade().findByJpql(jpql, m);
+//    }
+    
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void moveSelectedUserIconUp() {
         if (current == null) {
@@ -167,7 +197,6 @@ public class UserIconController implements Serializable {
         return uis;
     }
 
-    
     public void save(UserIcon ui) {
         if (ui == null) {
             return;
@@ -245,6 +274,14 @@ public class UserIconController implements Serializable {
 
     public void setIcon(Icon icon) {
         this.icon = icon;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     /**
