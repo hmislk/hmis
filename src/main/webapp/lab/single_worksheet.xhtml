@@ -11,50 +11,48 @@
     <ui:define name="content">
 
         <h:outputStylesheet library="css" name="maincss.css" />
-
-
-
         <h:form  >
 
-
-
             <p:growl />
-
 
             <h:panelGroup id="pWorksheet">
 
                 <h:outputStylesheet library="css" name="printing.css" />
 
                 <div class="nonPrintBlock" >
-                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:commandButton 
+                        value="Print"
+                        icon="fa fa-print"
+                        ajax="false" 
+                        class="ui-button-success m-2"
+                        action="#" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
                 </div>
                 <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
 
-
-                    
-                    
-                    
                     <div >
                         <div>
+                            <!--
+                                                        Referring Doc - for OPD : 
+                            #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}<br/>
+                            Referring Doc - for Admission : 
+                            #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
 
-                            #{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}
-                            #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}
+                            Collecting Centre - for Admission :
+                            #{patientInvestigationController.current.billItem.bill.collectingCentre.name}<br/>
                             
-                            Referring Doc - for OPD
-                            #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}
-                            
-                            Referring Doc - for Admission
-                            #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}
-                            
-                            Collecting Centre - for Admission
-                            #{patientInvestigationController.current.billItem.bill.collectingCentre.name}
-                            
-                            
-                            
+                            bht :#{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}<br/>
 
+                            room:#{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}<br/>
+                    
+                            room test 1  : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.}<br/>
+                            room test 2  : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom}<br/>
+                            room test 2  : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}<br/>
+
+                            
+                            -->
 
                             <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;"  >
 
@@ -62,19 +60,26 @@
                                     <div>
 
                                         <h:panelGrid columns="4"  style="min-width: 100%; padding: 5px!important;margin: 5px;">
-                                            <h:outputLabel value="Name : " style="font-size: 11px!important;" />
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Name : "/>
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.person.nameWithTitle}" ></h:outputLabel>
 
                                             <h:outputLabel style="font-size: 11px!important;" value="Sex : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.person.sex}" ></h:outputLabel>
 
-
                                             <h:outputLabel style="font-size: 11px!important;" value="Age : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.age }" ></h:outputLabel>
 
+                                            <h:outputLabel style="font-size: 11px!important;" value="Ref. Doc : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.referredBy.person.nameWithTitle}" rendered="#{patientInvestigationController.current.billItem.bill.referredBy.person ne null}"></h:outputLabel>
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}" rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person ne null }"></h:outputLabel>
 
-                                            <h:outputLabel style="font-size: 11px!important;" value="Doc : " />
-                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                                            <h:outputLabel style="font-size: 11px!important;" value="BHT No : " rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter ne null}"/>
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}" rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter ne null}"></h:outputLabel>
+
+                                            <h:outputLabel style="font-size: 11px!important;" value="Room No : " rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter ne null}"/>
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}" rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter ne null}"></h:outputLabel>
+
                                             <h:outputLabel style="font-size: 11px!important;" value="Test : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.investigation.name}" ></h:outputLabel>
 
@@ -85,14 +90,18 @@
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.createdAt}" >
                                                 <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                             </h:outputLabel>
+
                                             <h:outputLabel style="font-size: 11px!important;" value="Sample At : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.sampledAt}" >
                                                 <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                             </h:outputLabel>
+
                                             <h:outputLabel style="font-size: 11px!important;" value="Col. At : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.receivedAt}" >
                                                 <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                             </h:outputLabel>
+
+
                                         </h:panelGrid>
 
 
@@ -146,9 +155,6 @@
                                                     </tr>
                                                 </h:panelGroup>
                                             </ui:repeat>
-
-
-
 
                                         </table>
 
