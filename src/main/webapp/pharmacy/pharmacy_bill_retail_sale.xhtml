@@ -10,19 +10,12 @@
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
       xmlns:pat="http://java.sun.com/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
-
     <h:body>
-
-
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill" >
-
                     <p:growl id="panelError" />
-
-                    <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
-
                     <p:panel rendered="#{!pharmacySaleController.billPreview}">
                         <p:panel>
                             <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
