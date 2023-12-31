@@ -65,21 +65,21 @@
                             <p:dataTable id="tbl"
                                          value="#{reportsTransfer.listz}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Transfer Receive Summery Report"/>
+                                    <h:outputLabel value="Pharmacy Transfer Receive Summary Report"/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
                                     <br/>
                                     <!--<h:panelGrid columns="4">-->
                                     <h:outputLabel value="From  "/>&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.fromDate}">&nbsp;&nbsp;
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     <h:outputLabel value="To  "/>&nbsp;
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     <!--</h:panelGrid>-->
                                 </f:facet>
-
+s
                                 <p:column headerText="Department">
                                     <f:facet name="header">
                                         <h:outputLabel value="Department"/>
