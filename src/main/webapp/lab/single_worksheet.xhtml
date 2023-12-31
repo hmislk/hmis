@@ -34,9 +34,26 @@
                 <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
 
 
+                    
+                    
+                    
                     <div >
                         <div>
 
+                            #{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}
+                            #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}
+                            
+                            Referring Doc - for OPD
+                            #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}
+                            
+                            Referring Doc - for Admission
+                            #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}
+                            
+                            Collecting Centre - for Admission
+                            #{patientInvestigationController.current.billItem.bill.collectingCentre.name}
+                            
+                            
+                            
 
 
                             <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;"  >
