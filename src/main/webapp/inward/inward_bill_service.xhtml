@@ -10,12 +10,8 @@
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
                 xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
-
-
     <ui:define name="content">
         <h:form id="form">
-
-
 
             <h:panelGroup class="row" rendered="#{billBhtController.patientEncounter eq null}"> 
                 <div class="col-12">
@@ -57,15 +53,13 @@
 
             </h:panelGroup>
 
-
-
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">  
                 <p:panel>
                     <f:facet name="header">
                         <div class="row">
                             <div class="col-md-4">
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" /> <!-- FontAwesome Icon -->
-                                <p:outputLabel value="Inward Add Services"/>
+                                <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
                             </div>
                             <div class="col-md-8">
                                 <div class="d-flex justify-content-end align-items-center" >
@@ -479,32 +473,24 @@
                                             <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
                                         </ui:repeat>-->
 
-<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType ne 'FiveFivePaper'}"-->
-                                        <h:panelGroup rendered="true" >
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffb">
                                                 <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
 
-
-<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}"-->
-                                                <h:panelGroup rendered="true" >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffpp">
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
-                                        
-                                        
-<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}"-->
-                                                <h:panelGroup rendered="true" >
+
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-
-
-
-
 
                                     </h:panelGroup>
                                 </h:panelGroup>
