@@ -19,20 +19,7 @@
                     <h:form>
                         <div class="row">
                             <div class="col-md-2">
-                                <p:panel class="mb-2">
-                                    <p:inputText 
-                                        class="form-control" 
-                                        value="#{patientController.searchPatientPhoneNumber}"
-                                        placeholder="Phone Number"
-                                        />
-                                    <p:commandButton 
-                                        id="btnSearchbyPhoneNo"
-                                        value="Quick Search"
-                                        icon="fa-solid fa-search"
-                                        action="#{patientController.searchByPatientPhoneNumber()}" 
-                                        ajax="false" 
-                                        class="mt-2 w-100"/> 
-                                </p:panel>
+
 
                                 <div class="mb-3">
                                     <h:outputLabel value="Name" class="form-label" />
@@ -93,6 +80,23 @@
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
                                     <p:commandButton value="Clear" icon="fa-solid fa-eraser" class="m-1 ui-button-danger w-25"
                                                      action="#{patientController.clearSearchDetails()}" />
+
+
+
+                                    <p:panel class="mb-2">
+                                        <p:inputText 
+                                            class="form-control" 
+                                            value="#{patientController.searchPatientPhoneNumber}"
+                                            placeholder="Phone Number"
+                                            />
+                                        <p:commandButton 
+                                            id="btnSearchbyPhoneNo"
+                                            value="Quick Search"
+                                            icon="fa-solid fa-search"
+                                            action="#{patientController.searchByPatientPhoneNumber()}" 
+                                            ajax="false" 
+                                            class="mt-2 w-100"/> 
+                                    </p:panel>
                                 </div>
 
                                 <p:dataTable value="#{patientController.searchedPatients}" var="p" 
