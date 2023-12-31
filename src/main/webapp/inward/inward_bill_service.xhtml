@@ -6,6 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:print="http://java.sun.com/jsf/composite/ezcomp/prints"
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
                 xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
@@ -212,7 +213,7 @@
                                                             <h:outputLabel value="Investigation or Service"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            
+
                                                             <p:selectOneMenu value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100">
                                                                 <f:selectItems value="#{itemController.items}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
 
@@ -287,25 +288,7 @@
                                             <!--                                            <h:panelGroup id="panelIx" >
                                                                                             <p:panel id='pIxAdd' header="Item Requests">
                                                                                                 <p:panelGrid columns="2" >
-                                                                                                    
-                                                                                                    
-                                            
-                                                                                                    
-                                                                                                    
-                                            
-                                                                                                    
-                                                                                                    
-                                            
-                                            
-                                                                                                    
-                                            
-                                                                                                    
-                                            
-                                                                                                    
-                                                                                                   
-                                            
-                                            
-                                                                                                    
+                                                                                                      
                                                                                                     
                                                                                                 </p:panelGrid>
                                                                                             </p:panel>
@@ -491,9 +474,38 @@
                                         </h:panelGrid>
                                     </div>
                                     <h:panelGroup id="gpBillPreview">
-                                        <ui:repeat value="#{billBhtController.bills}" var="b" >
+
+<!--                                        <ui:repeat value="#{billBhtController.bills}" var="b" >
                                             <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
-                                        </ui:repeat>
+                                        </ui:repeat>-->
+
+<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType ne 'FiveFivePaper'}"-->
+                                        <h:panelGroup rendered="true" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="ffb">
+                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+
+<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}"-->
+                                                <h:panelGroup rendered="true" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="ffpp">
+                                                <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        
+<!--                                    rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}"-->
+                                                <h:panelGroup rendered="true" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+
+
+
+
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </h:panelGroup>
