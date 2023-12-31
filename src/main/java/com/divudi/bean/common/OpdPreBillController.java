@@ -969,30 +969,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean errorCheck() {
-
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
-
-        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
-            if (referralId == null || referralId.trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter Referrance Number");
-                return true;
-            } else {
-
-                if (institutionReferranceNumberExist()) {
-
-                    JsfUtil.addErrorMessage("Alredy Entered");
-                    return true;
-                }
-
-            }
-
-        }
-
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
-            //if (getPatientTabId().equals("tabSearchPt")) {
             if (getPatient() == null) {
                 UtilityController.addErrorMessage("Plese Select Patient");
                 return true;
