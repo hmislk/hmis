@@ -474,19 +474,19 @@
                                         </ui:repeat>-->
 
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffb">
                                                 <print:five_five_paper_with_headings_inward_service bill="#{ffb}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffpp">
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
