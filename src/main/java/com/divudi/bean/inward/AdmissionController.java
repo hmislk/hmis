@@ -990,7 +990,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getInwardPaymentController().makeNull();
         }
         
-        saveEncounterCreditCompanies();
+        saveEncounterCreditCompanies(current);
         
        
         // Save EncounterCreditCompanies
@@ -999,10 +999,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     
-    public void saveEncounterCreditCompanies(){
-         if (!encounterCreditCompanies.isEmpty()) {
+    public void saveEncounterCreditCompanies(PatientEncounter current){
+         if (!encounterCreditCompanies.isEmpty() && current != null) {
+             System.out.println("current : "+ current.getName());
             for(EncounterCreditCompany ecc:encounterCreditCompanies){
-                ecc.setPatientEncounter(parentAdmission);
+                ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
