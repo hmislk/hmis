@@ -42,6 +42,13 @@ public class EncounterCreditCompany implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private double creditLimit;
+    private String descreption;
+    private String policyNo;
+    private String referanceNo;
+    
+    
+    
     
     
 
@@ -137,9 +144,44 @@ public class EncounterCreditCompany implements Serializable {
     public String getRetireComments() {
         return retireComments;
     }
+    
+    
+    
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public double getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(double creditLimit) {
+        this.creditLimit = creditLimit;
+    }
+
+    public String getDescreption() {
+        return descreption;
+    }
+
+    public void setDescreption(String descreption) {
+        this.descreption = descreption;
+    }
+
+    public String getPolicyNo() {
+        return policyNo;
+    }
+
+    public void setPolicyNo(String policyNo) {
+        this.policyNo = policyNo;
+    }
+
+    public String getReferanceNo() {
+        return referanceNo;
+    }
+
+    public void setReferanceNo(String referanceNo) {
+        this.referanceNo = referanceNo;
     }
     
 }

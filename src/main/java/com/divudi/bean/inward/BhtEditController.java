@@ -42,6 +42,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.entity.EncounterCreditCompany;
 
 /**
  *
@@ -68,6 +69,8 @@ public class BhtEditController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+  
+    
     ////////////////
     private List<PatientRoom> patientRoom;
     List<Admission> selectedItems;
@@ -91,6 +94,16 @@ public class BhtEditController implements Serializable {
     
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
+    List<EncounterCreditCompany> encounterCreditCompanys;
+    
+    public void fillCreditCompaniesByPatient(){
+        String sql = "select add from Addmission add"
+                + "  where add.retired=false "
+                + " and add.patientEncounter.patient=:pEnc ";
+        HashMap hm = new HashMap();
+        hm.put("pEnc", current);
+        encounterCreditCompanys= getFacade().findByJpql(sql, hm);
+    }
 
     public void resetSpecialities() {
         if (current == null) {
