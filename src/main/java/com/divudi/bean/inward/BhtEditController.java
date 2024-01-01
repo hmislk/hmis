@@ -42,6 +42,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.entity.EncounterCreditCompany;
+import com.divudi.entity.Institution;
+import com.divudi.facade.EncounterCreditCompanyFacade;
 
 /**
  *
@@ -68,6 +71,10 @@ public class BhtEditController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB 
+    EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+  
+    
     ////////////////
     private List<PatientRoom> patientRoom;
     List<Admission> selectedItems;
@@ -91,6 +98,34 @@ public class BhtEditController implements Serializable {
     
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
+    private List<EncounterCreditCompany> encounterCreditCompanys;
+    EncounterCreditCompany encounterCreditCompany;
+    
+    public void setSelectedCompany(EncounterCreditCompany ecc){
+        current.setCreditCompany(ecc.getInstitution());
+    }
+    
+    public void removeCreditCompany(EncounterCreditCompany ecc){
+        encounterCreditCompanys.remove(ecc);
+        for(EncounterCreditCompany e:encounterCreditCompanys){
+            if (e == ecc) {
+                e.setRetired(false);
+                encounterCreditCompanyFacade.edit(e);
+            }
+        }
+    }
+    
+    public void fillCreditCompaniesByPatient(){
+        encounterCreditCompanys=new ArrayList<>();
+        String sql = "select ecc from EncounterCreditCompany ecc"
+                + "  where ecc.retired=false "
+                + " and ecc.patientEncounter=:pEnc ";
+        HashMap hm = new HashMap();
+        hm.put("pEnc", current);
+        encounterCreditCompanys= encounterCreditCompanyFacade.findByJpql(sql, hm);
+        
+        System.out.println("companies : "+encounterCreditCompanys.size());
+    }
 
     public void resetSpecialities() {
         if (current == null) {
@@ -470,6 +505,7 @@ public class BhtEditController implements Serializable {
         this.roomFacade = roomFacade;
     }
 
+    
     private void createPatientRoom() {
 
         HashMap hm = new HashMap();
@@ -537,6 +573,14 @@ public class BhtEditController implements Serializable {
 
     public void setOpdSpeciality(Speciality opdSpeciality) {
         this.opdSpeciality = opdSpeciality;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        return encounterCreditCompanys;
+    }
+
+    public void setEncounterCreditCompanys(List<EncounterCreditCompany> encounterCreditCompanys) {
+        this.encounterCreditCompanys = encounterCreditCompanys;
     }
 
     /**

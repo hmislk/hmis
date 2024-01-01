@@ -1810,7 +1810,11 @@ public class ItemController implements Serializable {
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
+        allItems=null;
+        getAllItems();
         getItems();
+        current = null;
+        getCurrent();
     }
 
     public void saveSelected(Item item) {
@@ -1830,16 +1834,18 @@ public class ItemController implements Serializable {
      */
     public void delete() {
 
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        allItems=null;
+        getAllItems();
         getItems();
         current = null;
         getCurrent();
