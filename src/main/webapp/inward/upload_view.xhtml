@@ -23,7 +23,7 @@
 
                                     <h:outputLabel class="form form-label" for="txtContents" value="Contents" ></h:outputLabel>
                                     <h:outputLabel class=""  value=":" style="width: 50px; text-align: center"></h:outputLabel>
-                                    <h:inputTextarea class="form form-control" style="width: 500px;" rows="5" id="txtContents" value="#{uploadController.selected.comments}"></h:inputTextarea>
+                                    <h:inputTextarea class="form form-control" style="width: 500px;height: 500px" rows="5" id="txtContents" value="#{uploadController.selected.comments}"></h:inputTextarea>
                                 </h:panelGrid>
                                 
                                 <p:commandButton 
@@ -34,7 +34,6 @@
                                     action="#{uploadController.save()}" 
                                     class="ui-button-warning"/>
                             </p:panel>
-                           
                         </div>
                     </div>
                 </h:form>

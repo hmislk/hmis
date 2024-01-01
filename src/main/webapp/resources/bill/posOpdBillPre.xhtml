@@ -4,11 +4,12 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" class="com.divudi.entitity.Bill"  />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"  />
         <cc:attribute name="duplicate" />
         <cc:attribute name="cancelled" />
     </cc:interface>
@@ -18,8 +19,6 @@
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="posbillBreak" style="text-align: center;">
-
-            <h:graphicImage library="image" name="prabdhodha-logo.jpg" style="width: 90%; margin: auto; text-align: center; " ></h:graphicImage>
 
             <div class="institutionName" style="text-align: center!important;
                  font-weight: bold!important;
@@ -44,6 +43,18 @@
                 <h:outputLabel value="DUE PAYMENTS"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div class="billline">
+                <p:barcode value="#{cc.attrs.bill.idStr}" 
+                           width="400"
+                           height="100"
+                           type="code128"  >
+                </p:barcode>
             </div>
 
             <div class="billline">

@@ -595,6 +595,7 @@
                                     </p:outputLabel>
                                     
                                     <p:textEditor secure="false" 
+                                                  rendered="#{inpatientClinicalDataController.selectedDiagnosisCard.comments ne null}"
                                         id="txtDiagnosisCardEditor"
                                         value="#{inpatientClinicalDataController.selectedDiagnosisCard.comments}">
                                     </p:textEditor>

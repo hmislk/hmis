@@ -833,7 +833,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
                     loggableInstitutions = fillLoggableInstitutions();
-                    userIcons = userIconController.fillUserIcons(u);
+                    userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -949,7 +949,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
-            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -991,7 +990,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
-            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -1120,7 +1118,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
 
-        userIcons = userIconController.fillUserIcons(loggedUser);
+        userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
