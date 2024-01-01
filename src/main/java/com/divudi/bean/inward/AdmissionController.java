@@ -21,6 +21,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.EncounterCreditCompany;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
@@ -94,6 +95,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
+    private List<EncounterCreditCompany> encounterCreditCompanies;
+    private EncounterCreditCompany encounterCreditCompany;
     private Admission parentAdmission;
     private PatientRoom patientRoom;
     private List<Admission> items = null;
@@ -147,6 +150,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToInpatientClinicalData() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
+    public void addCreditCompnay(){
+        // need to add encounterCreditCompany to list
     }
 
     public String navigateToInpatientDrugChart() {
@@ -865,7 +872,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Person p = new Person();
         getPersonFacade().create(p);
         Patient pt = new Patient();
-        patientDetailsEditable=true;
+        patientDetailsEditable = true;
         pt.setPerson(p);
         getPatientFacade().create(pt);
         getCurrent().setPatient(pt);
@@ -979,6 +986,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current == null) {
             current = new Admission();
             current.setDateOfAdmission(new Date());
+            EncounterCreditCompany encounterCreditCompany = new EncounterCreditCompany();
+            encounterCreditCompany.setPatientEncounter(current);
         }
         return current;
     }
@@ -1148,7 +1157,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (patient == null) {
             Person p = new Person();
             patient = new Patient();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
             patient.setPerson(p);
         }
         return patient;
@@ -1275,6 +1284,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.bhtNumberForSearch = bhtNumberForSearch;
     }
 
+    
+    
     public Doctor getReferringDoctorForSearch() {
         return referringDoctorForSearch;
     }
@@ -1346,6 +1357,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setPatientNumberForSearch(String patientNumberForSearch) {
         this.patientNumberForSearch = patientNumberForSearch;
     }
+    
+    
 
     @Override
     public boolean isPatientDetailsEditable() {
@@ -1355,6 +1368,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanies() {
+        if(encounterCreditCompanies==null){
+            encounterCreditCompanies = new ArrayList<>();
+        }
+        return encounterCreditCompanies;
+    }
+
+    public void setEncounterCreditCompanies(List<EncounterCreditCompany> encounterCreditCompanies) {
+        this.encounterCreditCompanies = encounterCreditCompanies;
+    }
+
+    public EncounterCreditCompany getEncounterCreditCompany() {
+        if(encounterCreditCompany==null){
+            encounterCreditCompany = new EncounterCreditCompany();
+            encounterCreditCompany.setPatientEncounter(current);
+        }
+        return encounterCreditCompany;
+    }
+
+    public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
+        this.encounterCreditCompany = encounterCreditCompany;
     }
 
     /**

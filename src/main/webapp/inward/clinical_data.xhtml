@@ -572,19 +572,38 @@
                                         <f:selectItems 
                                             value="#{uploadController.diagnosisCardTemplates}"
                                             var="i"
-                                            itemLabel="#{i.fileName}"
+                                            itemLabel="#{i.webContent.name}"
                                             itemValue="#{i}"
                                             ></f:selectItems>
                                     </p:selectOneMenu>
 
-
-                                    <p:commandButton value="Download Card" ajax="false" icon="pi pi-download">
-                                        <p:fileDownload value="#{inpatientClinicalDataController.downloadModifiedWordFile()}" />
+                                    <p:commandButton 
+                                        value="Generate" 
+                                        ajax="false" 
+                                        icon="pi pi-printer"
+                                        action="#{inpatientClinicalDataController.createDiagnosisCard}">
                                     </p:commandButton>
+
+
+                                    <p:commandButton value="Print" ajax="false" icon="pi pi-printer">
+                                        <p:printer target="txtDiagnosisCard" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:outputLabel 
+                                        id="txtDiagnosisCard"
+                                        value="#{inpatientClinicalDataController.selectedDiagnosisCard.comments}" escape="false" >
+                                    </p:outputLabel>
                                     
-                                   
+                                    <p:textEditor secure="false" 
+                                                  rendered="#{inpatientClinicalDataController.selectedDiagnosisCard.comments ne null}"
+                                        id="txtDiagnosisCardEditor"
+                                        value="#{inpatientClinicalDataController.selectedDiagnosisCard.comments}">
+                                    </p:textEditor>
                                     
-                                    
+
+
+
+
                                 </p:tab>
                             </p:tabView>
                         </div>
