@@ -47,11 +47,7 @@
                                                 process="btnDelete">
                                             </p:commandButton>
                                     </h:panelGrid>
-                                    <div class="row" >
-                                        <div class="col-12" >
-                                            
-                                        </div>
-                                    </div>
+                                   
 
                                     <div class="row">
                                         <div class="col-12">
@@ -160,11 +156,11 @@
                                                     <h:outputText value="Institution" ></h:outputText>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <p:selectOneListbox id="cmbIns" value="#{itemController.current.institution}" filter="true" class="form-control">
+                                                    <p:selectOneMenu id="cmbIns" value="#{itemController.current.institution}" filter="true" class="form-control">
                                                         <f:selectItem itemLabel="Please select a Institution"/>
                                                         <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                                    </p:selectOneListbox>
+                                                    </p:selectOneMenu>
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -180,7 +176,7 @@
                                             </div>
                                             <div class="row">
                                                 <div class="col-md-3">
-                                                    <h:outputText value="Inward Charge Category" ></h:outputText>
+                                                    <h:outputText value="Charge Category" ></h:outputText>
                                                 </div>
                                                 <div class="col-md-9">
                                                     <p:selectOneMenu
