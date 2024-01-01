@@ -15,24 +15,29 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <p:panel header="Patient Search" style="height: 100vh;" >
-                    <h:form>
+                <h:form>
+                    <p:panel style="height: 100vh;" >
+                        <f:facet name="header" class="d-flex justify-content-between">
+                            <i class="fa fa-search"/>
+                            <h:outputLabel value="Patient Search" class="mx-2 mt-2" />
+                            <h:panelGroup style="float: right">
+                                <p:inputText 
+                                value="#{patientController.searchPatientPhoneNumber}"
+                                placeholder="Phone Number"
+                                />
+                            <p:commandButton 
+                                id="btnSearchbyPhoneNo"
+                                value="Quick Search"
+                                icon="fa-solid fa-search"
+                                action="#{patientController.searchByPatientPhoneNumber()}" 
+                                ajax="false" 
+                                class="mx-2 ui-button-warning"/>
+                            </h:panelGroup> 
+                             
+                        </f:facet>
+
                         <div class="row">
                             <div class="col-md-2">
-                                <p:panel class="mb-2">
-                                    <p:inputText 
-                                        class="form-control" 
-                                        value="#{patientController.searchPatientPhoneNumber}"
-                                        placeholder="Phone Number"
-                                        />
-                                    <p:commandButton 
-                                        id="btnSearchbyPhoneNo"
-                                        value="Quick Search"
-                                        icon="fa-solid fa-search"
-                                        action="#{patientController.searchByPatientPhoneNumber()}" 
-                                        ajax="false" 
-                                        class="mt-2 w-100"/> 
-                                </p:panel>
 
                                 <div class="mb-3">
                                     <h:outputLabel value="Name" class="form-label" />
@@ -93,6 +98,7 @@
                                     <p:defaultCommand target="btnSearch"> </p:defaultCommand>
                                     <p:commandButton value="Clear" icon="fa-solid fa-eraser" class="m-1 ui-button-danger w-25"
                                                      action="#{patientController.clearSearchDetails()}" />
+
                                 </div>
 
                                 <p:dataTable value="#{patientController.searchedPatients}" var="p" 
@@ -158,22 +164,13 @@
 
                                     </p:column>
 
-
                                 </p:dataTable>
-
 
                             </div>
                         </div>
-
-
-                        <div class="container">
-
-                        </div>
-                    </h:form>
-                </p:panel>
+                    </p:panel>
+                </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

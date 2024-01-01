@@ -15,30 +15,37 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Return Cash Bill Reprint" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <h:outputLabel value="Pharmacy Return Cash Bill Reprint" class="mt-2" ></h:outputLabel>
+                            
+                            <div class="d-flex" style="float: right;">
+                                <p:commandButton 
+                                    value="Reprint"
+                                    class="ui-button-success "
+                                    icon="fa fa-print"
+                                    ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill_return_cash" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel"
+                                icon="fa fa-cancel"
+                                class="ui-button-danger mx-2"
+                                action="pharmacy_cancel_bill_return_cash" 
+                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>
+                            </div>
+                            
                           
                         </f:facet>
-
-                    </p:panel>
-
-
-
-
-                    <h:panelGroup id="gpBillPreview" >
+                        
+                        <h:panelGroup id="gpBillPreview" >
                         <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                     </h:panelGroup>
 
+                    </p:panel>
 
                 </h:form>
             </ui:define>
-
-
 
         </ui:composition>
 

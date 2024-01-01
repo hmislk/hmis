@@ -10,41 +10,50 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel>
+                    <p:panel style="height: 100vh">
                         <f:facet name="header" >
-                            <h:outputLabel value="SEARCH PHARMACY ISSUE ITEMS"/>                                                          
-
+                            <h:outputText styleClass="fas fa-list" />
+                            <h:outputLabel class="mx-4" value="Search Pharmacy Issue Items"/>                                                          
                         </f:facet>
-
-                        <h:panelGrid columns="5" >
+                        
+                        <div class="row">
+                            <div class="col-2">
+                                 <h:panelGrid columns="1" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPharmacyIssueBillItemTable()}"/>
                         </h:panelGrid>
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="1" >
                             <h:outputLabel value="Bill No"/>
-                            <h:outputLabel value="Item Name"/>    
-                            <h:outputLabel value="Item Value"/>   
-                            <h:outputLabel value="Department"/>           
-                            <h:outputLabel  value="Item Code"/>
                             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                            <h:outputLabel value="Item Name"/>  
                             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" />
+                            <h:outputLabel value="Item Value"/>  
                             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                            <h:outputLabel value="Department"/>      
                             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientName}" />
+                            <h:outputLabel  value="Item Code"/>
                             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
+                            <p:commandButton 
+                                class="w-100 ui-button-warning" 
+                                id="btnSearch"
+                                icon="fas fa-search"
+                                ajax="false"
+                                value="Search"
+                                action="#{searchController.createPharmacyIssueBillItemTable()}"/>
                         </h:panelGrid>
-
-
-                        <p:dataTable 
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
                             rowIndexVar="i" 
                             id="tblBills" 
                             value="#{searchController.billItems}" 
                             var="pi" 
                             paginator="true"
+                            paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
@@ -53,7 +62,7 @@
                             </p:column>
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
-                                                action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                                 action="/pharmacy/pharmacy_reprint_bill_unit_issue">
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>                                     
                                 </p:commandButton>
                             </p:column>
@@ -109,7 +118,9 @@
                             </p:column>
 
                         </p:dataTable>
-
+                            </div>
+                        </div>
+                           
                     </p:panel>
 
                 </h:form>

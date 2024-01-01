@@ -59,6 +59,8 @@ import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
@@ -146,6 +148,10 @@ public class DataUploadBean implements Serializable {
     PersonFacade personFacade;
     @EJB
     VtmFacade vtmFacade;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
+    @EJB
+    ItemFacade itemFacade;
 
     private UploadedFile file;
     private String outputString;
@@ -273,7 +279,7 @@ public class DataUploadBean implements Serializable {
             }
         }
     }
-    
+
     private List<Item> readItemsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -349,7 +355,7 @@ public class DataUploadBean implements Serializable {
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
             }
-            if (categoryName == null && categoryName.trim().equals("")) {
+            if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
             cat = categoryController.findAndCreateCategoryByName(categoryName);
@@ -461,9 +467,26 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell hospitalFeeTypeCell = row.getCell(9);
-            if (hospitalFeeTypeCell != null && hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+            if (hospitalFeeTypeCell != null) {
+                if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+                } else if (hospitalFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = hospitalFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(hospitalFeeTypeCell);
 
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        hospitalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+
+                // Rest of your code remains the same
                 ItemFee itf = new ItemFee();
                 itf.setName("Hospital Fee");
                 itf.setItem(item);
@@ -472,13 +495,32 @@ public class DataUploadBean implements Serializable {
                 itf.setFeeType(FeeType.OwnInstitution);
                 itf.setFee(hospitalFee);
                 itf.setFfee(hospitalFee);
-                itemFeeManager.addNewFeeForItem(item, itf);
-
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
             }
 
             Cell collectingCenterFeeTypeCell = row.getCell(10);
-            if (collectingCenterFeeTypeCell != null && collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+            if (collectingCenterFeeTypeCell != null) {
+                if (collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+                } else if (collectingCenterFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = collectingCenterFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(collectingCenterFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        collectingCentreFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+
+                // Rest of your code remains the same
                 ItemFee itf = new ItemFee();
                 itf.setName("Hospital Fee");
                 itf.setItem(item);
@@ -487,14 +529,20 @@ public class DataUploadBean implements Serializable {
                 itf.setFeeType(FeeType.CollectingCentre);
                 itf.setFee(collectingCentreFee);
                 itf.setFfee(collectingCentreFee);
-                itemFeeManager.addNewFeeForItem(item, itf);
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
             }
+
+            item.setTotal(hospitalFee + collectingCentreFee);
+            item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
+            item.setDblValue(hospitalFee + collectingCentreFee);
+            itemFacade.edit(item);
 
         }
 
         return items;
     }
-
 
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
@@ -1142,7 +1190,6 @@ public class DataUploadBean implements Serializable {
         return dxx;
     }
 
-    
     private List<ItemFee> replaceItemFeesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);

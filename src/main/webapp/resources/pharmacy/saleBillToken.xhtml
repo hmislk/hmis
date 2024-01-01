@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
+        <div class="posbill">
+            
+            <div class="institutionName mb-3" style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+
+            <div class="headingBill mt-2">
+                <h:outputLabel value="Pharmacy Token"   />    
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div class="billDetails" >
+                <table style="width: 100%;" >
+                    <tr>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" ></td>
+                        <td style="width: 15%" ></td>
+                        <td style="width: 30%" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Inv.No" class="billDetails"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails">
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" ></td>
+                        <td style="width: 15%" ></td>
+
+                        <td style="width: 30%" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" class="billDetails">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Method" class="billDetails"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  class="billDetails">
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" ></td>
+                        <td style="width: 15%" ></td>
+                        <td style="width: 30%" ></td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel value="Name" class="billDetails"></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  class="billDetails"></h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            
+            <div class="billline m-1">
+                <p:barcode value="#{cc.attrs.bill.idStr}" cache="false" type="code128" ></p:barcode>
+            </div>
+            
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+            
+            <div class="mx-5" >
+                <table style="width: 100%;">
+                    <tr>
+                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <h:outputLabel value="Total" />
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+
+
+            
+
+            <div class="footer">
+                <br/>
+                THANK YOU !
+                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
+                    <br/>
+                </h:panelGroup>
+                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>
