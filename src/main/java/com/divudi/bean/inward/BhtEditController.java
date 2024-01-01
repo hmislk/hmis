@@ -112,6 +112,9 @@ public class BhtEditController implements Serializable {
                 encounterCreditCompanyFacade.edit(e);
             }
         }
+        current.setCreditCompany(null);
+        fillCreditCompaniesByPatient();
+//        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
     }
     
     public void fillCreditCompaniesByPatient(){
