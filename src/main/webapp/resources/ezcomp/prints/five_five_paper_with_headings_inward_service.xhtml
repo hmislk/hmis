@@ -17,7 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" >
+        <div class="fiveinchbill " >
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
@@ -136,6 +136,32 @@
 
                     </tr>
 
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="BHT No : " class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        
+                        <td>
+                            <h:outputLabel value="Room No :" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td style="text-align: left;" >
@@ -151,17 +177,17 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
-
+                        
                     </tr>
 
                     <tr>
@@ -177,25 +203,25 @@
 
                         </td>
                         <td style="width: 50px;"></td>
+                        
                         <td>
-                            <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
                             <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
-
                     </tr>
-
+                    
                 </table>
             </div>
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                <div class="billline">
+                <div class="billline mt-2">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" />
                     </div>
