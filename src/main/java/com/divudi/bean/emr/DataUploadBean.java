@@ -734,7 +734,10 @@ public class DataUploadBean implements Serializable {
             if (collectingCentre != null) {
                 continue;
             }
-            collectingCentre = new Institution();
+            if (collectingCentre==null){
+                collectingCentre = new Institution();
+            }
+//            collectingCentre = new Institution();
             collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
             collectingCentre.setCode(code);
             collectingCentre.setName(collectingCentreName);
