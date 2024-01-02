@@ -106,13 +106,15 @@ public class BhtEditController implements Serializable {
     }
     
     public void removeCreditCompany(EncounterCreditCompany ecc){
-        encounterCreditCompanys.remove(ecc);
         for(EncounterCreditCompany e:encounterCreditCompanys){
             if (e == ecc) {
-                e.setRetired(false);
+                e.setRetired(true);
                 encounterCreditCompanyFacade.edit(e);
             }
         }
+        current.setCreditCompany(null);
+        fillCreditCompaniesByPatient();
+//        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
     }
     
     public void fillCreditCompaniesByPatient(){

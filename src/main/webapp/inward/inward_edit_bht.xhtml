@@ -46,7 +46,6 @@
                                     id="btnSelect"
                                     ajax="false"
                                     value="Select"
-
                                     />
 
                             </p:panel>
@@ -102,24 +101,24 @@
                                     <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
                                     <h:outputLabel value="Admission" class="mx-4"></h:outputLabel>
                                 </f:facet>
-                                <p:panelGrid columns="2" class="w-100" >
+                                <h:panelGrid columns="2" class="w-100" >
                                     <p:outputLabel  value="Date of Admission"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                    <p:calendar class="w-100" inputStyleClass="w-100" value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="@this" />
                                     </p:calendar>
                                     <p:outputLabel  value="BHT No(full)"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
                                     <p:outputLabel  value="Local/Foreigner"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}" 
                                                              itemLabel="Foreigner"/>
-                                    <p:outputLabel  value="Claimable/Non-Claimable"  />
+                                    <p:outputLabel  class="w-100"  value="Claimable/Non-Claimable"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
                                                              itemLabel="Claimable"/>
-                                </p:panelGrid>
+                                </h:panelGrid>
                             </p:panel>  
 
                             <p:panel>
@@ -150,7 +149,7 @@
                                                                                                             </p:selectOneMenu>-->
 
                                     <h:outputLabel  value="OPD Doctor" ></h:outputLabel>
-                                    <p:autoComplete  class="w-100 mx-2" forceSelection="true" id="refDoc"
+                                    <p:autoComplete  class="w-100 mx-2" inputStyleClass="w-100" forceSelection="true" id="refDoc"
                                                      value="#{bhtEditController.current.opdDoctor}" 
                                                      completeMethod="#{doctorController.completeDoctor}"
                                                      var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
@@ -168,7 +167,7 @@
                                                                         </p:autoComplete>-->
 
                                     <p:outputLabel value="Refering Doctor"/>                            
-                                    <p:autoComplete id="acRefDoc" forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
+                                    <p:autoComplete inputStyleClass="w-100" id="acRefDoc" forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
                                                     completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                     itemLabel="#{ix.person.name}" itemValue="#{ix}"  
                                                     class="w-100 mx-2"  >
@@ -182,7 +181,7 @@
                                         <p:ajax process="@this" update="crd" event="change" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
-                                <h:panelGroup id="crd" style="display: #{bhtEditController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
+                                <h:panelGroup id="crd" style="display: #{bhtEditController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; " >
                                     <credit:inputCredit  patientEncounter="#{bhtEditController.current}"/>
                                 </h:panelGroup>
 
@@ -190,7 +189,7 @@
 
                             <p:panel header="Credit Company">
                                 <p:commandButton 
-                                    value="load Companies"
+                                    value="load Patient's Credit Companies"
                                     id="btnLoad"
                                     action="#{bhtEditController.fillCreditCompaniesByPatient()}"
                                     process="btnLoad"
@@ -209,16 +208,19 @@
                                     <p:column style="text-align: right">
                                         <p:commandButton
                                             id="btnSelect"
-                                            value="Select"
+                                            value='Select'
+                                            icon="fas fa-check-circle"
                                             ajax="false"
+                                            class="ui-button-success"
                                             action="#{bhtEditController.setSelectedCompany(ecc)}"/>
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton value="remove" 
-                                                         ajax="false"
-                                                         icon="pi pi-times" 
-                                                         action="#{bhtEditController.removeCreditCompany(ecc)}"
-                                                         styleClass="rounded-button ui-button-danger" />
+                                        <p:commandButton  
+                                            id="btnRemove"
+                                            ajax="false"
+                                            icon="fas fa-trash" 
+                                            action="#{bhtEditController.removeCreditCompany(ecc)}"
+                                            styleClass="rounded-button ui-button-danger" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -227,6 +229,10 @@
 
 
                             <p:panel header="Cancel Admission">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-ban"/>
+                                    <h:outputText class="mx-4" value="Cancel Admission"/>
+                                </f:facet>
                                 <p:inputTextarea value="#{bhtEditController.comment}" id="com" class="w-100">
                                 </p:inputTextarea>
 
@@ -280,16 +286,19 @@
                                     <p:inputText class="mx-2 w-100" autocomplete="off" value="#{bhtEditController.current.guardian.address}" />
                                 </h:panelGrid>
                             </p:panel>
-
-                            <p:panel id="panPrint" class="w-100" >
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                    <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
-                                </f:facet>
+                           
                                 <h:panelGroup id="grpBill">
-                                    <bill:bht admission="#{bhtEditController.current}"/>
+                                    <p:panel id="panPrint" class="w-100" >
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                            <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+
+                                        <bill:bht admission="#{bhtEditController.current}"/>
+
+                                    </p:panel>
                                 </h:panelGroup>
-                            </p:panel>
+                          
                         </div>
                     </div>
                 </h:panelGroup>
