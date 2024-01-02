@@ -19,18 +19,18 @@
                         
                         
                         <div class="row">
-                            <div class="col-6 ">
-                                <h:outputLabel value="Transfer Issue From" ></h:outputLabel>&nbsp;
+                            <div class="col-4 ">
+                                <h:outputLabel value="Issue From" ></h:outputLabel>&nbsp;
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="From" ></h:outputLabel>&nbsp;
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="To" ></h:outputLabel>&nbsp;
                             <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>
