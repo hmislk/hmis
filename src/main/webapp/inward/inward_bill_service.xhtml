@@ -435,13 +435,12 @@
                                             </p:selectOneMenu>
                                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                                         </h:panelGrid>
-                                    </div>
-                                    <h:panelGroup id="gpBillPreview">
+                                    </div>                                    
+                                    <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
 
 <!--                                        <ui:repeat value="#{billBhtController.bills}" var="b" >
                                             <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
                                         </ui:repeat>-->
-
 
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="ffb">
@@ -454,10 +453,22 @@
                                                 <print:five_five_paper_without_headings_inward_service bill="#{ffpp}" dup="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
-
+                                        
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{billBhtController.bills}" var="pp">
                                                 <print:posOpdBill_inward_service bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
+                                            <ui:repeat value="#{billBhtController.bills}" var="pp">
+                                                <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
 
