@@ -17,18 +17,18 @@
                     <p:panel header="Item - wise Adjustments" >
 
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <h:outputLabel value="Department" />&nbsp;
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                                 itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                 value="#{pharmacyAdjustmentController.fromDepartment}"  >
                                 </p:autoComplete>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="From" />&nbsp;
                                 <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="To" />&nbsp;
                                 <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>
