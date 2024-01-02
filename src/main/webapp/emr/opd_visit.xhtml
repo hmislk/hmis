@@ -48,12 +48,13 @@
                                 icon="pi pi-print"
                                 class="p-0 m-1" 
                                 title="Print">
-                                <p:printer target=":formImage:tblView:txtComments"/>
+                                <p:printer target=":formImage:tblView:txeLetterPreview"/>
                             </p:commandButton>
 
 
                         </div>
                     </div>
+
                     <div class="row" >
                         <div class="col-12" >
                             <p:tabView id="tblView" activeIndex="#{emrController.activeIndexOfOpdVisit}">
@@ -593,7 +594,9 @@
                                                         value="#{patientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
                                                 </f:facet>
                                                 <h:panelGroup id="txtReferralDoc" ></h:panelGroup>
-                                                <p:textEditor 
+                                                <p:textEditor
+                                                    toolbarVisible="false"
+                                                    id="txeLetterPreview"
                                                     rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
                                                     secure="false" 
                                                     value="#{patientEncounterController.encounterReferral.lobValue}" >
