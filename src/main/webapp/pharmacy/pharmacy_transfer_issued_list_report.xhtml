@@ -12,16 +12,13 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>                   
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="4" class="w-100" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
                         <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:calendar>
-                        
-                        <h:outputLabel value="Staff "/>                           
-                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                         
                         <h:outputLabel  value="Request From Department"  ></h:outputLabel>
                         <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
@@ -36,6 +33,8 @@
                                          itemValue="#{dept}" itemLabel="#{dept.name}" 
                                          forceSelection="true" rendered="true">
                         </p:autoComplete>
+                        <h:outputLabel value="Staff "/>                           
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                     </h:panelGrid>
                     
                     <h:panelGrid columns="3" class="my-2">

@@ -610,7 +610,7 @@ public class DataUploadBean implements Serializable {
 
             Cell agentPrintingNameCell = row.getCell(2);
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                collectingCentrePrintingName = agentNameCell.getStringCellValue();
+                collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
 
             }
             if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
