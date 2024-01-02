@@ -25,7 +25,7 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String1Value6;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.BillReportBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;

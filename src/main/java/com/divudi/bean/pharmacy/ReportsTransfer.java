@@ -14,7 +14,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;

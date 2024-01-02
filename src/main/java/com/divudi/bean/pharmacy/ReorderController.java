@@ -17,7 +17,7 @@ import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.ItemReorders;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;

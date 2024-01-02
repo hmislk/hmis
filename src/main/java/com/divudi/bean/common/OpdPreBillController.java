@@ -29,7 +29,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -934,24 +934,19 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean checkPatientAgeSex() {
-
         if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-
         if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             UtilityController.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
-
         if (getPatient().getPerson().getPhone().length() < 1) {
             UtilityController.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
-
         return false;
-
     }
 
     private boolean institutionReferranceNumberExist() {
@@ -978,24 +973,13 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 UtilityController.addErrorMessage("Plese Select Patient");
                 return true;
             }
-            // }
-
-            //if (getPatientTabId().equals("tabNewPt")) {
-//                if (getSearchedPatient().getPerson().getName() == null
-//                        || getSearchedPatient().getPerson().getName().trim().equals("")) {
-//                    UtilityController.addErrorMessage("Can not bill without Patient Name");
-//                    return true;
-//                }
-            //}
             boolean checkAge = false;
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
-                    //  //System.err.println("ttttt");
                     checkAge = true;
                     break;
                 }
             }
-
             if (checkAge && checkPatientAgeSex()) {
                 return true;
             }

@@ -9,7 +9,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;

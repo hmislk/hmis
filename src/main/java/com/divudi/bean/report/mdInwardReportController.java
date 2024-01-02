@@ -14,7 +14,7 @@ import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;

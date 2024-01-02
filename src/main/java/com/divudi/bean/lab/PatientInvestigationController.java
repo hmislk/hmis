@@ -18,7 +18,7 @@ import com.divudi.data.lab.SampleRequestType;
 import com.divudi.data.lab.SysMexOld;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;

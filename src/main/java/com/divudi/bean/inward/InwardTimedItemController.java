@@ -16,7 +16,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;

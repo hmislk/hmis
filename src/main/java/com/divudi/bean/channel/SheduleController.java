@@ -11,7 +11,7 @@ import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;

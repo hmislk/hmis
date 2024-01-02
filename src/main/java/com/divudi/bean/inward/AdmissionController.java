@@ -17,7 +17,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Doctor;

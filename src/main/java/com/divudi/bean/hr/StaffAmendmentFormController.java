@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
 import com.divudi.entity.hr.Shift;

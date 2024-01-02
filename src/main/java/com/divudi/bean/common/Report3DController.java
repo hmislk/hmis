@@ -4,7 +4,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;

@@ -16,7 +16,7 @@ import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import static com.divudi.data.hr.Times.inTime;
 import static com.divudi.data.hr.Times.outTime;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
 import com.divudi.entity.Staff;

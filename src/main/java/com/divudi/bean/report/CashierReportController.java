@@ -17,7 +17,7 @@ import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value5;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;

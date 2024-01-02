@@ -9,7 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.MessageType;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;

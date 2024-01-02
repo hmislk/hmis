@@ -9,7 +9,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Area;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;

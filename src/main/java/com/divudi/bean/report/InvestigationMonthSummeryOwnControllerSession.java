@@ -14,7 +14,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.BillEjb;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;

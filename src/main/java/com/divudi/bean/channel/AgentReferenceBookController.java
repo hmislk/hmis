@@ -11,7 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.ReferenceBookEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.entity.channel.AgentReferenceBook;

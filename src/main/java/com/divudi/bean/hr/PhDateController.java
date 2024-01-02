@@ -12,7 +12,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.hr.PhDate;
 import com.divudi.facade.PhDateFacade;
 import java.io.Serializable;

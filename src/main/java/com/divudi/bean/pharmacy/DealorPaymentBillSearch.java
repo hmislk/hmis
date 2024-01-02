@@ -13,7 +13,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;

@@ -7,7 +7,7 @@ package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;

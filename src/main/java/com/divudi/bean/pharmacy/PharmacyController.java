@@ -20,7 +20,7 @@ import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;

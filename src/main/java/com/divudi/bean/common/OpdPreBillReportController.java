@@ -10,7 +10,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;

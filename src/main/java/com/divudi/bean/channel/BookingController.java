@@ -16,7 +16,7 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.MessageType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;

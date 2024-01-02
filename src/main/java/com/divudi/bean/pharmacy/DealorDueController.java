@@ -10,7 +10,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.table.String1Value5;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;

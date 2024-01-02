@@ -16,7 +16,7 @@ import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
 import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String2Value4;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;

@@ -36,7 +36,7 @@ import static com.divudi.data.inward.InwardChargeType.NursingCharges;
 import static com.divudi.data.inward.InwardChargeType.ProfessionalCharge;
 import static com.divudi.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;

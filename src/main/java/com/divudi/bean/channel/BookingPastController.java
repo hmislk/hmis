@@ -12,7 +12,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.Title;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;

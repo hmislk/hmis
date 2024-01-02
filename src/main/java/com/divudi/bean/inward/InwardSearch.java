@@ -19,7 +19,7 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;

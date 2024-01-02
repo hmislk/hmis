@@ -17,7 +17,7 @@ import com.divudi.data.dataStructure.DepartmentStock;
 import com.divudi.data.dataStructure.InstitutionSale;
 import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Department;

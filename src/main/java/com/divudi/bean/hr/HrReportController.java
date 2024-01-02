@@ -19,7 +19,7 @@ import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.data.hr.StaffShiftAggrgation;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Consultant;

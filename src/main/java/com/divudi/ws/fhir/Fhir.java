@@ -11,7 +11,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;

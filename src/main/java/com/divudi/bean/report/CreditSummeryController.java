@@ -15,7 +15,7 @@ import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.DailyCredit;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.table.String1Value2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
