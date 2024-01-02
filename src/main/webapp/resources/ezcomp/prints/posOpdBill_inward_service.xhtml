@@ -32,6 +32,7 @@
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
@@ -93,6 +94,36 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <h:outputLabel value="#{cc.attrs.bill.insId}"  style="text-align: center!important;   
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="BHT No" style="text-align: center!important;   
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%" >
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"  style="text-align: center!important;   
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="Room No : " style="text-align: center!important;   
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%" >
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}"  style="text-align: center!important;   
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
