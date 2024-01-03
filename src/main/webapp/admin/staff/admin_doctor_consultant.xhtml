@@ -21,9 +21,13 @@
                     <div class="row">
                         <div class="col-6">
 
-                            <p:commandButton id="btnAdd" value="Add"  
-                                             action="#{consultantController.prepareAdd()}" icon="fa-solid fa-plus" class="ui-button-success w-25" process="btnAdd"
-                                             update="gpDetail"/>                                   
+                            <p:commandButton
+                                id="btnAdd" 
+                                value="Add"  
+                                action="#{consultantController.prepareAdd()}" 
+                                icon="fa-solid fa-plus" class="ui-button-success w-25" 
+                                process="btnAdd"
+                                update="gpDetail lstSelect"/>                                   
                             <p:commandButton process="btnDelete"
                                              update="lstSelect gpDetail"
                                              class="m-1 ui-button-danger w-25"
