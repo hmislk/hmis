@@ -689,6 +689,19 @@
                     <h:panelGroup rendered="#{ffb.margin ne 0.0}">
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Cash Paid" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.billController.cashPaid}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{ffb.margin ne 0.0}">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
                                 <h:outputLabel value="Balance" />
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
@@ -698,6 +711,8 @@
                             </td>
                         </tr>
                     </h:panelGroup>
+                    
+                    
 
                     <h:panelGroup rendered="#{ffb.discount ne 0.0}">
                         <tr>
