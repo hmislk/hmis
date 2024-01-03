@@ -15,7 +15,14 @@
 
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
+
+            <h:form >
+
+            </h:form>
+
+
             <h:form>
+
                 <h:panelGroup  class="row" rendered="#{bhtEditController.current.bhtNo eq null}"> 
                     <div class="col-12">
                         <h:panelGroup>
@@ -45,8 +52,17 @@
                                 <p:commandButton
                                     id="btnSelect"
                                     ajax="false"
-                                    value="Select"
+                                    value="Select**"
+                                    action="#{bhtEditController.fillCreditCompaniesByPatient}"
                                     />
+
+                                <h:commandButton
+                                    id="btnSelectJsf"
+                                    value="Select**"
+                                    action="#{admissionController.navigateToAdmitFromMenu()}"
+                                    />
+
+
 
                             </p:panel>
                         </h:panelGroup>
@@ -225,7 +241,7 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <common:patient_details patient="#{bhtEditController.current.patient}"></common:patient_details>
+                            <common:patient_details controller="#{bhtEditController}"></common:patient_details>
 
 
                             <p:panel header="Cancel Admission">
@@ -286,19 +302,19 @@
                                     <p:inputText class="mx-2 w-100" autocomplete="off" value="#{bhtEditController.current.guardian.address}" />
                                 </h:panelGrid>
                             </p:panel>
-                           
-                                <h:panelGroup id="grpBill">
-                                    <p:panel id="panPrint" class="w-100" >
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                            <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
-                                        </f:facet>
 
-                                        <bill:bht admission="#{bhtEditController.current}"/>
+                            <h:panelGroup id="grpBill">
+                                <p:panel id="panPrint" class="w-100" >
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Print" class="mx-4"></h:outputLabel>
+                                    </f:facet>
 
-                                    </p:panel>
-                                </h:panelGroup>
-                          
+                                    <bill:bht admission="#{bhtEditController.current}"/>
+
+                                </p:panel>
+                            </h:panelGroup>
+
                         </div>
                     </div>
                 </h:panelGroup>
