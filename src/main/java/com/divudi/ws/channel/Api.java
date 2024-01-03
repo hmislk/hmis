@@ -44,6 +44,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public class Api {
     @EJB
     private PersonFacade personFacade;
 
-    @EJB
+    
     private CommonFunctions commonFunctions;
     @EJB
     private ChannelBean channelBean;

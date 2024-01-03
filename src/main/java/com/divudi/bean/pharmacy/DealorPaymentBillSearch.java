@@ -32,6 +32,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.RefundBillFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,7 +65,7 @@ public class DealorPaymentBillSearch implements Serializable {
     List<BillComponent> billComponents;
     List<BillFee> billFees;
     List<Bill> bills;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;

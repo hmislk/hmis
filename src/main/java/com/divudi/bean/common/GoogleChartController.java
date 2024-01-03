@@ -29,6 +29,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -56,7 +57,7 @@ import org.json.JSONObject;
 @SessionScoped
 public class GoogleChartController implements Serializable {
 
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;

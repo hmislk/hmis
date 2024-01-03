@@ -23,6 +23,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,7 +42,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @RequestScoped
-public class mdReportController implements Serializable {
+public class MdReportController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
@@ -51,7 +52,6 @@ public class mdReportController implements Serializable {
     private List<ItemWithFee> fillterItemWithFees;
     private PaymentMethod paymentMethod;
     ////////////////////////////////////
-    @EJB
     private CommonFunctions commonFunctions;
     @EJB
     private DepartmentFacade departmentFacade;
@@ -201,7 +201,7 @@ public class mdReportController implements Serializable {
         return bills;
     }
 
-    public mdReportController() {
+    public MdReportController() {
     }
 
     public Date getFromDate() {

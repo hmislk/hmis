@@ -32,6 +32,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,7 +75,6 @@ public class AppointmentController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

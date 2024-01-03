@@ -11,6 +11,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -34,7 +35,7 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class Report3DController implements Serializable {
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     @Inject

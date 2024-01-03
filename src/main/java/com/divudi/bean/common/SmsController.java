@@ -16,6 +16,7 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class SmsController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
+
     CommonFunctions commonFunctions;
     /*
     Class Variables

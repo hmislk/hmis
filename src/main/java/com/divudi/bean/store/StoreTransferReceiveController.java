@@ -24,6 +24,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +66,7 @@ public class StoreTransferReceiveController implements Serializable {
     StoreBean storeBean;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @Inject
     StoreCalculation storeCalculation;

@@ -14,6 +14,7 @@ import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.facade.BillFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.apache.commons.codec.binary.Base64;

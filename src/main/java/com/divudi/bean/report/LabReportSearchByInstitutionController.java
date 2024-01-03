@@ -19,6 +19,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,7 +50,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
     String txtSearch;
     Date fromDate;
     Date toDate;
-    @EJB
+
     CommonFunctions commonFunctions;
     List<Bill> labBills;
     //   Department department;

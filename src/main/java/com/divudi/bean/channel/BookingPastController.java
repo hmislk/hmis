@@ -36,6 +36,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +90,7 @@ public class BookingPastController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
-    @Inject
+
     CommonFunctions commonFunctions;
     ///////////////////
     @EJB

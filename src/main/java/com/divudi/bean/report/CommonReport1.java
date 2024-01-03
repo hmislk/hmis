@@ -34,6 +34,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonInstitutionFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,7 +70,7 @@ public class CommonReport1 implements Serializable {
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
 
-    @EJB
+ 
     CommonFunctions commonFunctions;
     ////////////////////
     private Institution collectingIns;

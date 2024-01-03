@@ -49,6 +49,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private ItemFeeFacade itemFeeFacade;

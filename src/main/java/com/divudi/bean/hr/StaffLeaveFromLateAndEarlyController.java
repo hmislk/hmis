@@ -28,6 +28,7 @@ import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
     List<LeaveForm> leaveForms;
     Staff approvedStaff;

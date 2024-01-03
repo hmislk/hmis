@@ -33,6 +33,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -137,7 +138,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     AdmissionType admissionType;

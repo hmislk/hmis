@@ -37,6 +37,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,7 +78,7 @@ public class StoreController1 implements Serializable {
     private StockFacade stockFacade;
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;

@@ -43,6 +43,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +100,7 @@ public class BookingController implements Serializable {
     FingerPrintRecordFacade fpFacade;
     @EJB
     FinalVariables finalVariables;
-    @EJB
+
     CommonFunctions commonFunctions;
     /**
      * Controllers

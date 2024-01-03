@@ -23,6 +23,7 @@ import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class CreditCompanyDueController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;

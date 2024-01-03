@@ -56,6 +56,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -199,7 +200,7 @@ public class BillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

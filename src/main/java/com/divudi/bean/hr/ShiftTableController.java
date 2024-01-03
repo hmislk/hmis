@@ -21,6 +21,7 @@ import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class ShiftTableController implements Serializable {
     List<ShiftTable> shiftTables;
     @EJB
     HumanResourceBean humanResourceBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;

@@ -46,6 +46,7 @@ import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -98,7 +99,7 @@ public class ChannelReportTempController implements Serializable {
     //
     @EJB
     ChannelBean channelBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     //
     @Inject

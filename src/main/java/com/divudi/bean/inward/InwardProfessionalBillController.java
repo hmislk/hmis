@@ -37,6 +37,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -88,7 +89,7 @@ public class InwardProfessionalBillController implements Serializable {
     private BillBeanController billBean;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     //////////////////    
     private List<Bill> items = null;

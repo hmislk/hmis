@@ -28,6 +28,7 @@ import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,7 +67,7 @@ public class StaffPaymentBillController implements Serializable {
     private Date toDate;
     @Inject
     SessionController sessionController;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;

@@ -25,6 +25,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,7 +69,7 @@ public class Qb {
     @EJB
     private BillFeeFacade billFeeFacade;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     @Inject

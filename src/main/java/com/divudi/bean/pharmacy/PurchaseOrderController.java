@@ -19,6 +19,7 @@ import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,7 +69,7 @@ public class PurchaseOrderController implements Serializable {
     // private List<BillItem> billItems;
     // List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     //////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 

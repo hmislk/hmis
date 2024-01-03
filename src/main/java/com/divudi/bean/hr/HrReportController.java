@@ -52,6 +52,7 @@ import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -90,7 +91,7 @@ public class HrReportController implements Serializable {
      * JBS
      *
      */
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;

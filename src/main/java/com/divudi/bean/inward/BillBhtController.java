@@ -52,6 +52,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,7 +103,7 @@ public class BillBhtController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     ///////////////////
     @Inject

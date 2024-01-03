@@ -34,6 +34,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     /**
      * EJBs
      */
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;

@@ -16,6 +16,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class DealorDueController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private CreditBean creditBean;

@@ -31,6 +31,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -73,7 +74,7 @@ public class StoreGrnController implements Serializable {
     StoreBean storeBean;
     @EJB
     private AmpFacade ampFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @Inject
     StoreCalculation storeCalculation;

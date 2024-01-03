@@ -19,6 +19,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +49,7 @@ public class AgentReferenceBookController implements Serializable {
     InstitutionFacade institutionFacade;
     @EJB
     private AgentHistoryFacade agentHistoryFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @Inject
     SessionController sessionController;

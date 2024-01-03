@@ -44,6 +44,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -83,7 +84,7 @@ public class InwardSearch implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     /**

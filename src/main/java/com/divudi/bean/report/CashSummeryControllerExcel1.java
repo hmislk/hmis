@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,7 +64,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;

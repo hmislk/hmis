@@ -16,6 +16,7 @@ import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.StaffLeaveEntitle;
 import com.divudi.facade.StaffLeaveEntitleFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,7 +91,7 @@ public class StaffLeaveEntitleController implements Serializable {
         current = null;
     }
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     public void saveSelected() {

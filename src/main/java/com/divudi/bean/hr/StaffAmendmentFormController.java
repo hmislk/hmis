@@ -17,6 +17,7 @@ import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class StaffAmendmentFormController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
     List<AmendmentForm> amendmentForms;
     Staff fromStaff;

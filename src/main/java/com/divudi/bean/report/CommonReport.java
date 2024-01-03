@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class CommonReport implements Serializable {
      */
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PriceMatrixFacade inwdPriceAdjFacade;

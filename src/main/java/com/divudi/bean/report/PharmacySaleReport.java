@@ -53,6 +53,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -237,7 +238,7 @@ public class PharmacySaleReport implements Serializable {
     CommonController commonController;
     @Inject
     AuditEventApplicationController auditEventApplicationController;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;

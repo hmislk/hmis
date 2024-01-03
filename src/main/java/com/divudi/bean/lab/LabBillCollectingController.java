@@ -42,6 +42,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,10 +52,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
@@ -107,7 +104,7 @@ public class LabBillCollectingController implements Serializable {
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

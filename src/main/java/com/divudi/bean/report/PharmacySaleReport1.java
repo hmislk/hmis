@@ -22,6 +22,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ public class PharmacySaleReport1 implements Serializable {
   //  private List<DatedBills> billDetail;
 
     /////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;

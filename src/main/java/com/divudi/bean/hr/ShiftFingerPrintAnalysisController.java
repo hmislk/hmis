@@ -33,6 +33,7 @@ import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
      */
     @EJB
     HumanResourceBean humanResourceBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;

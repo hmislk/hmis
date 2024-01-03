@@ -38,6 +38,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -80,7 +81,7 @@ public class QuickBookReportController implements Serializable {
     @EJB
     private PatientRoomFacade patientRoomFacade;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     @Inject

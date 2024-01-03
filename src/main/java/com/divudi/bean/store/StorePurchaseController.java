@@ -30,6 +30,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -96,7 +97,7 @@ public class StorePurchaseController implements Serializable {
     List<BillItem> billExpenses;
     BillItem parentBillItem;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberGenerator;

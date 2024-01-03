@@ -30,6 +30,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,7 +79,7 @@ public class SheduleController implements Serializable {
      */
     @Inject
     private SessionController sessionController;
-    @Inject
+
     CommonFunctions commonFunctions;
     /**
      * Class Variables

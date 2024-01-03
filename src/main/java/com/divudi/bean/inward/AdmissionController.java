@@ -37,6 +37,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -90,7 +91,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     BhtEditController bhtEditController;
     ////////////////////////////
-    @EJB
     private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
