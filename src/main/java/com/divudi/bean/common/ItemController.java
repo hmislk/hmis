@@ -844,17 +844,23 @@ public class ItemController implements Serializable {
     public List<Item> completeMasterItems(String query) {
         String jpql;
         List<Item> lst;
-        HashMap tmpMap = new HashMap();
-        jpql = "select damith "
-                + " from Item damith "
-                + " where damith.retired=:ret ";
-        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
-        jpql += " and damith.isMasterItem=:mi ";
-        tmpMap.put("q", "%" + query + "%");
-        tmpMap.put("mi", true);
-        tmpMap.put("ret", false);
-        jpql += " order by c.name";
-        return getFacade().findByJpql(jpql, tmpMap);
+        if (query == null) {
+            lst = new ArrayList<>();
+        } else {
+            HashMap tmpMap = new HashMap();
+            jpql = "select damith "
+                    + " from Item damith "
+                    + " where damith.retired=:ret ";
+            jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+            jpql += " and damith.isMasterItem=:mi ";
+            tmpMap.put("q", "%" + query + "%");
+            tmpMap.put("mi", true);
+            tmpMap.put("ret", false);
+            jpql += " order by damith.name";
+            lst = getFacade().findByJpql(jpql, tmpMap);
+        }
+       
+        return lst;
     }
 
     public List<Item> completeItem(String query) {
@@ -1810,7 +1816,7 @@ public class ItemController implements Serializable {
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
-        allItems=null;
+        allItems = null;
         getAllItems();
         getItems();
         current = null;
@@ -1844,7 +1850,7 @@ public class ItemController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        allItems=null;
+        allItems = null;
         getAllItems();
         getItems();
         current = null;
