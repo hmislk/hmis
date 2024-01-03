@@ -7,11 +7,12 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.StaffLeave;
 import com.divudi.facade.StaffLeaveFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +36,7 @@ public class StaffLeaveController implements Serializable {
     List<StaffLeave> staffLeaves;
     @EJB
     private StaffLeaveFacade staffLeaveFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private HumanResourceBean humanResourceBean;

@@ -10,7 +10,7 @@ import com.divudi.data.dataStructure.DealerDueDetailRow;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.dataStructure.InstitutionEncounters;
 import com.divudi.data.table.String1Value5;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -23,6 +23,7 @@ import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class CreditCompanyDueController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;

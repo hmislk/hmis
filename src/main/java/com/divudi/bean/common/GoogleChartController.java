@@ -10,7 +10,7 @@ import com.divudi.bean.report.CommonReport;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -29,6 +29,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -56,7 +57,7 @@ import org.json.JSONObject;
 @SessionScoped
 public class GoogleChartController implements Serializable {
 
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;

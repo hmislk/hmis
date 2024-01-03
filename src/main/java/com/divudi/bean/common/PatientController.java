@@ -29,7 +29,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Family;
@@ -54,6 +54,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,7 +119,7 @@ public class PatientController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;

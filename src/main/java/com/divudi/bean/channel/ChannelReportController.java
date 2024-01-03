@@ -28,7 +28,6 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Area;
 import com.divudi.entity.AuditEvent;
@@ -57,6 +56,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -189,7 +189,7 @@ public class ChannelReportController implements Serializable {
 
     @EJB
     DepartmentFacade departmentFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;

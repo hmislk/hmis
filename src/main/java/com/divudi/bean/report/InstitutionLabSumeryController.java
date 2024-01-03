@@ -10,7 +10,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.table.String1Value1;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -20,6 +20,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,7 +52,7 @@ public class InstitutionLabSumeryController implements Serializable {
     Date fromDate;
     Date toDate;
     
-    @EJB
+  
     CommonFunctions commonFunctions;
     
     List<Bill> labBills;
