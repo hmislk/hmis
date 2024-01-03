@@ -248,13 +248,13 @@ public class InvestigationCategoryController implements Serializable {
 
     public String navigateToManageInvestigationCategoris() {
         prepareAdd();
-        return "/admin/lims/manage_categories";
+        return "/admin/lims/manage_categories.xhtml?faces-redirect=true";
     }
     
     
     public String navigateToAddInvestigationCategory() {
         prepareAdd();
-        return "/admin/lims/category";
+        return "/admin/lims/category?faces-redirect=true";
     }
 
 
@@ -263,12 +263,12 @@ public class InvestigationCategoryController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/lims/category";
+        return "/admin/lims/category?faces-redirect=true";
     }
 
     public String navigateToListInvestigationCategories() {
         getItems();
-        return "/admin/lims/category_list";
+        return "/admin/lims/category_list?faces-redirect=true";
     }
 
     public String navigateToOpdServiceSubCategory() {
@@ -276,63 +276,63 @@ public class InvestigationCategoryController implements Serializable {
     }
     
     public String navigateToItemsAndServices() {
-        return "/admin/items/items.xhtml";
+        return "/admin/items/items.xhtml?faces-redirect=true";
     }
 
     public String navigateToOpdService() {
-        return "/admin/items/opd_service.xhtml";
+        return "/admin/items/opd_service.xhtml?faces-redirect=true";
     }
 
     public String navigateToInwardService() {
-        return "/admin/items/inward_service.xhtml";
+        return "/admin/items/inward_service.xhtml?faces-redirect=true";
     }
 
     public String navigateToTheatreService() {
-        return "/admin/items/theatre_service.xhtml";
+        return "/admin/items/theatre_service.xhtml?faces-redirect=true";
     }
 
     public String navigateToBillExpenses() {
-        return "/admin/items/bill_expenses.xhtml";
+        return "/admin/items/bill_expenses.xhtml?faces-redirect=true";
     }
 
     public String navigateToRelationships() {
-        return "/admin/items/relationships.xhtml";
+        return "/admin/items/relationships.xhtml?faces-redirect=true";
     }
 
     public String navigateToReligion() {
-        return "/admin/items/religion.xhtml";
+        return "/admin/items/religion.xhtml?faces-redirect=true";
     }
 
     public String navigateToNationality() {
-        return "/admin/items/nationality.xhtml";
+        return "/admin/items/nationality.xhtml?faces-redirect=true";
     }
 
     public String navigateToOpdListToRemove() {
-        return "/admin/items/opd_service_list_to_remove.xhtml";
+        return "/admin/items/opd_service_list_to_remove.xhtml?faces-redirect=true";
     }
 
     public String navigateToItemBulkDelete() {
-        return "/admin/items/item_bulk_un_delete.xhtml";
+        return "/admin/items/item_bulk_un_delete.xhtml?faces-redirect=true";
     }
 
     public String navigateToFormFormat() {
-        return "/admin/items/form_format.xhtml";
+        return "/admin/items/form_format.xhtml?faces-redirect=true";
     }
 
     public String navigateToFormFormatCategory() {
-        return "/admin/items/form_format_category.xhtml";
+        return "/admin/items/form_format_category.xhtml?faces-redirect=true";
     }
 
     public String navigateToInvestigationListToRemove() {
-        return "/admin/items/investigation_list_to_remove.xhtml";
+        return "/admin/items/investigation_list_to_remove.xhtml?faces-redirect=true";
     }
 
     public String navigateToInvestigationBulkUnDelete() {
-        return "/admin/items/investigation_bulk_un_delete.xhtml";
+        return "/admin/items/investigation_bulk_un_delete.xhtml?faces-redirect=true";
     }
 
     public String navigateToMetaDataSuperCategory() {
-        return "/admin/items/metadata_super_category.xhtml";
+        return "/admin/items/metadata_super_category.xhtml?faces-redirect=true";
     }
 
     public String navigateToInvestigationFormat() {
@@ -349,7 +349,7 @@ public class InvestigationCategoryController implements Serializable {
 
         } catch (IOException ex) {
         }
-        return "/admin/items/investigation_format.xhtml";
+        return "/admin/items/investigation_format.xhtml?faces-redirect=true";
     }
 
     /**
