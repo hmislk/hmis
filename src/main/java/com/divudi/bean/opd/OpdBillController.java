@@ -613,12 +613,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
     }
 
-    
     @Override
-    public void toggalePatientEditable(){
+    public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
-    
+
     public Title[] getTitle() {
         return Title.values();
     }
@@ -1497,13 +1496,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 }
             }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
-
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
         }
 
         tmp.setNetTotal(dbl);
+
+        tmp.setCashBalance(reminingCashPaid);
         getBillFacade().edit(tmp);
         setBatchBill(tmp);
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
@@ -2199,7 +2199,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
-        
+
         return "/opd/opd_bill";
     }
 
@@ -2446,7 +2446,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (patient == null) {
             patient = new Patient();
             Person p = new Person();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
 
             patient.setPerson(p);
         }
@@ -3017,8 +3017,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         return opdItems;
     }
-    
-    
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {
