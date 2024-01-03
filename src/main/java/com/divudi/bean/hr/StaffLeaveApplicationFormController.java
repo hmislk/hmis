@@ -10,7 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
@@ -27,6 +27,7 @@ import com.divudi.facade.StaffLeaveEntitleFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;

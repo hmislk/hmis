@@ -20,7 +20,7 @@ import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -52,6 +52,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -113,7 +114,7 @@ public class PharmacyController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    @EJB
+  
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;

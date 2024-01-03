@@ -17,7 +17,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
@@ -36,6 +36,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -85,7 +86,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     private BillBeanController billBean;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     //////////////////    
     private List<Bill> items = null;

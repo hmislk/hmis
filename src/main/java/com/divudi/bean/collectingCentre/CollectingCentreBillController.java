@@ -27,7 +27,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -68,6 +68,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -252,7 +253,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

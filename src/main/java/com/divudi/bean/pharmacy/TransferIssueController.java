@@ -11,7 +11,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.StockQty;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.entity.Bill;
@@ -26,6 +26,7 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,7 +70,7 @@ public class TransferIssueController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;

@@ -15,7 +15,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class CommonReport implements Serializable {
      */
     @EJB
     private BillFacade billFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PriceMatrixFacade inwdPriceAdjFacade;

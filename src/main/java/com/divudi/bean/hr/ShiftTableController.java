@@ -10,7 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
@@ -21,6 +21,7 @@ import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class ShiftTableController implements Serializable {
     List<ShiftTable> shiftTables;
     @EJB
     HumanResourceBean humanResourceBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;
