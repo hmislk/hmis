@@ -11,7 +11,7 @@ import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
@@ -30,6 +30,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,7 +79,7 @@ public class SheduleController implements Serializable {
      */
     @Inject
     private SessionController sessionController;
-    @Inject
+
     CommonFunctions commonFunctions;
     /**
      * Class Variables

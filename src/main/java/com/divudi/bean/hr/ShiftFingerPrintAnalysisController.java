@@ -16,7 +16,7 @@ import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.Times;
 import static com.divudi.data.hr.Times.inTime;
 import static com.divudi.data.hr.Times.outTime;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Form;
 import com.divudi.entity.Staff;
@@ -33,6 +33,7 @@ import com.divudi.facade.FingerPrintRecordHistoryFacade;
 import com.divudi.facade.FormFacade;
 import com.divudi.facade.StaffLeaveFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
      */
     @EJB
     HumanResourceBean humanResourceBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     StaffShiftFacade staffShiftFacade;

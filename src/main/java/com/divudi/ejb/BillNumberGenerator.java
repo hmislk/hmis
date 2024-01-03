@@ -24,6 +24,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientFacade;
+import com.divudi.java.CommonFunctions;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -81,7 +82,7 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     public String fetchPaymentSchemeCount(PaymentScheme paymentScheme, BillType billType, Institution institution) {

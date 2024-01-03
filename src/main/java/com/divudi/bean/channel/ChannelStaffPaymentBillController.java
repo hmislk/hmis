@@ -11,7 +11,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -25,6 +25,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +65,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
     /////////////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     BillNumberGenerator billNumberBean;

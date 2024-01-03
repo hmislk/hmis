@@ -13,7 +13,7 @@ import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
 import com.divudi.data.dataStructure.PharmacySummery;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value4;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -22,6 +22,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ public class PharmacySaleReport1 implements Serializable {
   //  private List<DatedBills> billDetail;
 
     /////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;

@@ -20,7 +20,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -48,6 +48,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,7 +81,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

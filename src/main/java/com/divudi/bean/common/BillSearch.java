@@ -17,7 +17,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
@@ -49,6 +49,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -97,7 +98,7 @@ public class BillSearch implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
