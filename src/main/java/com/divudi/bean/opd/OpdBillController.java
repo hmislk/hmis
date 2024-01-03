@@ -22,7 +22,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
@@ -63,6 +63,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -114,7 +115,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     private CashTransactionBean cashTransactionBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;

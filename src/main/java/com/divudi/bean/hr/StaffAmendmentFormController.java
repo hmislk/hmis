@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
 import com.divudi.entity.hr.Shift;
@@ -17,6 +17,7 @@ import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class StaffAmendmentFormController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
     List<AmendmentForm> amendmentForms;
     Staff fromStaff;

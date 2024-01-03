@@ -15,7 +15,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.MessageType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -48,6 +48,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class SearchController implements Serializable {
     /**
      * EJBs
      */
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -8411,7 +8412,7 @@ public class SearchController implements Serializable {
     
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -8422,7 +8423,7 @@ public class SearchController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = commonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -8442,13 +8443,6 @@ public class SearchController implements Serializable {
         this.searchKeyword = searchKeyword;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     public List<Bill> getBills() {
         return bills;

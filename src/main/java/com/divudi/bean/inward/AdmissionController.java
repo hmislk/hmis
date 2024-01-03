@@ -17,7 +17,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Doctor;
@@ -38,6 +38,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,7 +95,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     BhtEditController bhtEditController;
     ////////////////////////////
-    @EJB
     private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;

@@ -11,9 +11,26 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                <!--<h1>#{ui.icon}</h1>-->
                 <h:panelGroup 
-                    id="panelPatientAddNew" 
+                    id="panelBillingForCashier" 
+                    rendered="#{ui.icon eq 'Billing_For_Cashier'}"
+                    layout="block"
+                    class="col-md-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            ajax="false" 
+                            class="m-1"
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
+                            actionListener="#{opdPreBillController.prepareNewBill}" 
+                            value="Payment-Pending Order"
+                            icon="fa fa-fw fa-cash-register"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+
                     rendered="#{ui.icon eq 'Patient_Lookup'}"
                     layout="block"
                     class="col-md-3"
@@ -24,10 +41,9 @@
                         sdfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
-                    id="panelPatientAddNew" 
+
                     rendered="#{ui.icon eq 'Patient_Add_New'}"
                     layout="block"
                     class="col-md-3"
@@ -38,8 +54,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelOPDBilling" 
                     rendered="#{ui.icon eq 'Opd_Billing'}"
@@ -52,22 +67,9 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                <h:panelGroup 
-                    id="panelBillingForCashier" 
-                    rendered="#{ui.icon eq 'Billing_For_Cashier'}"
-                    layout="block"
-                    class="col-md-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Billing For Cashier">
-                        dfsdf
-                    </p:panel>
-                </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
+
+
                 <h:panelGroup 
                     id="panelCollectingCentreBilling" 
                     rendered="#{ui.icon eq 'Collecting_Centre_Billing'}"
@@ -80,8 +82,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelMedicalPackageBilling" 
                     rendered="#{ui.icon eq 'Medical_Package_Billing'}"
@@ -94,8 +95,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPayments" 
                     rendered="#{ui.icon eq 'Accept_Payments'}"
@@ -108,8 +108,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPD_Bills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Bills'}"
@@ -122,8 +121,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPDBatchBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}"
@@ -136,8 +134,7 @@
                         dfsdf
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForPharmacyBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_Pharmacy_Bills'}"

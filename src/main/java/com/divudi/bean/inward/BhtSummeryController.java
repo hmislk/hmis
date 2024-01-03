@@ -36,7 +36,7 @@ import static com.divudi.data.inward.InwardChargeType.NursingCharges;
 import static com.divudi.data.inward.InwardChargeType.ProfessionalCharge;
 import static com.divudi.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -66,6 +66,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ import org.primefaces.event.RowEditEvent;
 public class BhtSummeryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private PatientRoomFacade patientRoomFacade;

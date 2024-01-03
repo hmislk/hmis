@@ -10,10 +10,11 @@ import ca.uhn.fhir.parser.IParser;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Patient;
 import com.divudi.facade.PatientFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class Fhir {
     @EJB
     private PatientFacade patientFacade;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     @Inject
