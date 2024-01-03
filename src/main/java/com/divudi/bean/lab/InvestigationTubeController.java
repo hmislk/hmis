@@ -45,6 +45,11 @@ public class InvestigationTubeController implements Serializable {
 
     private InvestigationTube current;
     private List<InvestigationTube> items = null;
+    
+    public String navigateToManageContainers() {
+        prepareAdd();
+        return "/admin/lims/manage_containers";
+    }
 
     public String navigateToAddTube() {
         current = new InvestigationTube();
@@ -120,6 +125,9 @@ public class InvestigationTubeController implements Serializable {
     }
 
     public InvestigationTube getCurrent() {
+        if(current == null){
+            current = new InvestigationTube();
+        }
         return current;
     }
 
@@ -127,7 +135,7 @@ public class InvestigationTubeController implements Serializable {
         this.current = current;
     }
 
-    public String delete() {
+    public void delete() {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -138,7 +146,8 @@ public class InvestigationTubeController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        return navigateToListTubes();
+        getItems();
+        current = null;
     }
 
     private InvestigationTubeFacade getFacade() {
