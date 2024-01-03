@@ -48,12 +48,12 @@ public class InvestigationTubeController implements Serializable {
     
     public String navigateToManageContainers() {
         prepareAdd();
-        return "/admin/lims/manage_containers";
+        return "/admin/lims/manage_containers?faces-redirect=true";
     }
 
     public String navigateToAddTube() {
         current = new InvestigationTube();
-        return "/admin/lims/tube";
+        return "/admin/lims/tube?faces-redirect=true";
     }
 
     public InvestigationTube getAnyTube(){
@@ -65,12 +65,12 @@ public class InvestigationTubeController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/admin/lims/tube";
+        return "/admin/lims/tube?faces-redirect=true";
     }
 
     public String navigateToListTubes() {
         getItems();
-        return "/admin/lims/tube_list";
+        return "/admin/lims/tube_list?faces-redirect=true";
     }
 
     public void prepareAdd() {
