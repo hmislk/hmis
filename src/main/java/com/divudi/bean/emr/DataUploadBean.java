@@ -644,10 +644,16 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell percentageCell = row.getCell(6);
-            if (percentageCell != null && percentageCell.getCellType() == CellType.NUMERIC) {
-                percentage = percentageCell.getNumericCellValue();
-
+            if (percentageCell != null) {
+                if (percentageCell.getCellType() == CellType.NUMERIC) {
+                    percentage = percentageCell.getNumericCellValue();
+                }
+                
+                else if (percentageCell.getCellType() == CellType.STRING) {
+                    percentage = Double.parseDouble(percentageCell.getStringCellValue());
+                }
             }
+
             if (percentage == null) {
                 percentage = 0.0;
             }
@@ -734,10 +740,10 @@ public class DataUploadBean implements Serializable {
             if (collectingCentre != null) {
                 continue;
             }
-            if (collectingCentre==null){
-                collectingCentre = new Institution();
-            }
-//            collectingCentre = new Institution();
+//            if (collectingCentre == null) {
+//                collectingCentre = new Institution();
+//            }
+            collectingCentre = new Institution();
             collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
             collectingCentre.setCode(code);
             collectingCentre.setName(collectingCentreName);
