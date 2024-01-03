@@ -130,6 +130,10 @@ public class InvestigationCategoryController implements Serializable {
     }
 
     public InvestigationCategory getCurrent() {
+        if (current == null) {
+            current = new InvestigationCategory();
+        }
+        
         return current;
     }
 
@@ -242,6 +246,12 @@ public class InvestigationCategoryController implements Serializable {
     }
     
 
+    public String navigateToManageInvestigationCategoris() {
+        prepareAdd();
+        return "/admin/lims/manage_categories";
+    }
+    
+    
     public String navigateToAddInvestigationCategory() {
         prepareAdd();
         return "/admin/lims/category";
