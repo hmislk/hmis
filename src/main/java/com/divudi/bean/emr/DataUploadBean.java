@@ -769,7 +769,7 @@ public class DataUploadBean implements Serializable {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
             }
 
-            collectingCentre.setInactive(!active);
+            collectingCentre.setInactive(active);
 
 //            Route r = routeController.findRouteByName(routeName)
 //            if(r==null){
