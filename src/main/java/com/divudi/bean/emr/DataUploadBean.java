@@ -592,61 +592,72 @@ public class DataUploadBean implements Serializable {
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
+                System.out.println("codeCell = " + codeCell);
             }
 
             if (code == null || code.trim().equals("")) {
+                System.out.println("code = " + code);
                 continue;
             }
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
+           
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 collectingCentreName = agentNameCell.getStringCellValue();
-
+                System.out.println("collectingCentreName = " + collectingCentreName);
             }
             if (collectingCentreName == null || collectingCentreName.trim().equals("")) {
                 continue;
             }
 
             Cell agentPrintingNameCell = row.getCell(2);
+           
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
                 collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
-
+              
             }
             if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
-                continue;
+                collectingCentrePrintingName=collectingCentreName;
             }
 
             Cell activeCell = row.getCell(3);
+         
             if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
                 active = activeCell.getBooleanCellValue();
+               
             }
             if (active == null) {
                 active = false;
             }
 
             Cell withCommissionStatusCell = row.getCell(4);
+           
             if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
                 withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
+               
             }
             if (withCommissionStatus == null) {
                 withCommissionStatus = false;
             }
 
             Cell routeNameCell = row.getCell(5);
+            System.out.println("routeNameCell = " + routeNameCell);
             if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
                 routeName = routeNameCell.getStringCellValue();
                 route = routeController.findAndCreateRouteByName(routeName);
-
+              
             }
             if (routeName == null || routeName.trim().equals("")) {
-                continue;
+                route = null;
             }
 
             Cell percentageCell = row.getCell(6);
+            
             if (percentageCell != null) {
                 if (percentageCell.getCellType() == CellType.NUMERIC) {
                     percentage = percentageCell.getNumericCellValue();
+                    
                 }
                 
                 else if (percentageCell.getCellType() == CellType.STRING) {
@@ -659,42 +670,47 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell contactNumberCell = row.getCell(7);
+           
             if (contactNumberCell != null) {
                 if (contactNumberCell.getCellType() == CellType.NUMERIC) {
                     phone = String.valueOf(contactNumberCell.getNumericCellValue());
+                   
                 } else if (contactNumberCell.getCellType() == CellType.STRING) {
                     phone = contactNumberCell.getStringCellValue();
                 }
             }
             if (phone == null || phone.trim().equals("")) {
-                continue;
+                phone = null;
             }
 
             Cell emailAddressCell = row.getCell(8);
+        
             if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
                 email = emailAddressCell.getStringCellValue();
-
+               
             }
             if (email == null || email.trim().equals("")) {
-                continue;
+                email = null;
             }
 
             Cell ownerNameCell = row.getCell(9);
+        
             if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
                 ownerName = ownerNameCell.getStringCellValue();
-
+                System.out.println("ownerName = " + ownerName);
             }
             if (ownerName == null || ownerName.trim().equals("")) {
-                continue;
+                ownerName = null;
             }
 
             Cell addressCell = row.getCell(10);
+         
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
                 address = addressCell.getStringCellValue();
-
+                System.out.println("address = " + address);
             }
             if (address == null || address.trim().equals("")) {
-                continue;
+                address = null;
             }
 
             Cell standardCreditCell = row.getCell(11);
@@ -733,17 +749,17 @@ public class DataUploadBean implements Serializable {
             }
 
             collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
-            if (collectingCentre != null) {
-                continue;
-            }
-            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
-            if (collectingCentre != null) {
-                continue;
-            }
-//            if (collectingCentre == null) {
-//                collectingCentre = new Institution();
+//            if (collectingCentre != null) {
+//                continue;
 //            }
-            collectingCentre = new Institution();
+//            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
+//            if (collectingCentre != null) {
+//                continue;
+//            }
+            if (collectingCentre == null) {
+                collectingCentre = new Institution();
+            }
+//            collectingCentre = new Institution();
             collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
             collectingCentre.setCode(code);
             collectingCentre.setName(collectingCentreName);
