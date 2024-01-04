@@ -175,8 +175,7 @@
                                 filteredValue="#{inwardPriceAdjustmntController.filterItems}"
                                 var="a" 
                                 editable="true" 
-                                scrollable="true" 
-                                scrollHeight="500">
+                                scrollable="true">
 
                                 <p:column 
                                     width="25%"
@@ -260,6 +259,7 @@
                                             id="edit"
                                             ajax="false"
                                             icon="fa fa-pencil"
+                                            class="ui-button-success mx-1"
                                             action="#{inwardPriceAdjustmntController.onEdit(a)}" >
                                         </p:commandButton>
 

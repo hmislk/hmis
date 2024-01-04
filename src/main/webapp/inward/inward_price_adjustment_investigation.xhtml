@@ -175,8 +175,7 @@
                                 filteredValue="#{inwardPriceAdjustmntController.filterItems}"
                                 var="a" 
                                 editable="true" 
-                                scrollable="true" 
-                                scrollHeight="500">
+                                scrollable="true">
 
                                 <p:column 
                                     width="25%"
@@ -184,7 +183,7 @@
                                     filterBy="#{a.department.name}" 
                                     filterMatchMode="contains" 
                                     exportable="false">
-
+                                    
                                     <p:autoComplete 
                                         forceSelection="true" 
                                         value="#{a.department}" 
