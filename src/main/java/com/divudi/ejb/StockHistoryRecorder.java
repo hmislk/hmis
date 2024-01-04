@@ -28,6 +28,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -73,7 +74,7 @@ public class StockHistoryRecorder {
     @EJB
     FinalVariables finalVariables;
 
-    @Inject
+
     CommonFunctions commonFunctions;
 
 //    @SuppressWarnings("unused")

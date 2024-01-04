@@ -18,7 +18,7 @@ import com.divudi.data.lab.SampleRequestType;
 import com.divudi.data.lab.SysMexOld;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -49,6 +49,7 @@ import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -88,7 +89,7 @@ public class PatientInvestigationController implements Serializable {
     PatientReportFacade prFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
-    @EJB
+   
     CommonFunctions commonFunctions;
     @EJB
     private InvestigationFacade investFacade;

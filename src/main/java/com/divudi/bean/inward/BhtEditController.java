@@ -16,7 +16,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -30,6 +30,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,7 +95,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
-    @Inject
+
     CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
