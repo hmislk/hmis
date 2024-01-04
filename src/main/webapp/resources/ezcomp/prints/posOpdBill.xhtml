@@ -17,7 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="posbillBreak">
+        <div class="posbillBreak" style="page-break-after: always">
 
 
             <div class="institutionName" style="text-align: center!important;
@@ -47,20 +47,20 @@
             </div>
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                 <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
 
             <div class="billDetails" >
                 <table style="width: 100%; margin-left:0.5cm;" >
                     <tr>
-                        <td style="width: 15%; text-align: left;" >
+                        <td style="width: 30%; text-align: left;" >
                             <h:outputLabel value="Date" style="text-align: center!important;   
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 85%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: center!important;   
+                        <td style="width: 70%" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: left!important;   
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                                 <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -272,20 +272,20 @@
 
 
 
-            <div >
+            <div>
 
-                <table width="100%" style="width: 100%; margin-left:0.5cm;  ">
+                <table width="100%" style="width: 90%; margin-left: 20px; margin-right: 20px;">
                     <tr>
                         <td colspan="2" class="billline">
                             <hr/>                          
                         </td>
                     </tr>
                     <tr>
-                        <td >
+                        <td style="text-align: left;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td  style="width:30%;text-align: right; padding-right: 30px;">
+                        <td style="text-align: right;">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                     </tr>
@@ -302,11 +302,11 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
-                            <td colspan="4" style="overflow: visible;">
+                            <td style="text-align: left">
                                 <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; padding-right: 30px;" >
+                            <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
                                 <h:outputLabel    value="#{bip.grossValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -329,7 +329,7 @@
 
 
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
 
 
@@ -443,12 +443,9 @@
 
             </div>
 
-            <div>
-                <h:outputLabel value="" ></h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>
+            <div class="billDetails">
                 <h:outputLabel value="Signature :"> </h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>  
-                <h:outputLabel value="" ></h:outputLabel>  
+                
             </div>
 
             <div class="footer">
