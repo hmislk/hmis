@@ -176,8 +176,7 @@
                                 filteredValue="#{inwardPriceAdjustmntController.filterItems}"
                                 var="a" 
                                 editable="true" 
-                                scrollable="true" 
-                                scrollHeight="500">
+                                scrollable="true">
 
                                 <p:column headerText="ID" style="width: 2em;">
                                     #{a.id}
@@ -251,17 +250,17 @@
                                 </p:column>
 
                                 <p:column headerText="From Price" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.fromPrice}" style="width: 6em;" >
+                                    <h:inputText autocomplete="off" value="#{a.fromPrice}" style="width: 5em;" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
                                 </p:column>
                                 <p:column  headerText="To Price" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.toPrice}" style="width: 6em;">
+                                    <h:inputText autocomplete="off" value="#{a.toPrice}" style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
                                 </p:column>
                                 <p:column  headerText="Margin" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.margin}" style="width: 6em;">
+                                    <h:inputText autocomplete="off" value="#{a.margin}" style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
                                 </p:column>
