@@ -83,11 +83,9 @@
                         
                         <h:panelGroup id="groupPrint" >
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-<!--                                <ui:repeat value="#{opdBillController.bills}" var="ffb">
+                                <ui:repeat value="#{opdBillController.bills}" var="ffb">
                                     <prints:five_five_paper_with_headings bill="#{ffb}"/>                        
-                                </ui:repeat>-->
-                                <prints:five_five_paper_with_headings billController="#{opdBillController}"/>
-                                
+                                </ui:repeat>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <ui:repeat value="#{opdBillController.bills}" var="ffpp">
@@ -108,6 +106,9 @@
                                 <ui:repeat value="#{opdBillController.bills}" var="pp">
                                     <prints:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        
                                 </ui:repeat>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBadgeBill'}" >
+                                <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}"/>
                             </h:panelGroup>
                         </h:panelGroup>
 
