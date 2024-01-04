@@ -62,7 +62,11 @@
                                         value="List Specimans" 
                                         action="#{sampleController.navigateToListItems()}" />-->
 
-                                    <p:commandButton class="w-100" ajax="false" value="Antibiotics" action="/lab/antibiotic?faces-redirect=true" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Manage Antibiotics" 
+                                        action="#{antibioticController.navigateToManageAntibiotics()}" />
 
 
                                 </div>

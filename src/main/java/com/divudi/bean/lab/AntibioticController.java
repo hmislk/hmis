@@ -62,6 +62,11 @@ public class AntibioticController implements Serializable {
     boolean billedAs;
     boolean reportedAs;
 
+    public String navigateToManageAntibiotics() {
+        prepareAdd();
+        return "/admin/lims/manage_antibiotics?faces-redirect=true";
+    }
+    
     public List<Antibiotic> completeAntibiotic(String query) {
         List<Antibiotic> suggestions;
         String sql;
