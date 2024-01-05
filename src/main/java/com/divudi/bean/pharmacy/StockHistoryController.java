@@ -165,7 +165,7 @@ public class StockHistoryController implements Serializable {
         getFromDate();
         getToDate();
         fillHistoryAvailableDays();
-        return "/pharmacy/pharmacy_department_stock_history";
+        return "/pharmacy/pharmacy_department_stock_history?faces-redirect=true";
     }
 
     public void setToDate(Date toDate) {
