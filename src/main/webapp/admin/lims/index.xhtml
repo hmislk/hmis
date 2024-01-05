@@ -21,22 +21,36 @@
                             <p:tab title="Manage Metadata">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" 
+                                                       value="Manage Categories" 
+                                                       action="#{investigationCategoryController.navigateToManageInvestigationCategoris()}" />
+                                    
+<!--                                    <p:commandButton   class="w-100"  ajax="false" 
                                                        value="Add category" 
                                                        action="#{investigationCategoryController.navigateToAddInvestigationCategory}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" 
                                                        value="List categories" 
-                                                       action="#{investigationCategoryController.navigateToListInvestigationCategories}" />
+                                                       action="#{investigationCategoryController.navigateToListInvestigationCategories}" />-->
 
                                     <p:commandButton   class="w-100"  ajax="false" 
+                                                       value="Manage Containers" 
+                                                       action="#{investigationTubeController.navigateToManageContainers()}" />   
+                                    
+<!--                                    <p:commandButton   class="w-100"  ajax="false" 
                                                        value="Add Container" 
                                                        action="#{investigationTubeController.navigateToAddTube()}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" 
                                                        value="List Containers" 
-                                                       action="#{investigationTubeController.navigateToListTubes()}" />
+                                                       action="#{investigationTubeController.navigateToListTubes()}" />-->
 
                                     <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Manage Specimens" 
+                                        action="#{sampleController.navigateToManageSpecimens()}" />   
+                                    
+<!--                                    <p:commandButton   
                                         class="w-100" 
                                         ajax="false" 
                                         value="Add Speciman" 
@@ -46,9 +60,13 @@
                                         class="w-100" 
                                         ajax="false" 
                                         value="List Specimans" 
-                                        action="#{sampleController.navigateToListItems()}" />
+                                        action="#{sampleController.navigateToListItems()}" />-->
 
-                                    <p:commandButton class="w-100" ajax="false" value="Antibiotics" action="/lab/antibiotic" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Manage Antibiotics" 
+                                        action="#{antibioticController.navigateToManageAntibiotics()}" />
 
 
                                 </div>

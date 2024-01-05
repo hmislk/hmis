@@ -2,11 +2,16 @@ package com.divudi.data;
 
 public enum PaperType {
     PosPaper("POS Paper"),
+    PosPrintedPaper("POS Paper without headings"),
     FiveFivePaper("5 inch to 5 inch Paper with headings"),
     FiveFivePrintedPaper("5 inch to 5 inch Paper without headings"),
     A4Paper("A4 Paper"),
     A4PrintedPaper("A4 Paper without headings"),
-    Paper24_2x9_3("24.2x9.3 Paper");
+    Paper24_2x9_3("24.2x9.3 Paper"),
+    FiveFivePaperBatchBill("5 inch to 5 inch Paper with headings"),
+    FiveFivePrintedPaperBatchBill("5 inch to 5 inch Paper without headings"),
+    PosBatchPaper("POS Batch Bill"),
+    PosPrintedBatchPaper("POS Printed Batch Bill");
 
     private String label;
 

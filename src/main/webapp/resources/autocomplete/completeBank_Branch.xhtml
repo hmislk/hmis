@@ -15,11 +15,11 @@
         <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
                         var="dept" id="branch"
                         inputStyleClass="w-100"
-                        style="width: 650px"
                         itemLabel="#{dept.name}"
                         itemValue="#{dept}"
                         forceSelection="true" 
                         value="#{cc.attrs.value}" 
+                        class="w-100 mx-2"
                         >
             <p:column headerText="Name">
                 <h:outputLabel value="#{dept.name}"/>
