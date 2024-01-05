@@ -545,6 +545,7 @@ public class DataUploadBean implements Serializable {
     }
 
     public void uploadCollectingCentres() {
+        System.out.println("uploadCollectingCentres");
         collectingCentres = new ArrayList<>();
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
@@ -556,20 +557,27 @@ public class DataUploadBean implements Serializable {
     }
 
     private List<Institution> readCollectingCentresFromExcel(InputStream inputStream) throws IOException {
+        System.out.println("readCollectingCentresFromExcel = ");
         Workbook workbook = new XSSFWorkbook(inputStream);
+        System.out.println("workbook = " + workbook);
         Sheet sheet = workbook.getSheetAt(0);
+        System.out.println("sheet = " + sheet);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
         List<Institution> collectingCentresList = new ArrayList<>();
-        Institution collectingCentre;
+        System.out.println("collectingCentresList = " + collectingCentresList);
+        Institution collectingCentre=null;
+        System.out.println("collectingCentre = " + collectingCentre);
 
         // Assuming the first row contains headers, skip it
+        System.out.println("rowIterator.hasNext() = " + rowIterator.hasNext());
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
 
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
+            System.out.println("row = " + row);
 
             collectingCentre = null;
             Route route = null;
@@ -590,11 +598,14 @@ public class DataUploadBean implements Serializable {
             String address = null;
 
             Cell codeCell = row.getCell(0);
+            System.out.println("codeCell = " + codeCell);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
             }
+            System.out.println("code = " + code);
 
             if (code == null || code.trim().equals("")) {
+                System.out.println("no code");
                 continue;
             }
 
@@ -605,15 +616,17 @@ public class DataUploadBean implements Serializable {
 
             }
             if (collectingCentreName == null || collectingCentreName.trim().equals("")) {
+                System.out.println("no name = ");
                 continue;
             }
 
             Cell agentPrintingNameCell = row.getCell(2);
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                collectingCentrePrintingName = agentNameCell.getStringCellValue();
-
+                collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
+                System.out.println("agentPrintingNameCell = " + agentPrintingNameCell);
             }
             if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
+                System.out.println("exit at collectingCentrePrintingName");
                 continue;
             }
 
@@ -623,6 +636,7 @@ public class DataUploadBean implements Serializable {
             }
             if (active == null) {
                 active = false;
+                System.out.println("activeCell = " + activeCell);
             }
 
             Cell withCommissionStatusCell = row.getCell(4);
@@ -746,14 +760,7 @@ public class DataUploadBean implements Serializable {
 
             collectingCentre.setInactive(!active);
 
-//            Route r = routeController.findRouteByName(routeName)
-//            if(r==null){
-//                r = new Route();
-//                r.setName(routeName);
-//                r.setCreatedAt(new Date());
-//                r.setCreater(sessionController.getLoggedUser());
-//                routeController.save(r);
-//            }
+
             collectingCentre.setRoute(route);
             collectingCentre.setChequePrintingName(collectingCentrePrintingName);
             collectingCentre.setPercentage(percentage);
