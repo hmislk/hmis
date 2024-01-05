@@ -92,6 +92,11 @@
                                     <prints:five_five_paper_without_headings bill="#{ffpp}" dup="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
+                                <ui:repeat value="#{opdBillController.bills}" var="pp">
+                                    <prints:posOpdBillWithoutLogo bill="#{pp}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                 <ui:repeat value="#{opdBillController.bills}" var="pp">
                                     <prints:posOpdBill bill="#{pp}" duplicate="false"/>                        
@@ -109,6 +114,9 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBadgeBill'}" >
                                 <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaperBadgeBill'}">
+                                <prints:five_five_paper_without_headings_badge_bill billController="#{opdBillController}" />
                             </h:panelGroup>
                         </h:panelGroup>
 

@@ -2,6 +2,7 @@ package com.divudi.data;
 
 public enum PaperType {
     PosPaper("POS Paper"),
+    PosPrintedPaper("POS Paper without headings"),
     FiveFivePaper("5 inch to 5 inch Paper with headings"),
     FiveFivePrintedPaper("5 inch to 5 inch Paper without headings"),
     A4Paper("A4 Paper"),
