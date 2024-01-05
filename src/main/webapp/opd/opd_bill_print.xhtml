@@ -89,7 +89,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <ui:repeat value="#{opdBillController.bills}" var="ffpp">
-                                    <prints:five_five_paper_without_headings bill="#{ffpp}" dup="false"/>
+                                    <prints:five_five_paper_without_headings bill="#{ffpp}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
@@ -112,11 +112,14 @@
                                     <prints:A4_paper_without_headings bill="#{pp}" duplicate="false"/>                        
                                 </ui:repeat>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBadgeBill'}" >
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
                                 <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}"/>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaperBadgeBill'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaperBatchBill'}">
                                 <prints:five_five_paper_without_headings_badge_bill billController="#{opdBillController}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}">
+                                <prints:pos_opd_bill_batch billController="#{opdBillController}" />
                             </h:panelGroup>
                         </h:panelGroup>
 

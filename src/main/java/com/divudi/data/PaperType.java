@@ -8,8 +8,10 @@ public enum PaperType {
     A4Paper("A4 Paper"),
     A4PrintedPaper("A4 Paper without headings"),
     Paper24_2x9_3("24.2x9.3 Paper"),
-    FiveFivePaperBadgeBill("5 inch to 5 inch Paper with headings"),
-    FiveFivePrintedPaperBadgeBill("5 inch to 5 inch Paper without headings");
+    FiveFivePaperBatchBill("5 inch to 5 inch Paper with headings"),
+    FiveFivePrintedPaperBatchBill("5 inch to 5 inch Paper without headings"),
+    PosBatchPaper("POS Batch Bill"),
+    PosPrintedBatchPaper("POS Printed Batch Bill");
 
     private String label;
 
