@@ -121,6 +121,9 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}">
                                 <prints:pos_opd_bill_batch billController="#{opdBillController}" />
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedBatchPaper'}">
+                                <prints:pos_opd_bill_without_logo_batch billController="#{opdBillController}" />
+                            </h:panelGroup>
                         </h:panelGroup>
 
                     </h:form>
