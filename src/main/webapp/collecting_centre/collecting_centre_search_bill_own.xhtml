@@ -10,7 +10,11 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Collecting Center Bill Search">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fas fa-warehouse"/>
+                            <h:outputText class="mx-4" value="Collecting Center Bill Search"/>
+                        </f:facet>
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
@@ -21,7 +25,7 @@
                                 </p:calendar>
                                 <p:spacer height="10"/>
                                 <div class="d-grid gap-2">
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingCentreBillSearch}" class="w-100"/>
+                                    <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{searchController.createCollectingCentreBillSearch}"/>
                                 
                                 </div>
                                 <h:outputLabel value="Bill No"/>
@@ -47,22 +51,18 @@
                                              var="bill"  
                                              style="min-width: 100%;"  
                                              paginator="true"
+                                             paginatorPosition="bottom"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,15"
                                              >
-                                    <p:column headerText="No" styleClass="alignTop">
+<!--                                    <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
-                                    </p:column>
-                                    <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill" action="/bill_reprint">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
-                                        </p:commandButton>
-                                    </p:column>
+                                    </p:column>-->
                                     <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
                                         <h:outputLabel   value="#{bill.insId}"/>
                                     </p:column>
 
-                                    <p:column>
+                                    <p:column headerText="Bill Id">
                                         #{bill.id}
                                     </p:column>
 
@@ -160,6 +160,11 @@
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
+                                    </p:column>
+<p:column headerText="View">
+    <p:commandButton ajax="false" value="View Bill" action="/bill_reprint">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
 

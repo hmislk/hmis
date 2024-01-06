@@ -76,12 +76,9 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class SearchController implements Serializable {
 
-    
-    
     /**
      * EJBs
      */
-
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -128,7 +125,7 @@ public class SearchController implements Serializable {
     private SearchKeyword searchKeyword;
     Date fromDate;
     Date toDate;
-    
+
     private int maxResult = 50;
     private BillType billType;
     private PaymentMethod paymentMethod;
@@ -765,18 +762,20 @@ public class SearchController implements Serializable {
 
     @Deprecated
     private void checkLabReportsApproved(List<Bill> bills) {
-        for (Bill b : bills) {
-            String sql;
-            Map m = new HashMap();
-            sql = " select pr from PatientReport pr where "
-                    + " pr.retired=false "
-                    + " and pr.patientInvestigation.billItem.bill=:b "
-                    + " and pr.approved=true ";
+        if (!bills.isEmpty()) {
+            for (Bill b : bills) {
+                String sql;
+                Map m = new HashMap();
+                sql = " select pr from PatientReport pr where "
+                        + " pr.retired=false "
+                        + " and pr.patientInvestigation.billItem.bill=:b "
+                        + " and pr.approved=true ";
 
-            m.put("b", b);
-            List<PatientReport> list = getPatientReportFacade().findByJpql(sql, m);
-            if (!list.isEmpty()) {
-                b.setApprovedAnyTest(true);
+                m.put("b", b);
+                List<PatientReport> list = getPatientReportFacade().findByJpql(sql, m);
+                if (!list.isEmpty()) {
+                    b.setApprovedAnyTest(true);
+                }
             }
         }
     }
@@ -5648,8 +5647,6 @@ public class SearchController implements Serializable {
 
     }
 
-    
-
     @Deprecated
     public void searchDepartmentOpdBills() {
         Date startTime = new Date();
@@ -5689,12 +5686,10 @@ public class SearchController implements Serializable {
 
     public void searchOpdBills() {
         Date startTime = new Date();
-        createTableByKeyword(BillType.OpdBill, institution, department,fromInstitution,fromDepartment,toInstitution,toDepartment);
+        createTableByKeyword(BillType.OpdBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
-   
 
     public void listOpdBatcuBills() {
         Date startTime = new Date();
@@ -5714,6 +5709,7 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         createTableByKeyword(BillType.CollectingCentreBill);
         checkLabReportsApproved(bills);
+        System.out.println("bill = " + bills.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
     }
 
@@ -5824,17 +5820,15 @@ public class SearchController implements Serializable {
 
     }
 
-    
-
     public void createTableByKeyword(BillType billType) {
         fillBills(billType, null, null);
     }
 
     public void fillBills(BillType billType, Institution ins, Department dep) {
-        billLights = null;
+        bills = null;
         String sql;
         Map temMap = new HashMap();
-        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal, bill.patient.id) "
+        sql = "select bill"
                 + " from BilledBill bill "
                 + " where bill.billType = :billType "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -5879,13 +5873,13 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
+        bills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        
     }
-    
-     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
-         return fillBills(billType, ins, dep, patient, 10);
-     }
+
+    public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
+        return fillBills(billType, ins, dep, patient, 10);
+    }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient, Integer maxCount) {
         List<Bill> bs;
@@ -5913,9 +5907,9 @@ public class SearchController implements Serializable {
             jpql += " and  bill.patient=:pt";
             m.put("pt", patient);
         }
-        
+
         jpql += " order by bill.id desc  ";
-       
+
         bs = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, maxCount);
 
         return bs;
@@ -5971,19 +5965,18 @@ public class SearchController implements Serializable {
     }
 
     @Deprecated
-    public void createTableByKeyword(BillType billType, Institution ins, Department dep){
-        
-        createTableByKeyword(billType,ins,dep,null,null,null,null);
-        
+    public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
+
+        createTableByKeyword(billType, ins, dep, null, null, null, null);
+
     }
-    
-    
-    public void createTableByKeyword(BillType billType, 
+
+    public void createTableByKeyword(BillType billType,
             Institution ins, Department dep,
-            Institution fromIns, 
+            Institution fromIns,
             Department fromDep,
-            Institution toIns, 
-            Department toDep ) {
+            Institution toIns,
+            Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -6003,27 +5996,27 @@ public class SearchController implements Serializable {
             sql += " and b.department=:dep ";
             temMap.put("dep", dep);
         }
-        
+
         if (toDep != null) {
             sql += " and b.toDepartment=:todep ";
             temMap.put("todep", toDep);
         }
-        
+
         if (fromDep != null) {
             sql += " and b.fromDepartment=:fromdep ";
             temMap.put("fromdep", fromDep);
         }
-        
+
         if (fromIns != null) {
             sql += " and b.fromInstitution=:fromins ";
             temMap.put("fromins", fromIns);
         }
-        
+
         if (toIns != null) {
             sql += " and b.toInstitution=:toins ";
             temMap.put("toins", toIns);
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -6058,18 +6051,18 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-     public void clearOpdBillSearchData(){
+
+    public void clearOpdBillSearchData() {
         getSearchKeyword().setPatientName(null);
         getSearchKeyword().setPatientPhone(null);
         getSearchKeyword().setTotal(null);
         getSearchKeyword().setNetTotal(null);
         getSearchKeyword().setBillNo(null);
-        fromInstitution=null;
-        fromDepartment=null;
-        toInstitution=null;
-        toDepartment=null;
-        
+        fromInstitution = null;
+        fromDepartment = null;
+        toInstitution = null;
+        toDepartment = null;
+
     }
 
     public void fillAllBills() {
@@ -7494,7 +7487,7 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Payemnt Search(/faces/inward/inward_search_payment.xhtml)");
 
     }
-    
+
     public void createInwardRefundBills() {
         Date startTime = new Date();
 
@@ -7541,8 +7534,8 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Inward Deposite/Refund Search(/faces/inward/inward_search_refund.xhtml)");
     }
-    
-    public void searchSurgery() { 
+
+    public void searchSurgery() {
         Date startTime = new Date();
 
         if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
@@ -7609,12 +7602,12 @@ public class SearchController implements Serializable {
         } else {
             bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
 
     }
 
-    public void createInwardSurgeryBills() { 
+    public void createInwardSurgeryBills() {
         Date startTime = new Date();
 
         if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
@@ -8409,7 +8402,7 @@ public class SearchController implements Serializable {
             this.adjusetedVal = adjusetedVal;
         }
     }
-    
+
     public Date getToDate() {
         if (toDate == null) {
             toDate = commonFunctions.getEndOfDay(new Date());
@@ -8442,7 +8435,6 @@ public class SearchController implements Serializable {
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
     }
-
 
     public List<Bill> getBills() {
         return bills;
@@ -8872,7 +8864,5 @@ public class SearchController implements Serializable {
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
-    
-    
 
 }
