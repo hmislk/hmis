@@ -41,9 +41,12 @@
                                     <p:inputText class="form-control" autocomplete="off" value="#{investigationController.current.code}"/>
 
                                     <h:outputText value="Category" ></h:outputText>
-                                    <p:selectOneMenu class="form-control" id="cmbCat"   value="#{investigationController.current.investigationCategory}" >
+                                    <p:selectOneMenu class="form-control" id="cmbCat" 
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     value="#{investigationController.current.category}" >
                                         <f:selectItem itemLabel="Please select a category"/>
-                                        <f:selectItems value="#{investigationCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:selectItems value="#{categoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
                                     
                                     <h:outputText value="Sample" ></h:outputText>
