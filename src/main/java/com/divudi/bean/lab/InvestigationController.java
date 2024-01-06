@@ -1337,7 +1337,7 @@ public class InvestigationController implements Serializable {
 //        if (errorCheck()) {
 //            return;
 //        }
-        getCurrent().setCategory(getCurrent().getInvestigationCategory());
+//        getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
@@ -1387,49 +1387,33 @@ public class InvestigationController implements Serializable {
     }
     
     public void save(Investigation i) {
-
-//        if (errorCheck()) {
-//            return;
-//        }
-        i.setCategory(i.getInvestigationCategory());
         i.setSymanticType(SymanticType.Laboratory_Procedure);
         if (i.getInwardChargeType() == null) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
         }
-//        i.setInstitution(institution);
         if (i.getId() != null && i.getId() > 0) {
-            //////// // System.out.println("1");
             if (billedAs == false) {
-                //////// // System.out.println("2");
                 i.setBilledAs(i);
-
             }
             if (reportedAs == false) {
-                //////// // System.out.println("3");
                 i.setReportedAs(i);
             }
             getFacade().edit(i);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            //////// // System.out.println("4");
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
-
             getFacade().create(i);
             if (billedAs == false) {
-                //////// // System.out.println("5");
                 i.setBilledAs(i);
             }
             if (reportedAs == false) {
-                //////// // System.out.println("6");
                 i.setReportedAs(i);
             }
             getFacade().edit(i);
             Item sc = new Item();
-
             sc.setCreatedAt(new Date());
             sc.setCreater(sessionController.getLoggedUser());
-
             sc.setItemType(ItemType.SampleComponent);
             sc.setName(i.getName());
             sc.setParentItem(i);

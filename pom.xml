@@ -108,6 +108,7 @@
         </dependency>
         
 
+
         <!-- XStream -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
@@ -154,6 +155,14 @@
             <artifactId>log4j-core</artifactId>
             <version>3.0.0-alpha1</version>
         </dependency>
+        <!-- Log4j2 API -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>3.0.0-alpha1</version>
+        </dependency>
+
+      
 
         <!-- Eclipse Persistence -->
         <dependency>

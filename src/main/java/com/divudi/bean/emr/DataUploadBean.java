@@ -352,14 +352,20 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell categoryCell = row.getCell(4);
+            System.out.println("categoryCell = " + categoryCell);
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
+                System.out.println("categoryName = " + categoryName);
             }
+            System.out.println("categoryName = " + categoryName);
             if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
+            
             cat = categoryController.findAndCreateCategoryByName(categoryName);
-
+            System.out.println("cat = " + cat);
+            
+            
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
