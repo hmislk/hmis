@@ -98,13 +98,14 @@
                                     <h:outputText id="lblWeb" value="Web" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  style="width: 650px"></p:inputText>
 
-                                    <h:outputText id="lblBank" value="Bank (Branch)" ></h:outputText>
+                                    <h:outputText id="lblBank" value="Bank" ></h:outputText>
                                     <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
                                                     var="dept" id="branch"
                                                     style="width: 650px"
                                                     inputStyleClass="w-100"
                                                     itemLabel="#{dept.name}"
                                                     itemValue="#{dept}"
+                                                    placeholder="Branch"
                                                     forceSelection="true" 
                                                     value="#{cc.attrs.value}">
                                         <p:column headerText="Name">
