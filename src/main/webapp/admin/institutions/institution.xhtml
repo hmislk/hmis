@@ -58,13 +58,13 @@
                                                     forceSelection="true">
                                     </p:autoComplete>
 
-                                    <h:outputText value="Point of Issue No" >                                        
+                                    <h:outputText value="Point of Issue No." >                                        
                                     </h:outputText>
                                     <p:inputText autocomplete="off"
                                                  value="#{institutionController.current.pointOfIssueNo}"
                                                  style="width: 650px;">
                                     </p:inputText>
-                                    <h:outputText value="Descreption" >                                        
+                                    <h:outputText value="Description" >                                        
                                     </h:outputText>
                                     <p:inputTextarea styleClass="longText" value="#{institutionController.current.descreption}"  style="width: 650px">
                                     </p:inputTextarea> 
@@ -98,10 +98,28 @@
                                     <h:outputText id="lblWeb" value="Web" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  style="width: 650px"></p:inputText>
 
-                                    <h:outputText id="lblBank" value="Bank" ></h:outputText>
-                                    <au:completeBank_Branch value="#{institutionController.current.bankBranch}" />
+                                    <h:outputText id="lblBank" value="Bank (Branch)" ></h:outputText>
+                                    <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
+                                                    var="dept" id="branch"
+                                                    style="width: 650px"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{dept.name}"
+                                                    itemValue="#{dept}"
+                                                    forceSelection="true" 
+                                                    value="#{cc.attrs.value}">
+                                        <p:column headerText="Name">
+                                            <h:outputLabel value="#{dept.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Banck">
+                                            <h:outputLabel value="#{dept.institution.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{dept.institutionCode}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+<!--                                    <p:watermark for="branch" value="Branch(Bank)"/>-->
 
-                                    <h:outputText id="lblAcc" value="Account No" ></h:outputText>
+                                    <h:outputText id="lblAcc" value="Account No." ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtAcc" value="#{institutionController.current.accountNo}" style="width: 650px" ></p:inputText>
 
                                 </h:panelGrid>
