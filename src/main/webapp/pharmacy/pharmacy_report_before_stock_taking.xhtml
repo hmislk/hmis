@@ -16,7 +16,7 @@
 
                     <p:panel header="Before Stock Taking Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="4" class="w-100 mb-2">
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
@@ -26,6 +26,7 @@
                             <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.category}" >
                             </p:autoComplete>
+                            </h:panelGrid>
                             <p:outputLabel value="Filter Type" />
                             <p:selectOneRadio value="#{reportsStock.reportKeyWord.string}" >
                                 <f:selectItem itemLabel="All Batch" itemValue="0" />
@@ -34,14 +35,31 @@
                                 <f:selectItem itemLabel="Extra Medicine" itemValue="3" />
                                 <f:selectItem itemLabel="Extra Note" itemValue="4" />
                             </p:selectOneRadio>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillCategoryStocksNew()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                            
+                            <h:panelGrid class="my-2" columns="3">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-arrows-rotate"
+                                class="ui-button-warning"
+                                actionListener="#{reportsStock.fillCategoryStocksNew()}" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            </p:commandButton> 
+                            <p:commandButton 
+                                value="Print" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
-                            </p:commandButton>  
-                        </h:panelGrid>
+                             </h:panelGrid>
+                        
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl" rowStyleClass="#{i.stock eq 0 ?'noDisplayRow' : ''}" 
