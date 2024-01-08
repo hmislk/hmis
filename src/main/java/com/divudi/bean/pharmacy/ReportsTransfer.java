@@ -115,6 +115,7 @@ public class ReportsTransfer implements Serializable {
     @EJB
     ItemFacade itemFacade;
     
+    
     CommonFunctions commonFunctions;
 
     ////////////
@@ -1967,7 +1968,7 @@ public class ReportsTransfer implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfMonth();
+            fromDate = CommonFunctions.getStartOfMonth();
         }
         return fromDate;
     }
@@ -1978,7 +1979,7 @@ public class ReportsTransfer implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
