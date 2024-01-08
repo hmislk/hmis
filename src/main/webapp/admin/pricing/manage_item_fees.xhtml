@@ -84,8 +84,12 @@
 
                         <p:dialog id="dlg"  header="Adding New Fee" widgetVar="dlg" modal="true" height="400" >
                             <f:facet name="header" >
-                                <p:commandButton value="Save" action="#{itemFeeManager.addNewFee()}" style="margin-left: 30px;" 
-                                                 update="gpFees lblTotal dlg" process="gpDetail @this" oncomplete="PF('dlg').hide();">
+                                <p:commandButton value="Save" 
+                                                 action="#{itemFeeManager.addNewFee()}" 
+                                                 style="margin-left: 30px;" 
+                                                 update="gpFees lblTotal dlg lblTotalF"
+                                                 process="gpDetail @this"
+                                                 oncomplete="PF('dlg').hide();">
                                 </p:commandButton>
                             </f:facet>
                             <p:panel  id="gpDetail" >
