@@ -164,6 +164,15 @@
                                                                  styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                <p:commandButton value="OPD Billing for Cashier" action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
+                                                <p:commandButton value="Collecting Center Billing"
+                                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
+                                                                 ajax="false"
+                                                                 styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
                                                 <p:commandButton value="OPD Package Bill" 
                                                                  action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
                                                                  ajax="false" 
@@ -177,7 +186,10 @@
                                                     styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="OPD Bill for Cashier" action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
+                                                <p:commandButton value="Inward Appointments"
+                                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                                                 ajax="false"
+                                                                 styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
@@ -190,14 +202,9 @@
                                                     <f:setPropertyActionListener value="#{p}"
                                                                                  target="#{searchController.patient}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
-                                                <p:commandButton value="Inward Appointments"
-                                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                </p:commandButton>
+                                                
 
-                                                <p:commandButton value="Medical Pakage Billing"
+<!--                                                <p:commandButton value="Medical Pakage Billing"
                                                                  action="#{patientController.navigateToMedicalPakageBillingFromPatientProfile()}"
                                                                  ajax="false"
                                                                  styleClass="mx-1 mb-2">
@@ -209,7 +216,7 @@
                                                                  ajax="false"
                                                                  styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                </p:commandButton>
+                                                </p:commandButton>-->
 
                                                 <p:commandButton value="Receive Deposits"
                                                                  action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
@@ -218,12 +225,7 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
 
-                                                <p:commandButton value="Collecting Center Billing"
-                                                                 action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
-                                                                 ajax="false"
-                                                                 styleClass="mx-1 mb-2">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
-                                                </p:commandButton>
+                                                
                                                 <p:commandButton 
                                                     value="Clinical Data"
                                                     action="#{patientController.toEmrPatientProfile}"
