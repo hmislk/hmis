@@ -114,7 +114,7 @@ public class ReportsTransfer implements Serializable {
     PharmacyBean pharmacyBean;
     @EJB
     ItemFacade itemFacade;
-    @EJB
+    
     CommonFunctions commonFunctions;
 
     ////////////
