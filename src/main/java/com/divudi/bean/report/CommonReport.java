@@ -68,7 +68,7 @@ public class CommonReport implements Serializable {
      */
     @EJB
     private BillFacade billFacade;
-
+   
     CommonFunctions commonFunctions;
     @EJB
     private PriceMatrixFacade inwdPriceAdjFacade;
@@ -1089,7 +1089,7 @@ public class CommonReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfMonth(new Date());
+            fromDate = commonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1101,7 +1101,7 @@ public class CommonReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay(new Date());
+            toDate = commonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
