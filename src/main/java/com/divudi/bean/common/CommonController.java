@@ -27,7 +27,7 @@ import org.joda.time.LocalDate;
  *
  * @author buddhika
  */
-@Named(value = "commonController")
+@Named
 @SessionScoped
 public class CommonController implements Serializable {
 
