@@ -149,7 +149,7 @@ public class ItemController implements Serializable {
         allItems = null;
         return "/item/reports/item_list";
     }
-    
+
     public String navigateToListAllItemsForAdmin() {
         allItems = null;
         return "/item/admin/list";
@@ -844,17 +844,27 @@ public class ItemController implements Serializable {
     public List<Item> completeMasterItems(String query) {
         String jpql;
         List<Item> lst;
-        HashMap tmpMap = new HashMap();
-        jpql = "select damith "
-                + " from Item damith "
-                + " where damith.retired=:ret ";
-        jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
-        jpql += " and damith.isMasterItem=:mi ";
-        tmpMap.put("q", "%" + query + "%");
-        tmpMap.put("mi", true);
-        tmpMap.put("ret", false);
-        jpql += " order by c.name";
-        return getFacade().findByJpql(jpql, tmpMap);
+        if (query == null) {
+            lst = new ArrayList<>();
+        } else {
+            HashMap tmpMap = new HashMap();
+            jpql = "select damith "
+                    + " from Item damith "
+                    + " where damith.retired=:ret ";
+            jpql += " and (damith.name like :q or damith.code like :q or damith.barcode like :q ) ";
+            jpql += " and damith.isMasterItem=:mi ";
+            tmpMap.put("q", "%" + query + "%");
+            tmpMap.put("mi", true);
+            tmpMap.put("ret", false);
+            jpql += " order by damith.name";
+            System.out.println("tmpMap = " + tmpMap);
+            System.out.println("jpql = " + jpql);
+            
+            lst = getFacade().findByJpql(jpql, tmpMap);
+            System.out.println("lst = " + lst);
+        }
+       
+        return lst;
     }
 
     public List<Item> completeItem(String query) {
@@ -1643,8 +1653,6 @@ public class ItemController implements Serializable {
 
     }
 
-    
-    
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
         for (Item i : itemlist) {
@@ -1693,10 +1701,11 @@ public class ItemController implements Serializable {
     public void prepareAdd() {
         current = new Item();
     }
-    
+
     public void prepareAddingInvestigation() {
         current = new Investigation();
     }
+
     public void prepareAddingService() {
         current = new Service();
     }
@@ -1811,7 +1820,11 @@ public class ItemController implements Serializable {
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
+        allItems = null;
+        getAllItems();
         getItems();
+        current = null;
+        getCurrent();
     }
 
     public void saveSelected(Item item) {
@@ -1831,16 +1844,18 @@ public class ItemController implements Serializable {
      */
     public void delete() {
 
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
+        allItems = null;
+        getAllItems();
         getItems();
         current = null;
         getCurrent();
@@ -1874,7 +1889,7 @@ public class ItemController implements Serializable {
     }
 
     public List<ItemLight> getAllItems() {
-        if(allItems==null){
+        if (allItems == null) {
             allItems = itemApplicationController.getItems();
         }
         return allItems;
@@ -2097,9 +2112,9 @@ public class ItemController implements Serializable {
     }
 
     public ItemLight getSelectedItemLight() {
-        if(getCurrent()==null){
+        if (getCurrent() == null) {
             selectedItemLight = null;
-        }else{
+        } else {
             selectedItemLight = new ItemLight(getCurrent());
         }
         return selectedItemLight;
@@ -2107,9 +2122,9 @@ public class ItemController implements Serializable {
 
     public void setSelectedItemLight(ItemLight selectedItemLight) {
         this.selectedItemLight = selectedItemLight;
-        if(selectedItemLight==null){
+        if (selectedItemLight == null) {
             setCurrent(null);
-        }else{
+        } else {
             setCurrent(findItem(selectedItemLight.getId()));
         }
     }

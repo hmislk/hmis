@@ -20,7 +20,8 @@ import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.ejb.CommonFunctions;
+
+import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
@@ -51,6 +52,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -112,7 +114,7 @@ public class PharmacyController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    @EJB
+  
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -140,6 +142,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> grns;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
+    private List<Bill> bills;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
     private int managePharamcyReportIndex;
     double persentage;
@@ -220,6 +223,41 @@ public class PharmacyController implements Serializable {
                 + " where i.retired != true "
                 + " order by i.name";
         ampps = amppFacade.findByJpql(j);
+    }
+
+    public void listPharmacyPurchaseBills() {
+        try {
+            StringBuilder jpql = new StringBuilder("select b from Bill b where b.retired=:ret");
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("ret", false);
+
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.PharmacyGrnReturn);
+            billTypes.add(BillType.PharmacyGrnBill);
+            billTypes.add(BillType.PharmacyPurchaseBill);
+            jpql.append(" and b.billType in :bts");
+            parameters.put("bts", billTypes);
+
+            if (fromDate != null && toDate != null) {
+                jpql.append(" and b.createdAt between :fd and :td");
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
+            }
+
+            if (institution != null) {
+                jpql.append(" and b.fromInstitution=:fi");
+                parameters.put("fi", institution);
+            }
+
+            System.out.println("JPQL: " + jpql.toString());
+            System.out.println("Parameters: " + parameters);
+
+            bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
+            System.out.println("Bills: " + bills);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle the exception appropriately
+        }
     }
 
     // </editor-fold> 
@@ -568,7 +606,7 @@ public class PharmacyController implements Serializable {
     }
 
     public List<Item> completeAllStockItems(String qry) {
-        List<Item> items;
+        List<Item> items = null;
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
@@ -2581,6 +2619,14 @@ public class PharmacyController implements Serializable {
 
     public void setIssueUnit(MeasurementUnit issueUnit) {
         this.issueUnit = issueUnit;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
 }

@@ -29,7 +29,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Family;
@@ -54,6 +54,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,7 +119,7 @@ public class PatientController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;
@@ -280,6 +281,9 @@ public class PatientController implements Serializable {
     }
 
     public Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        if (phonenumber == null || phonenumber.trim().equals("")) {
+            return null;
+        }
         String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
         Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
         return convertedPhoneNumber;
@@ -1297,13 +1301,16 @@ public class PatientController implements Serializable {
     }
 
     public void searchByPatientPhoneNumber() {
+        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+        if(patientPhoneNumber==null){
+            searchedPatients = new ArrayList<>();
+            return;
+        }
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
-        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
-
     }
 
     public void quickSearchPatientLongPhoneNumber(ControllerWithPatient controller) {
@@ -1682,9 +1689,6 @@ public class PatientController implements Serializable {
     public void dobChangeListen() {
         yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
     }
-    
-    
-    
 
     public StreamedContent getPhoto(Patient p) {
         //////System.out.println("p is " + p);

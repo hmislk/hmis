@@ -18,7 +18,7 @@
                                 <p:accordionPanel activeIndex="#{staffBasicController.hrAdminMenuIndex}">
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title=" Manage Components">
-                                        <h:form>
+                                        
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
                                                                  action="#{staffBasicController.navigateToHrRoster()}" class="w-100" value="Rosters"  />
@@ -36,10 +36,10 @@
                                                                  value=" Manage Salary Cycle" action="#{staffBasicController.navigateToHrSalaryCycle()}" class="w-100" />
 
                                             </div>
-                                        </h:form>
+                                        
                                     </p:tab>
                                     <p:tab title=" Manage Staff">
-                                        <h:form>
+                                      
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="Staff Master" 
                                                                  action="#{staffBasicController.navigateToHrStaffAdmin()}" class="w-100"  
@@ -57,10 +57,10 @@
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
                                                                  action="#{staffBasicController.navigateToHrStaffTransfer()}" class="w-100" value="Roster Transfer"  />  
                                             </div>
-                                        </h:form>
+                                      
                                     </p:tab>
                                     <p:tab title="Paysheet Components">
-                                        <h:form>
+                                       
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
                                                                  action="#{staffBasicController.navigateToHrStaffBasicIndividual()}" class="w-100"
@@ -82,10 +82,10 @@
                                                                  value="Staff Leave Entitle" class="w-100"
                                                                  action="#{staffBasicController.navigateToHrStaffLeaveEntitle()}" /> 
                                             </div>
-                                        </h:form>
+                                       
                                     </p:tab>
                                     <p:tab title="Performance Allowances">
-                                        <h:form>
+                                       
                                             <div class="d-grid gap-2">
 
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
@@ -97,17 +97,17 @@
                                                                  value="  Staff Paysheet Perfomance Allowance Percentage" class="w-100"
                                                                  actionListener="#{staffBasicController.makeNull}" />                              
                                             </div>
-                                        </h:form>
+                                       
                                     </p:tab>
                                     <p:tab title="Staff Balances">
-                                        <h:form>
+                                       
                                             <div class="d-grid gap-2">                                                           
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
                                                                  action="#{staffController.admin_edit_staff_balance()}" class="w-100" 
                                                                  value="Reset Staff Balance" 
                                                                  />                              
                                             </div>
-                                        </h:form>
+                                        
                                     </p:tab>                          
 
 

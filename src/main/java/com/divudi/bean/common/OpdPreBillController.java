@@ -29,7 +29,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -65,6 +65,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,7 +97,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private CashTransactionBean cashTransactionBean;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -934,24 +935,19 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean checkPatientAgeSex() {
-
         if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
-
         if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
             UtilityController.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
-
         if (getPatient().getPerson().getPhone().length() < 1) {
             UtilityController.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
-
         return false;
-
     }
 
     private boolean institutionReferranceNumberExist() {
@@ -969,52 +965,22 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean errorCheck() {
-
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
-
-        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
-            if (referralId == null || referralId.trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter Referrance Number");
-                return true;
-            } else {
-
-                if (institutionReferranceNumberExist()) {
-
-                    JsfUtil.addErrorMessage("Alredy Entered");
-                    return true;
-                }
-
-            }
-
-        }
-
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
-            //if (getPatientTabId().equals("tabSearchPt")) {
             if (getPatient() == null) {
                 UtilityController.addErrorMessage("Plese Select Patient");
                 return true;
             }
-            // }
-
-            //if (getPatientTabId().equals("tabNewPt")) {
-//                if (getSearchedPatient().getPerson().getName() == null
-//                        || getSearchedPatient().getPerson().getName().trim().equals("")) {
-//                    UtilityController.addErrorMessage("Can not bill without Patient Name");
-//                    return true;
-//                }
-            //}
             boolean checkAge = false;
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
-                    //  //System.err.println("ttttt");
                     checkAge = true;
                     break;
                 }
             }
-
             if (checkAge && checkPatientAgeSex()) {
                 return true;
             }

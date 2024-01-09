@@ -7,7 +7,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -28,6 +28,7 @@ import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -66,7 +67,7 @@ public class StaffPaymentBillController implements Serializable {
     private Date toDate;
     @Inject
     SessionController sessionController;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;

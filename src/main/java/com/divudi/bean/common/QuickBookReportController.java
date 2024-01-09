@@ -17,7 +17,7 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String3Value2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -38,6 +38,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientRoomFacade;
+import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -80,7 +81,7 @@ public class QuickBookReportController implements Serializable {
     @EJB
     private PatientRoomFacade patientRoomFacade;
 
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     @Inject

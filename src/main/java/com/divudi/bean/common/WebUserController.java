@@ -778,6 +778,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_icons";
     }
 

@@ -59,6 +59,8 @@ import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
+import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
@@ -146,6 +148,10 @@ public class DataUploadBean implements Serializable {
     PersonFacade personFacade;
     @EJB
     VtmFacade vtmFacade;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
+    @EJB
+    ItemFacade itemFacade;
 
     private UploadedFile file;
     private String outputString;
@@ -273,7 +279,7 @@ public class DataUploadBean implements Serializable {
             }
         }
     }
-    
+
     private List<Item> readItemsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -346,14 +352,20 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell categoryCell = row.getCell(4);
+            System.out.println("categoryCell = " + categoryCell);
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
+                System.out.println("categoryName = " + categoryName);
             }
-            if (categoryName == null && categoryName.trim().equals("")) {
+            System.out.println("categoryName = " + categoryName);
+            if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
+            
             cat = categoryController.findAndCreateCategoryByName(categoryName);
-
+            System.out.println("cat = " + cat);
+            
+            
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
@@ -461,9 +473,26 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell hospitalFeeTypeCell = row.getCell(9);
-            if (hospitalFeeTypeCell != null && hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+            if (hospitalFeeTypeCell != null) {
+                if (hospitalFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    hospitalFee = hospitalFeeTypeCell.getNumericCellValue();
+                } else if (hospitalFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = hospitalFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(hospitalFeeTypeCell);
 
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        hospitalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+
+                // Rest of your code remains the same
                 ItemFee itf = new ItemFee();
                 itf.setName("Hospital Fee");
                 itf.setItem(item);
@@ -472,13 +501,32 @@ public class DataUploadBean implements Serializable {
                 itf.setFeeType(FeeType.OwnInstitution);
                 itf.setFee(hospitalFee);
                 itf.setFfee(hospitalFee);
-                itemFeeManager.addNewFeeForItem(item, itf);
-
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
             }
 
             Cell collectingCenterFeeTypeCell = row.getCell(10);
-            if (collectingCenterFeeTypeCell != null && collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+            if (collectingCenterFeeTypeCell != null) {
+                if (collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
+                } else if (collectingCenterFeeTypeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = collectingCenterFeeTypeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(collectingCenterFeeTypeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        collectingCentreFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                }
+
+                // Rest of your code remains the same
                 ItemFee itf = new ItemFee();
                 itf.setName("Hospital Fee");
                 itf.setItem(item);
@@ -487,14 +535,20 @@ public class DataUploadBean implements Serializable {
                 itf.setFeeType(FeeType.CollectingCentre);
                 itf.setFee(collectingCentreFee);
                 itf.setFfee(collectingCentreFee);
-                itemFeeManager.addNewFeeForItem(item, itf);
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
             }
+
+            item.setTotal(hospitalFee + collectingCentreFee);
+            item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
+            item.setDblValue(hospitalFee + collectingCentreFee);
+            itemFacade.edit(item);
 
         }
 
         return items;
     }
-
 
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
@@ -544,103 +598,125 @@ public class DataUploadBean implements Serializable {
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
+                System.out.println("codeCell = " + codeCell);
             }
 
             if (code == null || code.trim().equals("")) {
+                System.out.println("code = " + code);
                 continue;
             }
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
+           
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 collectingCentreName = agentNameCell.getStringCellValue();
-
+                System.out.println("collectingCentreName = " + collectingCentreName);
             }
             if (collectingCentreName == null || collectingCentreName.trim().equals("")) {
                 continue;
             }
 
             Cell agentPrintingNameCell = row.getCell(2);
+           
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                collectingCentrePrintingName = agentNameCell.getStringCellValue();
-
+                collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
+              
             }
             if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
-                continue;
+                collectingCentrePrintingName=collectingCentreName;
             }
 
             Cell activeCell = row.getCell(3);
+         
             if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
                 active = activeCell.getBooleanCellValue();
+               
             }
             if (active == null) {
                 active = false;
             }
 
             Cell withCommissionStatusCell = row.getCell(4);
+           
             if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
                 withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
+               
             }
             if (withCommissionStatus == null) {
                 withCommissionStatus = false;
             }
 
             Cell routeNameCell = row.getCell(5);
+            System.out.println("routeNameCell = " + routeNameCell);
             if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
                 routeName = routeNameCell.getStringCellValue();
                 route = routeController.findAndCreateRouteByName(routeName);
-
+              
             }
             if (routeName == null || routeName.trim().equals("")) {
-                continue;
+                route = null;
             }
 
             Cell percentageCell = row.getCell(6);
-            if (percentageCell != null && percentageCell.getCellType() == CellType.NUMERIC) {
-                percentage = percentageCell.getNumericCellValue();
-
+            
+            if (percentageCell != null) {
+                if (percentageCell.getCellType() == CellType.NUMERIC) {
+                    percentage = percentageCell.getNumericCellValue();
+                    
+                }
+                
+                else if (percentageCell.getCellType() == CellType.STRING) {
+                    percentage = Double.parseDouble(percentageCell.getStringCellValue());
+                }
             }
+
             if (percentage == null) {
                 percentage = 0.0;
             }
 
             Cell contactNumberCell = row.getCell(7);
+           
             if (contactNumberCell != null) {
                 if (contactNumberCell.getCellType() == CellType.NUMERIC) {
                     phone = String.valueOf(contactNumberCell.getNumericCellValue());
+                   
                 } else if (contactNumberCell.getCellType() == CellType.STRING) {
                     phone = contactNumberCell.getStringCellValue();
                 }
             }
             if (phone == null || phone.trim().equals("")) {
-                continue;
+                phone = null;
             }
 
             Cell emailAddressCell = row.getCell(8);
+        
             if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
                 email = emailAddressCell.getStringCellValue();
-
+               
             }
             if (email == null || email.trim().equals("")) {
-                continue;
+                email = null;
             }
 
             Cell ownerNameCell = row.getCell(9);
+        
             if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
                 ownerName = ownerNameCell.getStringCellValue();
-
+                System.out.println("ownerName = " + ownerName);
             }
             if (ownerName == null || ownerName.trim().equals("")) {
-                continue;
+                ownerName = null;
             }
 
             Cell addressCell = row.getCell(10);
+         
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
                 address = addressCell.getStringCellValue();
-
+                System.out.println("address = " + address);
             }
             if (address == null || address.trim().equals("")) {
-                continue;
+                address = null;
             }
 
             Cell standardCreditCell = row.getCell(11);
@@ -679,14 +755,17 @@ public class DataUploadBean implements Serializable {
             }
 
             collectingCentre = collectingCentreController.findCollectingCentreByName(collectingCentreName);
-            if (collectingCentre != null) {
-                continue;
+//            if (collectingCentre != null) {
+//                continue;
+//            }
+//            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
+//            if (collectingCentre != null) {
+//                continue;
+//            }
+            if (collectingCentre == null) {
+                collectingCentre = new Institution();
             }
-            collectingCentre = collectingCentreController.findCollectingCentreByCode(code);
-            if (collectingCentre != null) {
-                continue;
-            }
-            collectingCentre = new Institution();
+//            collectingCentre = new Institution();
             collectingCentre.setInstitutionType(InstitutionType.CollectingCentre);
             collectingCentre.setCode(code);
             collectingCentre.setName(collectingCentreName);
@@ -696,7 +775,7 @@ public class DataUploadBean implements Serializable {
                 collectingCentre.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
             }
 
-            collectingCentre.setInactive(!active);
+            collectingCentre.setInactive(active);
 
 //            Route r = routeController.findRouteByName(routeName)
 //            if(r==null){
@@ -1142,7 +1221,6 @@ public class DataUploadBean implements Serializable {
         return dxx;
     }
 
-    
     private List<ItemFee> replaceItemFeesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -1690,7 +1768,7 @@ public class DataUploadBean implements Serializable {
 
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Code", "Agent Name", "Active", "With Commission Status", "Route Name", "Percentage"};
+        String[] columnHeaders = {"Code", "Agent Name", "Agent Printing Name", "Active", "With Commission Status", "Route Name", "Percentage", "Agent Contact No", "Email Address", "Owner Name", "Agent Address", "Standard Credit Limit", "Allowed Credit Limit", "Max Credit Limit"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);

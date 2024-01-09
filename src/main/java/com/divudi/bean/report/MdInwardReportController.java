@@ -14,7 +14,7 @@ import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -37,6 +37,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +57,7 @@ import javax.persistence.TemporalType;
  */
 @Named
 @RequestScoped
-public class mdInwardReportController implements Serializable {
+public class MdInwardReportController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
@@ -87,7 +88,7 @@ public class mdInwardReportController implements Serializable {
     private int managaeInwardReportIndex = -1;
     
     ////////////////////////////////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private DepartmentFacade departmentFacade;
@@ -503,7 +504,7 @@ public class mdInwardReportController implements Serializable {
         return bills;
     }
 
-    public mdInwardReportController() {
+    public MdInwardReportController() {
     }
 
     public Date getFromDate() {

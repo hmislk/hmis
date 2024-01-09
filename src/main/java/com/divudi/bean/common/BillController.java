@@ -18,7 +18,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -56,6 +56,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -199,7 +200,7 @@ public class BillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -215,6 +216,7 @@ public class BillController implements Serializable {
     List<Bill> selectedBills;
     Double grosTotal;
     Bill bill;
+    private Bill batchBill;
     boolean foreigner = false;
     Date sessionDate;
     String strTenderedValue;
@@ -615,7 +617,6 @@ public class BillController implements Serializable {
         return tmps;
     }
 
-    
     public List<Bill> fillPatientSurgeryBills(PatientEncounter pe) {
         String jpql;
         Map temMap = new HashMap();
@@ -630,7 +631,6 @@ public class BillController implements Serializable {
         return tmps;
     }
 
-    
     public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
         String sql;
         HashMap hash = new HashMap();
@@ -921,7 +921,7 @@ public class BillController implements Serializable {
     }
 
     public void getPharamacyWholeSaleCreditBills() {
-         FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
@@ -966,7 +966,7 @@ public class BillController implements Serializable {
     }
 
     public void getPharmacyBills() {
-         FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
@@ -1006,7 +1006,7 @@ public class BillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml?faces-redirect=true)");
     }
 
@@ -1063,7 +1063,7 @@ public class BillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-   
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml?faces-redirect=true)");
     }
 
@@ -1424,6 +1424,17 @@ public class BillController implements Serializable {
     private BillSearch billSearch;
 
     public void cancellAll() {
+
+        if (bills == null) {
+            JsfUtil.addErrorMessage("No bills to cancel");
+            return;
+        }
+
+        if (bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills to cancel");
+            return;
+        }
+
         Bill tmp = new CancelledBill();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
@@ -1441,6 +1452,54 @@ public class BillController implements Serializable {
 
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
+
+        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+    }
+
+    public List<Bill> billsOfBatchBill(Bill batchBill) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b"
+                + " where b.backwardReferenceBill=:bb";
+        m.put("bb", batchBill);
+        return billFacade.findByJpql(jpql, m);
+    }
+
+    public void cancellAllBillsOfBatchBill() {
+        if (batchBill == null) {
+            JsfUtil.addErrorMessage("No Batch bill is selected");
+            return;
+        }
+        bills = billsOfBatchBill(batchBill);
+
+        if (bills == null) {
+            JsfUtil.addErrorMessage("No bills to cancel");
+            return;
+        }
+
+        if (bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills to cancel");
+            return;
+        }
+
+        Bill tmp = new CancelledBill();
+        tmp.setCreatedAt(new Date());
+        tmp.setCreater(getSessionController().getLoggedUser());
+        getBillFacade().create(tmp);
+
+        
+        for (Bill b : bills) {
+            getBillSearch().setBill((BilledBill) b);
+            getBillSearch().setPaymentMethod(b.getPaymentMethod());
+            getBillSearch().setComment("Batch Cancell");
+            //////// // System.out.println("ggg : " + getBillSearch().getComment());
+            getBillSearch().cancelBill();
+        }
+
+        tmp.copy(batchBill);
+        tmp.setBilledBill(batchBill);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -2842,10 +2901,17 @@ public class BillController implements Serializable {
         return "/admin/bill_contact_numbers.xhtml";
     }
 
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
     /**
      *
      */
-
     @FacesConverter(forClass = Bill.class)
     public static class BillConverter implements Converter {
 

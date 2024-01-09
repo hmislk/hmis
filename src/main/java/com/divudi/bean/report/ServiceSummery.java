@@ -14,7 +14,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillItemWithFee;
 import com.divudi.data.table.String1Value5;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -916,7 +917,7 @@ public class ServiceSummery implements Serializable {
     Institution institution;
     PaymentMethod paymentMethod;
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     public void createServiceSummeryLab() {

@@ -27,7 +27,7 @@ import org.joda.time.LocalDate;
  *
  * @author buddhika
  */
-@Named(value = "commonController")
+@Named
 @SessionScoped
 public class CommonController implements Serializable {
 
@@ -200,6 +200,14 @@ public class CommonController implements Serializable {
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);
         return s;
+    }
+
+    public static Long convertStringToLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 
     public static double extractDoubleValue(String input) {

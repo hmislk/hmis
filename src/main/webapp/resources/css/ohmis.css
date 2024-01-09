@@ -3,6 +3,15 @@
     font-size: xx-large ;
 }
 
+.row-warning {
+    background-color: #fff3cd; /* Bootstrap warning color */
+}
+
+.row-danger {
+    background-color: #f8d7da; /* Bootstrap danger color */
+}
+
+
 th.align-right-header .ui-column-title {
     text-align: right !important;
 }
