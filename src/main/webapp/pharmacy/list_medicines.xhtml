@@ -12,68 +12,91 @@
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Medicine List" >
-                        <p:commandButton ajax="false" value="Excel">
-                            <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Refresh"
-                                         action="#{ampController.createMedicineList()}"/>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="Medicine List" />
 
+                        </f:facet>
 
-                        <p:panel id="paItems">
+                        <div class="row mb-2">
+                            <div class="col-md-12">
+                                <p:commandButton 
+                                    ajax="false"
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    icon="fa-solid fa-file-excel"
+                                    value="Excel">
+                                    <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
+                                </p:commandButton>
 
-                            <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
-                                         rowIndexVar="n"
-                                         rowKey="#{i.id}" 
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         >
-                                <p:column headerText="AMP" 
-                                          sortBy="#{i.name}"
-                                          filterBy="#{i.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="AMP" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="code" 
-                                          sortBy="#{i.code}"
-                                          filterBy="#{i.code}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Code" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
-                                </p:column>
-                                 <p:column headerText="VMP" 
-                                          sortBy="#{i.vmp.name}"
-                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="VMP" />
-                                    </f:facet>
-                                     <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                                </p:column>
-                                 <p:column headerText="VMP" 
-                                          sortBy="#{i.vmp.name}"
-                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="VMP" />
-                                    </f:facet>
-                                     <p:outputLabel value="#{i.class}"></p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Refresh"
+                                    class="ui-button-primary mx-2"
+                                    icon="fa fa-refresh"
+                                    style="float: right;"
+                                    action="#{ampController.createMedicineList()}">
+                                </p:commandButton>
+                            </div>
+                        </div>                       
 
-
+                        <p:dataTable 
+                            id="tblItem" 
+                            value="#{ampController.items}" 
+                            var="i"
+                            rowIndexVar="n"
+                            rowKey="#{i.id}" 
+                            rows="20"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20,100,500"
+                            >
+                            <p:column 
+                                headerText="AMP" 
+                                sortBy="#{i.name}"
+                                filterBy="#{i.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="AMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                width="10%"
+                                headerText="code" 
+                                sortBy="#{i.code}"
+                                filterBy="#{i.code}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Code" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.code}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="VMP" 
+                                sortBy="#{i.vmp.name}"
+                                filterBy="#{i.vmp.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="VMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="VMP" 
+                                sortBy="#{i.vmp.name}"
+                                filterBy="#{i.vmp.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="VMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.class}"></p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
                     </p:panel>
                 </h:form>
-
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
