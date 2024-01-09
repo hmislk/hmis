@@ -13,8 +13,8 @@
                 <h:form>
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                               disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                            <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"
+                                               rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                 <f:selectItem itemLabel="Select paymentMethod"/>
                                 <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
                             </p:selectOneMenu>

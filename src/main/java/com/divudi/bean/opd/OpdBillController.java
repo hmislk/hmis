@@ -327,6 +327,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
+    @Deprecated
     public String navigateToViewOpdBillByBillLight() {
         if (billLight == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -356,6 +357,47 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
+        }
+        if (batchBillId == null) {
+            JsfUtil.addErrorMessage("No Batch Bill");
+            return null;
+        }
+        batchBill = billFacade.find(batchBillId);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b"
+                + " where b.backwardReferenceBill.id=:id";
+        m.put("id", batchBillId);
+        bills = getFacade().findByJpql(jpql, m);
+        return "/opd/opd_bill_print";
+    }
+    
+    public String navigateToViewOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        
+        if (bill.getBillType() == null) {
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        if (bill.getBillType() != BillType.OpdBill) {
+            JsfUtil.addErrorMessage("Please Search Again and View Bill");
+            bills = new ArrayList<>();
+            return "";
+        }
+
+        Long batchBillId = null;
+
+        if (bill.getBackwardReferenceBill() != null) {
+            batchBillId = bill.getBackwardReferenceBill().getId();
         }
         if (batchBillId == null) {
             JsfUtil.addErrorMessage("No Batch Bill");
