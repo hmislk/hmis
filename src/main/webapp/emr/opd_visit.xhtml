@@ -344,7 +344,7 @@
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-0 p-0">
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="Prescription" />
+                                                    <p:outputLabel value="Medicines" />
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
@@ -447,7 +447,10 @@
                                                                          process="btnRemove"
                                                                          update="tblRxx"
                                                                          class="ui-button-danger"
-                                                                         action="#{patientEncounterController.removeClinicalFindingValueForComposite(rx)}"/>
+                                                                         action="#{patientEncounterController.removeCfv()}">
+                                                            <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
+                                                        
+                                                        </p:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
                                             </p:panel>

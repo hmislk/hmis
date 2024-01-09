@@ -1517,8 +1517,13 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         current.getClinicalFindingValues().remove(removingCfv);
+        removingCfv.setRetired(true);
+        clinicalFindingValueFacade.edit(removingCfv);
+        
         saveSelected();
+        
         getEncounterFindingValues().remove(removingCfv);
+        fillCurrentEncounterLists(current);
         UtilityController.addSuccessMessage("Removed");
     }
 
