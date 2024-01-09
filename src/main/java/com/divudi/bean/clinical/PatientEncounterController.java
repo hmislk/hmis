@@ -1266,14 +1266,15 @@ public class PatientEncounterController implements Serializable {
         }
     }
 
-    public void removeClinicalFindingValueForComposite(List<ClinicalFindingValue> cfvs, ClinicalFindingValue cfv) {
-        if (cfvs == null || cfv == null) {
+    public void removeClinicalFindingValueForComposite(ClinicalFindingValue cfv) {
+        if (encounterMedicines == null || cfv == null) {
             JsfUtil.addErrorMessage("Error");
             return;
         }
         cfv.setRetired(true);
         clinicalFindingValueFacade.edit(cfv);
-        cfvs.remove(cfv);
+        encounterMedicines.remove(cfv);
+        System.out.println("cfv = " + encounterMedicines.size());
         JsfUtil.addSuccessMessage("Removed");
     }
 
@@ -1376,7 +1377,11 @@ public class PatientEncounterController implements Serializable {
 
         JsfUtil.addSuccessMessage("Added");
     }
-
+        
+    public void refreshPrescription(){
+        updateOrGeneratePrescription();
+    }
+    
     private void updateOrGeneratePrescription() {
         if (userDocumentTemplates == null) {
             return;
