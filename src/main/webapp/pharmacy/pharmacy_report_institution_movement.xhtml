@@ -17,13 +17,13 @@
 
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Item Distributor" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.instituion}">
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{itemController.instituion}">
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{pharmacyController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{pharmacyController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton ajax="false" value="Average By Date" actionListener="#{pharmacyController.averageByDate()}" ></p:commandButton>
