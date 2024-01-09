@@ -27,7 +27,7 @@
                                                 value="#{reportsTransfer.department}"  >
                                 </p:autoComplete>
                             <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectCheckboxMenu  class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsTransfer.billTypes}" label="Bill Types"  >
+                                <p:selectCheckboxMenu  class="w-100 mx-4" value="#{reportsTransfer.billTypes}" label="Bill Types"  >
                                     <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
                                 </p:selectCheckboxMenu>
                             <h:outputLabel value="From" ></h:outputLabel>
