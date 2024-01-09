@@ -857,7 +857,11 @@ public class ItemController implements Serializable {
             tmpMap.put("mi", true);
             tmpMap.put("ret", false);
             jpql += " order by damith.name";
+            System.out.println("tmpMap = " + tmpMap);
+            System.out.println("jpql = " + jpql);
+            
             lst = getFacade().findByJpql(jpql, tmpMap);
+            System.out.println("lst = " + lst);
         }
        
         return lst;
