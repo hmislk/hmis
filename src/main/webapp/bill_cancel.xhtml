@@ -29,7 +29,11 @@
                                 </h:panelGrid>
 
                             </f:facet>
-                            <p:panel header="Payment Mode">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
                                 <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
                                                    disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
