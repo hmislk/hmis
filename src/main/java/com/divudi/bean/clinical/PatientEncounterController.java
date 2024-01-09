@@ -1184,7 +1184,7 @@ public class PatientEncounterController implements Serializable {
 
         String ixAsString = "Ix" + "<br/>";
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
+            ixAsString += ix.getItemValue().getName()+"<br/>";
         }
 
         String allergiesAsString = "";
@@ -1377,6 +1377,10 @@ public class PatientEncounterController implements Serializable {
         JsfUtil.addSuccessMessage("Added");
     }
 
+    public void refreshPrescription(){
+        updateOrGeneratePrescription();
+    }
+    
     private void updateOrGeneratePrescription() {
         if (userDocumentTemplates == null) {
             return;
