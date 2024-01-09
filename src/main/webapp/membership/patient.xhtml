@@ -15,31 +15,40 @@
                 <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
 
 
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                            <p:outputLabel value="Manage Patients" class="m-2"/>
+                            <h:panelGrid columns="5" style="float: right">
+                                <p:commandButton  ajax="false"
+                                                  value="Save" 
+                                                  class=" mx-1 ui-button-warning w-100"
+                                                  icon="fas fa-save"
+                                                  action="#{patientController.saveSelected()}"></p:commandButton>
+                                                  <p:spacer/>
+                                <p:commandButton  
+                                    ajax="false"
+                                    value="To Add to Family" 
+                                    class=" mx-1 ui-button-warning w-100"
+                                    icon="fas fa-arrow-left"
+                                    action="#{patientController.saveSelectedAndToFamily()}"></p:commandButton>
+                                     <p:spacer/>
+                                <p:commandButton   ajax="false"
+                                                   value="Clear For New Aptient" 
+                                                   class=" mx-1 ui-button-danger w-100"
+                                                   icon="fas fa-eraser"
+                                                   action="#{patientController.prepareAddReg()}"></p:commandButton>
 
-                <p:panel header="Manage Patients" styleClass="alignTop"
-                         style="height: 600px;">
-                    <h:panelGrid columns="2" >
 
-                        <h:form>
+                            </h:panelGrid>
+                        </f:facet>
+                        <h:panelGrid columns="2" class="w-100">
+
+
 
                             <p:panel id="panelDetails" header="Details"  >
-                                <p:panelGrid columns="3" >
-                                    <p:commandButton  ajax="false"
-                                                      value="Save" 
-                                                      action="#{patientController.saveSelected()}"></p:commandButton>
 
-                                    <p:commandButton  
-                                        ajax="false"
-                                        value="To Add to Family" 
-                                        action="#{patientController.saveSelectedAndToFamily()}"></p:commandButton>
-
-                                    <p:commandButton   ajax="false"
-                                                       value="Clear For New Aptient" 
-
-                                                       action="#{patientController.prepareAddReg()}"></p:commandButton>
-
-
-                                </p:panelGrid>
 
                                 <p:tabView  style="width: 600px!important;">
 
@@ -216,10 +225,11 @@
 
                             </p:panel>
 
-                        </h:form>
 
-                    </h:panelGrid>
-                </p:panel>
+
+                        </h:panelGrid>
+                    </p:panel>
+                </h:form>
 
 
 
