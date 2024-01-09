@@ -53,16 +53,6 @@
                             rowsPerPageTemplate="20,100,500"
                             >
                             <p:column 
-                                headerText="AMP" 
-                                sortBy="#{i.name}"
-                                filterBy="#{i.name}" 
-                                filterMatchMode="contains">
-                                <f:facet name="header" >
-                                    <h:outputText value="AMP" />
-                                </f:facet>
-                                <p:outputLabel value="#{i.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column 
                                 width="10%"
                                 headerText="code" 
                                 sortBy="#{i.code}"
@@ -73,6 +63,18 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i.code}"></p:outputLabel>
                             </p:column>
+                            
+                            <p:column 
+                                headerText="AMP" 
+                                sortBy="#{i.name}"
+                                filterBy="#{i.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="AMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}"></p:outputLabel>
+                            </p:column>
+                            
                             <p:column 
                                 headerText="VMP" 
                                 sortBy="#{i.vmp.name}"
@@ -83,7 +85,7 @@
                                 </f:facet>
                                 <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
                             </p:column>
-                            <p:column 
+<!--                            <p:column 
                                 headerText="VMP" 
                                 sortBy="#{i.vmp.name}"
                                 filterBy="#{i.vmp.name}" 
@@ -92,7 +94,7 @@
                                     <h:outputText value="VMP" />
                                 </f:facet>
                                 <p:outputLabel value="#{i.class}"></p:outputLabel>
-                            </p:column>
+                            </p:column>-->
                         </p:dataTable>
                     </p:panel>
                 </h:form>
