@@ -11,39 +11,47 @@
         <h:form>
             <p:panel header="Pharmaceutical Item With Distributor" >
 
-                <p:commandButton ajax="false" value="Refresh"
-                                 action="#{pharmacySaleReport.createItemWithMultipleDistributor()}"/>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Refresh"
+                            style="float: right;"
+                            class="ui-button-warning"
+                            icon="fa fa-refresh"
+                            action="#{pharmacySaleReport.createItemWithMultipleDistributor()}">
+                        </p:commandButton>
+                    </div>
+                </div>  
 
+                <p:dataTable 
+                    value="#{pharmacySaleReport.itemsWithDistributers}" 
+                    var="it" >
 
-                <p:panel id="paItems">
-                    <p:dataTable value="#{pharmacySaleReport.itemsWithDistributers}" var="it" >
+                    <f:facet name="header">
+                        <p:outputLabel value="Pharmaceutical Item With Multiple Distributor" />
+                    </f:facet>
+
+                    <p:columnGroup type="header" >
+                        <p:row>
+                            <p:column headerText="Dealor" />
+                        </p:row>
+                    </p:columnGroup>
+
+                    <p:subTable value="#{it.institutions}" var="i"  >
                         <f:facet name="header">
-                            <p:outputLabel value="Pharmaceutical Item With Multiple Distributor" />
+                            <p:outputLabel value="Item Code : #{it.item.code}" style="float: right"/>
+                            <p:outputLabel value="Item Name : #{it.item.name}" />
                         </f:facet>
-                        <p:columnGroup type="header" >
-                            <p:row>
-                                <p:column headerText="Dealor" />
-                            </p:row>
-                        </p:columnGroup>
-                        <p:subTable value="#{it.institutions}" var="i"  >
-                            <f:facet name="header">
-                                <p:outputLabel value="Item Code : #{it.item.code}" style="float: right"/>
-                                <p:outputLabel value="Item Name : #{it.item.name}" />
-                            </f:facet>
-                            <p:column headerText="Dealor">
-                                <p:outputLabel value="#{i.name}"></p:outputLabel>
-                            </p:column>
-                            
-                        </p:subTable>
-                    </p:dataTable>
-                </p:panel>
+                        <p:column headerText="Dealor">
+                            <p:outputLabel value="#{i.name}"></p:outputLabel>
+                        </p:column>
 
+                    </p:subTable>
+                </p:dataTable>
 
             </p:panel>
+            
         </h:form>
-
-
     </ui:define>
-
-
 </ui:composition>
