@@ -10,11 +10,12 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Test Counts" >
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <p:outputLabel value="Institution/Branch" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromInstitution"
+                                class="w-100 mx-4"
                                 value="#{reportController.fromInstitution}"
                                 filter="true"
                                 >
@@ -24,37 +25,24 @@
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}"
-                                               class="w-100"></f:selectItems>
+                                               class="w-100 mx-4"></f:selectItems>
                                 <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
                             </p:selectOneMenu>
-                            
-                            <p:spacer width="40" height="1"></p:spacer>
-                            <p:spacer width="40" height="1"></p:spacer>
-                            <p:spacer width="40" height="1"></p:spacer>
-
-
-                            <p:outputLabel value="Bill Date From" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
-                            <p:spacer></p:spacer>
-                            <p:outputLabel value="Bill Date To" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
-
-
-                            <p:commandButton ajax="false" value="Process" action="#{reportController.processPharmacySaleItemCount()}" >
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Download"
-                                             action="#{reportController.downloadPharmacySaleItemCount()}">
-                            </p:commandButton>
-
+                            <h:outputLabel value="Bill Date From" ></h:outputLabel>
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" value="#{reportController.fromDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                            <h:outputLabel value="Bill Date To" ></h:outputLabel>
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" value="#{reportController.toDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                        </h:panelGrid>
+                        
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processPharmacySaleItemCount()}" > </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" ajax="false" value="Excel" action="#{reportController.downloadPharmacySaleItemCount()}"> </p:commandButton>
                         </h:panelGrid>
 
 
                         <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
                                      paginator="true"
+                                     paginatorPosition="bottom"
                                      rows="10"
                                      
                                      >
