@@ -190,6 +190,22 @@ public class SearchController implements Serializable {
     private Institution toInstitution;
     private int manageListIndex;
     private Patient patient;
+    private Institution dealer;
+    private List<Bill> grnBills;
+
+    public void createGrnWithDealerTable() {
+        Map m = new HashMap();
+        String sql = "select b from Bill b where b.retired=false and "
+                + " b.billType = :billType and b.institution = :del "
+                + "and b.createdAt between :fromDate and :toDate ";
+        
+        m.put("billType", BillType.PharmacyGrnBill);
+        m.put("del", getDealer());
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        
+        grnBills=getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
@@ -895,6 +911,22 @@ public class SearchController implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public Institution getDealer() {
+        return dealer;
+    }
+
+    public void setDealer(Institution dealer) {
+        this.dealer = dealer;
+    }
+
+    public List<Bill> getGrnBills() {
+        return grnBills;
+    }
+
+    public void setGrnBills(List<Bill> grnBills) {
+        this.grnBills = grnBills;
     }
 
     public class billsWithbill {
@@ -5874,7 +5906,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
 
         bills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
     }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
@@ -8865,4 +8897,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    
+    
 }
