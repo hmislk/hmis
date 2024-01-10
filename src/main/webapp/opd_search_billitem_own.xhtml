@@ -14,37 +14,37 @@
                     <p:panel  header="OPD BILL ITEM">
                         <div class="row">
                             <div class="col-md-2">
-                                
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
-                                        inputStyleClass="form-control">      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
-                                        inputStyleClass="form-control">                                                                              
-                                    </p:calendar>
-                                    <p:spacer height="10" width="5" ></p:spacer>
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
+
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
+                                            inputStyleClass="form-control">      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
+                                            inputStyleClass="form-control">                                                                              
+                                </p:calendar>
+                                <p:spacer height="10" width="5" ></p:spacer>
+                                <div class="d-grid gap-2">
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
                                     <p:commandButton id="btnSearchAll" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
                                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                                     </p:commandButton>
-                                    </div>
-                                    <p:spacer height="10" width="5" ></p:spacer>
-                                    
-                              
-                                    <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="form-control"/>
-                                    <h:outputLabel value="Item Name"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="form-control"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="form-control"/>
-                                    <h:outputLabel value="Patient Phone"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="form-control"/>
-                                    <h:outputLabel value="To Institution Name"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" class="form-control"/>
-                                
+                                </div>
+                                <p:spacer height="10" width="5" ></p:spacer>
+
+
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="form-control"/>
+                                <h:outputLabel value="Item Name"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="form-control"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="form-control"/>
+                                <h:outputLabel value="Patient Phone"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="form-control"/>
+                                <h:outputLabel value="To Institution Name"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" class="form-control"/>
+
 
                             </div>
 
@@ -77,10 +77,8 @@
                                     </p:column>
 
                                     <p:column headerText="Patient"  styleClass="alignTop"  >
-                                        <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
-                                        </h:outputLabel>
-                                        &nbsp;&nbsp;&nbsp;&nbsp;
-                                        <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.bill.approvedAnyTest ne true}">
+
+                                        <h:commandLink value="#{pi.bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.bill.approvedAnyTest ne true}">
                                             <f:setPropertyActionListener value="#{pi.bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                         <br/>
@@ -97,7 +95,9 @@
                                     <p:column headerText="Investigation/Service"  styleClass="alignTop"  >
                                         <h:outputLabel value="#{pi.item.name}" >
                                         </h:outputLabel>
-                                        <br/>
+                                        
+                                    </p:column>
+                                    <p:column headerText="Billed At" >
                                         <h:outputLabel value="Billed at " />
                                         <h:outputLabel value="#{pi.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -110,9 +110,9 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.refunded}" >
+                                        <h:panelGroup rendered="#{pi.bill.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.refunded}" value="#{pi.referanceBillItem.bill.createdAt}" >
+                                            <h:outputLabel style="color: red;" rendered="#{pi.bill.refunded}" value="#{pi.bill.refundedBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>

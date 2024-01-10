@@ -213,8 +213,8 @@
                                     <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
+                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                                <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
