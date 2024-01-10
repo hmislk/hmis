@@ -332,7 +332,7 @@
                                                                  var="ix" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
-                                                            
+
                                                         </p:column>
                                                         <p:column headerText="Details">
                                                             <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
@@ -444,7 +444,7 @@
                                                             <p:commandButton value="Add"
                                                                              class="ui-button-success"
                                                                              id="btnAddRx"
-                                                                              icon="pi pi-plus"
+                                                                             icon="pi pi-plus"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                              update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
@@ -522,18 +522,22 @@
                                                                  var="sx" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink 
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton  
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
                                                                 id="btnRemoveSx"
                                                                 ajax="true" 
                                                                 action="#{patientEncounterController.removeCfv}" 
                                                                 process="btnRemoveSx"
                                                                 update="tblSx ">
                                                                 <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
-                                                                <h:outputText value="&nbsp;(X)" />
-                                                            </p:commandLink>
-                                                        </p:column>
-                                                        <p:column headerText="Details">
-                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                            </p:commandButton>
                                                         </p:column>
                                                     </p:dataTable>
                                                 </h:panelGroup>
