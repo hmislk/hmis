@@ -97,7 +97,7 @@ public class StoreController1 implements Serializable {
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
     
-     private int managePharamcyReportIndex;
+     private int manageStoreReportIndex;
 
     public void makeNull() {
         departmentSale = null;
@@ -1268,12 +1268,12 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
         this.commonController = commonController;
     }
 
-    public int getManagePharamcyReportIndex() {
-        return managePharamcyReportIndex;
+    public int getManageStoreReportIndex() {
+        return manageStoreReportIndex;
     }
 
-    public void setManagePharamcyReportIndex(int managePharamcyReportIndex) {
-        this.managePharamcyReportIndex = managePharamcyReportIndex;
+    public void setManageStoreReportIndex(int manageStoreReportIndex) {
+        this.manageStoreReportIndex = manageStoreReportIndex;
     }
 
     
