@@ -169,6 +169,11 @@ public class DataUploadBean implements Serializable {
         this.file = file;
     }
 
+
+    public String navigateToUploadCollectingCentreFees(){
+        return "/admin/items/item_and_fee_upload_for_collecting_Centres";
+    }
+
     public String navigateToUploadDiagnoses() {
         return "/emr/admin/upload_diagnoses";
     }
