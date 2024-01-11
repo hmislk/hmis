@@ -293,6 +293,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
             progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCountReportedIns(w, reportedInstitution);
+            if(temp.getCount() == 0){
+                continue;
+            }
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
                 items.add(temp);
