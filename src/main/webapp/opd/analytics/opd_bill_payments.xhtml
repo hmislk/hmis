@@ -25,7 +25,7 @@
                                                     value="#{opdBillController.fromDate}" 
                                                     navigator="false" 
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                    styleClass="dateTimePicker" 
+                                                    
                                                     class="w-100" 
                                                     inputStyleClass="form-control"
                                                     maxdate="#{commonController.currentDateTime}">      
@@ -36,11 +36,10 @@
                                         <p:calendar id="toDate"
                                                     value="#{opdBillController.toDate}"
                                                     navigator="false" 
-                                                    styleClass="dateTimePicker"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                                     class="w-100"
                                                     inputStyleClass="form-control"
-                                                    maxdate="#{commonController.currentDateTime}">                                                                              
+                                                    >                                                                              
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
@@ -107,6 +106,7 @@
                                 <p:dataTable rowIndexVar="i" 
                                              id="tblBills" 
                                              value="#{opdBillController.payments}" 
+                                             rowStyleClass="#{payment.bill.cancelled ? 'text-danger' : payment.bill.refunded ? 'text-warning' : ''}"
                                              var="payment"  
                                              style="min-width: 100%;"  
                                              rows ="10"
@@ -138,6 +138,10 @@
                                         <p:outputLabel id="paymentTime" value="#{payment.createdAt}">                                       
                                               <f:convertDateTime pattern="dd-MMMM-yyyy"></f:convertDateTime>
                                         </p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Remarks"   >                              
+                                        <h:outputLabel value="#{payment.bill.cancelled?'Cancelled':''}" class="#{payment.bill.cancelled?'text-danger':''}" />
+                                        <h:outputLabel value="#{payment.bill.refunded ?'Refunded':''}" />
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{payment.bill.toDepartment.name}" 
                                               filterBy="#{payment.bill.toDepartment.name}" filterMatchMode="contains" >                                
