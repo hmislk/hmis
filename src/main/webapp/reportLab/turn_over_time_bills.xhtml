@@ -50,25 +50,30 @@
                         <h:panelGroup >
                             <p:commandButton ajax="false"  value="Process"  
                                              action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
-                                             styleClass="noPrintButton" />
-                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
+                                             icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning"/>
+                            <p:commandButton value="Excel" ajax="false" icon="fa-solid fa-file-excel"
+                                             class="mx-1 ui-button-success" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="turn over time"/>
                             </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" styleClass="noPrintButton" >
+                            <p:commandButton value="Print" ajax="false" icon="fa-solid fa-print"
+                                             class="mx-1 ui-button-info">
                                 <p:printer target="tbl" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
-                            </p:commandButton> 
+                            
                         </h:panelGroup>
                     </h:panelGrid>
 
-                    <p:panel style="width: 100%; margin-top: 20px;" styleClass="noBorder summeryBorder">
+                   
 
-
-                        <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
-                            <f:facet name="header" >
-                                <p:outputLabel value="Turn Around Time" />
-                            </f:facet>
+                        <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" class="w-100"
+                                     rows="10"
+                                     paginator="true" 
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}" 
+                                     paginatorPosition="bottom">
+                                    
                             <p:column headerText="Ins Id" >
                                 <p:outputLabel value="#{pi.billItem.bill.insId}" ></p:outputLabel>
                             </p:column>
@@ -122,7 +127,7 @@
 
                         </p:dataTable>
 
-                    </p:panel>
+                  
 
 
 
