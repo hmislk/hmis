@@ -227,6 +227,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
+    
+    private List<Payment> payments;
 
     private List<BillItem> lstBillItems;
     private List<BillItem> lstBillItemsPrint;
@@ -262,7 +264,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdBatchBillList() {
-        return "/opd/analytics/batch_bill_list";
+        return "/opd/analytics/opd_batch_bill_search";
     }
 
     public String navigateToSearchOpdBills() {
@@ -2233,7 +2235,42 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
     }
+    
+    public void searchOpdPayments(){
+        String j = "select b from Payment b"
+                + " where b.createdAt between :fd and :td "
+                + " and b.retired=false";
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
 
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+
+        j += " order by b.createdAt desc  ";
+        payments = getPaymentFacade().findByJpql(j,m);
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public void clearOpdBillSearchData() {
+        institution = null;
+        department = null;
+
+    }
     public String navigateToNewOpdBill() {
         clearBillItemValues();
         clearBillValues();
@@ -3059,6 +3096,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         return opdItems;
     }
+    public String navigateToOpdBillPayments() {
+        bills=null;
+        return "/opd/analytics/opd_bill_payments";
+    }
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {
@@ -3103,5 +3144,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 }

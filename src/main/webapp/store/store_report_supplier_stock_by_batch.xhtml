@@ -9,36 +9,28 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
-
 
                     <p:panel header="Department Stock Report by Batch" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-
-                            <p:autoComplete style="position: relative; width: " completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}"  >
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="DEALER" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.institution}" >
+                            <h:outputLabel value="Dealer" ></h:outputLabel>
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeSupplier}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.institution}" >
                             </p:autoComplete>
                         </h:panelGrid>
-                        <h:panelGrid columns="4" >
-                            <p:spacer width="80" height="1"/>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDistributorStocks()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
-                                <p:printer target="gpBillPreview" >
-
-                                </p:printer>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{storeReportsStock.fillDistributorStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
+                                <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-                                               
-                                                    
-                                               />
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List" />
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -48,7 +40,7 @@
 
                                 <f:facet name="header">
                                     <h:outputLabel value="Suppliers' Stock : #{storeReportsStock.department.name} "/>                                   
-                                    <h:outputLabel value="Supplied By : #{storeReportsStock.institution.name}" style=" white-space:pre-line;"/>                                    
+                                    <h:outputLabel value=" Supplied By : #{storeReportsStock.institution.name}" style=" white-space:pre-line;"/>                                    
                                 </f:facet>
 
                                 <p:column headerText="Item">

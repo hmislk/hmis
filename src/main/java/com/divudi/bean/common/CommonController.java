@@ -132,6 +132,9 @@ public class CommonController implements Serializable {
     }
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
+        if (fromDate==null||toDate==null){
+            return 0;
+        }
         long timeInMs = toDate.getTime() - fromDate.getTime();
         return timeInMs / (1000 * 60);
     }

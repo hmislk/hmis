@@ -18,37 +18,37 @@
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channelling Bills By Single Cashier">
 
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar  class="w-100 mx-4" inputStyleClass="w-100"  id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                        <p:autoComplete  class="w-100 mx-4" inputStyleClass="w-100"   completeMethod="#{webUserController.completeUser}" 
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{channelReportController.webUser}" ></p:autoComplete>
 
                     </h:panelGrid>
-                    <p:panel id="reportPrint" >
-                        <h:panelGrid columns="5" >
-                            <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                    <p:panel  >
+                        <h:panelGrid columns="5" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process"  action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
                             <p:defaultCommand target="btnRefresh"/>
-
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            
+                            <p:commandButton class="ui-button-success  mx-1" icon="fas fa-file-excel" actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" >
+                                <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
+                            </p:commandButton> 
+                            
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton> 
                         </h:panelGrid>
 
-                        <p:panel>
+                        <p:panel id="reportPrint" >
                             <p:dataTable id="tbl"  value="#{channelReportController.billedBillList.bills}" var="b">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Channel Bills &emsp; #{channelReportController.webUser.webUserPerson.name}"/>

@@ -25,13 +25,19 @@
                         <p:fileUpload value="#{dataUploadBean.file}"
                                       mode="simple"
                                       label="Choose File"/>
-                        <p:commandButton value="Upload"
+                        <p:commandButton 
+                            icon="fa fa-upload"
+                            value="Upload"
                                          action="#{dataUploadBean.uploadItems()}"
                                          ajax="false"/>
-                        <p:commandButton value="Download Template" 
+                        <p:commandButton 
+                            value="Download Template" 
+                            icon="fa fa-download"
+                            class="ui-button-Warning"
+                            style="float: right;"
                                          ajax="false" 
                                          onclick="PrimeFaces.monitorDownload(start, stop);" 
-                                         icon="ui-icon-arrowthick-1-s">
+                                         >
                             <p:fileDownload value="#{dataUploadBean.templateForItemWithFeeUpload}" />
                         </p:commandButton>
 
