@@ -161,6 +161,9 @@ public class DataUploadBean implements Serializable {
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
     private StreamedContent templateForInvestigationUpload;
+    private StreamedContent templateForDiagnosisUpload;
+    private StreamedContent templateForPatientUpload;
+    private StreamedContent templateForVisitUpload;
 
     public UploadedFile getFile() {
         return file;
@@ -1727,6 +1730,114 @@ public class DataUploadBean implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
+    
+    public void createTemplateForVisitUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Visit ID", "Patient ID", "Date/Time", "Comments", "Weight", "SBP", "DBP", "Email", "BMI", "PR"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForVisitUpload = DefaultStreamedContent.builder()
+                .name("template_for_Visit_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForDiagnosisUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Diagnosis"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForDiagnosisUpload = DefaultStreamedContent.builder()
+                .name("template_for_Diagnosis_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForPatientUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status","Race", "Blood Group", "Comments", "Full Name","Occupation"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForPatientUpload = DefaultStreamedContent.builder()
+                .name("template_for_Patient_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
 
     public StreamedContent getTemplateForInvestigationUpload() {
         try {
@@ -1735,6 +1846,32 @@ public class DataUploadBean implements Serializable {
             // Handle IOException
         }
         return templateForInvestigationUpload;
+    }
+    
+    public StreamedContent getTemplateForVisitUpload() {
+        try {
+            createTemplateForVisitUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForVisitUpload;
+    }
+    public StreamedContent getTemplateForPatientUpload() {
+        try {
+            createTemplateForPatientUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForPatientUpload;
+    }
+    
+    public StreamedContent getTemplateForDiagnosisUpload() {
+        try {
+            createTemplateForDiagnosisUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForDiagnosisUpload;
     }
 
     public void createTemplateForItemWithFeeUpload() throws IOException {
