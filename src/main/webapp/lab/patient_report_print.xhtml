@@ -23,7 +23,9 @@
 
 
 
-                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" />
+                    <p:commandButton class="ui-button-info m-2" icon="fas fa-print" ajax="false" value="Print"  actionListener="#{patientReportController.printPatientReport()}">
+                        <p:printer target="divPrint" />
+                    </p:commandButton>
                     <!--                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="PDF" 
                                                          action="#{patientReportController.createPDF()}" onclick="this.form.target = '_blank'" />-->
                     <!--<p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back" action="/lab/search_for_reporting_ondemand"/>-->
@@ -31,15 +33,8 @@
 
 
 
-                    <p:panel styleClass="myDivToPrint" id="divPrint" style="background-color: white!important; border: 0px; margin: 0px; padding: 0px;" >
-
-
-
-                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
-                            <div id="divReport"  style="min-width:800px;min-height: 1100px; position: relative; font-size: 120%;">
-
-
-
+                    <h:panelGroup styleClass="myDivToPrint" id="divPrint" style="background-color: white!important; border: 0px; margin: 0px; padding: 0px;" ><h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
+                            <div id="divReport">
                                 <ui:repeat value="#{commonReportItemController.items}" var="myCli" >
                                     <div style="#{myCli.cssStyle}; position:absolute;">
                                         <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
@@ -305,16 +300,16 @@
 
 
 
-                    </p:panel>
+                    </h:panelGroup>
 
 
                 </h:form>
 
-                <p:dataTable value="#{commonReportItemController.items}" var="myCli" >
+<!--                <p:dataTable value="#{commonReportItemController.items}" var="myCli" >
                     <p:column >
-                        #{myCli.cssStyle}
-                    </p:column>
-                </p:dataTable>
+                #{myCli.cssStyle}
+            </p:column>
+        </p:dataTable>-->
 
             </ui:define>
 
