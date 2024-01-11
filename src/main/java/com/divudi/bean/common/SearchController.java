@@ -5253,11 +5253,11 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientBillsToPay() {
-        fillPatientPreBills(null, patient, true, null);
+        fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
     }
 
     public void fillPatientBillsPaid() {
-        fillPatientPreBills(null, patient, null, false);
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
     }
 
     public void fillPatientBillsPaidAndToPay() {
