@@ -376,6 +376,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             billTypes=new BillType[]{BillType.OpdBill, BillType.InwardBill,};
         }
         boolean flag=true;
+        if(item == null){
+            UtilityController.addSuccessMessage("Please Select Investigation");
+            return ;
+        }
         if (department!=null) {
             flag=false;
         }
