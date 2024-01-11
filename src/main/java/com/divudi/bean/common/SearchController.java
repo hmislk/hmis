@@ -5715,6 +5715,13 @@ public class SearchController implements Serializable {
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+    public void searchOpdBatchBills() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBathcBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
 
     public void searchOpdBills() {
         Date startTime = new Date();
