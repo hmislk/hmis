@@ -59,6 +59,7 @@ import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
+import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
@@ -91,7 +92,7 @@ import org.primefaces.model.file.UploadedFile;
 
 @Named
 @ViewScoped
-public class DataUploadBean implements Serializable {
+public class DataUploadController implements Serializable {
 
     @Inject
     ItemController itemController;
@@ -152,6 +153,8 @@ public class DataUploadBean implements Serializable {
     ItemFeeFacade itemFeeFacade;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    CategoryFacade categoryFacade;
 
     private UploadedFile file;
     private String outputString;
@@ -165,6 +168,14 @@ public class DataUploadBean implements Serializable {
     private StreamedContent templateForPatientUpload;
     private StreamedContent templateForVisitUpload;
 
+    List<Item> itemsToSave;
+    List<Item> itemsSkipped;
+    List<Item> masterItemsToSave;
+    List<ItemFee> itemFeesToSave;
+    List<Category> categoriesSaved;
+    List<Institution> institutionsSaved;
+    List<Department> departmentsSaved;
+
     public UploadedFile getFile() {
         return file;
     }
@@ -173,9 +184,12 @@ public class DataUploadBean implements Serializable {
         this.file = file;
     }
 
-
-    public String navigateToUploadCollectingCentreFees(){
+    public String navigateToUploadCollectingCentreFees() {
         return "/admin/items/item_and_fee_upload_for_collecting_Centres";
+    }
+
+    public String navigateToUploadOpdItemsAndFees() {
+        return "/admin/items/opd_item_upload";
     }
 
     public String navigateToUploadDiagnoses() {
@@ -214,7 +228,7 @@ public class DataUploadBean implements Serializable {
         List<Patient> patients;
 
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
 
                 for (Patient p : patients) {
@@ -231,7 +245,7 @@ public class DataUploadBean implements Serializable {
 
     public void uploadVisits() {
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -242,7 +256,7 @@ public class DataUploadBean implements Serializable {
     public void uploadVtms() {
         List<Vtm> vtms;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 vtms = readVtmsFromExcel(inputStream);
                 for (Vtm v : vtms) {
                     vtmController.findAndSaveVtmByNameAndCode(v);
@@ -256,7 +270,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAtms() {
         List<Atm> atms;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
                     atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
@@ -270,7 +284,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAmps() {
         List<Amp> amps;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -281,7 +295,18 @@ public class DataUploadBean implements Serializable {
     public void uploadItems() {
         items = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                items = readItemsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadCollectingCentreItemsAndFees() {
+        items = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 items = readItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -294,8 +319,18 @@ public class DataUploadBean implements Serializable {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
 
-        List<Item> items = new ArrayList<>();
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
         Item item;
+        Institution runningIns = null;
+        Department runningDept = null;
+        Category runningCategory = null;
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -305,10 +340,9 @@ public class DataUploadBean implements Serializable {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
 
-            item = null;
-            Category cat = null;
-            Institution institution = null;
-            Department department = null;
+            Category category;
+            Institution institution;
+            Department department;
             InwardChargeType iwct = null;
 
             String name = null;
@@ -324,13 +358,58 @@ public class DataUploadBean implements Serializable {
             Double hospitalFee = 0.0;
             Double collectingCentreFee = 0.0;
 
+            Cell insCell = row.getCell(5);
+            if (insCell != null && insCell.getCellType() == CellType.STRING) {
+                institutionName = insCell.getStringCellValue();
+            }
+            if (institutionName == null || institutionName.trim().equals("")) {
+                institutionName = "Other";
+            }
+
+            if (runningIns == null) {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                institutionsSaved.add(institution);
+                runningIns = institution;
+            } else if (runningIns.getName().equals(institutionName)) {
+                institution = runningIns;
+            } else {
+                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+                institutionsSaved.add(institution);
+                runningIns = institution;
+            }
+
+            Cell deptCell = row.getCell(6);
+            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
+                departmentName = deptCell.getStringCellValue();
+            }
+            if (departmentName == null || departmentName.trim().equals("")) {
+                departmentName = institutionName;
+            }
+
+            if (runningDept == null) {
+                department = departmentController.findAndSaveDepartmentByName(departmentName);
+                runningDept = department;
+                departmentsSaved.add(department);
+            } else if (runningDept.getName().equals(departmentName)) {
+                department = runningDept;
+            } else {
+                department = departmentController.getDefaultDepatrment(institution);
+                runningDept = department;
+                departmentsSaved.add(department);
+            }
+
             Cell nameCell = row.getCell(0);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
                 if (name == null || name.trim().equals("")) {
                     continue;
                 }
+            }
 
+            item = itemController.findItemByName(name, department);
+            if (item != null) {
+                itemsSkipped.add(item);
+                continue;
             }
 
             Item masterItem = itemController.findMasterItemByName(name);
@@ -371,29 +450,28 @@ public class DataUploadBean implements Serializable {
                 continue;
             }
 
-            cat = categoryController.findAndCreateCategoryByName(categoryName);
-            System.out.println("cat = " + cat);
-
-            Cell insCell = row.getCell(5);
-            if (insCell != null && insCell.getCellType() == CellType.STRING) {
-                institutionName = insCell.getStringCellValue();
-            }
-            if (institutionName != null && !institutionName.trim().equals("")) {
-                institution = institutionController.findAndSaveInstitutionByName(institutionName);
+            if (runningCategory == null) {
+                category = categoryController.findCategoryByName(categoryName);
+                if (category == null) {
+                    category = new Category();
+                    category.setName(categoryName);
+                    categoryFacade.create(category);
+                    categoriesSaved.add(category);
+                }
+                runningCategory = category;
+            } else if (runningCategory.getName() == null) {
+                category = runningCategory;
+            } else if (runningCategory.getName().equals(categoryName)) {
+                category = runningCategory;
             } else {
-                institution = institutionController.findAndSaveInstitutionByName("Other");
-            }
-
-            Cell deptCell = row.getCell(6);
-            if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
-                departmentName = deptCell.getStringCellValue();
-            }
-            if (departmentName != null && !departmentName.trim().equals("")) {
-                department = departmentController.findAndSaveDepartmentByName(departmentName);
-            }
-
-            if (department == null) {
-                department = departmentController.getDefaultDepatrment(institution);
+                category = categoryController.findCategoryByName(categoryName);
+                if (category == null) {
+                    category = new Category();
+                    category.setName(categoryName);
+                    categoryFacade.create(category);
+                    categoriesSaved.add(category);
+                }
+                runningCategory = category;
             }
 
             Cell inwardCcCell = row.getCell(7);
@@ -421,12 +499,13 @@ public class DataUploadBean implements Serializable {
                     masterItem.setPrintName(printingName);
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
-                    masterItem.setCategory(cat);
+                    masterItem.setCategory(category);
                     masterItem.setIsMasterItem(true);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-                    itemController.saveSelected(masterItem);
+//                    itemController.saveSelected(masterItem);
+                    masterItemsToSave.add(masterItem);
                 }
 
                 Service service = new Service();
@@ -434,15 +513,14 @@ public class DataUploadBean implements Serializable {
                 service.setPrintName(printingName);
                 service.setFullName(fullName);
                 service.setCode(code);
-                service.setCategory(cat);
+                service.setCategory(category);
                 service.setMasterItemReference(masterItem);
                 service.setInstitution(institution);
                 service.setDepartment(department);
                 service.setInwardChargeType(iwct);
                 service.setCreater(sessionController.getLoggedUser());
                 service.setCreatedAt(new Date());
-                serviceController.save(service);
-                items.add(service);
+//                serviceController.save(service);
                 item = service;
             } else if (itemType.equals("Investigation")) {
 
@@ -453,26 +531,26 @@ public class DataUploadBean implements Serializable {
                     masterItem.setFullName(fullName);
                     masterItem.setCode(code);
                     masterItem.setIsMasterItem(true);
-                    masterItem.setCategory(cat);
+                    masterItem.setCategory(category);
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-                    itemController.saveSelected(masterItem);
+//                    itemController.saveSelected(masterItem);
+                    masterItemsToSave.add(masterItem);
                 }
                 Investigation ix = new Investigation();
                 ix.setName(name);
                 ix.setPrintName(printingName);
                 ix.setFullName(fullName);
                 ix.setCode(code);
-                ix.setCategory(cat);
+                ix.setCategory(category);
                 ix.setInstitution(institution);
                 ix.setDepartment(department);
                 ix.setInwardChargeType(iwct);
                 ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
-                investigationController.save(ix);
-                items.add(ix);
+//                investigationController.save(ix);
                 item = ix;
             }
 
@@ -511,7 +589,8 @@ public class DataUploadBean implements Serializable {
                 itf.setFfee(hospitalFee);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-                itemFeeFacade.create(itf);
+//                itemFeeFacade.create(itf);
+                itemFeesToSave.add(itf);
             }
 
             Cell collectingCenterFeeTypeCell = row.getCell(10);
@@ -545,23 +624,30 @@ public class DataUploadBean implements Serializable {
                 itf.setFfee(collectingCentreFee);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-                itemFeeFacade.create(itf);
+//                itemFeeFacade.create(itf);
+                itemFeesToSave.add(itf);
             }
 
             item.setTotal(hospitalFee + collectingCentreFee);
             item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
             item.setDblValue(hospitalFee + collectingCentreFee);
-            itemFacade.edit(item);
+            System.out.println("item = " + item.getTotal());
+            itemsToSave.add(item);
+//            itemFacade.edit(item);
 
         }
 
-        return items;
+        itemFacade.batchCreate(masterItemsToSave, 500);
+        itemFacade.batchCreate(itemsToSave, 500);
+        itemFeeFacade.batchCreate(itemFeesToSave, 1000);
+
+        return itemsToSave;
     }
 
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -813,7 +899,7 @@ public class DataUploadBean implements Serializable {
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -824,7 +910,7 @@ public class DataUploadBean implements Serializable {
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -839,7 +925,7 @@ public class DataUploadBean implements Serializable {
                 readDiagnosesFromExcel(inputStream);
 
             } catch (IOException ex) {
-                Logger.getLogger(DataUploadBean.class
+                Logger.getLogger(DataUploadController.class
                         .getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -849,7 +935,7 @@ public class DataUploadBean implements Serializable {
         outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
-            try (InputStream inputStream = file.getInputStream()) {
+            try ( InputStream inputStream = file.getInputStream()) {
                 vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1700,6 +1786,15 @@ public class DataUploadBean implements Serializable {
         return templateForItemWithFeeUpload;
     }
 
+    public StreamedContent getTemplateForCollectingCentreItemWithFeeUpload() {
+        try {
+            createTemplateForCollectingCentreItemWithFeeUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForItemWithFeeUpload;
+    }
+
     public void createTemplateForInvestigationUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -1735,7 +1830,7 @@ public class DataUploadBean implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public void createTemplateForVisitUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -1771,7 +1866,7 @@ public class DataUploadBean implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public void createTemplateForDiagnosisUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -1807,7 +1902,7 @@ public class DataUploadBean implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
-    
+
     public void createTemplateForPatientUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -1818,7 +1913,7 @@ public class DataUploadBean implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status","Race", "Blood Group", "Comments", "Full Name","Occupation"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -1852,7 +1947,7 @@ public class DataUploadBean implements Serializable {
         }
         return templateForInvestigationUpload;
     }
-    
+
     public StreamedContent getTemplateForVisitUpload() {
         try {
             createTemplateForVisitUpload();
@@ -1861,6 +1956,7 @@ public class DataUploadBean implements Serializable {
         }
         return templateForVisitUpload;
     }
+
     public StreamedContent getTemplateForPatientUpload() {
         try {
             createTemplateForPatientUpload();
@@ -1869,7 +1965,7 @@ public class DataUploadBean implements Serializable {
         }
         return templateForPatientUpload;
     }
-    
+
     public StreamedContent getTemplateForDiagnosisUpload() {
         try {
             createTemplateForDiagnosisUpload();
@@ -1880,6 +1976,63 @@ public class DataUploadBean implements Serializable {
     }
 
     public void createTemplateForItemWithFeeUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Creating the second sheet for institution list
+        XSSFSheet institutionSheet = workbook.createSheet("Institutions");
+
+        // Fetching institutions and adding to the institution sheet
+        List<Institution> institutions = institutionController.getItems();
+        for (int i = 0; i < institutions.size(); i++) {
+            Row row = institutionSheet.createRow(i);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(institutions.get(i).getName());
+        }
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Code", "Category", "Institution", "Department", "Inward Charge Type", "Item Type", "Hospital Fee", "Collecting Centre Fee"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Setting data validation for institution column in data sheet
+        XSSFDataValidationHelper validationHelper = new XSSFDataValidationHelper(dataSheet);
+        DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("Institutions!$A$1:$A$" + institutions.size());
+
+        CellRangeAddressList addressList = new CellRangeAddressList(1, 65535, 5, 5); // Assuming column F is for institutions
+        XSSFDataValidation dataValidation = (XSSFDataValidation) validationHelper.createValidation(constraint, addressList);
+
+        dataValidation.setShowErrorBox(true);
+        dataSheet.addValidationData(dataValidation);
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForItemWithFeeUpload = DefaultStreamedContent.builder()
+                .name("template_for_item_fee_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForCollectingCentreItemWithFeeUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         // Creating the first sheet for data entry
@@ -2010,5 +2163,47 @@ public class DataUploadBean implements Serializable {
     public void setCollectingCentres(List<Institution> collectingCentres) {
         this.collectingCentres = collectingCentres;
     }
+
+    public List<Item> getItemsToSave() {
+        return itemsToSave;
+    }
+
+    public void setItemsToSave(List<Item> itemsToSave) {
+        this.itemsToSave = itemsToSave;
+    }
+
+    public List<Item> getItemsSkipped() {
+        return itemsSkipped;
+    }
+
+    public void setItemsSkipped(List<Item> itemsSkipped) {
+        this.itemsSkipped = itemsSkipped;
+    }
+
+    public List<Category> getCategoriesSaved() {
+        return categoriesSaved;
+    }
+
+    public void setCategoriesSaved(List<Category> categoriesSaved) {
+        this.categoriesSaved = categoriesSaved;
+    }
+
+    public List<Institution> getInstitutionsSaved() {
+        return institutionsSaved;
+    }
+
+    public void setInstitutionsSaved(List<Institution> institutionsSaved) {
+        this.institutionsSaved = institutionsSaved;
+    }
+
+    public List<Department> getDepartmentsSaved() {
+        return departmentsSaved;
+    }
+
+    public void setDepartmentsSaved(List<Department> departmentsSaved) {
+        this.departmentsSaved = departmentsSaved;
+    }
+    
+    
 
 }

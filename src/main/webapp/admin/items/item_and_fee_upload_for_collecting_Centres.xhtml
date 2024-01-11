@@ -8,29 +8,27 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="item">
 
-        <h:form >
-
-
-        </h:form>
 
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload Items</h2>
+                    <h2>Upload Items and Fees for Collecting Centres</h2>
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadBean.file}"
+                        <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadBean.uploadItems()}"
+                                         class="ui-button-warning m-1"
+                                         action="#{dataUploadController.uploadCollectingCentreItemsAndFees()}"
                                          ajax="false"/>
                         <p:commandButton value="Download Template" 
                                          ajax="false" 
+                                         class="ui-button-success m-1"
                                          onclick="PrimeFaces.monitorDownload(start, stop);" 
                                          icon="ui-icon-arrowthick-1-s">
-                            <p:fileDownload value="#{dataUploadBean.templateForItemWithFeeUpload}" />
+                            <p:fileDownload value="#{dataUploadController.getTemplateForCollectingCentreItemWithFeeUpload}" />
                         </p:commandButton>
 
                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
@@ -120,7 +118,23 @@
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" value="#{dataUploadBean.items}" var="item" >
+        <p:dataTable id="tbl" value="#{dataUploadController.itemsToSave}" var="item" >
+            <f:facet name="header" >
+                <p:outputLabel value="Items Saved" ></p:outputLabel>
+            </f:facet>
+            <p:column >
+                #{item.name}
+            </p:column>
+            <p:column >
+                #{item.total}
+            </p:column>
+
+        </p:dataTable>
+        
+        <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item" >
+            <f:facet name="header" >
+                <p:outputLabel value="Items Skipped" ></p:outputLabel>
+            </f:facet>
             <p:column >
                 #{item.name}
             </p:column>

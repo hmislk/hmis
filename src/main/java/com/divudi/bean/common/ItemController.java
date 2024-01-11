@@ -328,6 +328,21 @@ public class ItemController implements Serializable {
         return item;
     }
 
+    public Item findItemByName(String name, Department dept) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.department=:dept "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("dept", dept);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        return item;
+    }
+
     public Item findMasterItemByName(String name) {
         String jpql;
         Map m = new HashMap();
@@ -859,11 +874,11 @@ public class ItemController implements Serializable {
             jpql += " order by damith.name";
             System.out.println("tmpMap = " + tmpMap);
             System.out.println("jpql = " + jpql);
-            
+
             lst = getFacade().findByJpql(jpql, tmpMap);
             System.out.println("lst = " + lst);
         }
-       
+
         return lst;
     }
 
