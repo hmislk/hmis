@@ -1879,6 +1879,9 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
+        if (consumeTime==0){
+            return 0;
+        }
         double count = 0;
         double calculation = 0;
 

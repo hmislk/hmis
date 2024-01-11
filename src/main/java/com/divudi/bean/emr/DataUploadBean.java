@@ -160,6 +160,10 @@ public class DataUploadBean implements Serializable {
     private List<Institution> collectingCentres;
     private StreamedContent templateForItemWithFeeUpload;
     private StreamedContent templateForCollectingCentreUpload;
+    private StreamedContent templateForInvestigationUpload;
+    private StreamedContent templateForDiagnosisUpload;
+    private StreamedContent templateForPatientUpload;
+    private StreamedContent templateForVisitUpload;
 
     public UploadedFile getFile() {
         return file;
@@ -205,7 +209,7 @@ public class DataUploadBean implements Serializable {
         List<Patient> patients;
 
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
 
                 for (Patient p : patients) {
@@ -222,7 +226,7 @@ public class DataUploadBean implements Serializable {
 
     public void uploadVisits() {
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -233,7 +237,7 @@ public class DataUploadBean implements Serializable {
     public void uploadVtms() {
         List<Vtm> vtms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vtms = readVtmsFromExcel(inputStream);
                 for (Vtm v : vtms) {
                     vtmController.findAndSaveVtmByNameAndCode(v);
@@ -247,7 +251,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAtms() {
         List<Atm> atms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
                     atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
@@ -261,7 +265,7 @@ public class DataUploadBean implements Serializable {
     public void uploadAmps() {
         List<Amp> amps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -272,7 +276,7 @@ public class DataUploadBean implements Serializable {
     public void uploadItems() {
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 items = readItemsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -361,11 +365,10 @@ public class DataUploadBean implements Serializable {
             if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
-            
+
             cat = categoryController.findAndCreateCategoryByName(categoryName);
             System.out.println("cat = " + cat);
-            
-            
+
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
@@ -553,7 +556,7 @@ public class DataUploadBean implements Serializable {
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -608,7 +611,7 @@ public class DataUploadBean implements Serializable {
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
-           
+
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 collectingCentreName = agentNameCell.getStringCellValue();
                 System.out.println("collectingCentreName = " + collectingCentreName);
@@ -618,30 +621,30 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell agentPrintingNameCell = row.getCell(2);
-           
+
             if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
                 collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
-              
+
             }
             if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
-                collectingCentrePrintingName=collectingCentreName;
+                collectingCentrePrintingName = collectingCentreName;
             }
 
             Cell activeCell = row.getCell(3);
-         
+
             if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
                 active = activeCell.getBooleanCellValue();
-               
+
             }
             if (active == null) {
                 active = false;
             }
 
             Cell withCommissionStatusCell = row.getCell(4);
-           
+
             if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
                 withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
-               
+
             }
             if (withCommissionStatus == null) {
                 withCommissionStatus = false;
@@ -652,21 +655,19 @@ public class DataUploadBean implements Serializable {
             if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
                 routeName = routeNameCell.getStringCellValue();
                 route = routeController.findAndCreateRouteByName(routeName);
-              
+
             }
             if (routeName == null || routeName.trim().equals("")) {
                 route = null;
             }
 
             Cell percentageCell = row.getCell(6);
-            
+
             if (percentageCell != null) {
                 if (percentageCell.getCellType() == CellType.NUMERIC) {
                     percentage = percentageCell.getNumericCellValue();
-                    
-                }
-                
-                else if (percentageCell.getCellType() == CellType.STRING) {
+
+                } else if (percentageCell.getCellType() == CellType.STRING) {
                     percentage = Double.parseDouble(percentageCell.getStringCellValue());
                 }
             }
@@ -676,11 +677,11 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell contactNumberCell = row.getCell(7);
-           
+
             if (contactNumberCell != null) {
                 if (contactNumberCell.getCellType() == CellType.NUMERIC) {
                     phone = String.valueOf(contactNumberCell.getNumericCellValue());
-                   
+
                 } else if (contactNumberCell.getCellType() == CellType.STRING) {
                     phone = contactNumberCell.getStringCellValue();
                 }
@@ -690,17 +691,17 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell emailAddressCell = row.getCell(8);
-        
+
             if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
                 email = emailAddressCell.getStringCellValue();
-               
+
             }
             if (email == null || email.trim().equals("")) {
                 email = null;
             }
 
             Cell ownerNameCell = row.getCell(9);
-        
+
             if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
                 ownerName = ownerNameCell.getStringCellValue();
                 System.out.println("ownerName = " + ownerName);
@@ -710,7 +711,7 @@ public class DataUploadBean implements Serializable {
             }
 
             Cell addressCell = row.getCell(10);
-         
+
             if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
                 address = addressCell.getStringCellValue();
                 System.out.println("address = " + address);
@@ -807,7 +808,7 @@ public class DataUploadBean implements Serializable {
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -818,7 +819,7 @@ public class DataUploadBean implements Serializable {
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -843,7 +844,7 @@ public class DataUploadBean implements Serializable {
         outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1692,6 +1693,185 @@ public class DataUploadBean implements Serializable {
             // Handle IOException
         }
         return templateForItemWithFeeUpload;
+    }
+
+    public void createTemplateForInvestigationUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Name", "Printing Name", "Full Name", "Item Code", "Category", "Institution", "Department", "Inward Charge Category", "Sample", "Container", "Analyser"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForInvestigationUpload = DefaultStreamedContent.builder()
+                .name("template_for_Investigation_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForVisitUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Visit ID", "Patient ID", "Date/Time", "Comments", "Weight", "SBP", "DBP", "Email", "BMI", "PR"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForVisitUpload = DefaultStreamedContent.builder()
+                .name("template_for_Visit_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForDiagnosisUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Diagnosis"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForDiagnosisUpload = DefaultStreamedContent.builder()
+                .name("template_for_Diagnosis_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+    
+    public void createTemplateForPatientUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status","Race", "Blood Group", "Comments", "Full Name","Occupation"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForPatientUpload = DefaultStreamedContent.builder()
+                .name("template_for_Patient_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public StreamedContent getTemplateForInvestigationUpload() {
+        try {
+            createTemplateForInvestigationUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForInvestigationUpload;
+    }
+    
+    public StreamedContent getTemplateForVisitUpload() {
+        try {
+            createTemplateForVisitUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForVisitUpload;
+    }
+    public StreamedContent getTemplateForPatientUpload() {
+        try {
+            createTemplateForPatientUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForPatientUpload;
+    }
+    
+    public StreamedContent getTemplateForDiagnosisUpload() {
+        try {
+            createTemplateForDiagnosisUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForDiagnosisUpload;
     }
 
     public void createTemplateForItemWithFeeUpload() throws IOException {

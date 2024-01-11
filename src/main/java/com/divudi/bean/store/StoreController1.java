@@ -89,12 +89,15 @@ public class StoreController1 implements Serializable {
     // private double grantStock;
     private Date fromDate;
     private Date toDate;
+    
     ////////
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
+    
+     private int manageStoreReportIndex;
 
     public void makeNull() {
         departmentSale = null;
@@ -1263,6 +1266,14 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getManageStoreReportIndex() {
+        return manageStoreReportIndex;
+    }
+
+    public void setManageStoreReportIndex(int manageStoreReportIndex) {
+        this.manageStoreReportIndex = manageStoreReportIndex;
     }
 
     
