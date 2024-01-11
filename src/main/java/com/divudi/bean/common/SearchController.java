@@ -5253,15 +5253,15 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientBillsToPay() {
-        fillPatientPreBills(null, patient, true, null);
+        fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
     }
 
     public void fillPatientBillsPaid() {
-        fillPatientPreBills(null, patient, null, false);
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
     }
 
     public void fillPatientBillsPaidAndToPay() {
-        fillPatientPreBills(null, patient, null, null);
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, null);
     }
 
     public void createOpdPreTableNotPaid() {
@@ -5352,11 +5352,11 @@ public class SearchController implements Serializable {
             m.put("pt", pt);
         }
 
-        if (paidOnly != null) {
+        if (paidOnly!=null) {
             jpql += " and b.referenceBill is not null ";
         }
 
-        if (toPayOnly != null) {
+        if (toPayOnly!=null) {
             jpql += " and b.referenceBill is null ";
         }
 
@@ -5365,8 +5365,8 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
-
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+       
 
     }
 

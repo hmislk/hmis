@@ -53,7 +53,7 @@ public class ProcedureController implements Serializable {
     String selectText = "";
     
     public String navigateToManageProcedures(){
-        return "/emr/admin/index";
+        return "/emr/admin/procedures";
     }
     
     public void downloadAsExcel() {
