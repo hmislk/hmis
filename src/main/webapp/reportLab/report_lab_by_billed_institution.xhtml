@@ -16,20 +16,19 @@
                 <h:panelGrid columns="2" >
 
                     <h:outputLabel value="From Date"/>
-
-                    <p:calendar styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar styleClass="dateTimePicker" class="mx-4 my-1" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
 
-                    <p:calendar styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar styleClass="dateTimePicker" class="mx-4 my-1" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
 
                     <h:outputLabel value="Billed Instituion"/>
 
                     <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{investigationMonthSummeryOwnControllerSession.institution}"  
-                                    style="text-align: left;"  completeMethod="#{institutionController.completeCompany}" var="ins" itemValue="#{ins}" itemLabel="#{ins.name}" forceSelection="true" rendered="true"  >
+                                    style="text-align: left;" class="mx-4 my-1" completeMethod="#{institutionController.completeCompany}" var="ins" itemValue="#{ins}" itemLabel="#{ins.name}" forceSelection="true" rendered="true"  >
                     </p:autoComplete>
 
 
@@ -38,27 +37,34 @@
                 <h:panelGrid columns="4">
                     <p:commandButton ajax="false" value="Process" 
                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution()}"
-                                     styleClass="noPrintButton" style="float: right;" >
+                                     icon="fa-solid fa-arrows-rotate"
+                                     class="ui-button-warning" style="float: right;" >
                     </p:commandButton>
-                    <p:commandButton id="print" value="Print" style="display: none">
+                    <p:commandButton id="print" value="Print"  icon="fa-solid fa-print"
+                                     class="mx-1 ui-button-info">
                         <p:printer target="panPrint" />
                     </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton value="Excel"  icon="fa-solid fa-file-excel"
+                                     class="mx-1 ui-button-success"  ajax="false" style="float: right;" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="Investigation Counts"
-                                       
-                                            
-                                       />
+
+
+                                        />
                     </p:commandButton> 
                 </h:panelGrid>
 
-                <p:panel styleClass="noBorder summeryBorder" id="panPrint">
+                <p:panel id="panPrint" class=" my-1">
                     <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
                                  rowIndexVar="i"
+                                 class="w-100"
+                                 rows="10"
+                                 paginator="true" 
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                                  >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Investigation Counts by Billed Institution - #{investigationMonthSummeryOwnControllerSession.institution.name}"/>
-                        </f:facet>
-
+                       
 
 
                         <p:column >
