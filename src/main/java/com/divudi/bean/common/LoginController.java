@@ -11,6 +11,7 @@ import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +44,8 @@ public class LoginController implements Serializable {
     List<Logins> logins;
     @EJB
     LoginsFacade facade;
+    @Inject
+    SessionController sessionController;
 
     /**
      * Creates a new instance of LoginController
@@ -99,6 +103,7 @@ public class LoginController implements Serializable {
 
     public void downloadAsExcel() {
         getLogins();
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
@@ -125,8 +130,11 @@ public class LoginController implements Serializable {
                 row.createCell(2).setCellValue(login.getDepartment().getName());
                 row.createCell(3).setCellValue(login.getWebUser().getCode());
                 row.createCell(4).setCellValue(login.getWebUser().getWebUserPerson().getName());
-                row.createCell(5).setCellValue(login.getLogedAt());
-                row.createCell(6).setCellValue(login.getLogoutAt());
+                String formattedLogedAt = (login.getLogedAt() != null) ? dateFormat.format(login.getLogedAt()) : "";
+                String formattedLogoutAt = (login.getLogoutAt() != null) ? dateFormat.format(login.getLogoutAt()) : "";
+
+                row.createCell(5).setCellValue(formattedLogedAt);
+                row.createCell(6).setCellValue(formattedLogoutAt);
                 row.createCell(7).setCellValue(login.getIpaddress());
             }
 
