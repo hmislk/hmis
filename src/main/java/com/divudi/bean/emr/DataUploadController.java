@@ -354,6 +354,7 @@ public class DataUploadController implements Serializable {
             InwardChargeType iwct = null;
 
             String name = null;
+            String comments = "";
             String printingName = null;
             String fullName = null;
             String code = null;
@@ -414,6 +415,7 @@ public class DataUploadController implements Serializable {
                 }
             }
 
+            comments =name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
             
             item = itemController.findItemByName(name, department);
@@ -513,7 +515,6 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-//                    itemController.saveSelected(masterItem);
                     masterItemsToSave.add(masterItem);
                 }
 
