@@ -16,12 +16,12 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
                                                  icon="fa fa-upload"
-                                                 action="#{dataUploadBean.uploadPatients}"
+                                                 action="#{dataUploadController.uploadPatients}"
                                                  ajax="false"/>
                                 <p:commandButton 
                             value="Download Template" 
@@ -30,7 +30,7 @@
                             class="ui-button-warning"
                             onclick="PrimeFaces.monitorDownload(start, stop);" 
                             icon="fa fa-download">
-                                    <p:fileDownload value="#{dataUploadBean.templateForPatientUpload}" />
+                                    <p:fileDownload value="#{dataUploadController.templateForPatientUpload}" />
                         </p:commandButton>
                             </h:form>
 

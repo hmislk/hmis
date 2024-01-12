@@ -126,6 +126,24 @@ public class CategoryController implements Serializable {
         return c;
     }
     
+    
+    public Category findCategoryByName(String qry) {
+//        System.out.println("qry = " + qry);
+        Category c;
+        String jpql;
+        jpql = "select c from "
+                + " Category c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        c = getFacade().findFirstByJpql(jpql, m);
+        return c;
+    }
+    
+    
 
     public List<Category> getSubCategories(Category cat) {
         List<Category> suggestions;
