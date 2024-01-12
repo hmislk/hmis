@@ -72,6 +72,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -189,7 +190,7 @@ public class DataUploadController implements Serializable {
 
     public String navigateToUploadCollectingCentreFees() {
         pollActive = true;
-        file=null;
+        file = null;
         return "/admin/items/item_and_fee_upload_for_collecting_Centres";
     }
 
@@ -415,9 +416,9 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            comments =name;
+            comments = name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
-            
+
             item = itemController.findItemByName(name, department);
             if (item != null) {
                 itemsSkipped.add(item);
@@ -786,7 +787,8 @@ public class DataUploadController implements Serializable {
 
             if (contactNumberCell != null) {
                 if (contactNumberCell.getCellType() == CellType.NUMERIC) {
-                    phone = String.valueOf(contactNumberCell.getNumericCellValue());
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
 
                 } else if (contactNumberCell.getCellType() == CellType.STRING) {
                     phone = contactNumberCell.getStringCellValue();
