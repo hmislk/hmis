@@ -37,7 +37,8 @@ public class CommonFunctions {
         if (input == null) {
             return null;
         }
-        return input.replaceAll("[^a-zA-Z0-9 ]", "");
+        return input.replaceAll("[\"'/\\\\]", "");
+
     }
 
     public static String removeNonUnicodeChars(String input) {
