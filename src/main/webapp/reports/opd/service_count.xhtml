@@ -17,7 +17,7 @@
                             <p:outputLabel value="Billing Institution/Branch" ></p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromInstitution"
-                                class="mx-2"
+                                class="mx-2 w-100"
                                 value="#{reportController.fromInstitution}"
                                 filter="true"
                                 >
@@ -47,7 +47,7 @@
                             <p:selectOneMenu 
                                 value="#{reportController.toInstitution}"
                                 filter="true" 
-                                class="mt-1 mx-2"
+                                class="mt-1 mx-2 w-100"
                                 id="cmdToInstitution" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
