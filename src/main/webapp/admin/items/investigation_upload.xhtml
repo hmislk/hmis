@@ -19,13 +19,13 @@
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload 
-                            value="#{dataUploadBean.file}"
+                            value="#{dataUploadController.file}"
                             mode="simple"
                             label="Choose File"/>
                         <p:commandButton 
                             icon="fa fa-upload"
                             value="Upload"
-                            action="#{dataUploadBean.uploadInvestigations()}"
+                            action="#{dataUploadController.uploadInvestigations()}"
                             ajax="false"/>
 
                         <p:commandButton 
@@ -35,7 +35,7 @@
                             class="ui-button-Warning"
                             onclick="PrimeFaces.monitorDownload(start, stop);" 
                             icon="fa fa-download">
-                            <p:fileDownload value="#{dataUploadBean.templateForInvestigationUpload}" />
+                            <p:fileDownload value="#{dataUploadController.templateForInvestigationUpload}" />
                         </p:commandButton>
 
                     </h:form>
