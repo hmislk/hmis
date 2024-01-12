@@ -515,7 +515,8 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-                    masterItemsToSave.add(masterItem);
+//                    masterItemsToSave.add(masterItem);
+                    itemController.saveSelected(masterItem);
                 }
 
                 Service service = new Service();
@@ -545,8 +546,8 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-//                    itemController.saveSelected(masterItem);
-                    masterItemsToSave.add(masterItem);
+                    itemController.saveSelected(masterItem);
+//                    masterItemsToSave.add(masterItem);
                 }
                 Investigation ix = new Investigation();
                 ix.setName(name);
