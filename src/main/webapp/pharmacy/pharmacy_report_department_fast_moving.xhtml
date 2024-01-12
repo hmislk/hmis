@@ -17,35 +17,27 @@
 
                         <f:facet name="header" >
                             Fast-moving items
-                            <p:commandButton ajax="false" value="Process" 
-                                            actionListener="#{reportsTransfer.fillFastMoving()}" ></p:commandButton>
-
                         </f:facet>
-
-                        <h:panelGrid columns="2" styleClass="alignTop" >
-                            <h:panelGrid columns="2" styleClass="alignTop" >
-                                <h:outputLabel value="Department" ></h:outputLabel>
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                        
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" 
                                                 var="dept" itemLabel="#{dept.name}" 
                                                 itemValue="#{dept}" forceSelection="true" 
                                                 value="#{reportsTransfer.department}"  >
                                 </p:autoComplete>
-                                <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                                <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            </h:panelGrid>
-
-
-                            <h:panelGrid columns="2" styleClass="alignTop" >
-                                <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectCheckboxMenu value="#{reportsTransfer.billTypes}" label="Bill Types"  >
+                            <h:outputLabel value="Movement Type" ></h:outputLabel>
+                                <p:selectCheckboxMenu  class="w-100 mx-4" value="#{reportsTransfer.billTypes}" label="Bill Types"  >
                                     <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
                                 </p:selectCheckboxMenu>
-                            </h:panelGrid>
-
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                         </h:panelGrid>
-
+                        <h:panelGrid columns="6" class="my-2">
+                           <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsTransfer.fillFastMoving()}" ></p:commandButton>
+                         </h:panelGrid>
 
                         <p:tabView dynamic="true" >
 
@@ -53,18 +45,18 @@
 
                                 <p:panel id="gpBillPreview">
                                     <f:facet name="header" class="nonPrintBlock" >
-                                        <h:panelGrid columns="2" >
+                                        <h:panelGrid columns="2" style="float: right" >
                                             <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
                                                                                             <p:printer target="tblVals" ></p:printer>
                                                                                         </p:commandButton>-->
-                                            <p:commandButton value="Export to Excel" ajax="false" >
+                                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
                                                 <p:dataExporter  target="tblVals" type="xls" fileName="fast_by_val"></p:dataExporter>
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </f:facet>
 
                                     <p:dataTable id="tblVals"  value="#{reportsTransfer.movementRecords}" var="i"
-                                                 paginator="true" paginatorAlwaysVisible="true"
+                                                 paginator="true" paginatorAlwaysVisible="true" paginatorPosition="bottom"
                                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="10,30,50"
                                                  rows="50"
@@ -189,11 +181,11 @@
 
                                 <p:panel id="gpBillPreviewQty">
                                     <f:facet name="header" >
-                                        <h:panelGrid columns="2" >
+                                        <h:panelGrid columns="2" style="float: right" >
                                             <!--                                            <p:commandButton value="Print" ajax="false" styleClass="nonPrintBlock" >
                                                                                             <p:printer target="tblQtys" ></p:printer>
                                                                                         </p:commandButton>-->
-                                            <p:commandButton value="Export to Excel" ajax="false" >
+                                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
                                                 <p:dataExporter  target="tblQtys" type="xls" fileName="fast"></p:dataExporter>
                                             </p:commandButton>
                                         </h:panelGrid>
@@ -201,7 +193,7 @@
 
 
                                     <p:dataTable id="tblQtys"  value="#{reportsTransfer.movementRecordsQty}" var="i" 
-                                                 paginator="true" paginatorAlwaysVisible="true"
+                                                 paginator="true" paginatorAlwaysVisible="true" paginatorPosition="bottom"
                                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="10,30,50"
                                                  rows="50"

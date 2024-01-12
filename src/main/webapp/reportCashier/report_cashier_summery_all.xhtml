@@ -4,7 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-     
+
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -20,46 +20,47 @@
 
                         <h:panelGrid columns="2"  styleClass="noPrintButton">
                             <h:outputLabel value="Department" />
-                            <h:outputLabel value="#{sessionController.department.name}" />
+                            <h:outputLabel class="mx-4" value="#{sessionController.department.name}" />
 
                             <h:outputLabel value="From Date" />
-                            <p:calendar id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
 
                         </h:panelGrid>
 
-                        <h:panelGrid columns="5" >
-
-
-
+                        <h:panelGrid columns="5" class="my-2" >
+                            
                             <p:commandButton id="btnRefresh" ajax="false" 
                                              value="Process All Bills" 
-                                             styleClass="noPrintButton" 
-                                             style="float: right;" 
+                                             class="ui-button-warning"
+                                             icon="fas fa-cogs" 
                                              actionListener="#{cashierReportController.calCashierData()}" />  
                             <p:commandButton id="btnRefresh1" ajax="false" 
                                              value="Process Channel Bills" 
-                                             styleClass="noPrintButton" 
-                                             style="float: right;" 
+                                             class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"  
                                              actionListener="#{cashierReportController.calCashierDataChannel()}" />  
                             <p:commandButton id="btnRefresh2" ajax="false" 
                                              value="Process Other Bills" 
-                                             styleClass="noPrintButton" 
-                                             style="float: right;" 
+                                             class="ui-button-warning"
+                                             icon="fas fa-cogs"  
                                              actionListener="#{cashierReportController.calCashierDataCashier()}" />  
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint" />
-                            </p:commandButton>  
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
+
+                            <p:commandButton class="ui-button-success mx-1"
+                                             icon="fas fa-file-excel"  ajax="false" value="Excel" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery" />
                             </p:commandButton>  
-
+                            <p:commandButton ajax="false" value="Print" 
+                                             class="ui-button-info"
+                                             icon="fas fa-print"  >
+                                <p:printer target="reportPrint" />
+                            </p:commandButton>  
 
 
                         </h:panelGrid>

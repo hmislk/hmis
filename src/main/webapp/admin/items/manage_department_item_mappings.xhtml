@@ -26,6 +26,12 @@
                                     itemLabel="#{pasindu.name}"
                                     itemValue="#{pasindu}"
                                     >
+                                    <p:column headerText="Institution" >
+                                        <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Department" >
+                                        <h:outputText value="#{pasindu.name}" ></h:outputText>
+                                    </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 
                                     value="Fill Items Added For Department" 

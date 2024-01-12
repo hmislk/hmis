@@ -76,7 +76,7 @@
                                             <h:outputText  value="Route" ></h:outputText>
                                             <p:autoComplete 
                                                 completeMethod="#{routeController.completeRoute}" 
-                                                class="w-100"
+                                                class="w-100" placeholder="Route"
                                                 inputStyleClass="w-100"
                                                 var="r" itemLabel="#{r.name}" itemValue="#{r}" forceSelection="true" value="#{institutionController.current.route}" ></p:autoComplete>
                                             <h:outputText  value="Point of Issue No." ></h:outputText>
@@ -105,7 +105,7 @@
                                             <h:outputText value="Bank" ></h:outputText>
                                             <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
                                                             var="dept" id="branch"
-                                                            class="w-100"
+                                                            class="w-100" placeholder="Branch"
                                                             inputStyleClass="w-100"
                                                             itemLabel="#{dept.name}"
                                                             itemValue="#{dept}"

@@ -56,7 +56,7 @@ public class CashierReportController implements Serializable {
     private SessionController sessionController;
     @Inject
     private CommonController commonController;
-    @EJB
+   
     private CommonFunctions commonFunction;
     @EJB
     private WebUserFacade webUserFacade;

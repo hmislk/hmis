@@ -91,7 +91,7 @@
                                 :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId}"
                                 listener="#{channelBookingController.listnerBillSessionListForRowSelectNew}" />
                         <p:column 
-                            style="text-wrap: none;" 
+                            style="word-wrap: normal;" 
                             filterBy="#{ses.name}" filterMatchMode="contains">
                             <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                             <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>

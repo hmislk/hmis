@@ -171,7 +171,7 @@ public class InvestigationController implements Serializable {
         current = new Investigation();
         return "/admin/lims/investigation";
     }
-    
+
     public String navigateToAddInvestigation() {
         current = new Investigation();
         return "/admin/lims/investigation";
@@ -252,7 +252,7 @@ public class InvestigationController implements Serializable {
         }
         return "/admin/lims/investigation_single";
     }
-    
+
     public String navigateToManageInvestigation() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
@@ -1222,7 +1222,7 @@ public class InvestigationController implements Serializable {
         listAllIxs();
         return "/admin/lims/investigation_list";
     }
-    
+
     public String navigateToManageReportTemplateNames() {
         listAllIxs();
         return "/admin/lims/investigation_list";
@@ -1333,59 +1333,53 @@ public class InvestigationController implements Serializable {
     }
 
     public void saveSelected() {
+        System.out.println("this = " + this);
+        System.out.println("save seelcted");
 
-//        if (errorCheck()) {
-//            return;
-//        }
-//        getCurrent().setCategory(getCurrent().getInvestigationCategory());
+        if (getCurrent() == null) {
+            return;
+        }
+        
+        System.out.println("getCurrent().isIsMasterItem() = " + getCurrent().isIsMasterItem());
+
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
         }
-//        getCurrent().setInstitution(institution);
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //////// // System.out.println("1");
+        if (getCurrent().getId() != null) {
             if (billedAs == false) {
-                //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
-
             }
             if (reportedAs == false) {
-                //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-
             getFacade().create(getCurrent());
             if (billedAs == false) {
-                //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
             }
             if (reportedAs == false) {
-                //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
             Item sc = new Item();
-
             sc.setCreatedAt(new Date());
             sc.setCreater(sessionController.getLoggedUser());
-
             sc.setItemType(ItemType.SampleComponent);
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
+        System.out.println("getCurrent().isIsMasterItem() = " + getCurrent().isIsMasterItem());
         recreateModel();
         getItems();
     }
-    
+
     public void save(Investigation i) {
         i.setSymanticType(SymanticType.Laboratory_Procedure);
         if (i.getInwardChargeType() == null) {
@@ -1423,8 +1417,7 @@ public class InvestigationController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    
+
     public void saveSelected(Investigation tix) {
         if (tix.getId() == null) {
             getFacade().create(tix);

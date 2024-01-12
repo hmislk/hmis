@@ -190,6 +190,22 @@ public class SearchController implements Serializable {
     private Institution toInstitution;
     private int manageListIndex;
     private Patient patient;
+    private Institution dealer;
+    private List<Bill> grnBills;
+
+    public void createGrnWithDealerTable() {
+        Map m = new HashMap();
+        String sql = "select b from Bill b where b.retired=false and "
+                + " b.billType = :billType and b.institution = :del "
+                + "and b.createdAt between :fromDate and :toDate ";
+        
+        m.put("billType", BillType.PharmacyGrnBill);
+        m.put("del", getDealer());
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        
+        grnBills=getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
@@ -895,6 +911,22 @@ public class SearchController implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public Institution getDealer() {
+        return dealer;
+    }
+
+    public void setDealer(Institution dealer) {
+        this.dealer = dealer;
+    }
+
+    public List<Bill> getGrnBills() {
+        return grnBills;
+    }
+
+    public void setGrnBills(List<Bill> grnBills) {
+        this.grnBills = grnBills;
     }
 
     public class billsWithbill {
@@ -5221,15 +5253,15 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientBillsToPay() {
-        fillPatientPreBills(null, patient, true, null);
+        fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
     }
 
     public void fillPatientBillsPaid() {
-        fillPatientPreBills(null, patient, null, false);
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
     }
 
     public void fillPatientBillsPaidAndToPay() {
-        fillPatientPreBills(null, patient, null, null);
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, null);
     }
 
     public void createOpdPreTableNotPaid() {
@@ -5320,11 +5352,11 @@ public class SearchController implements Serializable {
             m.put("pt", pt);
         }
 
-        if (paidOnly != null) {
+        if (paidOnly!=null) {
             jpql += " and b.referenceBill is not null ";
         }
 
-        if (toPayOnly != null) {
+        if (toPayOnly!=null) {
             jpql += " and b.referenceBill is null ";
         }
 
@@ -5333,8 +5365,8 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
-
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+       
 
     }
 
@@ -5683,6 +5715,13 @@ public class SearchController implements Serializable {
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+    public void searchOpdBatchBills() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBathcBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
 
     public void searchOpdBills() {
         Date startTime = new Date();
@@ -5874,7 +5913,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
 
         bills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
     }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
@@ -8865,4 +8904,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    
+    
 }
