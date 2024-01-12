@@ -329,32 +329,43 @@ public class ItemController implements Serializable {
     }
 
     public Item findItemByName(String name, Department dept) {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select i "
-                + " from Item i "
-                + " where i.retired=:ret "
-                + " and i.department=:dept "
-                + " and i.name=:name";
-        m.put("ret", false);
-        m.put("name", name);
-        m.put("dept", dept);
-        Item item = getFacade().findFirstByJpql(jpql, m);
-        return item;
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("dept", dept);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
+            System.out.println("name = " + name);
+            return null;
+        }
     }
 
     public Item findMasterItemByName(String name) {
-        String jpql;
-        Map m = new HashMap();
-        jpql = "select i "
-                + " from Item i "
-                + " where i.retired=:ret "
-                + " and i.isMasterItem=:mi "
-                + " and i.name=:name";
-        m.put("ret", false);
-        m.put("name", name);
-        m.put("mi", true);
-        return getFacade().findFirstByJpql(jpql, m);
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.isMasterItem=:mi "
+                    + " and i.name=:name";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("mi", true);
+            return getFacade().findFirstByJpql(jpql, m);
+        } catch (Exception e) {
+            System.out.println("e = " + e);
+            System.out.println("name = " + name);
+            return null;
+        }
     }
 
     public void fillInvestigationSampleComponents() {

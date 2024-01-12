@@ -12,7 +12,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload Items and Fees for Collecting Centres</h2>
+                    Upload Items and Fees for Collecting Centres
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -31,6 +31,13 @@
                             <p:fileDownload value="#{dataUploadController.getTemplateForCollectingCentreItemWithFeeUpload}" />
                         </p:commandButton>
 
+
+                        <h:panelGroup id="gpPoll" >
+                            <h:panelGroup rendered="#{dataUploadController.pollActive}" >
+                                <p:poll interval="10" process="@this" update="tbls gpPoll" ></p:poll>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                         </p:dialog>
                         <script type="text/javascript">
@@ -43,106 +50,131 @@
                             }
                         </script>
 
+                        <h:panelGroup id="tbls" >
+
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>A</td>
+                                        <td>Name</td>
+                                        <td>Name. Required</td>
+                                    </tr>
+                                    <tr>
+                                        <td>B</td>
+                                        <td>Printing Name</td>
+                                        <td>Printing Name name. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>C</td>
+                                        <td>Full Name</td>
+                                        <td>Full Name Optional</td>
+                                    </tr>
+                                    <tr>
+                                        <td>D</td>
+                                        <td>Item Code</td>
+                                        <td>Item Code  Optional</td>
+                                    </tr>
+                                    <tr>
+                                        <td>E</td>
+                                        <td>Category</td>
+                                        <td>Category name.  Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>F</td>
+                                        <td>Institution</td>
+                                        <td>Institution. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>G</td>
+                                        <td>Department</td>
+                                        <td>Department. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>H</td>
+                                        <td>Inward Charge Category</td>
+                                        <td>Inward Charge Category. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>I</td>
+                                        <td>Item Type</td>
+                                        <td>Optional. Default is Investigation. Other options include Service.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>J</td>
+                                        <td>Hospital Fee</td>
+                                        <td>Mandatory. Created for Logged Department and Institution</td>
+                                    </tr>
+                                    <tr>
+                                        <td>K</td>
+                                        <td>Collecting Centre Fee</td>
+                                        <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+
                     </h:form>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Column</th>
-                                <th>Title</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>A</td>
-                                <td>Name</td>
-                                <td>Name. Required</td>
-                            </tr>
-                            <tr>
-                                <td>B</td>
-                                <td>Printing Name</td>
-                                <td>Printing Name name. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>C</td>
-                                <td>Full Name</td>
-                                <td>Full Name Optional</td>
-                            </tr>
-                            <tr>
-                                <td>D</td>
-                                <td>Item Code</td>
-                                <td>Item Code  Optional</td>
-                            </tr>
-                            <tr>
-                                <td>E</td>
-                                <td>Category</td>
-                                <td>Category name.  Required.</td>
-                            </tr>
-                            <tr>
-                                <td>F</td>
-                                <td>Institution</td>
-                                <td>Institution. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Department</td>
-                                <td>Department. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>H</td>
-                                <td>Inward Charge Category</td>
-                                <td>Inward Charge Category. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>I</td>
-                                <td>Item Type</td>
-                                <td>Optional. Default is Investigation. Other options include Service.</td>
-                            </tr>
-                            <tr>
-                                <td>J</td>
-                                <td>Hospital Fee</td>
-                                <td>Mandatory. Created for Logged Department and Institution</td>
-                            </tr>
-                            <tr>
-                                <td>K</td>
-                                <td>Collecting Centre Fee</td>
-                                <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" value="#{dataUploadController.itemsToSave}" var="item" >
-            <f:facet name="header" >
-                <p:outputLabel value="Items Saved" ></p:outputLabel>
-            </f:facet>
-            <p:column >
-                #{item.name}
-            </p:column>
-            <p:column >
-                #{item.total}
-            </p:column>
+        <p:tabView >
+            <p:tab title="Uploaded Items" >
+                <p:dataTable
+                    paginator="true"
+                    rows="10"
+                    rowKey="#{item.id}"
+                    id="tbl" value="#{dataUploadController.itemsToSave}" var="item" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Items Saved" ></p:outputLabel>
+                    </f:facet>
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
 
-        </p:dataTable>
-        
-        <p:dataTable id="tbl2" value="#{dataUploadController.itemsSkipped}" var="item" >
-            <f:facet name="header" >
-                <p:outputLabel value="Items Skipped" ></p:outputLabel>
-            </f:facet>
-            <p:column >
-                #{item.name}
-            </p:column>
-            <p:column >
-                #{item.total}
-            </p:column>
+                </p:dataTable>        
+            </p:tab>
+            <p:tab title="Rejected Items" >
 
-        </p:dataTable>
+
+                <p:dataTable 
+                    id="tbl2" 
+                    paginator="true"
+                    rows="10"
+                    rowKey="#{item.id}"
+                    
+                    value="#{dataUploadController.itemsSkipped}" var="item" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Items Skipped" ></p:outputLabel>
+                    </f:facet>
+                    <p:column >
+                        #{item.name}
+                    </p:column>
+                    <p:column >
+                        #{item.total}
+                    </p:column>
+
+                </p:dataTable>
+
+            </p:tab>
+        </p:tabView>
+
+
 
 
 
