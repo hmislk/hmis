@@ -1798,15 +1798,6 @@ public class DataUploadController implements Serializable {
         return templateForItemWithFeeUpload;
     }
 
-    public StreamedContent getTemplateForCollectingCentreItemWithFeeUpload() {
-        try {
-            createTemplateForCollectingCentreItemWithFeeUpload();
-        } catch (IOException e) {
-            // Handle IOException
-        }
-        return templateForItemWithFeeUpload;
-    }
-
     public void createTemplateForInvestigationUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -2044,6 +2035,15 @@ public class DataUploadController implements Serializable {
                 .build();
     }
 
+    public StreamedContent getTemplateForCollectingCentreItemWithFeeUpload() {
+        try {
+            createTemplateForCollectingCentreItemWithFeeUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForItemWithFeeUpload;
+    }
+    
     public void createTemplateForCollectingCentreItemWithFeeUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
