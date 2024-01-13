@@ -103,19 +103,19 @@
 
                             <f:facet name="header" >
                                 <h:outputLabel value="OPD Bills - #{commonReport1.paymentScheme.name}"/><br/><br/>
-                                <h:outputLabel value="From Date - #{commonReport1.fromDate}">
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+<!--                                <h:outputLabel value="From Date - #{commonReport1.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                                 <br/>
                                 <h:outputLabel value="To Date - #{commonReport1.toDate}">
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
-                                </h:outputLabel>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  />
+                                </h:outputLabel>-->
 
                             </f:facet>
                             <p:dataTable 
                                 rowIndexVar="i" 
                                 id="tblBills" 
-                                value="#{commonReport1.biledBills}" 
+                                value="#{commonReport1.biledBills}"
                                 var="bill"  
                                 >
                                 <f:facet name="header" >
