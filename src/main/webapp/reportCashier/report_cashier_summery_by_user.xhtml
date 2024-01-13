@@ -16,16 +16,39 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <h:panelGrid columns="8" class="my-2">
+                
+                <p:panel id="reportPrint" >
+                    
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" class="mx-2" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:calendar>
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" class="mx-2" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            </p:calendar>
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                            <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                            forceSelection="true" class="mx-2"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{commonReport.webUser}" ></p:autoComplete>
+                        </div>
+                    </div>
+                    
+                    <h:panelGrid columns="8" class="my-2">
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
                                      class=" ui-button-warning" icon="fas fa-refresh"
                                      action="#{commonReport.createCashierTableByUser()}" />  
                     <p:defaultCommand target="btnRefresh"/>
                     <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                     class="ui-button-warning"
+                                     class="ui-button-warning" 
                                      action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
                     <p:defaultCommand target="btnRefresh"/>
-                    <p:commandButton id="btnRefresh2" class="mx-1 ui-button-warning" icon="fas fa-cashier" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                    <p:commandButton id="btnRefresh2" class="mx-2 ui-button-warning" icon="fas fa-cashier" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
                                     
                                      action="#{commonReport.createCashierTableByUser()}" />  
                     <p:defaultCommand target="btnRefresh"/>
@@ -34,7 +57,6 @@
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
                 </h:panelGrid>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
 
                     <p:panel>
                         <f:facet name="header" >
@@ -57,22 +79,6 @@
 
                         </f:facet>
 
-
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
-
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:calendar>
-                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                            forceSelection="true"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{commonReport.webUser}" ></p:autoComplete>
-
-                        </h:panelGrid>
 
                         <ca:opdBilledSummery data="#{commonReport.userBillsOwn}"/>
 
