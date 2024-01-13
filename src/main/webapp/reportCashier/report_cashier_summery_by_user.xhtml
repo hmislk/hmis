@@ -16,21 +16,21 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <h:panelGrid columns="8">
+                <h:panelGrid columns="8" class="my-2">
                     <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
-                                     styleClass="noPrintButton" style="float: right;"
+                                     class=" ui-button-warning" icon="fas fa-refresh"
                                      action="#{commonReport.createCashierTableByUser()}" />  
                     <p:defaultCommand target="btnRefresh"/>
                     <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                     styleClass="noPrintButton" style="float: right;"
+                                     class="ui-button-warning"
                                      action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
                     <p:defaultCommand target="btnRefresh"/>
-                    <p:commandButton id="btnRefresh2" class="mx-1" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
-                                     styleClass="noPrintButton" style="float: right;"
+                    <p:commandButton id="btnRefresh2" class="mx-1 ui-button-warning" icon="fas fa-cashier" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
+                                    
                                      action="#{commonReport.createCashierTableByUser()}" />  
                     <p:defaultCommand target="btnRefresh"/>
 
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton class="ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
                 </h:panelGrid>
