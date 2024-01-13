@@ -72,6 +72,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -189,7 +190,7 @@ public class DataUploadController implements Serializable {
 
     public String navigateToUploadCollectingCentreFees() {
         pollActive = true;
-        file=null;
+        file = null;
         return "/admin/items/item_and_fee_upload_for_collecting_Centres";
     }
 
@@ -415,9 +416,9 @@ public class DataUploadController implements Serializable {
                 }
             }
 
-            comments =name;
+            comments = name;
             name = CommonFunctions.sanitizeStringForDatabase(name);
-            
+
             item = itemController.findItemByName(name, department);
             if (item != null) {
                 itemsSkipped.add(item);
@@ -530,7 +531,6 @@ public class DataUploadController implements Serializable {
                 service.setInwardChargeType(iwct);
                 service.setCreater(sessionController.getLoggedUser());
                 service.setCreatedAt(new Date());
-//                serviceController.save(service);
                 item = service;
             } else if (itemType.equals("Investigation")) {
 
@@ -545,7 +545,6 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-//                    itemController.saveSelected(masterItem);
                     masterItemsToSave.add(masterItem);
                 }
                 Investigation ix = new Investigation();
@@ -560,7 +559,6 @@ public class DataUploadController implements Serializable {
                 ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
-//                investigationController.save(ix);
                 item = ix;
             }
 
@@ -643,7 +641,6 @@ public class DataUploadController implements Serializable {
                 itf.setFfee(collectingCentreFee);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-//                itemFeeFacade.create(itf);
                 itemFeesToSave.add(itf);
             }
 
@@ -651,13 +648,11 @@ public class DataUploadController implements Serializable {
             item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
             item.setDblValue(hospitalFee + collectingCentreFee);
             itemsToSave.add(item);
-//            itemFacade.edit(item);
-
         }
 
-        itemFacade.batchCreate(masterItemsToSave, 500);
-        itemFacade.batchCreate(itemsToSave, 500);
-        itemFeeFacade.batchCreate(itemFeesToSave, 1000);
+        itemFacade.batchCreate(masterItemsToSave, 5000);
+        itemFacade.batchCreate(itemsToSave, 5000);
+        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
     }
@@ -785,7 +780,8 @@ public class DataUploadController implements Serializable {
 
             if (contactNumberCell != null) {
                 if (contactNumberCell.getCellType() == CellType.NUMERIC) {
-                    phone = String.valueOf(contactNumberCell.getNumericCellValue());
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
 
                 } else if (contactNumberCell.getCellType() == CellType.STRING) {
                     phone = contactNumberCell.getStringCellValue();

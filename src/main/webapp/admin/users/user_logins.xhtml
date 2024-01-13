@@ -17,11 +17,10 @@
                             <i class="fa fa-file-text" aria-hidden="true"/>
                             <h:outputLabel styleClass="noPrintButton"  value="Logins Report" class="mx-2 mt-2" />
                             <p:commandButton 
-                                styleClass="noPrintButton" 
                                 value="Print" ajax="false" 
                                 icon="fa fa-print"
                                 style="float: right;"
-                                class="ui-button-success">
+                                class="ui-button-info">
                                 <p:printer target="printBlock" />
                             </p:commandButton>
                         </f:facet>
@@ -38,7 +37,7 @@
                                 </p:calendar>
                             </h:panelGrid>
 
-                            <h:panelGrid >
+                            <h:panelGrid columns="3">
                                 <p:commandButton 
                                     id="btnRefresh" 
                                     action="#{loginController.fillLogins()}"
@@ -49,6 +48,12 @@
                                     ajax="false">                               
                                 </p:commandButton>
                                 <p:defaultCommand target="btnRefresh"/>
+                                <p:commandButton 
+                                    value="Excel" 
+                                    icon="fa fa-file-excel"
+                                    class="ui-button-success"
+                                    ajax="false"
+                                    action="#{loginController.downloadAsExcel}" />
                             </h:panelGrid>
                         </div>
 
