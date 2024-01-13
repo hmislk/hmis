@@ -16,15 +16,15 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadAtms()}"
+                                                 action="#{dataUploadController.uploadAtms()}"
                                                  ajax="false"/>
                             </h:form>
 
-                            <p>#{dataUploadBean.outputString}</p>
+                            <p>#{dataUploadController.outputString}</p>
                             
                             <table class="table">
                                 <thead>

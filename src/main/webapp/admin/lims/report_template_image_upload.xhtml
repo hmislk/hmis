@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+
+        <p:panel header="Manage Report Template Background" >
+            <div class="row">
+                <div class="col-md-12">
+
+
+                    <h:form id="formImage" enctype="multipart/form-data" rendered="true">
+
+                        <p:outputLabel value="Name of the Template"/>
+
+                        <p:selectOneMenu  
+                            id="lstSelect"  
+                            value="#{reportFormatController.current}" 
+                            styleClass="listBox">
+                            <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <p:ajax  process="lstSelect" update="image"  >
+                            </p:ajax>
+                        </p:selectOneMenu>
+                        <p:fileUpload
+                            id="fileUpload"
+                            value="#{reportFormatController.uploadedFile}" 
+                            auto="true"
+                            mode="advanced" 
+                            process="@this fileUpload lstSelect"
+                            update="@form"
+                            multiple="false" 
+                            accept="image/*" 
+                            class="m-2" 
+                            title="Upload Image"
+                            listener="#{reportFormatController.uploadPhoto}" />
+
+                        <p:commandButton ajax="false" value="Test"/>
+
+                        <p:graphicImage
+                            id="image"
+                            value="#{reportFormatController.image}" 
+                            cache="false" style="width: 100%; height: 100%; object-fit: cover;">
+                        </p:graphicImage>
+
+                    </h:form>
+
+
+
+                </div>
+
+            </div>
+
+        </p:panel>
+
+    </ui:define>
+
+</ui:composition>

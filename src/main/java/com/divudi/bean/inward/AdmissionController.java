@@ -17,10 +17,11 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.EncounterCreditCompany;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
@@ -30,12 +31,14 @@ import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.AppointmentFacade;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.EncounterCreditCompanyFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -86,14 +89,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+            
     @Inject
     BhtEditController bhtEditController;
     ////////////////////////////
-    @EJB
     private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
+    private List<EncounterCreditCompany> encounterCreditCompanies;
+    private EncounterCreditCompany encounterCreditCompany;
     private Admission parentAdmission;
     private PatientRoom patientRoom;
     private List<Admission> items = null;
@@ -147,6 +154,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToInpatientClinicalData() {
         inpatientClinicalDataController.setCurrent(current);
         return inpatientClinicalDataController.navigateToEncounterClinicalData();
+    }
+    
+    public void addCreditCompnay(){
+        // need to add encounterCreditCompany to list
+        if (encounterCreditCompany.getInstitution() != null) {
+            encounterCreditCompany.setPatientEncounter(current);
+            encounterCreditCompanies.add(encounterCreditCompany);
+            encounterCreditCompany=new EncounterCreditCompany();
+        }
+        
+    }
+    
+    public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany){
+        if (encounterCreditCompany != null) {
+            encounterCreditCompanies.remove(encounterCreditCompany);
+            encounterCreditCompany=new EncounterCreditCompany();
+        }
     }
 
     public String navigateToInpatientDrugChart() {
@@ -764,7 +788,25 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             UtilityController.addErrorMessage("Select Paymentmethod");
             return true;
         }
+        
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if(encounterCreditCompany.getInstitution()!=null){
+                    getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
+                    getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
+                    getCurrent().setPolicyNo(encounterCreditCompany.getPolicyNo());
+                    getCurrent().setReferanceNo(encounterCreditCompany.getReferanceNo());
+                    //TO DO - Add credit limit, etc
+                }
+            
+            if(!getEncounterCreditCompanies().isEmpty()){
+                    EncounterCreditCompany tec = getEncounterCreditCompanies().get(0);
+                    getCurrent().setCreditCompany(tec.getInstitution());
+                    getCurrent().setCreditLimit(tec.getCreditLimit());
+                    getCurrent().setPolicyNo(tec.getPolicyNo());
+                    getCurrent().setReferanceNo(tec.getReferanceNo());
+                    //TO Do - add other fields
+                }
+            
             if (getCurrent().getCreditCompany() == null) {
                 UtilityController.addErrorMessage("Select Credit Company");
                 return true;
@@ -865,7 +907,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Person p = new Person();
         getPersonFacade().create(p);
         Patient pt = new Patient();
-        patientDetailsEditable=true;
+        patientDetailsEditable = true;
         pt.setPerson(p);
         getPatientFacade().create(pt);
         getCurrent().setPatient(pt);
@@ -947,9 +989,32 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getInwardPaymentController().pay();
             getInwardPaymentController().makeNull();
         }
-
+        
+        saveEncounterCreditCompanies(current);
+        
+       
+        // Save EncounterCreditCompanies
+        // Need to create EncounterCredit
         printPreview = true;
-
+    }
+    
+    
+    public void saveEncounterCreditCompanies(PatientEncounter current){
+         if (!encounterCreditCompanies.isEmpty() && current != null) {
+             System.out.println("current : "+ current.getName());
+            for(EncounterCreditCompany ecc:encounterCreditCompanies){
+                ecc.setPatientEncounter(current);
+                ecc.setCreatedAt(new Date());
+                ecc.setCreater(sessionController.getLoggedUser());
+                if (ecc.getInstitution() != null) {
+                getEncounterCreditCompanyFacade().create(ecc);
+                } else {
+                getEncounterCreditCompanyFacade().edit(ecc);
+                }
+            } 
+        }
+        encounterCreditCompanies=new ArrayList<>();
+        encounterCreditCompany= new EncounterCreditCompany();
     }
 
     public void setSelectText(String selectText) {
@@ -979,6 +1044,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current == null) {
             current = new Admission();
             current.setDateOfAdmission(new Date());
+            EncounterCreditCompany encounterCreditCompany = new EncounterCreditCompany();
+            encounterCreditCompany.setPatientEncounter(current);
         }
         return current;
     }
@@ -1148,7 +1215,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (patient == null) {
             Person p = new Person();
             patient = new Patient();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
             patient.setPerson(p);
         }
         return patient;
@@ -1275,6 +1342,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.bhtNumberForSearch = bhtNumberForSearch;
     }
 
+    
+    
     public Doctor getReferringDoctorForSearch() {
         return referringDoctorForSearch;
     }
@@ -1346,6 +1415,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setPatientNumberForSearch(String patientNumberForSearch) {
         this.patientNumberForSearch = patientNumberForSearch;
     }
+    
+    
+    
 
     @Override
     public boolean isPatientDetailsEditable() {
@@ -1355,6 +1427,37 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanies() {
+        if(encounterCreditCompanies==null){
+            encounterCreditCompanies = new ArrayList<>();
+        }
+        return encounterCreditCompanies;
+    }
+
+    public void setEncounterCreditCompanies(List<EncounterCreditCompany> encounterCreditCompanies) {
+        this.encounterCreditCompanies = encounterCreditCompanies;
+    }
+
+    public EncounterCreditCompany getEncounterCreditCompany() {
+        if(encounterCreditCompany==null){
+            encounterCreditCompany = new EncounterCreditCompany();
+            encounterCreditCompany.setPatientEncounter(current);
+        }
+        return encounterCreditCompany;
+    }
+
+    public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
+        this.encounterCreditCompany = encounterCreditCompany;
+    }
+
+    public EncounterCreditCompanyFacade getEncounterCreditCompanyFacade() {
+        return encounterCreditCompanyFacade;
+    }
+
+    public void setEncounterCreditCompanyFacade(EncounterCreditCompanyFacade encounterCreditCompanyFacade) {
+        this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
     /**

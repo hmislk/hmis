@@ -5,7 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.data.dataStructure.InvestigationSummeryData;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.facade.BillComponentFacade;
@@ -13,6 +13,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

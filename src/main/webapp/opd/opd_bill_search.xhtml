@@ -176,21 +176,21 @@
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >
-                                    <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                    <p:column headerText="ID" filterBy="#{bill.id}" filterMatchMode="contains"
                                               sortBy="#{bill.id}"
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                    <p:column headerText="Ins Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
                                                        value="#{bill.insId}" 
-                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                       action="#{opdBillController.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
+                                    <p:column headerText="Dep Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                        <h:commandLink action="#{billSearch.navigateToViewOpdBill()}" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
@@ -213,8 +213,8 @@
                                     <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
+                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                                <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>

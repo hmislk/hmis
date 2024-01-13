@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form  >
+                <p:growl />
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="txtName" />
+
+
+
+                <p:panel header="Manage Containers" >
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p:commandButton id="btnAdd" ajax="false" 
+                                             value="Add New"
+                                             icon="fas fa-plus"
+                                             action="#{investigationTubeController.prepareAdd()}" class="  ui-button-success" 
+                                             process="btnAdd" update="lstSelect gpDetail">
+
+                            </p:commandButton>
+                            <p:commandButton id="btnDelete" 
+                                             icon="fas fa-trash"
+                                             ajax="false"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" action="#{investigationTubeController.delete()}"  value="Delete" process="btnDelete" update="lstSelect gpDetail"
+                                             class=" m-1 ui-button-danger w-25">
+                            </p:commandButton>
+                            <p:selectOneListbox  id="lstSelect"  value="#{investigationTubeController.current}" class="w-100" filter="true">
+                                <f:selectItems  value="#{investigationTubeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+                        </div>
+                        <div class="col-md-7">
+                            <p:panel id="gpDetail" header="Details of the Container" class="w-100">
+                                <h:panelGrid columns="2" class="w-100">
+                                    <h:outputText value="Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{investigationTubeController.current.name}"  id="txtName" class="w-100"/>
+                                
+                                    <h:outputText value="Description" ></h:outputText>
+                                    <p:inputText autocomplete="off" value="#{investigationTubeController.current.description}"  id="txtDescription" class="w-100"/>
+                                </h:panelGrid>
+                                <p:commandButton id="btnSave" 
+                                                 icon="fas fa-save"
+                                                 ajax="false" 
+                                                 value="Save" action="#{investigationTubeController.saveSelected()}" class=" my-2 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect" >
+
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+
+                            </p:panel>
+                            
+                        </div>
+                    </div>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

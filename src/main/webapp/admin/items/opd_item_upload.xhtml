@@ -22,17 +22,23 @@
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadBean.file}"
+                        <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
                                       label="Choose File"/>
-                        <p:commandButton value="Upload"
-                                         action="#{dataUploadBean.uploadItems()}"
+                        <p:commandButton 
+                            icon="fa fa-upload"
+                            value="Upload"
+                                         action="#{dataUploadController.uploadItems()}"
                                          ajax="false"/>
-                        <p:commandButton value="Download Template" 
+                        <p:commandButton 
+                            value="Download Template" 
+                            icon="fa fa-download"
+                            class="ui-button-Warning"
+                            style="float: right;"
                                          ajax="false" 
                                          onclick="PrimeFaces.monitorDownload(start, stop);" 
-                                         icon="ui-icon-arrowthick-1-s">
-                            <p:fileDownload value="#{dataUploadBean.templateForItemWithFeeUpload}" />
+                                         >
+                            <p:fileDownload value="#{dataUploadController.templateForItemWithFeeUpload}" />
                         </p:commandButton>
 
                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
@@ -122,7 +128,7 @@
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" value="#{dataUploadBean.items}" var="item" >
+        <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
             <p:column >
                 #{item.name}
             </p:column>

@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:common="http://java.sun.com/jsf/composite/ezcomp/common"
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
     <h:body>
@@ -12,73 +13,97 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                               disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                                <f:selectItem itemLabel="Select paymentMethod"/>
-                                <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
-                            </p:selectOneMenu>
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billSearch.comment}" style="float: right" class="p-2 w-100"/> 
+                                   
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel Bill" 
+                                        icon="fa fa-cancel"
+                                        style="float: right"
+                                                     class="ui-button-danger" action="#{billSearch.cancelBill()}" >
+                                    </p:commandButton>  
+                                </h:panelGrid>
 
-                            <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                               disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                <f:selectItem itemLabel="Select paymentMethod"/>
-                                <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
-                            </p:selectOneMenu>
+                            </f:facet>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
+                                                   disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
+                                </p:selectOneMenu>
 
-                            <h:commandButton value="Cancel" action="#{billSearch.cancelBill()}" >
-                            </h:commandButton>                            
-                        </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
-                                    <h:outputLabel value="Age" />
-                                    <h:outputLabel value="#{billSearch.bill.patient.age}"  />
-                                    <h:outputLabel value="Sex" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.patient.person.sex}" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Phone" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.patient.person.phone}" >
-                                    </h:outputLabel>
-                                </p:panelGrid>
+
+
+                                <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
+                                                   disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                                </p:selectOneMenu>
+
+                            </p:panel>                   
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                </p:panel>
+                                </div>
+                                <div class="col-6">
+                                     <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                                </div>
+                            </div>
+
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:dataTable 
+                                    rowIndexVar="rowIndex" 
+                                    value="#{billSearch.billItems}" 
+                                    var="bip" >
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:outputLabel value="#{bip.netValue}"/>
+                                    </p:column>
+                                </p:dataTable>
                             </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
-                            <p:dataTable 
-                                rowIndexVar="rowIndex" 
-                                value="#{billSearch.billItems}" 
-                                var="bip" >
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                    <h:outputLabel value="#{rowIndex+1}"/>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                    <h:outputLabel value="#{bip.item.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Fee</f:facet>
-                                    <h:outputLabel value="#{bip.netValue}"/>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{billSearch.comment}"/>                            
+
                         </p:panel>
                     </h:panelGroup>
 

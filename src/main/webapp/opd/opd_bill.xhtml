@@ -336,45 +336,126 @@
                                             </h:panelGrid>
                                         </div>
                                     </div>
-                                    <h:panelGroup 
-                                        id="paymentDetails"  >
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+
+                                    <div class="" >
+                                        <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"  
+                                                rendered="#{opdBillController.paymentMethod eq 'Credit'}" >
+                                                <div class="my-1" id="credit">
+                                                    <div class="row">
+                                                        <div class="col-12 d-flex ">
+                                                            <p:autoComplete 
+                                                                id="creditCompany" 
+                                                                class="w-100 -mx-2"
+                                                                inputStyleClass="form-control"
+                                                                forceSelection="true"
+                                                                value="#{opdBillController.creditCompany}"  
+                                                                completeMethod="#{creditCompanyController.completeCredit}" 
+                                                                var="ix"
+                                                                minQueryLength="4"
+                                                                placeholder="Company (Type at least 4 letters to search)"
+                                                                itemLabel="#{ix.name}" 
+                                                                itemValue="#{ix}" 
+                                                                size="10"  >
+
+                                                                <f:ajax  
+                                                                    event="itemSelect" 
+                                                                    listener="#{opdBillController.calTotals()}"
+                                                                    execute="@this" 
+                                                                    render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                            </p:autoComplete> 
+                                                            <p:commandLink 
+                                                                id="btnAddNewCreditCom" 
+                                                                value="(+)"
+                                                                class="mx-3 mt-1"
+                                                                title="Add New Credit Company"
+                                                                ajax="false" 
+                                                                action="#{navigationController.navigateToCreditCompany()}"
+                                                                actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row mt-1">
+                                                        
+                                                        <div class="col-12">
+                                                            <p:autoComplete  
+                                                                minQueryLength="4"
+                                                                forceSelection="true" 
+                                                                value="#{opdBillController.toStaff}" 
+                                                                id="creditStaff"
+                                                                completeMethod="#{staffController.completeStaff}" 
+                                                                var="mys" 
+                                                                class="w-100"
+                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                inputStyleClass="form-control"
+                                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                                itemValue="#{mys}"
+                                                                size="10">
+                                                                <p:column headerText="Name" >
+                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="Annual Entitlement">
+                                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+                                                                <p:column  headerText="Annual Utilized Value">
+                                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>
+
+                                                                <p:ajax process="@this" 
+                                                                        update="creditCompany :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                        event="itemSelect"  
+                                                                        listener="#{opdBillController.calTotals()}" />
+
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
+                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
+                                                <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
+                                                <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
+                                                <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
+                                                <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
                                         </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                            <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
+                                    </div>
 
                                     <div class="row my-1" >
                                         <div class="col-4" >
@@ -555,66 +636,6 @@
 
                                             </p:autoComplete>
 
-                                            <h:panelGroup class="w-100">
-                                                <p:outputLabel value="Company" ></p:outputLabel>
-                                                <p:commandLink id="btnAddNewCreditCom" 
-                                                               value="&nbsp;(+)" 
-                                                               ajax="false" 
-                                                               action="#{navigationController.navigateToCreditCompany()}"
-                                                               actionListener="#{creditCompanyController.prepareAdd()}" />  
-
-                                            </h:panelGroup>
-
-                                            <p:autoComplete id="creditCompany" 
-                                                            class="w-100"
-                                                            inputStyleClass="form-control"
-                                                            forceSelection="true"
-                                                            value="#{opdBillController.creditCompany}"  
-                                                            completeMethod="#{creditCompanyController.completeCredit}" 
-                                                            var="ix"
-                                                            minQueryLength="4"
-                                                            placeholder="Type at least 4 letters to search"
-                                                            itemLabel="#{ix.name}" 
-                                                            itemValue="#{ix}" 
-                                                            size="10"  >
-
-                                                <f:ajax  event="itemSelect" listener="#{opdBillController.calTotals()}"
-                                                         execute="@this" 
-                                                         render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:autoComplete> 
-
-                                            <p:outputLabel value="Staff"></p:outputLabel>
-                                            <p:autoComplete  minQueryLength="4"
-                                                             forceSelection="true" 
-                                                             value="#{opdBillController.toStaff}" 
-                                                             id="creditStaff"
-                                                             completeMethod="#{staffController.completeStaff}" 
-                                                             var="mys" 
-                                                             class="w-100"
-                                                             placeholder="Type at least 4 letters to search"
-                                                             inputStyleClass="form-control"
-                                                             itemLabel="#{mys.person.nameWithTitle}" 
-                                                             itemValue="#{mys}"
-                                                             size="10">
-                                                <p:column headerText="Name" >
-                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                </p:column>
-                                                <p:column headerText="Annual Entitlement">
-                                                    <h:outputText value="#{mys.annualWelfareQualified}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText>
-                                                </p:column>
-                                                <p:column  headerText="Annual Utilized Value">
-                                                    <h:outputText value="#{mys.annualWelfareUtilized}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText>
-                                                </p:column>
-
-                                                <p:ajax process="@this" 
-                                                        update="creditCompany :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                        event="itemSelect"  listener="#{opdBillController.calTotals()}" />
-
-                                            </p:autoComplete>
                                         </h:panelGrid>
                                     </p:panel>
                                 </div>

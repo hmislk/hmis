@@ -12,7 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -30,6 +30,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1276,7 +1277,7 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     public Date getFromDate() {

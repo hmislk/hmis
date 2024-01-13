@@ -22,7 +22,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
@@ -63,6 +63,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -114,7 +115,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     private CashTransactionBean cashTransactionBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -226,6 +227,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
+    
+    private List<Payment> payments;
 
     private List<BillItem> lstBillItems;
     private List<BillItem> lstBillItemsPrint;
@@ -261,7 +264,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdBatchBillList() {
-        return "/opd/analytics/batch_bill_list";
+        return "/opd/analytics/opd_batch_bill_search";
     }
 
     public String navigateToSearchOpdBills() {
@@ -326,6 +329,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
+    @Deprecated
     public String navigateToViewOpdBillByBillLight() {
         if (billLight == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -355,6 +359,47 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
+        }
+        if (batchBillId == null) {
+            JsfUtil.addErrorMessage("No Batch Bill");
+            return null;
+        }
+        batchBill = billFacade.find(batchBillId);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b"
+                + " where b.backwardReferenceBill.id=:id";
+        m.put("id", batchBillId);
+        bills = getFacade().findByJpql(jpql, m);
+        return "/opd/opd_bill_print";
+    }
+    
+    public String navigateToViewOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        
+        if (bill.getBillType() == null) {
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        if (bill.getBillType() != BillType.OpdBill) {
+            JsfUtil.addErrorMessage("Please Search Again and View Bill");
+            bills = new ArrayList<>();
+            return "";
+        }
+
+        Long batchBillId = null;
+
+        if (bill.getBackwardReferenceBill() != null) {
+            batchBillId = bill.getBackwardReferenceBill().getId();
         }
         if (batchBillId == null) {
             JsfUtil.addErrorMessage("No Batch Bill");
@@ -612,12 +657,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
     }
 
-    
     @Override
-    public void toggalePatientEditable(){
+    public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
-    
+
     public Title[] getTitle() {
         return Title.values();
     }
@@ -1496,13 +1540,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 }
             }
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
-
             getBillFacade().edit(b);
 
             tmp.getForwardReferenceBills().add(b);
         }
 
         tmp.setNetTotal(dbl);
+
+        tmp.setCashBalance(reminingCashPaid);
         getBillFacade().edit(tmp);
         setBatchBill(tmp);
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
@@ -2190,7 +2235,42 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
     }
+    
+    public void searchOpdPayments(){
+        String j = "select b from Payment b"
+                + " where b.createdAt between :fd and :td "
+                + " and b.retired=false";
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
 
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+
+        j += " order by b.createdAt desc  ";
+        payments = getPaymentFacade().findByJpql(j,m);
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public void clearOpdBillSearchData() {
+        institution = null;
+        department = null;
+
+    }
     public String navigateToNewOpdBill() {
         clearBillItemValues();
         clearBillValues();
@@ -2198,7 +2278,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
-        
+
         return "/opd/opd_bill";
     }
 
@@ -2445,7 +2525,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (patient == null) {
             patient = new Patient();
             Person p = new Person();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
 
             patient.setPerson(p);
         }
@@ -3016,8 +3096,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         return opdItems;
     }
-    
-    
+    public String navigateToOpdBillPayments() {
+        bills=null;
+        return "/opd/analytics/opd_bill_payments";
+    }
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {
@@ -3062,5 +3144,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 }

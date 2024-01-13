@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      
+
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -17,18 +17,21 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar styleClass="dateTimePicker" class="mx-4 my-1" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar id="toDate" value="#{searchController.toDate}" class="mx-4 my-1"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel value="Credit Company"/>
-                            <p:autoComplete value="#{searchController.creditCompany}" completeMethod="#{institutionController.completeCreditCompany}"
+                            <p:autoComplete value="#{searchController.creditCompany}" class="mx-4 my-1"  completeMethod="#{institutionController.completeCreditCompany}"
                                             var="c" itemLabel="#{c.name}" itemValue="#{c}" forceSelection="true" ></p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="3" >
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemListForCreditCompany()}"/>
-                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <p:commandButton id="btnSearch" ajax="false" value="Process" 
+                                             icon="fa-solid fa-arrows-rotate"
+                                             class="ui-button-warning" action="#{searchController.createBillItemListForCreditCompany()}"/>
+                            <p:commandButton value="Excel" ajax="false" icon="fa-solid fa-file-excel"
+                                             class="mx-1 ui-button-success" style="float: right;">
                                 <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                             </p:commandButton>
                         </h:panelGrid>
@@ -37,7 +40,14 @@
                         <p:dataTable rowIndexVar="i" 
                                      id="tblBills" 
                                      value="#{searchController.billItems}" 
-                                     var="pi">
+                                     var="pi"
+                                     rows="10"
+                                     class="w-100 my-1"
+                                     paginator="true" 
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'All'}">
                             <p:column headerText="No" styleClass="alignTop" width="20">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>

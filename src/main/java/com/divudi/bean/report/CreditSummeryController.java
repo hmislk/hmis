@@ -15,7 +15,7 @@ import com.divudi.data.dataStructure.DailyCash;
 import com.divudi.data.dataStructure.DailyCredit;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.table.String1Value2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -32,6 +32,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,7 +71,7 @@ public class CreditSummeryController implements Serializable {
     List<Bill> creditBills;
     List<String1Value2> vatTableOpdCredit;
     /////////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     CreditBean creditBean;

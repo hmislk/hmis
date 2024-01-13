@@ -17,11 +17,11 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadVmps()}"
+                                                 action="#{dataUploadController.uploadVmps()}"
                                                  ajax="false"/>
 
 
@@ -59,7 +59,7 @@
                             </table>
 
                             <h5>Output</h5>
-                            <h6><h:outputText value="#{dataUploadBean.outputString}" ></h:outputText></h6>
+                            <h6><h:outputText value="#{dataUploadController.outputString}" ></h:outputText></h6>
 
                         </div>
                     </div>

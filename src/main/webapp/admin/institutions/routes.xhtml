@@ -17,6 +17,10 @@
 
 
                         <h:form>
+                            <p:panel id="gpDetail" >
+                            <f:facet name="header">
+                                <p:outputLabel value="List Routes"></p:outputLabel>
+                            </f:facet>
 
                             <p:dataTable 
                                 value="#{routeController.items}" var="item"
@@ -24,7 +28,7 @@
                                 class="w-100"
 
                                 rows="10"
-                                paginator="true" paginatorPosition="both"
+                                paginator="true" paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
@@ -71,6 +75,7 @@
 
 
                             </p:dataTable>
+                            </p:panel>
                         </h:form>
                     </f:view>
 

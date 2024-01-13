@@ -20,8 +20,8 @@
 
 
 
-        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" >
+        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
@@ -32,6 +32,7 @@
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
@@ -46,16 +47,11 @@
             </div>
 
             <div class="billline">
-                <br/>
                 <hr></hr>   
-                <br/>
             </div>
 
             <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >
-
-
-
                     <tr>
                         <td style="text-align: left;" >
                             <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
@@ -283,14 +279,9 @@
 
             </div>
 
-
             <div class="billline">
-                <br/>
                 <hr/>
-                <br/>
-
             </div>
-
 
 
             <div  >

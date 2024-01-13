@@ -13,8 +13,8 @@
                 <p:focus id="detailFocus" context="gpDetail" />
                 <p:panel header="Manage Collecting Centres">
                     <div class="row">
-                        <div class="col-md-6">
-                            <p:commandButton id="btnAdd" value="Add New" class=" m-1 ui-button-success w-25"  
+                        <div class="col-md-5">
+                            <p:commandButton id="btnAdd" value="Add New" class="ui-button-success"  
                                              icon="fas fa-plus"
                                              action="#{collectingCentreController.prepareAdd()}" 
                                              process="btnAdd"
@@ -34,7 +34,7 @@
                             </p:selectOneListbox>
 
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel id="gpDetail" header="Details of the Collecting Centre" class="w-100">
 
                                 <h:panelGrid id="gpDetailText" columns="2" class="w-100">
@@ -59,7 +59,7 @@
                                     
                                     <h:outputText value="Active" >                                        
                                     </h:outputText>
-                                    <p:selectBooleanCheckbox value="#{!collectingCentreController.current.inactive}" />
+                                    <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
                                    
 
                                     <h:outputText value="Description" >                                        
