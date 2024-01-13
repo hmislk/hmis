@@ -8,15 +8,15 @@
 
     <h:body>
         
-            <ui:composition template="/resources/template/template.xhtml">
+            <ui:composition template="/store/store_reports_index.xhtml">
 
-                <ui:define name="content">
+                <ui:define name="subcontent">
                     <h:form>
                         <p:panel header="Items by Name" >
 
                             <p:panel >
                                 <f:facet name="header">
-                                    <p:commandButton ajax="false" value="Process" action="#{storeAmpController.createStoreItemsWithRetierd()}" />
+                                    <p:commandButton styleClass="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{storeAmpController.createStoreItemsWithRetierd()}" />
                                 </f:facet>
 
                                 <p:panel id="paItems">
