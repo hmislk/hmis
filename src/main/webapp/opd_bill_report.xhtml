@@ -14,56 +14,126 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Opd All Bill" >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Opd All Bill" ></h:outputLabel>
 
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Institution" ></h:outputLabel>
-                            <p:autoComplete 
-                                            completeMethod="#{institutionController.completeIns}" var="ins" 
-                                            itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
-                                            value="#{billController.institution}">
-                            </p:autoComplete>
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}"  >
-                            </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{billController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{billController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{billController.getOpdBills}" ></p:commandButton>
-
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton 
+                                style="float: right;" 
+                                value="Print" 
+                                icon="fa fa-print"
+                                class="ui-button-success mx-2"
+                                ajax="false" 
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="opd_bills"  />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                icon=" fa-solid fa-file-excel"
+                                class="ui-button-warning"
+                                style="float: right;" >
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tbl" 
+                                    fileName="opd_bills"  />
                             </p:commandButton>  
-                        </h:panelGrid>
+                        </f:facet>
 
+                        <div class="row">
+                            <div class="col-1">
+                                <h:outputLabel value="Institution" class="mt-2"></h:outputLabel>
+                            </div>
+                            <div class="col-5">
+                                <p:autoComplete 
+                                    completeMethod="#{institutionController.completeIns}" 
+                                    var="ins" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{ins.name}" 
+                                    itemValue="#{ins}" 
+                                    forceSelection="true" 
+                                    value="#{billController.institution}">
+                                </p:autoComplete>
+                            </div>
+                        </div>
+
+                        <div class="row my-1">
+                            <div class="col-1">
+                                <h:outputLabel value="Department" class="mt-2"></h:outputLabel>
+                            </div>
+                            <div class="col-5">
+                                <p:autoComplete 
+                                    completeMethod="#{departmentController.completeDept}" 
+                                    var="dept" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    itemLabel="#{dept.name}" 
+                                    itemValue="#{dept}" 
+                                    forceSelection="true" 
+                                    value="#{billController.department}"  >
+                                </p:autoComplete></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-1">
+                                <h:outputLabel value="From Date" class="mt-2"></h:outputLabel>
+                            </div>
+                            <div class="col-5">
+                                <p:calendar 
+                                    value="#{billController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                            </div>
+                        </div>
+
+                        <div class="row mt-1">
+                            <div class="col-1">
+                                <h:outputLabel value="To Date" class= "mt-2" ></h:outputLabel>
+                            </div>
+                            <div class="col-5">
+                                <p:calendar 
+                                    value="#{billController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                            </div>
+                        </div>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Fill" 
+                            class="my-2"
+                            icon="fa fa-refresh"
+                            action="#{billController.getOpdBills}" >
+                        </p:commandButton>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         value="#{billController.bills}" var="bill"
-                                         rows="20"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100" >
+                            <p:dataTable 
+                                id="tbl" 
+                                styleClass="noBorder normalFont"
+                                value="#{billController.bills}" 
+                                var="bill"
+                                rows="20"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100" >
+
                                 <f:facet name="header">
-                                    <h:outputLabel value="Summary All OPD Reports : "/>
+                                    <h:outputLabel value="Summary All OPD Reports "/>
+                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                     <h:outputLabel value="#{billController.department.name}"/> 
-                                    <br/>
-                                    <h:outputLabel value="From : "/>
+                                    <br/><br/>
+
+                                    <h:outputLabel value="From Date "/>
+                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                     <h:outputLabel value="#{billController.fromDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
-                                    <p:spacer width="30" height="1"/>
-                                    <h:outputLabel value="To : "/>
+                                    <br/>
+                                    <h:outputLabel value="To Date " />
+                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                     <h:outputLabel value="#{billController.toDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
