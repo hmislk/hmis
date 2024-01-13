@@ -516,8 +516,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-//                    masterItemsToSave.add(masterItem);
-                    itemController.saveSelected(masterItem);
+                    masterItemsToSave.add(masterItem);
                 }
 
                 Service service = new Service();
@@ -532,7 +531,6 @@ public class DataUploadController implements Serializable {
                 service.setInwardChargeType(iwct);
                 service.setCreater(sessionController.getLoggedUser());
                 service.setCreatedAt(new Date());
-//                serviceController.save(service);
                 item = service;
             } else if (itemType.equals("Investigation")) {
 
@@ -547,8 +545,7 @@ public class DataUploadController implements Serializable {
                     masterItem.setInwardChargeType(iwct);
                     masterItem.setCreater(sessionController.getLoggedUser());
                     masterItem.setCreatedAt(new Date());
-                    itemController.saveSelected(masterItem);
-//                    masterItemsToSave.add(masterItem);
+                    masterItemsToSave.add(masterItem);
                 }
                 Investigation ix = new Investigation();
                 ix.setName(name);
@@ -562,7 +559,6 @@ public class DataUploadController implements Serializable {
                 ix.setMasterItemReference(masterItem);
                 ix.setCreater(sessionController.getLoggedUser());
                 ix.setCreatedAt(new Date());
-//                investigationController.save(ix);
                 item = ix;
             }
 
@@ -645,7 +641,6 @@ public class DataUploadController implements Serializable {
                 itf.setFfee(collectingCentreFee);
                 itf.setCreatedAt(new Date());
                 itf.setCreater(sessionController.getLoggedUser());
-//                itemFeeFacade.create(itf);
                 itemFeesToSave.add(itf);
             }
 
@@ -653,13 +648,11 @@ public class DataUploadController implements Serializable {
             item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
             item.setDblValue(hospitalFee + collectingCentreFee);
             itemsToSave.add(item);
-//            itemFacade.edit(item);
-
         }
 
-        itemFacade.batchCreate(masterItemsToSave, 500);
-        itemFacade.batchCreate(itemsToSave, 500);
-        itemFeeFacade.batchCreate(itemFeesToSave, 1000);
+        itemFacade.batchCreate(masterItemsToSave, 5000);
+        itemFacade.batchCreate(itemsToSave, 5000);
+        itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
     }

@@ -2079,11 +2079,21 @@ public class ItemController implements Serializable {
 
     public List<ItemLight> fillItemsByInstitution(Institution institution) {
         List<ItemLight> insItems = new ArrayList<>();
+        if (institution == null) {
+            return insItems;
+        }
+        if (institution.getId() == null) {
+            return insItems;
+        }
         for (ItemLight i : itemApplicationController.getItems()) {
+            if (i.getInstitutionId() == null) {
+                continue;
+            }
             if (Objects.equals(i.getInstitutionId(), institution.getId())) {
                 insItems.add(i);
             }
         }
+
         return insItems;
     }
 
