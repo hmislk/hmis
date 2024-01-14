@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                
+
                 xmlns:cre="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -20,14 +20,15 @@
                 </f:facet>
                 <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From"/>
-                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" styleClass="dateTimePicker" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100"  id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Collecting Center"/>
-                    <p:autoComplete forceSelection="true" 
+                    <p:autoComplete class="mx-4 w-100" forceSelection="true" 
+                                    inputStyleClass="w-100"
                                     value="#{commonReport.collectingIns}" 
                                     completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                         <p:column>
@@ -38,16 +39,15 @@
                         </p:column>
                     </p:autoComplete>
                     <h:outputLabel value="Invoice No"/>
-                    <p:inputText value="#{commonReport.invoceNo}" autocomplete="off" />
+                    <p:inputText class="mx-4 w-100"  value="#{commonReport.invoceNo}" autocomplete="off" />
                 </h:panelGrid> 
-                <h:panelGrid columns="4" styleClass="noPrintButton">
-                    <p:spacer width="40"/>
-                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton " style="float: right;" action="#{commonReport.createCollectingCenterBillTable}" />
+                <h:panelGrid columns="4" class="my-2">
+                    <p:commandButton value="Process" class="ui-button-warning" icon="fas fa-cogs" ajax="false" action="#{commonReport.createCollectingCenterBillTable}" />
 
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton class="ui-button-info mx-1" icon="fas fa-print" ajax="false" value="Print" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Detail_Report"   />
                     </p:commandButton> 
                 </h:panelGrid>
