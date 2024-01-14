@@ -52,8 +52,9 @@
                                     value="Excel" 
                                     icon="fa fa-file-excel"
                                     class="ui-button-success"
-                                    ajax="false"
-                                    action="#{loginController.downloadAsExcel}" />
+                                    ajax="false">
+                                    <p:dataExporter target="tbl" type="xlsx" fileName="user_logins" ></p:dataExporter>
+                                </p:commandButton>
                             </h:panelGrid>
                         </div>
 
@@ -62,7 +63,7 @@
                             <h:outputLabel value="#{labels.topic}" styleClass="rh1" style="font-size: 18px;" /> 
                             <br/>
 
-                            <h:outputLabel value="Login Details Report"/>
+                            <h:outputLabel value="User Login Details Report"/>
                             <br/><br/>
 
                             <h:panelGrid columns="3">
@@ -79,7 +80,12 @@
                                 </h:outputLabel>
                             </h:panelGrid>
 
-                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index">
+                            <p:dataTable
+                                paginator="true"
+                                rows="10"
+                                rowKey="#{b.id}"
+                                id="tbl"
+                                value="#{loginController.logins}" var="b" rowIndexVar="index">
                                 <p:column headerText="No" width="30px" >
                                     <h:outputLabel value="#{index +1}" ></h:outputLabel>
                                 </p:column>
