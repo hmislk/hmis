@@ -128,41 +128,75 @@ public class ItemController implements Serializable {
     ReportKeyWord reportKeyWord;
 
     public void processDepartmentItemCount() {
-        String jpql = "select new com.divudi.data.DepartmentItemCount("
-                + "coalesce(i.department.id, -1), "
-                + "coalesce(i.department.name, 'No Department'), "
-                + "count(i)) "
+        // Query for count of items without a department
+        String jpqlWithoutDept = "select count(i) "
                 + "from Item i "
                 + "where i.retired=:ret "
+                + "and i.department is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with departments
+        String jpqlWithDept = "select new com.divudi.data.DepartmentItemCount("
+                + "i.department.id, i.department.name, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.department is not null "
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
-                + "group by coalesce(i.department.id, -1), coalesce(i.department.name, 'No Department') "
-                + "order by coalesce(i.department.name, 'No Department')";
+                + "group by i.department.id, i.department.name "
+                + "order by i.department.name";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ix", Investigation.class);
         m.put("sv", Service.class);
 
-        departmentItemCounts = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpql, m);
+        // Get count of items without a department
+        Long countWithoutDepartment = itemFacade.countByJpql(jpqlWithoutDept, m);
+        DepartmentItemCount icWithoutDept = new DepartmentItemCount(-1L, "No Department", countWithoutDepartment);
+
+        // Get list of items with a department
+        List<DepartmentItemCount> withDeptList = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpqlWithDept, m);
+
+        // Create final list and add count for items without a department first
+        List<DepartmentItemCount> departmentItemCounts = new ArrayList<>();
+        departmentItemCounts.add(icWithoutDept);
+        departmentItemCounts.addAll(withDeptList);
     }
 
     public void processInstitutionItemCount() {
-        String jpql = "select new com.divudi.data.InstitutionItemCount("
-                + "coalesce(i.institution.id, -1), "
-                + "coalesce(i.institution.name, 'No Institution'), "
-                + "count(i)) "
+        // Query for count of items without an institution
+        String jpqlWithoutIns = "select count(i) "
                 + "from Item i "
                 + "where i.retired=:ret "
+                + "and i.institution is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with institutions
+        String jpqlWithIns = "select new com.divudi.data.InstitutionItemCount("
+                + "i.institution.id, i.institution.name, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.institution is not null "
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
-                + "group by coalesce(i.institution.id, -1), coalesce(i.institution.name, 'No Institution') "
-                + "order by coalesce(i.institution.name, 'No Institution')";
+                + "group by i.institution.id, i.institution.name "
+                + "order by i.institution.name";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ix", Investigation.class);
         m.put("sv", Service.class);
 
-        institutionItemCounts = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpql, m);
+        // Get count of items without an institution
+        Long countWithoutInstitution = itemFacade.countByJpql(jpqlWithoutIns, m);
+        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution", countWithoutInstitution);
+
+        // Get list of items with an institution
+        List<InstitutionItemCount> withInsList = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpqlWithIns, m);
+
+        // Create final list and add count for items without an institution first
+        List<InstitutionItemCount> institutionItemCounts = new ArrayList<>();
+        institutionItemCounts.add(icWithout);
+        institutionItemCounts.addAll(withInsList);
     }
 
     public List<ItemFee> fetchItemFeeList() {
