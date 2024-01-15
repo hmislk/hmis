@@ -1,39 +1,33 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.DepartmentItemCount;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.ItemType;
 import com.divudi.data.dataStructure.ItemFeeRow;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
-import com.divudi.entity.CashierItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
-import com.divudi.entity.MedicalPackage;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.lab.Antibiotic;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -75,7 +69,7 @@ public class ItemController implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     @EJB
-    private ItemFacade ejbFacade;
+    private ItemFacade itemFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
     /**
@@ -124,10 +118,52 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
     private List<ItemFeeRow> itemFeeRows;
+    private List<DepartmentItemCount> departmentItemCounts;
+    private DepartmentItemCount departmentItemCount;
+    private List<InstitutionItemCount> institutionItemCounts;
+    private InstitutionItemCount institutionItemCount;
 
     boolean masterItem;
 
     ReportKeyWord reportKeyWord;
+
+    public void processDepartmentItemCount() {
+        String jpql = "select new com.divudi.data.DepartmentItemCount("
+                + "coalesce(i.department.id, -1), "
+                + "coalesce(i.department.name, 'No Department'), "
+                + "count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
+                + "group by coalesce(i.department.id, -1), coalesce(i.department.name, 'No Department') "
+                + "order by coalesce(i.department.name, 'No Department')";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+
+        departmentItemCounts = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpql, m);
+    }
+
+    public void processInstitutionItemCount() {
+        String jpql = "select new com.divudi.data.InstitutionItemCount("
+                + "coalesce(i.institution.id, -1), "
+                + "coalesce(i.institution.name, 'No Institution'), "
+                + "count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
+                + "group by coalesce(i.institution.id, -1), coalesce(i.institution.name, 'No Institution') "
+                + "order by coalesce(i.institution.name, 'No Institution')";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+
+        institutionItemCounts = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpql, m);
+    }
 
     public List<ItemFee> fetchItemFeeList() {
         List<ItemFee> itemFees = new ArrayList<>();
@@ -1740,16 +1776,16 @@ public class ItemController implements Serializable {
      *
      * @return
      */
-    public ItemFacade getEjbFacade() {
-        return ejbFacade;
+    public ItemFacade getItemFacade() {
+        return itemFacade;
     }
 
     /**
      *
-     * @param ejbFacade
+     * @param itemFacade
      */
-    public void setEjbFacade(ItemFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
     }
 
     /**
@@ -1790,7 +1826,7 @@ public class ItemController implements Serializable {
     }
 
     private ItemFacade getFacade() {
-        return ejbFacade;
+        return itemFacade;
     }
 
     /**
@@ -2165,6 +2201,38 @@ public class ItemController implements Serializable {
         }
     }
 
+    public List<DepartmentItemCount> getDepartmentItemCounts() {
+        return departmentItemCounts;
+    }
+
+    public void setDepartmentItemCounts(List<DepartmentItemCount> departmentItemCounts) {
+        this.departmentItemCounts = departmentItemCounts;
+    }
+
+    public DepartmentItemCount getDepartmentItemCount() {
+        return departmentItemCount;
+    }
+
+    public void setDepartmentItemCount(DepartmentItemCount departmentItemCount) {
+        this.departmentItemCount = departmentItemCount;
+    }
+
+    public List<InstitutionItemCount> getInstitutionItemCounts() {
+        return institutionItemCounts;
+    }
+
+    public void setInstitutionItemCounts(List<InstitutionItemCount> institutionItemCounts) {
+        this.institutionItemCounts = institutionItemCounts;
+    }
+
+    public InstitutionItemCount getInstitutionItemCount() {
+        return institutionItemCount;
+    }
+
+    public void setInstitutionItemCount(InstitutionItemCount institutionItemCount) {
+        this.institutionItemCount = institutionItemCount;
+    }
+
     @FacesConverter("itemLightConverter")
     public static class ItemLightConverter implements Converter {
 
@@ -2209,7 +2277,7 @@ public class ItemController implements Serializable {
             }
             ItemController controller = (ItemController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "itemController");
-            return controller.getEjbFacade().find(getKey(value));
+            return controller.getItemFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {

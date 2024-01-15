@@ -45,6 +45,20 @@
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
+                                        value="Services and Investigations by Institution" 
+                                        action="#{investigationCategoryController.navigateToItemsAndServiceCountsByInstitution()}" />
+
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Services and Investigations by Department" 
+                                        action="#{investigationCategoryController.navigateToItemsAndServiceCountsByDepartment()}" />
+
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
                                         value="Services and Investigations" 
                                         action="#{investigationCategoryController.navigateToItemsAndServices}" />
 
@@ -99,12 +113,12 @@
                                         ajax="false" 
                                         value="Item Upload" 
                                         action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
-                                     <p:commandButton   
+                                    <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Item &amp; Fee Upload for Collecting Centres" 
                                         action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
-                                    
+
 
                                     <p:commandButton   
                                         class="w-100"  
