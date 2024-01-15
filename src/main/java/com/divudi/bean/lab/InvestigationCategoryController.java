@@ -278,6 +278,14 @@ public class InvestigationCategoryController implements Serializable {
     public String navigateToItemsAndServices() {
         return "/admin/items/items.xhtml?faces-redirect=true";
     }
+    
+    public String navigateToItemsAndServiceCountsByDepartment() {
+        return "/admin/items/item_counts_by_department.xhtml?faces-redirect=true";
+    }
+    
+    public String navigateToItemsAndServiceCountsByInstitution() {
+        return "/admin/items/item_counts_by_institution.xhtml?faces-redirect=true";
+    }
 
     public String navigateToOpdService() {
         return "/admin/items/opd_service.xhtml?faces-redirect=true";
