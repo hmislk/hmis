@@ -10,17 +10,52 @@
       xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
       xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
       >
-    
+
     <h:body>
         <ui:composition template="/reportCashier/report_cashier.xhtml">
             <ui:define name="subcontent">
 
                 <h:panelGroup rendered="true" >
                     <h:form>
-                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                        <h:outputStylesheet library="css"></h:outputStylesheet>
                         <p:panel  styleClass="noBorder summeryBorder">
+                            <f:facet name="header" >
+                                <h:outputText value="Cashier Service Count Report" />
+                            </f:facet>
+                            <h:panelGrid columns="2" class="my-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
 
-                            <p:panel>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+                                <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                                <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" completeMethod="#{webUserController.completeUser}"
+                                                forceSelection="true"
+                                                var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}" placeholder="User Name"
+                                                value="#{commonReport.webUser}" ></p:autoComplete>
+                                <h:outputLabel styleClass="noPrintButton" value="Departmnet" />
+                                <au:department value="#{commonReport.department}" />
+                                <h:outputLabel styleClass="noPrintButton" value="Only Hos Fee"/>
+                                <p:selectBooleanCheckbox class="mx-4" id="cbHos" value="#{commonReport.onlyHosFee}" >
+                                    <p:ajax event="change" process="@this" update="cbStaff @this" listener="#{commonReport.listnerHosFee}" />
+                                </p:selectBooleanCheckbox>
+                                <h:outputLabel styleClass="noPrintButton" value="Only Staff Fee"/>
+                                <p:selectBooleanCheckbox class="mx-4" id="cbStaff" value="#{commonReport.onlyStaffFee}" >
+                                    <p:ajax event="change" process="@this" update="cbHos @this" listener="#{commonReport.listnerStaffFee}" />
+                                </p:selectBooleanCheckbox>
+                            </h:panelGrid>
+                            <div class="d-flex my-2">
+                                <p:commandButton id="btnRefresh" ajax="false" value="Refresh" class="ui-button-warning" icon="fas fa-refresh"
+                                                 action="#{commonReport.createUserOPDSeviceCount}" />  
+                                <p:defaultCommand target="btnRefresh"/>
+
+                                <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                                    <p:printer target="reportPrint"  />
+                                </p:commandButton>
+                            </div>
+                            <p:panel id="reportPrint">
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
                                     <br/>
@@ -34,43 +69,13 @@
                                     <h:outputLabel value="#{commonReport.toDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
-                                                     styleClass="noPrintButton" style="float: right;"
-                                                     action="#{commonReport.createUserOPDSeviceCount}" />  
-                                    <p:defaultCommand target="btnRefresh"/>
 
-                                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                        <p:printer target="reportPrint"  />
-                                    </p:commandButton>
                                 </f:facet>
                                 <f:facet name="footer">
                                     <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
                                 </f:facet>
-                                <h:panelGrid columns="2" styleClass="noPrintButton" >
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                    </p:calendar>
 
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                    </p:calendar>
-                                    <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                                    <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                                     forceSelection="true"
-                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}" placeholder="User Name"
-                                                     value="#{commonReport.webUser}" ></p:autoComplete>
-                                    <h:outputLabel styleClass="noPrintButton" value="Departmnet" />
-                                    <au:department value="#{commonReport.department}" />
-                                    <h:outputLabel styleClass="noPrintButton" value="Only Hos Fee"/>
-                                    <p:selectBooleanCheckbox id="cbHos" value="#{commonReport.onlyHosFee}" >
-                                        <p:ajax event="change" process="@this" update="cbStaff @this" listener="#{commonReport.listnerHosFee}" />
-                                    </p:selectBooleanCheckbox>
-                                    <h:outputLabel styleClass="noPrintButton" value="Only Staff Fee"/>
-                                    <p:selectBooleanCheckbox id="cbStaff" value="#{commonReport.onlyStaffFee}" >
-                                        <p:ajax event="change" process="@this" update="cbHos @this" listener="#{commonReport.listnerStaffFee}" />
-                                    </p:selectBooleanCheckbox>
-                                </h:panelGrid>
-                                <p:panel id="reportPrint">
+                                <p:panel>
                                     <p:dataTable value="#{commonReport.itemCountRows}" var="ir" id="tb1" rowIndexVar="i">
                                         <f:facet name="header">
                                             <h:outputLabel value="Billed Bill"></h:outputLabel>
