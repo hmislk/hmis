@@ -15,6 +15,15 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
+                <h:panelGrid columns="6" class="my-2" style="float: right">
+                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                                     class="ui-button-warning" icon="fas fa-refresh"
+                                    action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                        <p:printer target="reportPrint"  />
+                    </p:commandButton> 
+                </h:panelGrid>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
 
@@ -41,16 +50,6 @@
                             <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                         </h:panelGrid>
-                        <p:panel style="float: left">
-                            <p:spacer width="60" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton> 
-                        </p:panel>
                         
                         <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
 
