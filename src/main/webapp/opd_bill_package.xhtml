@@ -34,7 +34,7 @@
                                     </h:panelGrid>
 
                                     <div class="mb-2">
-                                        <p:panel id='pIxAdd' header="Items Requests"  >
+                                        <p:panel id='pIxAdd' header="Items Request"  >
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-cart-plus"/>
                                                 <h:outputText class="mx-4" value="Items Requests"/>
@@ -63,7 +63,8 @@
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
-                                                class="my-2" 
+                                                class="my-2 ui-button-success"
+                                                icon="fas fa-plus"
                                                 action="#{billPackageController.addToBill()}" >
                                                 <f:ajax 
                                                     execute="acIx btnAddIx" 
@@ -195,20 +196,42 @@
                                         <h:outputText styleClass="fas fa-credit-card"/>
                                         <p:outputLabel class="mx-4" value="Payment Details"></p:outputLabel>
                                     </f:facet>
+                                    <div class="d-flex justify-content-between">
+                                        <p:selectOneMenu   
+                                            id="cmbPs" 
+                                            value="#{billPackageController.paymentMethod}" 
+                                            autoWidth="true"
+                                            class="mx-1 mb-2"
+                                            >
+                                            <f:selectItems value="#{enumController.paymentMethods}" 
+                                                           var="pm"
+                                                           itemLabel="#{pm.label}"
+                                                           itemValue="#{pm}"/>
+                                            <p:ajax process="cmbPs"
+                                                    update="paymentDetails"
+                                                    event="change" 
+                                                    listener="#{billPackageController.calTotals}"/>
+                                        </p:selectOneMenu>
+                                        <p:defaultCommand target="btnAddIx" />
+                                        <div>
+                                            <p:commandButton 
+                                                value="Settle" 
+                                                action="#{billPackageController.settleBill}"
+                                                icon="fa fa-check"
+                                                ajax="false"  
+                                                class="mx-2 ui-button-success">
+                                            </p:commandButton>
 
-                                    <p:selectOneMenu   
-                                        id="cmbPs" 
-                                        value="#{billPackageController.paymentMethod}" 
-                                        style="width: 15em;"
-                                        class="mx-1 mb-2"
-                                        >
-                                        <f:selectItems value="#{enumController.paymentMethods}"  />
-                                        <p:ajax process="cmbPs"
-                                                update="paymentDetails"
-                                                event="change" 
-                                                listener="#{billPackageController.calTotals}"/>
-                                    </p:selectOneMenu>
-
+                                            <p:commandButton 
+                                                value="New Bill" 
+                                                icon="fas fa-plus"
+                                                ajax="false" 
+                                                action="opd_bill_package" 
+                                                class="ui-button-warning"
+                                                actionListener="#{billPackageController.prepareNewBill()}" >
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
                                     <h:panelGroup id="paymentDetails"  >
                                         <h:panelGroup
                                             id="creditCard"
@@ -231,7 +254,12 @@
                                             rendered="#{billPackageController.paymentMethod eq 'Slip'}">
                                             <pa:slip paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                         </h:panelGroup>
-
+                                        <h:panelGroup 
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="eWallet"  rendered="#{billPackageController.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                        </h:panelGroup>
                                         <h:panelGroup 
                                             class="row "
                                             layout="block" 
@@ -245,24 +273,6 @@
                                             <pa:multiple_payment_methods paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
-                                    <div class="row mb-3 my-4">
-                                        <div class="d-flex justify-content-end">
-                                            <p:commandButton 
-                                                value="Settle" 
-                                                action="#{billPackageController.settleBill}"
-                                                icon="fa fa-check"
-                                                ajax="false"  
-                                                class="mx-2 ui-button-success">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                value="New Bill" 
-                                                ajax="false" 
-                                                action="opd_bill_package" 
-                                                actionListener="#{billPackageController.prepareNewBill()}" >
-                                            </p:commandButton>
-                                            <p:defaultCommand target="btnAddIx" /></div>
-                                    </div>
                                 </p:panel>
 
                                 <p:panel class="w-100 mb-2" header="Refferal Details">
@@ -341,7 +351,8 @@
                                                 <p:commandButton 
                                                     id="btnAddNewDoc" 
                                                     type="button" 
-                                                    class="mx-2" 
+                                                    class="mx-2 ui-button-success"
+                                                    icon="fas fa-user-md"
                                                     value="Add New Doctor" 
                                                     onclick="dlg.show();" 
                                                     actionListener="#{doctorController.prepareAdd}" 
@@ -363,7 +374,9 @@
                                                     />
                                                 <p:commandButton 
                                                     actionListener="#{billPackageController.calTotals()}" 
-                                                    value="Set CreditCompay"
+                                                    value="Set Credit Compay"
+                                                    icon="fas fa-building"
+                                                    class="ui-button-success"
                                                     >
                                                     <f:ajax 
                                                         execute="creditCom" 
