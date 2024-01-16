@@ -78,10 +78,10 @@
                                             <p:commandButton 
                                                 value="Billing" 
                                                 action="#{patientController.toEmrPatientProfile()}" 
-                                                ajax="false" 
+                                                ajax="false"
                                                 icon="fa fa-money-bill"
                                                 styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Patient Dashboard" 
@@ -110,7 +110,7 @@
                             <div class="row" >
                                 <div class="col-12" >
                                     <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
-                                        <p:tab title="Summery" >
+                                        <p:tab title="Summary">
                                             <emr:emr_summery patient="#{patientController.current}"/>
                                         </p:tab>
                                         <p:tab title="Demographics" >
