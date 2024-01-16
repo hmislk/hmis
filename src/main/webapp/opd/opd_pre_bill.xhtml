@@ -26,29 +26,44 @@
                         <p:dialog 
                             id="dlgSessions1" 
                             widgetVar="dlgSessions" 
-
+                            width="50%"
                             header="Session" >
-                            <p:panel id="sessions" header="Session"  >
-                                <p:calendar 
-                                    id="calS" 
-                                    value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
-                                    <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdPreBillController.fillBillSessionsLstner}" />
-                                </p:calendar>
-                                <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                    <f:selectItem itemLabel="Select Department"/>
-                                    <f:selectItems value="#{departmentController.labs}" 
-                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                    <p:ajax process="@this" update="acIx" event="change"/>
-                                </p:selectOneMenu><br></br>
+                            <h:panelGroup id="sessions">
+                                <div class="row mb-2">
+                                    <div class="col-3">
+                                        <p:calendar 
+                                            id="calS" 
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            value="#{opdPreBillController.sessionDate}" 
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"  >
+                                            <f:ajax 
+                                                event="dateSelect" 
+                                                execute="calS" 
+                                                render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" 
+                                                listener="#{opdPreBillController.fillBillSessions}" />
+                                        </p:calendar>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu 
+                                            value="#{itemController.reportKeyWord.department}">     
+                                            <f:selectItem itemLabel="Select Department"/>
+                                            <f:selectItems value="#{departmentController.labs}" 
+                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                            <p:ajax process="@this" update="acIx" event="change"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                
+
                                 <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
                                     <f:facet name="header">
                                         <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
 
-                                        <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" >
+                                        <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" style="float: right;" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputText>
-
-
 
                                     </f:facet>
                                     <p:column headerText="No.">
@@ -58,7 +73,7 @@
                                         <h:outputText value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
                                     </p:column>
                                 </p:dataTable>
-                            </p:panel>
+                            </h:panelGroup>
                         </p:dialog>
                         <div class="row">
                             <div class="col-md-6">
@@ -113,8 +128,8 @@
                                             </p:selectOneListbox>
 
                                         </div>
-                                        
-                                        
+
+
                                         <div class="col-md-2">
                                             <h:panelGrid id="txtQty">
                                                 <h:inputText autocomplete="off" 
@@ -125,6 +140,7 @@
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
+                                                onerror="Please Select Item"
                                                 icon="fa fa-plus"
                                                 class="w-100 mx-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
@@ -150,11 +166,11 @@
                                         </div>
                                         <div class="col-md-5" >
                                             <p:outputLabel value="Schedule" class="form-label" ></p:outputLabel>
-                                            <p:calendar value="#{opdPreBillController.currentBillItem.item}" 
+                                            <p:calendar value="#{opdPreBillController.currentBillItem.sessionDate}" 
                                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                                         inputStyleClass="form-control"
                                                         navigator="true"
-                                                        class="w-100"></p:calendar>
+                                                        class="w-100 p-2"></p:calendar>
                                         </div>
                                         <div class="col-md-2" >
                                             <p:outputLabel value="&nbsp;" class="form-label" ></p:outputLabel>
@@ -278,7 +294,7 @@
                             </div>
                             <div class="col-md-6" >
 
-                                <p:panel class="m-1" id="paymentDetails">
+                                <p:panel id="paymentDetails">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Payment Details" class="mx-4"></h:outputText>
@@ -556,7 +572,7 @@
                                                          completeMethod="#{staffController.completeStaff}" 
                                                          var="mys" 
                                                          class="w-100"
-                                                         placeholder="Type at least 3 letters to search"
+                                                         placeholder="Type at least 4 letters to search"
                                                          inputStyleClass="form-control"
                                                          itemLabel="#{mys.person.nameWithTitle}" 
                                                          itemValue="#{mys}"
