@@ -20,10 +20,10 @@
                          id="tblMultiplePayments"
                          value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" 
                          var="pm" >
-                <p:column headerText="Multiple Payments" class="w-100">
+                <p:column class="w-100">
                     <f:facet name="header" class="d-flex justify-content-center" >
-                        <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
-                        <p:commandButton value="Add Another" class="mx-2" process="@this" update="tblMultiplePayments" action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" ></p:commandButton>
+                        <p:outputLabel value="Multiple Payments" ></p:outputLabel>
+                        <p:commandButton value="Add Another" class="ui-button-success" icon="fa-solid fa-plus" process="@this" update="tblMultiplePayments" action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" style="float: right"></p:commandButton>
                     </f:facet>
                     <div class="row" >
 

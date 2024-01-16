@@ -250,6 +250,9 @@
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
+                                        <c:if test="#{not empty sessionController.applicationPreference.nicRegex}">
+                                            <f:validateRegex pattern="#{sessionController.applicationPreference.nicRegex}"/>
+                                        </c:if>
                                     </div>
                                 </div>
 
