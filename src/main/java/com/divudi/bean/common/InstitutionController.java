@@ -147,11 +147,11 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
     }
-    
+
     public List<Institution> getSearchItems() {
         return searchItems;
     }
-    
+
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String jpql = "select i "
@@ -566,6 +566,10 @@ public class InstitutionController implements Serializable {
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
         UtilityController.addSuccessMessage("History Saved");
+    }
+
+    public Institution findInstitution(Long id) {
+        return getFacade().find(id);
     }
 
     public void setSelectText(String selectText) {

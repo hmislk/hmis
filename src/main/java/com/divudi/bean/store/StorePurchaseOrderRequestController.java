@@ -306,7 +306,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
     private ItemController itemController;
 
     public void setInsListener() {
-        getItemController().setInstituion(getCurrentBill().getToInstitution());
+        getItemController().setInstitution(getCurrentBill().getToInstitution());
     }
 
     public BillNumberGenerator getBillNumberBean() {

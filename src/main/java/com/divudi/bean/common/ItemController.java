@@ -84,6 +84,8 @@ public class ItemController implements Serializable {
     @Inject
     DepartmentController departmentController;
     @Inject
+    InstitutionController institutionController;
+    @Inject
     ItemForItemController itemForItemController;
     @Inject
     ItemFeeController itemFeeController;
@@ -101,6 +103,7 @@ public class ItemController implements Serializable {
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
     List<ItemLight> allItems;
+    private List<ItemLight> filteredItems;
     private ItemLight selectedItemLight;
     private List<ItemLight> departmentItems;
     private List<ItemLight> institutionItems;
@@ -109,8 +112,10 @@ public class ItemController implements Serializable {
     List<ItemFee> allItemFees;
     List<Item> selectedList;
     List<ItemFee> selectedItemFeeList;
-    private Institution instituion;
-    Department department;
+    private Institution institution;
+    private Department department;
+    private Institution filterInstitution;
+    private Department filterDepartment;
     FeeType feeType;
     List<Department> departments;
     private Machine machine;
@@ -128,41 +133,77 @@ public class ItemController implements Serializable {
     ReportKeyWord reportKeyWord;
 
     public void processDepartmentItemCount() {
-        String jpql = "select new com.divudi.data.DepartmentItemCount("
-                + "coalesce(i.department.id, -1), "
-                + "coalesce(i.department.name, 'No Department'), "
-                + "count(i)) "
+        // Query for count of items without a department
+        String jpqlWithoutDept = "select count(i) "
                 + "from Item i "
                 + "where i.retired=:ret "
+                + "and i.department is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with departments
+        String jpqlWithDept = "select new com.divudi.data.DepartmentItemCount("
+                + "i.department.id, i.department.name, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.department is not null "
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
-                + "group by coalesce(i.department.id, -1), coalesce(i.department.name, 'No Department') "
-                + "order by coalesce(i.department.name, 'No Department')";
+                + "group by i.department.id, i.department.name "
+                + "order by i.department.name";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ix", Investigation.class);
         m.put("sv", Service.class);
 
-        departmentItemCounts = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpql, m);
+        // Get count of items without a department
+        Long countWithoutDepartment = itemFacade.countByJpql(jpqlWithoutDept, m);
+        DepartmentItemCount icWithoutDept = new DepartmentItemCount(-1L, "No Department", countWithoutDepartment);
+        System.out.println("icWithoutDept = " + icWithoutDept);
+
+        // Get list of items with a department
+        List<DepartmentItemCount> withDeptList = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpqlWithDept, m);
+        System.out.println("withDeptList = " + withDeptList);
+
+        // Create final list and add count for items without a department first
+        departmentItemCounts = new ArrayList<>();
+        departmentItemCounts.add(icWithoutDept);
+        departmentItemCounts.addAll(withDeptList);
     }
 
     public void processInstitutionItemCount() {
-        String jpql = "select new com.divudi.data.InstitutionItemCount("
-                + "coalesce(i.institution.id, -1), "
-                + "coalesce(i.institution.name, 'No Institution'), "
-                + "count(i)) "
+        // Query for count of items without an institution
+        String jpqlWithoutIns = "select count(i) "
                 + "from Item i "
                 + "where i.retired=:ret "
+                + "and i.institution is null "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
+
+        // Query for items with institutions
+        String jpqlWithIns = "select new com.divudi.data.InstitutionItemCount("
+                + "i.institution.id, i.institution.name, count(i)) "
+                + "from Item i "
+                + "where i.retired=:ret "
+                + "and i.institution is not null "
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
-                + "group by coalesce(i.institution.id, -1), coalesce(i.institution.name, 'No Institution') "
-                + "order by coalesce(i.institution.name, 'No Institution')";
+                + "group by i.institution.id, i.institution.name "
+                + "order by i.institution.name";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("ix", Investigation.class);
         m.put("sv", Service.class);
 
-        institutionItemCounts = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpql, m);
+        // Get count of items without an institution
+        Long countWithoutInstitution = itemFacade.countByJpql(jpqlWithoutIns, m);
+        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution", countWithoutInstitution);
+
+        // Get list of items with an institution
+        List<InstitutionItemCount> withInsList = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpqlWithIns, m);
+
+        // Create final list and add count for items without an institution first
+        institutionItemCounts = new ArrayList<>();
+        institutionItemCounts.add(icWithout);
+        institutionItemCounts.addAll(withInsList);
     }
 
     public List<ItemFee> fetchItemFeeList() {
@@ -181,14 +222,192 @@ public class ItemController implements Serializable {
         return getItemFeeFacade().findByJpql(sql, params);
     }
 
+    public void fillFilteredItems() {
+        filteredItems = fillItems();
+    }
+
+    public String fillDepartmentItems() {
+        if (filterDepartment == null) {
+            JsfUtil.addErrorMessage("Select dept");
+            return null;
+        }
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, "
+                + "i.name, "
+                + "i.code, "
+                + "i.total) "
+                + "FROM Item i "
+                + "WHERE i.retired = :ret "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                + "AND i.department = :dep "
+                + "ORDER BY i.name";
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+        parameters.put("dep", filterDepartment);
+
+        filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String fillInstitutionItems() {
+        if (filterInstitution == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return null;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, "
+                + "i.name, "
+                + "i.code, "
+                + "i.total) "
+                + "FROM Item i "
+                + "WHERE i.retired = :ret "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                + "AND i.institution = :ins "
+                + "ORDER BY i.name";
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+        parameters.put("ins", filterInstitution);
+
+        filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String fillItemsWithoutDepartment() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, "
+                + "i.name, "
+                + "i.code, "
+                + "i.total) "
+                + "FROM Item i "
+                + "WHERE i.retired = :ret "
+                + "AND i.department IS NULL "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                + "ORDER BY i.name";
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+        filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String fillItemsWithoutInstitution() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, "
+                + "i.name, "
+                + "i.code, "
+                + "i.total) "
+                + "FROM Item i "
+                + "WHERE i.retired = :ret "
+                + "AND i.institution IS NULL "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) "
+                + "ORDER BY i.name";
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+
+        filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return "/admin/items/list?faces-redirect=true;";
+    }
+
+    public String navigateToListItemsOfSelectedDepartment() {
+        if (departmentItemCount == null) {
+            JsfUtil.addErrorMessage("Select dept");
+            return "";
+        }
+        filterInstitution = null;
+        if (departmentItemCount.getDepartmentId() == null) {
+            filterDepartment = null;
+            return fillItemsWithoutDepartment();
+        } else {
+            filterDepartment = departmentController.findDepartment(departmentItemCount.getDepartmentId());
+            return fillDepartmentItems();
+        }
+    }
+
+    public String navigateToListItemsOfSelectedInstitution() {
+        if (institutionItemCount == null) {
+            JsfUtil.addErrorMessage("Select dept");
+            return "";
+        }
+        filterDepartment = null;
+        if (institutionItemCount.getInstitutionId() == null || institutionItemCount.getInstitutionId() < 1l) {
+            filterInstitution = null;
+            return fillItemsWithoutInstitution();
+        } else {
+            filterInstitution = institutionController.findInstitution(institutionItemCount.getInstitutionId());
+            return fillInstitutionItems();
+        }
+    }
+
+    public List<ItemLight> fillItems() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
+                + "c.name, c.id, ins.name, ins.id, "
+                + "d.name, d.id, s.name, s.id, "
+                + "p.name, stf.id, i.name, i.code, i.barcode, "
+                + "i.printName, i.shortName, i.fullName, i.total) "
+                + "FROM Item i "
+                + "LEFT JOIN i.category c "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "LEFT JOIN i.speciality s "
+                + "LEFT JOIN i.staff stf "
+                + "LEFT JOIN stf.person p "
+                + "WHERE i.retired = :ret "
+                + "AND (TYPE(i)=:ixc OR TYPE(i)=:svc) ";
+
+        if (filterInstitution != null) {
+            jpql += "AND i.institution=:ins ";
+            parameters.put("ins", filterInstitution);
+        } else {
+            jpql += "AND i.institution IS NULL ";
+        }
+
+        if (filterDepartment != null) {
+            jpql += "AND i.department=:dep ";
+            parameters.put("dep", filterDepartment);
+        } else {
+            jpql += "AND i.department IS NULL ";
+        }
+
+        parameters.put("ret", false);
+        parameters.put("ixc", Investigation.class);
+        parameters.put("svc", Service.class);
+
+        jpql += "ORDER BY i.name";
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
+
+        List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
+        return lst;
+    }
+
     public String navigateToListAllItems() {
         allItems = null;
         return "/item/reports/item_list";
     }
 
+    public String navigateToListFilteredItems() {
+        filteredItems = null;
+        return "/admin/items/list";
+    }
+
     public String navigateToListAllItemsForAdmin() {
         allItems = null;
-        return "/item/admin/list";
+        return "/admin/items/list";
     }
 
     public void fillInvestigations() {
@@ -682,7 +901,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Department> getDepartments() {
-        departments = departmentController.getInstitutionDepatrments(instituion);
+        departments = departmentController.getInstitutionDepatrments(institution);
         return departments;
     }
 
@@ -692,7 +911,7 @@ public class ItemController implements Serializable {
 
     public void createNewItemsFromMasterItems() {
         ////// // System.out.println("createNewItemsFromMasterItems");
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -729,7 +948,7 @@ public class ItemController implements Serializable {
                 continue;
             }
             ni.setId(null);
-            ni.setInstitution(instituion);
+            ni.setInstitution(institution);
             ni.setDepartment(department);
             ni.setItemFee(null);
             getFacade().create(ni);
@@ -747,7 +966,7 @@ public class ItemController implements Serializable {
                     Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (nf.getInstitution() != null) {
-                    nf.setInstitution(instituion);
+                    nf.setInstitution(institution);
                 }
                 if (nf.getDepartment() != null) {
                     nf.setDepartment(department);
@@ -774,7 +993,7 @@ public class ItemController implements Serializable {
     }
 
     public void updateItemsFromMasterItems() {
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -793,7 +1012,7 @@ public class ItemController implements Serializable {
             }
 
             if (i.getInstitution() != null) {
-                i.setInstitution(instituion);
+                i.setInstitution(institution);
             }
             getFacade().edit(i);
         }
@@ -803,7 +1022,7 @@ public class ItemController implements Serializable {
     }
 
     public void updateItemsAndFees() {
-        if (instituion == null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
         }
@@ -822,7 +1041,7 @@ public class ItemController implements Serializable {
             }
 
             if (fee.getInstitution() != null) {
-                fee.setInstitution(instituion);
+                fee.setInstitution(institution);
             }
             getItemFeeFacade().edit(fee);
         }
@@ -842,7 +1061,7 @@ public class ItemController implements Serializable {
                     + " and c.item.retired=false "
                     + " and c.institution=:ins and ((c.item.name) like :q or "
                     + " (c.item.barcode) like :q or (c.item.code) like :q )order by c.item.name";
-            hm.put("ins", getInstituion());
+            hm.put("ins", getInstitution());
             hm.put("q", "%" + query + "%");
             //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, hm, 20);
@@ -859,7 +1078,7 @@ public class ItemController implements Serializable {
         sql = "select c.item from ItemsDistributors c where c.retired=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
-        hm.put("ins", getInstituion());
+        hm.put("ins", getInstitution());
 
         //////// // System.out.println(sql);
         suggestions = getFacade().findByJpql(sql, hm);
@@ -1923,15 +2142,15 @@ public class ItemController implements Serializable {
         getCurrent();
     }
 
-    public Institution getInstituion() {
-        if (instituion == null) {
-            instituion = getSessionController().getInstitution();
+    public Institution getInstitution() {
+        if (institution == null) {
+            institution = getSessionController().getInstitution();
         }
-        return instituion;
+        return institution;
     }
 
-    public void setInstituion(Institution instituion) {
-        this.instituion = instituion;
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public FeeType getFeeType() {
@@ -2231,6 +2450,30 @@ public class ItemController implements Serializable {
 
     public void setInstitutionItemCount(InstitutionItemCount institutionItemCount) {
         this.institutionItemCount = institutionItemCount;
+    }
+
+    public List<ItemLight> getFilteredItems() {
+        return filteredItems;
+    }
+
+    public void setFilteredItems(List<ItemLight> filteredItems) {
+        this.filteredItems = filteredItems;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
     }
 
     @FacesConverter("itemLightConverter")
