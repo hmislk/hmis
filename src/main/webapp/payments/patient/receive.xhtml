@@ -22,7 +22,7 @@
 
                             <p:panel>
                                 <f:facet name="header">
-                                     <h:outputLabel value="Patient Details" />
+                                    <h:outputLabel value="Patient Details" />
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-md-3 p-1">
@@ -183,11 +183,25 @@
 
 
                 <h:form >
-                    <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                    <h:panelGrid columns="3">
+                        <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
                         <p:printer target="billPanel"></p:printer>
                     </p:commandButton>
-                    <p:commandButton ajax="false" icon="" value="Patient Lookup" class="mx-1"
+                    <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-2 ui-button-warning"
                                      action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                    <p:commandButton 
+                        value="Profile" 
+                        ajax="false"
+                        icon="fa fa-user"
+                        class="ui-button-warning  w-100" 
+                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                        >
+                        <f:setPropertyActionListener 
+                            value="#{patientController.bill.patient}"
+                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                    </p:commandButton>
+                    </h:panelGrid>
+                    
                 </h:form>
 
 
