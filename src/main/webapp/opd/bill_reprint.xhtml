@@ -33,14 +33,14 @@
                                 <div class="d-flex col-6 justify-content-end m-1">
 
                                     <p:commandButton value="Print" 
-                                                     class="ui-button-success m-1 w-25"
+                                                     class="ui-button-info m-1 w-25"
                                                      icon="fa fa-print"
                                                      ajax="false">
                                         <p:printer target="groupPrint" />
                                     </p:commandButton>
                                     <!-- Print Lookup Button -->
                                     <p:commandButton value="Patient Lookup" 
-                                                     class="ui-button-primary m-1 w-25"
+                                                     class="ui-button-warning m-1 w-25"
                                                      icon="fa fa-search"
                                                      action="#{opdBillController.navigateToSearchPatients()}"
                                                      ajax="false">
@@ -71,8 +71,8 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <div class="d-flex m-2">
-                                    <p:outputLabel value="Paper Type" class="fs-5 m-2"></p:outputLabel>
-                                    <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="mx-2" style="width: 13em;">
                                         <f:selectItem itemLabel="Please Select Paper Type" />
                                         <f:selectItems value="#{enumController.paperTypes}" />
                                     </p:selectOneMenu>
