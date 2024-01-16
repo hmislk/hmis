@@ -823,7 +823,7 @@ public class CashierReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/report_cashier_item_count_by_user.xhtml?faces-redirect=true";
+        return "/reportCashier/report_cashier_item_count_by_user.xhtml?faces-redirect=true";
     }
 
     public CashierReportController() {

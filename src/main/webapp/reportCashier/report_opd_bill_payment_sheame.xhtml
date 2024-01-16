@@ -13,36 +13,111 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="OPD BILL SEARCH "/>                          
-                            <h:panelGrid columns="2" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{commonReport1.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{commonReport1.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <h:outputLabel value="Payment Scheme"/>
-                                <p:selectOneMenu   id="cmbPs" value="#{commonReport1.paymentScheme}">     
-                                    <f:selectItem itemLabel="Select Discount Scheme"/>
-                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
-                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                </p:selectOneMenu>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport1.createOpdBillList}"/>
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                                    <p:dataExporter type="xlsx" target="tblBills,tblBills1,tblBills2" fileName="report_opd_bill_payment_sheame"  />
-                                </p:commandButton>
-                                <p:commandButton value="Print" ajax="false" action="#" >
-                                    <p:printer target="panPrint" ></p:printer>
-                                </p:commandButton>
-                            </h:panelGrid>
+                            <h:outputLabel value="OPD Payment Scheme Bills"/>    
+
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon=" fa fa-print"
+                                class="ui-button-success"
+                                style="float: right;"
+                                action="#" >
+                                <p:printer target="panPrint" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                style="float: right;" 
+                                icon="fa-solid fa-file-excel"
+                                class="ui-button-warning mx-2">
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    target="tblBills,tblBills1,tblBills2" 
+                                    fileName="report_opd_bill_payment_sheame"  />
+                            </p:commandButton>
+
+
                         </f:facet>
-                        <p:panel id="panPrint" styleClass="noBorder summeryBorder">
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="Payment Scheme" class="mt-2"/>
+                            </div>
+                            <div class="col-5">
+                                <p:selectOneMenu   
+                                    id="cmbPs" 
+                                    class="w-100"
+                                    value="#{commonReport1.paymentScheme}">     
+                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                    <f:selectItems 
+                                        value="#{paymentSchemeController.paymentSchemesForOPD}" 
+                                        var="paysch" 
+
+                                        itemLabel="#{paysch.name}" 
+                                        itemValue="#{paysch}"  />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="row mt-1">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date" class="mt-2"/>
+                            </div>
+                            <div class="col-5">
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    value="#{commonReport1.fromDate}" 
+                                    navigator="false" 
+
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:calendar>
+                            </div>
+                        </div>
+
+                        <div class="row mt-1">
+                            <div class="col-2">
+                                <h:outputLabel value="To Date" class="mt-2"/>
+                            </div>
+                            <div class="col-5">
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="toDate" 
+                                    value="#{commonReport1.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:calendar>
+                            </div>
+                        </div>
+
+                        <p:commandButton 
+                            id="btnSearch" 
+                            ajax="false" 
+                            value="Search"
+                            class="mb-2"
+                            icon="fa fa-search"
+                            action="#{commonReport1.createOpdBillList}">
+                        </p:commandButton>
+
+                        <p:panel  id="panPrint" styleClass="noBorder summeryBorder" rendered="#{commonReport1.paymentScheme.name ne null}">
+
                             <f:facet name="header" >
-                                <h:outputLabel value="OPD Bills - #{commonReport1.paymentScheme.name}"/>
+                                <h:outputLabel value="OPD Bills - #{commonReport1.paymentScheme.name}"/><br/><br/>
+<!--                                <h:outputLabel value="From Date - #{commonReport1.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="To Date - #{commonReport1.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  />
+                                </h:outputLabel>-->
+
                             </f:facet>
-                            <p:dataTable rowIndexVar="i" id="tblBills" value="#{commonReport1.biledBills}" 
-                                         var="bill"  
-                                         >
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tblBills" 
+                                value="#{commonReport1.biledBills}"
+                                var="bill"  
+                                >
                                 <f:facet name="header" >
                                     <h:outputLabel value="OPD Bills"/>
                                 </f:facet>
@@ -139,9 +214,13 @@
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable rowIndexVar="i" id="tblBills1" value="#{commonReport1.cancelBills}" 
-                                         var="bill" 
-                                         >
+
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tblBills1" 
+                                value="#{commonReport1.cancelBills}" 
+                                var="bill" 
+                                >
                                 <f:facet name="header" >
                                     <h:outputLabel value="OPD Cancel Bills"/>
                                 </f:facet>
@@ -236,9 +315,13 @@
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable rowIndexVar="i" id="tblBills2" value="#{commonReport1.refundBills}" 
-                                         var="bill"  
-                                         >
+
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tblBills2" 
+                                value="#{commonReport1.refundBills}" 
+                                var="bill"  
+                                >
                                 <f:facet name="header" >
                                     <h:outputLabel value="OPD Refund Bills"/>
                                 </f:facet>
@@ -333,14 +416,12 @@
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
+
                         </p:panel>
                     </p:panel>
 
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

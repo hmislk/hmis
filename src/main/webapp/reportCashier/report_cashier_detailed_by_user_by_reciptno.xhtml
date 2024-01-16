@@ -16,12 +16,37 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <h:panelGrid columns="4" class="my-2">
+                
+                <p:panel id="reportPrint"  header="Casheir Session Report Detail">
+                    
+                    <div class="row">
+                        <div class="col-4">
+                            <h:outputLabel value="From Recipt No"/>
+                            <p:inputText id="frn" class="mx-2" value="#{commonReport.fromReciptNo}" />
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel value="To Recipt No"/>
+                            <p:inputText id="trn" class="mx-2" value="#{commonReport.toReciptNo}" />
+                        </div>
+                        <div class="col-4">
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                             forceSelection="true" class="mx-2"
+                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                             value="#{commonReport.webUser}" ></p:autoComplete>
+                            <p:watermark for="frn" value="From Recipt No" />
+                            <p:watermark for="trn" value="To Recipt No" />
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <h:panelGrid columns="4" class="my-2">
                     <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" ajax="false" value="Refresh"
                                      style="float: right;" actionListener="#{commonReport.createCashierTableByUserUsingReciptNo()}" />
                     <p:defaultCommand target="btnRefresh"/>
 
-                    <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" actionListener="#{commonReport.createCashierTableByUserUsingReciptNo()}" ajax="false" value="Excel" >
+                    <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" actionListener="#{commonReport.createCashierTableByUserUsingReciptNo()}" ajax="false" value="Excel" >
                         <p:dataExporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
                     </p:commandButton> 
 
@@ -30,7 +55,7 @@
                     </p:commandButton>
 
                 </h:panelGrid>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
+                    
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> 
@@ -47,21 +72,7 @@
                             <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
 
-                        <h:panelGrid columns="8" styleClass="noPrintButton" >
-                            <h:outputLabel value="From Recipt No"/>
-                            <p:inputText id="frn" value="#{commonReport.fromReciptNo}" />
-                            <p:spacer width="30" height="1"/>
-                            <h:outputLabel value="To Recipt No"/>
-                            <p:inputText id="trn" value="#{commonReport.toReciptNo}" />
-                            <p:spacer width="30" height="1"/>
-                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                             forceSelection="true"
-                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                             value="#{commonReport.webUser}" ></p:autoComplete>
-                            <p:watermark for="frn" value="From Recipt No" />
-                            <p:watermark for="trn" value="To Recipt No" />
-                        </h:panelGrid>
+                        
 
                         <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
 

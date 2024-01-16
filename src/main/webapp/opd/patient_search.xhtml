@@ -103,6 +103,7 @@
                                         <p:inputText 
                                             value="#{patientController.searchPatientPhoneNumber}"
                                             placeholder="Phone Number"
+                                            class="mx-2"
                                             />
 
                                         <p:commandButton 
@@ -167,7 +168,7 @@
                                                 <p:commandButton value="OPD Billing for Cashier" action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" ajax="false" styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Collecting Center Billing"
+                                                <p:commandButton value="Collecting Centre Billing"
                                                                  action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
                                                                  ajax="false"
                                                                  styleClass="mx-1 mb-2">

@@ -21,36 +21,38 @@
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport1.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="mx-4" id="frmDate" value="#{commonReport1.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="mx-4" id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <p:outputLabel value="select Bill Type" />
-                        <p:selectOneRadio value="#{commonReport1.radio}">
+                        <p:selectOneRadio class="mx-4 my-2" value="#{commonReport1.radio}">
                             <f:selectItem itemLabel="Collecting Center and OPD" itemValue="0" />
                             <f:selectItem itemLabel="Collecting Center Only" itemValue="1" />
                             <f:selectItem itemLabel="OPD Only" itemValue="2" />
                             <f:selectItem itemLabel="Inward Only" itemValue="3" />
                         </p:selectOneRadio>
                         <p:outputLabel value="Channel Doctors Only" />
-                        <p:selectBooleanCheckbox value="#{commonReport1.onlyOPD}" />
+                        <p:selectBooleanCheckbox class="mx-4" value="#{commonReport1.onlyOPD}" />
                     </h:panelGrid>
-                    <h:panelGrid columns="4">
+                    <h:panelGrid columns="4" class="my-2">
                         <p:commandButton value="Process"
-                                         ajax="false" style="float: right;"
-                                         styleClass="noPrintButton"
+                                         ajax="false"
+                                         class="ui-button-warning"
+                                         icon="fas fa-cogs"
                                          action="#{commonReport1.listBillItemsByReferringDoctorSummery}"
                                          />
                         <p:commandButton value="Process New"
-                                         ajax="false" style="float: right;"
-                                         styleClass="noPrintButton"
+                                         ajax="false"
+                                         class="ui-button-warning mx-1"
+                                         icon="fas fa-cogs"
                                          action="#{commonReport1.listBillItemsByReferringDoctorSummeryCount}"
                                          />
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton class="ui-button-info" icon="fas fa-print" ajax="false" value="Print"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" value="Excel" ajax="false" >
                             <p:dataExporter type="xlsx" target="tbl" fileName="Report by Referring Doctor"
                                            
                                                 
