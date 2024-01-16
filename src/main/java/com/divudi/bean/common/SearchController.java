@@ -5253,14 +5253,26 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientBillsToPay() {
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
         fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
     }
 
     public void fillPatientBillsPaid() {
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
         fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
     }
 
     public void fillPatientBillsPaidAndToPay() {
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
         fillPatientPreBills(BillType.OpdPreBill, patient, null, null);
     }
 

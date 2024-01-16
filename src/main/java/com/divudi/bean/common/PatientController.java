@@ -669,6 +669,8 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        
+        
         patientController.setCurrent(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
@@ -1037,7 +1039,7 @@ public class PatientController implements Serializable {
         }
 
         if (noSearchCriteriaWasFound) {
-            JsfUtil.addErrorMessage("No Search criteria Found !");
+            JsfUtil.addErrorMessage("No Search Criteria Found !");
             return "";
         }
 
@@ -1191,7 +1193,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1220,7 +1222,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1249,7 +1251,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1279,7 +1281,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1913,8 +1915,10 @@ public class PatientController implements Serializable {
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().create(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
             getFacade().edit(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
     }
 
