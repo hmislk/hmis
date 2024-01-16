@@ -248,7 +248,10 @@
                                                     </h:inputText>
                                                 </p:column>
                                                 <p:column>
-                                                    <p:commandButton ajax="false" value="Update" action="#{opdBillController.feeChangeListener(bif)}" />
+                                                    <p:commandButton ajax="false" 
+                                                                     value="Update" 
+                                                                     disabled="#{!investigationController.current.userChangable}"
+                                                                     action="#{opdBillController.feeChangeListener(bif)}" />
                                                 </p:column>
                                                 <p:column>
                                                     <f:facet name="header">Fee Name</f:facet>
@@ -449,10 +452,10 @@
                                                 <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
-                                                class="row my-1"
+                                                class="row my-1 w-100"
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" class="w-100"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>

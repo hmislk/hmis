@@ -200,6 +200,7 @@ public class UserPreference implements Serializable {
     private String nameRegex;
     private String mobileRegex;
     private String emailRegex;
+    private String nicRegex;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
@@ -1068,6 +1069,14 @@ public class UserPreference implements Serializable {
 
     public void setCcItemListingStrategy(ItemListingStrategy ccItemListingStrategy) {
         this.ccItemListingStrategy = ccItemListingStrategy;
+    }
+
+    public String getNicRegex() {
+        return nicRegex;
+    }
+
+    public void setNicRegex(String nicRegex) {
+        this.nicRegex = nicRegex;
     }
 
 }
