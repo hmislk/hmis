@@ -670,7 +670,7 @@ public class PatientController implements Serializable {
             return "";
         }
         
-        System.out.println("this = " + current.getPerson().getName());
+        
         patientController.setCurrent(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);

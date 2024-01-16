@@ -23,18 +23,19 @@
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
                         <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
-                        <h:outputText styleClass="fas fa-info-circle" />
+                        <h:outputText styleClass="fas fa-user" />
                         <h:panelGroup 
                             rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                             <h:outputText
                                 rendered="#{cc.attrs.controller.patient.id eq null}"
                                 value="New Patient Details" 
-                                class="mx-2"
+                                class="mx-4"
                                 >
                             </h:outputText>
                             <h:outputText
                                 rendered="#{cc.attrs.controller.patient.id ne null}"
                                 value="Searched Patient Details" 
+                                class="mx-2"
                                 ></h:outputText>
                             <h:panelGroup rendered="#{cc.attrs.editable}" >
                                 <p:selectBooleanButton 
@@ -57,7 +58,6 @@
                         <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block"  styleClass="form-inline">
                             <p:inputText 
                                 id="txtQuickSearchPhoneNumber"
-                                style="width:12em; height: 2em; padding: 0.25em;"
                                 value="#{patientController.quickSearchPhoneNumber}"
                                 placeholder="Phone Number"
                                 class="form-control-sm mx-1"
