@@ -669,6 +669,8 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        
+        System.out.println("this = " + current.getPerson().getName());
         patientController.setCurrent(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
