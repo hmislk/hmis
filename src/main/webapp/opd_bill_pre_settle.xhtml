@@ -18,6 +18,7 @@
 
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
+
                             <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>  
                             <p:commandButton ajax="false" value="Back To Search"
                                              class="ui-button-warning mx-2"
@@ -33,13 +34,17 @@
                                              id="settle"
                                              action="#{opdPreSettleController.settleBillWithPay2}" />
 
+
                             
                         </f:facet>
                         
                         <h:panelGrid columns="20">
                             <h:outputLabel value="Pharmacy Retail Bill" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.preBill.paymentMethod}"  disabled="#{sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
+                            <p:selectOneMenu   
+                                id="cmbPs" 
+                                value="#{opdPreSettleController.preBill.paymentMethod}"  
+                                disabled="#{sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
                             </p:selectOneMenu>

@@ -635,12 +635,12 @@
                 <h:panelGroup rendered="#{opdPreBillController.printPreview}" >
                     <h:form >
                         <h:panelGrid>
-                            <h:panelGrid columns="2" styleClass="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
+                            <h:panelGrid columns="2" class="my-3">
+                                <p:commandButton icon="fas fa-print" class="ui-button-info" value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpPosBill" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
+                                <p:commandButton icon="fas fa-plus" class="ui-button-warning mx-2"  value="New Bill" ajax="false" action="#{opdPreBillController.prepareNewBill()}" >
                                 </p:commandButton>
                             </h:panelGrid>
 
