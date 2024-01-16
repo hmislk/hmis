@@ -655,14 +655,14 @@ public class ReorderController implements Serializable {
         List<Item> iss = null;
 
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
             iss = itemController.getDealorItem();
         } else if (autoOrderMethod == AutoOrderMethod.ByRol) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         } else {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         }
@@ -825,7 +825,7 @@ public class ReorderController implements Serializable {
             return "";
         }
         purchaseOrderRequestController.recreate();
-        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstituion());
+        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstitution());
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();

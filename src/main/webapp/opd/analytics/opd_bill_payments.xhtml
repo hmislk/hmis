@@ -44,13 +44,14 @@
                                         <p:spacer height="10" width="5" ></p:spacer>
 
 
-                                        <h:outputLabel value="Institution" class="w-100"/>
+                                        <h:outputLabel value="Institution"/>
                                         <p:selectOneMenu 
                                             id="cmdFromInstitution"
                                             value="#{opdBillController.institution}"
                                             filter="true"
                                             placeholder="Institution"
-                                            style="width: 230px"
+                                            class="w-100"
+                                            autoWidth="false"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
