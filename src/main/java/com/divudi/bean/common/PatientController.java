@@ -1193,7 +1193,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1222,7 +1222,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1251,7 +1251,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1281,7 +1281,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);

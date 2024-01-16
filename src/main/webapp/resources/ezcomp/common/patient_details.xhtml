@@ -161,18 +161,16 @@
                                                     autocomplete="off" 
                                                     id="year" 
                                                     placeholder="Years"
-
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
-                                                    class="form-control">
+                                                    class="w-100">
                                                     <f:ajax event="blur" execute="@this" render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText
-
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
-                                                    class="form-control">
+                                                    class="w-100">
                                                     <f:ajax event="blur" execute="@this"  render="dpDob"  />
                                                 </p:inputText>
                                             </div>
@@ -181,7 +179,7 @@
 
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
-                                                    class="form-control">
+                                                    class="w-100">
                                                     <f:ajax event="blur" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
@@ -250,6 +248,9 @@
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
+                                        <c:if test="#{not empty sessionController.applicationPreference.nicRegex}">
+                                            <f:validateRegex pattern="#{sessionController.applicationPreference.nicRegex}"/>
+                                        </c:if>
                                     </div>
                                 </div>
 
