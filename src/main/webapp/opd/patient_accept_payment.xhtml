@@ -13,51 +13,53 @@
                     <p:panel style="height: 100vh">
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel class="mx-4" value="Opd Bill Search To Pay "/>
+                            <h:outputLabel class="mx-4" value="OPD Bill Search To Pay "/>
                         </f:facet>
 
                         <div class="row">
                             <div class="col-2">
-                                <h:panelGrid columns="1">
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar
-                                        class="my-1 w-100" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        navigator="false"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        >      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar
-                                        class="my-1 w-100" 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        >                                                                              
-                                    </p:calendar>
-                                    <p:commandButton  
-                                        id="btnSearch" 
-                                        icon="fas fa-search" 
-                                        class="ui-button-success w-100" 
-                                        ajax="false" 
-                                        value="Search Paid Bills"
-                                        action="#{searchController.fillPatientBillsPaid()}"/>
-                                    <p:commandButton 
-                                        class="my-1 ui-button-warning w-100" 
-                                        icon="fas fa-search" 
-                                        ajax="false" 
-                                        value="Search To Pay Bills"
-                                        action="#{searchController.fillPatientBillsPaid()}"/>
-                                    <p:commandButton  
-                                        ajax="false" 
-                                        icon="fas fa-search" 
-                                        class="ui-button-warning w-100 " 
-                                        value="Search Paid or To Pay Bills"
-                                        action="#{searchController.fillPatientBillsPaidAndToPay}"/>
 
-                                </h:panelGrid>
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar
+                                    class="my-1 w-100" 
+                                    id="fromDate" 
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false"
+                                    maxdate="#{commonController.currentDateTime}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar
+                                    class="my-1 w-100"
+                                    inputStyleClass="form-control"
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    maxdate="#{commonController.currentDateTime}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    >                                                                              
+                                </p:calendar>
+                                <p:commandButton  
+                                    id="btnSearch" 
+                                    icon="fas fa-search" 
+                                    class="ui-button-success w-100 mt-3" 
+                                    ajax="false" 
+                                    value="Search Paid Bills"
+                                    action="#{searchController.fillPatientBillsPaid()}"/>
+                                <p:commandButton 
+                                    class="my-1 ui-button-warning w-100 my-1" 
+                                    icon="fa fa-search" 
+                                    ajax="false" 
+                                    value="Search To Pay Bills"
+                                    action="#{searchController.fillPatientBillsPaid()}"/>
+                                <p:commandButton  
+                                    ajax="false" 
+                                    icon="fas fa-search" 
+                                    class="ui-button-warning w-100" 
+                                    value="Search Paid or To Pay Bills"
+                                    action="#{searchController.fillPatientBillsPaidAndToPay}"/>
                             </div>
                             <div class="col-10">
 
@@ -80,23 +82,23 @@
 
                                     >
 
-                                    <p:column headerText="No" styleClass="alignTop">
+                                    <p:column headerText="No" styleClass="alignTop" width="1%">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" width="5%">
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>  
 
-                                    <p:column headerText="Patient" >
+                                    <p:column headerText="Patient" width="10%">
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Department"  >
+                                    <p:column headerText="Department" width="7%" >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Billed At"  >
+                                    <p:column headerText="Billed At" width="5%" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -109,7 +111,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                             
                                     </p:column>                 
-                                    <p:column headerText="Billed By" >
+                                    <p:column headerText="Billed By" width="6%">
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
@@ -119,7 +121,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column>                                                          
-                                    <p:column headerText="Net Value" >
+                                    <p:column headerText="Net Value" width="6%">
 
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -127,14 +129,14 @@
 
                                     </p:column>
 
-                                    <p:column>
-                                        <p:commandButton ajax="false"  value="AcceptPayment" 
+                                    <p:column width="6%">
+                                        <p:commandButton ajax="false"  value="Accept Payment" 
                                                          action="#{opdPreSettleController.toSettle(bill)}" 
                                                          disabled="#{bill.referenceBill ne null or bill.cancelled}">   
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column style="width: 450px">
+                                    <p:column width="40%">
                                         <p:dataTable value="#{bill.cashBillsOpdPre}" var="rb">
                                             <p:column  >                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
@@ -163,12 +165,12 @@
                                                     </h:outputLabel>
                                                 </h:panelGroup> 
                                             </p:column>                                                     
-                                            <p:column >
+                                            <p:column>
                                                 <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>
-                                            <p:column>
+                                            <p:column width="20%">
                                                 <p:commandButton ajax="false" value="View Payment Bill" action="bill_reprint" disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
                                                 </p:commandButton>
