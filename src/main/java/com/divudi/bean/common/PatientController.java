@@ -1915,8 +1915,10 @@ public class PatientController implements Serializable {
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().create(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
             getFacade().edit(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
     }
 
