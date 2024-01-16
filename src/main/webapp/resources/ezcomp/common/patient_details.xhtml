@@ -23,13 +23,13 @@
                     <!-- Left aligned content -->
                     <h:panelGroup id="headerFacet">
                         <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
-                        <h:outputText styleClass="fas fa-info-circle" />
+                        <h:outputText styleClass="fas fa-user" />
                         <h:panelGroup 
                             rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                             <h:outputText
                                 rendered="#{cc.attrs.controller.patient.id eq null}"
                                 value="New Patient Details" 
-                                class="mx-2"
+                                class="mx-4"
                                 >
                             </h:outputText>
                             <h:outputText
