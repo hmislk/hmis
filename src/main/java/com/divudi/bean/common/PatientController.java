@@ -1037,7 +1037,7 @@ public class PatientController implements Serializable {
         }
 
         if (noSearchCriteriaWasFound) {
-            JsfUtil.addErrorMessage("No Search criteria Found !");
+            JsfUtil.addErrorMessage("No Search Criteria Found !");
             return "";
         }
 
