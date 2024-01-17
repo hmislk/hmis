@@ -5337,7 +5337,7 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
 
-        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+        bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
 
     }
 
