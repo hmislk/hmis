@@ -430,7 +430,7 @@ public class InstitutionController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            UtilityController.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -460,7 +460,7 @@ public class InstitutionController implements Serializable {
 
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            UtilityController.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -499,7 +499,7 @@ public class InstitutionController implements Serializable {
 
     public void updateCreditLimit(HistoryType historyType) {
         if (current == null || current.getId() == null) {
-            UtilityController.addErrorMessage("Please Select a Agency");
+            UtilityController.addErrorMessage("Please Select an Agency");
             return;
         }
 

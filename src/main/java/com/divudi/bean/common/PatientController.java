@@ -669,21 +669,49 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        
-        
         patientController.setCurrent(current);
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
         return "/emr/patient_profile?faces-redirect=true;";
     }
-
-    public String navigateToEmrEditPatient() {
+    
+//    public String toEmrPatientProfile() {
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("No patient selected");
+//            return "";
+//        }
+//        
+//        
+//        patientController.setCurrent(current);
+//        patientEncounterController.setPatient(current);
+//        patientEncounterController.fillCurrentPatientLists(current);
+//        patientEncounterController.fillPatientInvestigations(current);
+//        return "/emr/patient_profile?faces-redirect=true;";
+//    }
+    
+    public String navigateToOpdBilling() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/emr/patient?faces-redirect=true;";
+        opdBillController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/opd/opd_bill?faces-redirect=true;";
+    }
+
+    public String navigateToPharamecyBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        pharmacySaleController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientProfile() {
