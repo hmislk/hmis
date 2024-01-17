@@ -30,7 +30,7 @@
 
             <p:column headerText="Refunded Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Refunded Id"/>
+                    <h:outputLabel value="Refunded ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{brPh.deptId}" ></h:outputLabel>
                 <h:outputLabel value="#{brPh.referenceBill.deptId}" rendered="#{brPh.deptId eq null}" ></h:outputLabel>
@@ -38,7 +38,7 @@
 
             <p:column headerText="Billed Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Billed Id"/>
+                    <h:outputLabel value="Billed ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{brPh.billedBill.deptId}" >
                 </h:outputLabel>
@@ -85,7 +85,7 @@
 
             <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{brPh.paymentMethod=='Cheque'}" value="#{brPh.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

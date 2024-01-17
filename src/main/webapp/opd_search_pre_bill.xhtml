@@ -137,17 +137,17 @@
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column style="width: 440px">
+                                    <p:column width="40%">
                                         <p:dataTable value="#{bill.cashBillsOpdPre}" var="rb">
-                                            <p:column  >                                                               
+                                            <p:column  headerText="Bill No">                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
                                             </p:column>
-                                            <p:column >
+                                            <p:column headerText="Accepted At">
                                                 <h:outputLabel value="#{rb.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                                 <br/>
-                                                <h:panelGroup rendered="#{rb.cancelled}" >
+                                                <h:panelGroup rendered="#{rb.cancelled}">
                                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                                     <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                                    value="#{rb.cancelledBill.createdAt}" >
@@ -155,7 +155,7 @@
                                                     </h:outputLabel>
                                                 </h:panelGroup>                               
                                             </p:column> 
-                                            <p:column >                               
+                                            <p:column headerText="Accepted By">                               
                                                 <h:outputLabel value="#{rb.creater.webUserPerson.name}" >                                      
                                                 </h:outputLabel>                                
                                                 <br/>
@@ -166,12 +166,12 @@
                                                     </h:outputLabel>
                                                 </h:panelGroup> 
                                             </p:column>                                                     
-                                            <p:column >
+                                            <p:column headerText="Net total">
                                                 <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>
-                                            <p:column>
+                                            <p:column width="20%">
                                                 <p:commandButton ajax="false" value="View Payment Bill" action="bill_reprint" disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{billSearch.billSearch}" value="#{rb}" />
                                                 </p:commandButton>
