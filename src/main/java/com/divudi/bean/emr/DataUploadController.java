@@ -24,6 +24,8 @@ import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.ServiceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SpecialityController;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.lab.CollectingCentreController;
 import com.divudi.bean.lab.InvestigationCategoryController;
 import com.divudi.bean.lab.InvestigationController;
@@ -46,6 +48,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.DoctorSpeciality;
+import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -53,6 +56,8 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
+import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationTube;
@@ -153,6 +158,10 @@ public class DataUploadController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ConsultantController consultantController;
+    @Inject
+    SpecialityController specialityController;
+    @Inject
+    StaffController staffController;
 
     @EJB
     PatientFacade patientFacade;
@@ -207,6 +216,11 @@ public class DataUploadController implements Serializable {
     public String navigateToUploadOpdItemsAndFees() {
         pollActive = true;
         return "/admin/items/opd_item_upload";
+    }
+
+    public String navigateToUploadAndAddProfessionalFees() {
+        pollActive = true;
+        return "/admin/items/upload_add_professional_fees";
     }
 
     public String navigateToUploadDiagnoses() {
@@ -318,6 +332,17 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
                 items = readOpdItemsAndFeesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadAddProfessionalFees() {
+        itemFees = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                itemFees = addProfessionalFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -519,7 +544,6 @@ public class DataUploadController implements Serializable {
 
             String itemType = "Service";
             Double hospitalFee = 0.0;
-            
 
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
@@ -600,6 +624,8 @@ public class DataUploadController implements Serializable {
             Cell codeCell = row.getCell(3);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
+            } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+                code = codeCell.getNumericCellValue() + "";
             }
             if (code == null || code.trim().equals("")) {
                 code = serviceController.generateShortCode(name);
@@ -758,10 +784,8 @@ public class DataUploadController implements Serializable {
                 itemFeesToSave.add(itf);
             }
 
-            
-
             item.setTotal(hospitalFee);
-            item.setTotalForForeigner((hospitalFee ) * 2);
+            item.setTotalForForeigner((hospitalFee) * 2);
             item.setDblValue(hospitalFee);
             itemsToSave.add(item);
         }
@@ -773,8 +797,127 @@ public class DataUploadController implements Serializable {
         return itemsToSave;
     }
 
-    
-    
+    private List<ItemFee> addProfessionalFeesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemsToSave = new ArrayList<>();
+
+        itemFeesToSave = new ArrayList<>();
+
+        Item item;
+        Speciality speciality;
+        Staff staff;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            String name = null;
+            String specialityName = null;
+            String staffName = null;
+
+            Double professionalFee = 0.0;
+
+            Cell nameCell = row.getCell(0);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+                if (name == null || name.trim().equals("")) {
+                    System.err.println("Item Name empty");
+                    continue;
+                }
+            }
+
+            System.out.println("name = " + name);
+            System.out.println("sessionController.getDepartment() = " + sessionController.getDepartment());
+
+            item = itemController.findItemByName(name, sessionController.getDepartment());
+
+            System.out.println("item = " + item);
+
+            if (item == null) {
+                System.err.println("Item NOT found");
+                continue;
+            }
+
+            Cell specialityCell = row.getCell(1);
+            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
+                specialityName = specialityCell.getStringCellValue();
+            }
+
+            if (specialityName == null || specialityName.trim().equals("")) {
+                System.err.println("Speciality NOT found");
+                continue;
+            }
+
+            speciality = specialityController.findSpeciality(specialityName, false);
+
+            Cell fullNameCell = row.getCell(2);
+            if (fullNameCell != null && fullNameCell.getCellType() == CellType.STRING) {
+                staffName = fullNameCell.getStringCellValue();
+            }
+
+            staff = staffController.findStaffByName(staffName);
+
+            Cell professionalFeeCell = row.getCell(3);
+            if (professionalFeeCell != null) {
+                if (professionalFeeCell.getCellType() == CellType.NUMERIC) {
+                    // If it's a numeric value
+                    professionalFee = professionalFeeCell.getNumericCellValue();
+                } else if (professionalFeeCell.getCellType() == CellType.FORMULA) {
+                    // If it's a formula, evaluate it
+                    Workbook wb = professionalFeeCell.getSheet().getWorkbook();
+                    CreationHelper createHelper = wb.getCreationHelper();
+                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(professionalFeeCell);
+
+                    // Check the type of the evaluated value
+                    if (cellValue.getCellType() == CellType.NUMERIC) {
+                        professionalFee = cellValue.getNumberValue();
+                    } else {
+                        // Handle other types if needed
+                    }
+                } else if (professionalFeeCell.getCellType() == CellType.STRING) {
+                    // If it's a numeric value
+                    String strhospitalFee = professionalFeeCell.getStringCellValue();
+                    professionalFee = CommonFunctions.stringToDouble(strhospitalFee);
+                }
+
+                // Rest of your code remains the same
+                ItemFee itf = new ItemFee();
+                itf.setName("Professional Fee");
+                itf.setItem(item);
+                itf.setFeeType(FeeType.Staff);
+                itf.setFee(professionalFee);
+                itf.setFfee(professionalFee);
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itf.setSpeciality(speciality);
+                itf.setStaff(staff);
+                itemFeeFacade.create(itf);
+                itemFeesToSave.add(itf);
+                Double total = item.getTotal();
+                if (total == null) {
+                    total = 0.0;
+                }
+
+                item.setTotal(total + professionalFee);
+                item.setTotalForForeigner((total + professionalFee) * 2);
+                item.setDblValue(total + professionalFee);
+                itemFacade.edit(item);
+                itemsToSave.add(item);
+
+            }
+
+        }
+        return itemFeesToSave;
+    }
+
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
