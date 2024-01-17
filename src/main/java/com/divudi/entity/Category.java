@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @Inheritance
-@XmlRootElement
 public class Category implements Serializable {
 
     static final long serialVersionUID = 1L;
