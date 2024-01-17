@@ -18,7 +18,7 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload Items</h2>
+                    <h2>Upload OPD Items</h2>
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
@@ -28,7 +28,7 @@
                         <p:commandButton 
                             icon="fa fa-upload"
                             value="Upload"
-                                         action="#{dataUploadController.uploadItems()}"
+                                         action="#{dataUploadController.uploadItemsAndFees()}"
                                          ajax="false"/>
                         <p:commandButton 
                             value="Download Template" 
@@ -92,12 +92,12 @@
                             <tr>
                                 <td>F</td>
                                 <td>Institution</td>
-                                <td>Institution. Optional.</td>
+                                <td>Institution. Optional. If lest Blank, logged institution is used.</td>
                             </tr>
                             <tr>
                                 <td>G</td>
                                 <td>Department</td>
-                                <td>Department. Optional.</td>
+                                <td>Department. Optional.  If lest Blank, logged department is used.</td>
                             </tr>
                             <tr>
                                 <td>H</td>
@@ -114,11 +114,7 @@
                                 <td>Hospital Fee</td>
                                 <td>Mandatory. Created for Logged Department and Institution</td>
                             </tr>
-                            <tr>
-                                <td>K</td>
-                                <td>Collecting Centre Fee</td>
-                                <td>Optional. Created for Institution in Institution Column and Department in Department Column.</td>
-                            </tr>
+                            
 
                         </tbody>
                     </table>
