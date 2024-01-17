@@ -18,9 +18,15 @@
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
-                    <h2>Upload OPD Items</h2>
+                    <h2>Upload and Add Professional Fees</h2>
                 </div>
                 <div class="card-body" >
+                    <p>This is for the logged department only. Make sure to log to the relevant department.</p>
+                    <p>New Items will NOT be created. Make sure to spell the item correctly.</p>
+                    <p>This will add to existing set of fees.</p>
+                    <p>No specialities will be created. Make sure to spell the speciality correctly.</p>
+                    <p>No doctors will be created. Make sure to spell the doctor correctly.</p>
+                    
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
@@ -28,11 +34,11 @@
                         <p:commandButton 
                             icon="fa fa-upload"
                             value="Upload"
-                            action="#{dataUploadController.uploadItemsAndFees()}"
-                            ajax="false"/>
+                                         action="#{dataUploadController.uploadAddProfessionalFees()}"
+                                         ajax="false"/>
+                        
 
-
-
+                       
 
                     </h:form>
 
@@ -52,50 +58,20 @@
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Printing Name</td>
-                                <td>Printing Name name. Optional.</td>
+                                <td>Speciality</td>
+                                <td>Speciality. Required.</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>Full Name</td>
-                                <td>Full Name Optional</td>
+                                <td>Staff Name</td>
+                                <td>Staff Name (without title). Optional</td>
                             </tr>
                             <tr>
                                 <td>D</td>
-                                <td>Item Code</td>
-                                <td>Item Code  Optional</td>
+                                <td>Professional Fee Value</td>
+                                <td>Mandatory.</td>
                             </tr>
-                            <tr>
-                                <td>E</td>
-                                <td>Category</td>
-                                <td>Category name.  Required.</td>
-                            </tr>
-                            <tr>
-                                <td>F</td>
-                                <td>Institution</td>
-                                <td>Institution. Optional. If lest Blank, logged institution is used.</td>
-                            </tr>
-                            <tr>
-                                <td>G</td>
-                                <td>Department</td>
-                                <td>Department. Optional.  If lest Blank, logged department is used.</td>
-                            </tr>
-                            <tr>
-                                <td>H</td>
-                                <td>Inward Charge Category</td>
-                                <td>Inward Charge Category. Optional.</td>
-                            </tr>
-                            <tr>
-                                <td>I</td>
-                                <td>Item Type</td>
-                                <td>Optional. Default is Investigation. Other options include Service.</td>
-                            </tr>
-                            <tr>
-                                <td>J</td>
-                                <td>Hospital Fee</td>
-                                <td>Mandatory. Created for Logged Department and Institution</td>
-                            </tr>
-
+                            
 
                         </tbody>
                     </table>
@@ -105,12 +81,12 @@
 
         <p:poll update="tbl"></p:poll>
 
-        <p:dataTable id="tbl" value="#{dataUploadController.items}" var="item" >
+        <p:dataTable id="tbl" value="#{dataUploadController.itemFees}" var="item" >
             <p:column >
                 #{item.name}
             </p:column>
             <p:column >
-                #{item.total}
+                #{item.fee}
             </p:column>
 
         </p:dataTable>
