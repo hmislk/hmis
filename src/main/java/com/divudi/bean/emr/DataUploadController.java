@@ -519,14 +519,14 @@ public class DataUploadController implements Serializable {
 
             String itemType = "Service";
             Double hospitalFee = 0.0;
-            Double collectingCentreFee = 0.0;
+            
 
             Cell insCell = row.getCell(5);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
             }
             if (institutionName == null || institutionName.trim().equals("")) {
-                institutionName = "Other";
+                institutionName = sessionController.getInstitution().getName();
             }
 
             if (runningIns == null) {
@@ -546,7 +546,7 @@ public class DataUploadController implements Serializable {
                 departmentName = deptCell.getStringCellValue();
             }
             if (departmentName == null || departmentName.trim().equals("")) {
-                departmentName = institutionName;
+                departmentName = sessionController.getDepartment().getName();
             }
 
             if (runningDept == null) {
@@ -758,48 +758,11 @@ public class DataUploadController implements Serializable {
                 itemFeesToSave.add(itf);
             }
 
-            Cell collectingCenterFeeTypeCell = row.getCell(10);
-            if (collectingCenterFeeTypeCell != null) {
-                if (collectingCenterFeeTypeCell.getCellType() == CellType.NUMERIC) {
-                    // If it's a numeric value
-                    collectingCentreFee = collectingCenterFeeTypeCell.getNumericCellValue();
-                } else if (collectingCenterFeeTypeCell.getCellType() == CellType.FORMULA) {
-                    // If it's a formula, evaluate it
-                    Workbook wb = collectingCenterFeeTypeCell.getSheet().getWorkbook();
-                    CreationHelper createHelper = wb.getCreationHelper();
-                    FormulaEvaluator evaluator = createHelper.createFormulaEvaluator();
-                    CellValue cellValue = evaluator.evaluate(collectingCenterFeeTypeCell);
+            
 
-                    // Check the type of the evaluated value
-                    if (cellValue.getCellType() == CellType.NUMERIC) {
-                        collectingCentreFee = cellValue.getNumberValue();
-                    } else {
-                        // Handle other types if needed
-                    }
-                }
-                if (collectingCenterFeeTypeCell.getCellType() == CellType.STRING) {
-                    // If it's a numeric value
-                    String strcollectingCentreFee = collectingCenterFeeTypeCell.getStringCellValue();
-                    collectingCentreFee = CommonFunctions.stringToDouble(strcollectingCentreFee);
-                }
-
-                // Rest of your code remains the same
-                ItemFee itf = new ItemFee();
-                itf.setName("Hospital Fee");
-                itf.setItem(item);
-                itf.setInstitution(institution);
-                itf.setDepartment(department);
-                itf.setFeeType(FeeType.CollectingCentre);
-                itf.setFee(collectingCentreFee);
-                itf.setFfee(collectingCentreFee);
-                itf.setCreatedAt(new Date());
-                itf.setCreater(sessionController.getLoggedUser());
-                itemFeesToSave.add(itf);
-            }
-
-            item.setTotal(hospitalFee + collectingCentreFee);
-            item.setTotalForForeigner((hospitalFee + collectingCentreFee) * 2);
-            item.setDblValue(hospitalFee + collectingCentreFee);
+            item.setTotal(hospitalFee);
+            item.setTotalForForeigner((hospitalFee ) * 2);
+            item.setDblValue(hospitalFee);
             itemsToSave.add(item);
         }
 
@@ -810,6 +773,7 @@ public class DataUploadController implements Serializable {
         return itemsToSave;
     }
 
+    
     
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
