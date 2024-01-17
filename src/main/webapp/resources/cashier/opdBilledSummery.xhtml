@@ -15,7 +15,7 @@
     <cc:implementation>
         <p:dataTable id="billed" rowStyleClass="noDisplayRow"  value="#{cc.attrs.data.bills}" var="b" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{b.billType}"  >
             <f:facet name="header">  
-                <h:outputLabel value="Opd Bills "/>
+                <h:outputLabel value="OPD Bills "/>
             </f:facet>                        
             <p:column headerText="Cash" style=" text-align: right"  >
                 <f:facet name="header">  
@@ -46,7 +46,7 @@
             </p:column>
             <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
