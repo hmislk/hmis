@@ -19,7 +19,7 @@
                                 value="Print" 
                                 ajax="false" 
                                 icon=" fa fa-print"
-                                class="ui-button-success"
+                                class="ui-button-into"
                                 style="float: right;"
                                 action="#" >
                                 <p:printer target="panPrint" ></p:printer>
@@ -30,7 +30,7 @@
                                 value="Excel" 
                                 style="float: right;" 
                                 icon="fa-solid fa-file-excel"
-                                class="ui-button-warning mx-2">
+                                class="ui-button-success mx-2">
                                 <p:dataExporter 
                                     type="xlsx" 
                                     target="tblBills,tblBills1,tblBills2" 
@@ -46,7 +46,8 @@
                             <div class="col-5">
                                 <p:selectOneMenu   
                                     id="cmbPs" 
-                                    class="w-100"
+                                    class="w-100 mx-2" 
+                                    autoWidth="false"
                                     value="#{commonReport1.paymentScheme}">     
                                     <f:selectItem itemLabel="Select Discount Scheme"/>
                                     <f:selectItems 
@@ -65,8 +66,8 @@
                             </div>
                             <div class="col-5">
                                 <p:calendar 
-                                    styleClass="dateTimePicker" 
-                                    id="fromDate" 
+                                    class="w-100 mx-2" inputStyleClass="w-100"
+                                    id="fromDate"
                                     value="#{commonReport1.fromDate}" 
                                     navigator="false" 
 
@@ -81,7 +82,7 @@
                             </div>
                             <div class="col-5">
                                 <p:calendar 
-                                    styleClass="dateTimePicker" 
+                                    class="w-100 mx-2" inputStyleClass="w-100"
                                     id="toDate" 
                                     value="#{commonReport1.toDate}" 
                                     navigator="false" 
@@ -94,7 +95,7 @@
                             id="btnSearch" 
                             ajax="false" 
                             value="Search"
-                            class="mb-2"
+                            class="ui-button-warning"
                             icon="fa fa-search"
                             action="#{commonReport1.createOpdBillList}">
                         </p:commandButton>
@@ -139,25 +140,25 @@
                                 <p:column headerText="Billed At"  >                                
                                     <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                                 </p:column>
-                                <p:column headerText="Billed at"  >
+                                <p:column headerText="Billed At"  >
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bill.refunded}" >
-                                        <h:outputLabel style="color: red;" value="Refunded at " />
+                                        <h:outputLabel style="color: red;" value="Refunded At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>  
-                                <p:column headerText="Billed by" >
+                                <p:column headerText="Billed By" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                     <br/>
@@ -178,7 +179,7 @@
                                 <p:column headerText="Client Phone No">                              
                                     <h:outputLabel value="#{bill.patient.person.phone}" />
                                 </p:column>
-                                <p:column headerText="Paymentmethod" >                                
+                                <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                     <h:outputLabel value="#{bill.paymentScheme.name}" />
                                 </p:column>
@@ -242,25 +243,25 @@
                                 <p:column headerText="Billed At"  >                                
                                     <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                                 </p:column>
-                                <p:column headerText="Billed at"  >
+                                <p:column headerText="Billed At"  >
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bill.refunded}" >
-                                        <h:outputLabel style="color: red;" value="Refunded at " />
+                                        <h:outputLabel style="color: red;" value="Refunded At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>  
-                                <p:column headerText="Billed by" >
+                                <p:column headerText="Billed By" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                     <br/>
@@ -281,7 +282,7 @@
                                 <p:column headerText="Client Phone No">                              
                                     <h:outputLabel value="#{bill.patient.person.phone}" />
                                 </p:column>
-                                <p:column headerText="Paymentmethod" >                                
+                                <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                     <h:outputLabel value="#{bill.paymentScheme.name}" />
                                 </p:column>
@@ -343,25 +344,25 @@
                                 <p:column headerText="Billed At"  >                                
                                     <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                                 </p:column>
-                                <p:column headerText="Billed at"  >
+                                <p:column headerText="Billed At"  >
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bill.refunded}" >
-                                        <h:outputLabel style="color: red;" value="Refunded at " />
+                                        <h:outputLabel style="color: red;" value="Refunded At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>  
-                                <p:column headerText="Billed by" >
+                                <p:column headerText="Billed By" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                     <br/>
@@ -382,7 +383,7 @@
                                 <p:column headerText="Client Phone No">                              
                                     <h:outputLabel value="#{bill.patient.person.phone}" />
                                 </p:column>
-                                <p:column headerText="Paymentmethod" >                                
+                                <p:column headerText="Payment Method" >                                
                                     <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                     <h:outputLabel value="#{bill.paymentScheme.name}" />
                                 </p:column>
