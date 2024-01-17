@@ -27,7 +27,7 @@
                             ajax="false" 
                             value="Print" 
                             icon=" fa fa-print"
-                            class="ui-button-success"
+                            class="ui-button-info"
                             style="float: right;" >
                             <p:printer target="billFeeReport"  />
                         </p:commandButton>
@@ -36,7 +36,7 @@
                             ajax="false" 
                             value="Excel"
                             icon="fa-solid fa-file-excel"
-                            class="ui-button-warning mx-2"
+                            class="ui-button-success mx-2"
                             style="float: right;" >
                             <p:dataExporter 
                                 type="xlsx" 
@@ -61,8 +61,7 @@
                                 forceSelection="true"
                                 value="#{channelReportController.institution}"
                                 var="pta" 
-                                class="w-100"
-                                inputStyleClass="form-control"
+                                class="w-100 mx-2" inputStyleClass="w-100"
                                 itemLabel="#{pta.name}" 
                                 itemValue="#{pta}" />
                         </div>
@@ -75,7 +74,7 @@
                         <div class="col-5">
                             <p:calendar 
                                 id="frmDate" 
-
+                                class="w-100 mx-2" inputStyleClass="w-100"
                                 value="#{channelReportController.fromDate}" 
                                 navigator="true"  
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -89,7 +88,8 @@
                         </div>
                         <div class="col-5">
                             <p:calendar 
-                                id="toDate" 
+                                id="toDate"
+                                class="w-100 mx-2" inputStyleClass="w-100"
                                 value="#{channelReportController.toDate}" 
                                 navigator="true" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -101,7 +101,7 @@
                     <p:commandButton 
                         ajax="false" 
                         value="Search"
-                        class="mb-2"
+                        class="ui-button-warning mt-2"
                         icon="fa fa-search" 
                         id="btnSearch"  action="#{channelReportController.createAllOPDBillReportForVat()}">
                     </p:commandButton>
@@ -176,7 +176,7 @@
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
-                                <p:outputLabel value="vat" />
+                                <p:outputLabel value="VAT" />
                             </f:facet>
                             <p:outputLabel value="#{b.vat}" >
                                 <f:convertNumber pattern="#,##0.00" />
@@ -185,7 +185,7 @@
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
-                                <p:outputLabel value="Vat Plus Net Total" />
+                                <p:outputLabel value="VAT Plus Net Total" />
                             </f:facet>
                             <p:outputLabel value="#{b.netTotal+b.vat}" >
                                 <f:convertNumber pattern="#,##0.00" />
