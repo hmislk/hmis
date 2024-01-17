@@ -30,7 +30,7 @@
                         <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                         <p:ajax process="@this" ></p:ajax>
                     </p:selectOneMenu>
-                    <p:calendar class="" value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">                            
+                    <p:calendar class="mx-1" value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">                            
                         <p:ajax process="@this" ></p:ajax>
                     </p:calendar>
                     <p:watermark value="Date" for="date"/>

@@ -12,7 +12,9 @@ import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConsultantController;
 import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
@@ -41,7 +43,9 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.entity.Category;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
+import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -65,6 +69,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
+import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -144,6 +149,10 @@ public class DataUploadController implements Serializable {
     CollectingCentreController collectingCentreController;
     @Inject
     RouteController routeController;
+    @Inject
+    DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ConsultantController consultantController;
 
     @EJB
     PatientFacade patientFacade;
@@ -177,6 +186,7 @@ public class DataUploadController implements Serializable {
     List<Category> categoriesSaved;
     List<Institution> institutionsSaved;
     List<Department> departmentsSaved;
+    private List<Consultant> consultantsToSave;
 
     private boolean pollActive;
 
@@ -205,6 +215,10 @@ public class DataUploadController implements Serializable {
 
     public String navigateToUploadVisits() {
         return "/emr/admin/upload_visits";
+    }
+
+    public String navigateToUploadConsultants() {
+        return "/admin/staff/upload_consultants";
     }
 
     public String toUploadPatients() {
@@ -321,6 +335,145 @@ public class DataUploadController implements Serializable {
             }
         }
         pollActive = false;
+    }
+
+    public void uploadConsultants() {
+        pollActive = true;
+        items = new ArrayList<>();
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                consultantsToSave = readConsultantsFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        pollActive = false;
+    }
+
+    private List<Consultant> readConsultantsFromExcel(InputStream inputStream) throws IOException {
+        List<Consultant> cons = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        itemsToSave = new ArrayList<>();
+        masterItemsToSave = new ArrayList<>();
+        itemFeesToSave = new ArrayList<>();
+        categoriesSaved = new ArrayList<>();
+        institutionsSaved = new ArrayList<>();
+        departmentsSaved = new ArrayList<>();
+        itemsSkipped = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            DoctorSpeciality speciality;
+            Consultant consultant;
+            Sex sex;
+            Title title;
+
+            String code = null;
+            String name = null;
+            String titleString = "";
+
+            String registration = "";
+            String description = "";
+            String sexString = null;
+            String mobileNumber = "";
+
+            String specialityString = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+
+            Cell titleCell = row.getCell(1);
+            if (titleCell != null && titleCell.getCellType() == CellType.STRING) {
+                titleString = titleCell.getStringCellValue();
+            }
+
+            Cell nameCell = row.getCell(2);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
+
+            }
+
+            Cell registrationCell = row.getCell(3);
+            if (registrationCell != null && registrationCell.getCellType() == CellType.STRING) {
+                registration = registrationCell.getStringCellValue();
+            }
+
+            Cell descriptionCell = row.getCell(4);
+            if (descriptionCell != null && descriptionCell.getCellType() == CellType.STRING) {
+                description = descriptionCell.getStringCellValue();
+            }
+
+            Cell sexCell = row.getCell(5);
+            if (sexCell != null) {
+                sexString = sexCell.getStringCellValue();
+
+            }
+
+            Cell mobileCell = row.getCell(6);
+            if (mobileCell != null && mobileCell.getCellType() == CellType.STRING) {
+                mobileNumber = mobileCell.getStringCellValue();
+            } else if (mobileCell != null && mobileCell.getCellType() == CellType.NUMERIC) {
+                mobileNumber = "" + mobileCell.getNumericCellValue();
+            }
+
+            Cell specialityCell = row.getCell(7);
+            if (specialityCell != null && specialityCell.getCellType() == CellType.STRING) {
+                specialityString = specialityCell.getStringCellValue();
+            }
+
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+
+            if (specialityString == null || specialityString.trim().equals("")) {
+                continue;
+            }
+
+            speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
+
+            if (sexString != null && sexString.toLowerCase().contains("f")) {
+                sex = Sex.Female;
+            } else {
+                sex = Sex.Male;
+            }
+
+            title = Title.getTitleEnum(titleString);
+
+            consultant = consultantController.getConsultantByName(name);
+            if (consultant == null) {
+                consultant = new Consultant();
+            }
+            consultant.getPerson().setName(name);
+            consultant.getPerson().setSex(sex);
+            consultant.getPerson().setTitle(title);
+            consultant.getPerson().setMobile(mobileNumber);
+            consultant.setCode(code);
+            consultant.setRegistration(registration);
+            consultant.setDescription(description);
+            consultant.setSpeciality(speciality);
+            cons.add(consultant);
+
+        }
+        return cons;
+    }
+
+    public void saveConsultants() {
+        for (Consultant con : consultantsToSave) {
+            consultantController.save(con);
+        }
+        JsfUtil.addErrorMessage("Saved");
+        consultantsToSave = new ArrayList<>();
     }
 
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
@@ -2039,7 +2192,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public void createTemplateForCollectingCentreItemWithFeeUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -2218,6 +2371,14 @@ public class DataUploadController implements Serializable {
 
     public void setPollActive(boolean pollActive) {
         this.pollActive = pollActive;
+    }
+
+    public List<Consultant> getConsultantsToSave() {
+        return consultantsToSave;
+    }
+
+    public void setConsultantsToSave(List<Consultant> consultantsToSave) {
+        this.consultantsToSave = consultantsToSave;
     }
 
 }

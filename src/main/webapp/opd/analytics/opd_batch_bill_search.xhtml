@@ -13,7 +13,7 @@
                     <p:panel>
                         <f:facet name="header" >
                              <h:outputText styleClass="fas fa-search" />
-                             <h:outputLabel value="Opd Batch Bill Search " class="mx-4"/>                          
+                             <h:outputLabel value="OPD Batch Bill Search " class="mx-4"/>                          
                         </f:facet>
 
                         <div class="row">
@@ -70,13 +70,14 @@
                                                      value="#{searchController.searchKeyword.netTotal}"/>
                                         <p:spacer height="10" width="5" ></p:spacer>
                                         <hr/>
-                                        <h:outputLabel value="From Institution" class="w-100"/>
+                                        <h:outputLabel value="From Institution" />
                                         <p:selectOneMenu 
                                             id="cmdFromInstitution"
                                             value="#{searchController.fromInstitution}"
                                             filter="true"
                                             placeholder="Ordering Institution"
-                                            style="width: 230px"
+                                            class="w-100"
+                                            autoWidth="false"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
@@ -92,7 +93,8 @@
                                             placeholder="Ordering Department"
                                             value="#{searchController.fromDepartment}" 
                                             filter="true"
-                                            class="w-100">
+                                            class="w-100"
+                                            autoWidth="false">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems value="#{departmentController.getInsDepartments(searchController.fromInstitution)}"
                                                            var="d"
@@ -106,7 +108,8 @@
                                             value="#{searchController.toInstitution}"
                                             filter="true"
                                             placeholder="To Institution"
-                                            style="width: 230px"
+                                            class="w-100"
+                                            autoWidth="false"
                                             >
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
@@ -122,7 +125,8 @@
                                             placeholder="Peforming Department"
                                             value="#{searchController.toDepartment}" 
                                             filter="true"
-                                            class="w-100">
+                                            class="w-100"
+                                            autoWidth="false">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
                                             <f:selectItems value="#{departmentController.getInsDepartments(searchController.toInstitution)}"
                                                            var="d"
@@ -134,26 +138,27 @@
                                     </h:panelGroup>
 
                                     <div class="d-grid gap-2 mt-2">
+                                        <p:spacer width="100" height="1" />
                                         <p:commandButton 
                                             icon="fas fa-search"
                                             id="btnSearch" 
                                             ajax="false" 
                                             value="Search" 
-                                            class="ui-button-success"
+                                            class="ui-button-warning"
                                             action="#{searchController.searchOpdBatchBills()}" />
                                         <p:commandButton 
                                             id="btnExcel"
                                             icon="fas fa-download"
                                             ajax="false" 
                                             value="Download"
-                                            class="w-100">
+                                            class="ui-button-success">
                                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
                                         <p:commandButton 
                                             id="btnClear"
                                             icon="fas fa-broom"
                                             value="Clear" 
-                                            class="my-2 ui-button-warning" 
+                                            class="ui-button-warning" 
                                             action="#{searchController.clearOpdBillSearchData}"
                                             process="btnClear"
                                             update="searchKeyword"/>
@@ -206,7 +211,7 @@
 <!--                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
                                         <h:outputLabel value="#{bill.departmentName}" />
                                     </p:column>-->
-                                    <p:column headerText="Billed by"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
+                                    <p:column headerText="Billed By"  sortBy="#{bill.creater.name}" filterBy="#{bill.creater.name}" >
                                         <h:outputLabel value="#{bill.creater.name}" >                                      
                                         </h:outputLabel>
                                     </p:column>    
