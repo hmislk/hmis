@@ -146,11 +146,11 @@
 
                                         </div>
                                         <div class="col-md-3">
-                                            <p:outputLabel value="Mobile:"  class="form-label" />
+                                            <p:outputLabel value="Other Contact Number:"  class="form-label" />
                                             <p:inputText 
                                                 value="#{patientController.current.person.mobile}" 
                                                 class="form-control" 
-                                                validatorMessage="Please enter Valid Mobile Number."
+                                                validatorMessage="Please enter Valid other contact Number."
                                                 >
                                                 <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                     <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
