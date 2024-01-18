@@ -46,7 +46,7 @@
                                     <h:outputLabel value="Total"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>   
-                                    
+
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" />
 
                                     <p:commandButton  
@@ -82,19 +82,19 @@
 
                                     >
 
-                                    <p:column headerText="No" styleClass="alignTop">
-                                        <h:outputLabel value="#{i+1}"/>
-                                    </p:column>
+                                    <!--                                    <p:column headerText="No" styleClass="alignTop">
+                                                                            <h:outputLabel value="#{i+1}"/>
+                                                                        </p:column>-->
 
                                     <p:column headerText="Bill No" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Patient" style="width: 100px">
+                                    <p:column headerText="Patient" style="width: 50px">
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
                                     </p:column> 
 
-                                    <p:column headerText="Department"  style="width: 120px">
+                                    <p:column headerText="Dept"  style="width: 30px">
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                                     </p:column> 
 
@@ -121,7 +121,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column>                                                          
-                                    <p:column headerText="Net Value" >
+                                    <p:column headerText="Net Value" style="width: 40px" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -129,11 +129,11 @@
 
                                     </p:column>
 
-                                    <p:column style="width: 70px">
+                                    <p:column style="width: 60px">
                                         <p:commandButton ajax="false"  value="Accept Payment" 
                                                          action="#{opdPreSettleController.toSettle(bill)}" 
                                                          disabled="#{bill.referenceBill ne null or bill.cancelled}">   
-                                            
+
                                         </p:commandButton>
                                     </p:column>
 

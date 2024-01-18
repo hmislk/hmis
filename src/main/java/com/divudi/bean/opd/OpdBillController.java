@@ -1350,7 +1350,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String settleOpdBill() {
+        
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
+        if (referredByInstitution==null) {
+            referredByInstitution=sessionController.getCurrent().getInstitution();
+        }
 
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
@@ -1672,6 +1676,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private boolean errorCheck() {
+        if (patient.getPerson().getArea()==null) {
+            UtilityController.addErrorMessage("Please Add Patient Area");
+              return true;
+        }
+        
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No Items are added to the bill to settle");
             return true;

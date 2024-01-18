@@ -511,7 +511,7 @@ public class ServiceController implements Serializable {
     }
 
     public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
-        List<Service> temp;
+        Service temp;
         HashMap hash = new HashMap();
         String sql = "select c from Service c "
                 + "where c.retired = false "
@@ -520,8 +520,8 @@ public class ServiceController implements Serializable {
 
         hash.put("sCode", genaratedServiceCode);
         hash.put("id", getCurrent().getId());
-        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
-        if (temp.size() != 0) {
+        temp = ejbFacade.findFirstByJpql(sql, hash, TemporalType.TIMESTAMP);
+        if (temp != null) {
             return false;
         }
         return true;

@@ -23,7 +23,7 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
 
-            
+
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="OPD Invoice"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
@@ -182,14 +182,16 @@
 
                 </table>
             </div>
-
+            <div style="text-decoration: overline; margin-top: 20px;">
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
+            </div>
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
-                    <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                   />
-                    </div>
+                    <!--                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                                            <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                                       />
+                                        </div>-->
                 </div>
             </h:panelGroup>
 
@@ -348,9 +350,7 @@
 
             </div>
 
-            <div style="text-decoration: overline; margin-top: 20px;">
-                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
-            </div>
+
 
             <div class="footer" style="text-align: center;">
                 <br/>
