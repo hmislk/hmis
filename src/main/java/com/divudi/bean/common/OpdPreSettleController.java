@@ -340,11 +340,15 @@ public class OpdPreSettleController implements Serializable {
         }
 
     }
+    
+    public String navigatetoBillView(){
+        return "opd/bill_reprint.xhtml?faces-redirect=true";
+    }
 
-    public void settleBillWithPay2() {
+    public String settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
-            return;
+            return "";
         }
 
         saveSaleBill();
@@ -359,7 +363,9 @@ public class OpdPreSettleController implements Serializable {
 
         makeNull();
         //    billPreview = true;
-
+        
+        navigatetoBillView();
+        
     }
 
     public BilledBill createBilledBillForPreBill(Bill preBill) {
