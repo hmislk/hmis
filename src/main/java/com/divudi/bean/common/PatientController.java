@@ -80,6 +80,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.PhaseId;
+import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -173,6 +174,7 @@ public class PatientController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PatientController patientController;
+    
 
     /**
      *
@@ -287,6 +289,15 @@ public class PatientController implements Serializable {
         String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
         Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
         return convertedPhoneNumber;
+    }
+
+    public void validateMobile(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        String mobileRegex = sessionController.getApplicationPreference().getMobileRegex();
+        if (mobileRegex != null && !mobileRegex.isEmpty()) {
+            if (!value.toString().matches(mobileRegex)) {
+                throw new ValidatorException(new FacesMessage("Please enter a valid number"));
+            }
+        }
     }
 
     public void convertOldPersonPhoneToPatientPhoneLong() {
@@ -676,12 +687,41 @@ public class PatientController implements Serializable {
         return "/emr/patient_profile?faces-redirect=true;";
     }
 
-    public String navigateToEmrEditPatient() {
+//    public String toEmrPatientProfile() {
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("No patient selected");
+//            return "";
+//        }
+//        
+//        
+//        patientController.setCurrent(current);
+//        patientEncounterController.setPatient(current);
+//        patientEncounterController.fillCurrentPatientLists(current);
+//        patientEncounterController.fillPatientInvestigations(current);
+//        return "/emr/patient_profile?faces-redirect=true;";
+//    }
+    public String navigateToOpdBilling() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/emr/patient?faces-redirect=true;";
+        opdBillController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/opd/opd_bill?faces-redirect=true;";
+    }
+
+    public String navigateToPharamecyBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        pharmacySaleController.setPatient(current);
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        patientEncounterController.fillPatientInvestigations(current);
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -1037,7 +1077,7 @@ public class PatientController implements Serializable {
         }
 
         if (noSearchCriteriaWasFound) {
-            JsfUtil.addErrorMessage("No Search criteria Found !");
+            JsfUtil.addErrorMessage("No Search Criteria Found !");
             return "";
         }
 
@@ -1191,7 +1231,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1220,7 +1260,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1249,7 +1289,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1279,7 +1319,7 @@ public class PatientController implements Serializable {
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
-            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            JsfUtil.addErrorMessage("At least one search criteria should be given");
             return;
         }
         searchedPatients = getFacade().findByJpql(j, m);
@@ -1302,7 +1342,7 @@ public class PatientController implements Serializable {
 
     public void searchByPatientPhoneNumber() {
         Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
-        if(patientPhoneNumber==null){
+        if (patientPhoneNumber == null) {
             searchedPatients = new ArrayList<>();
             return;
         }
@@ -1913,8 +1953,10 @@ public class PatientController implements Serializable {
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().create(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
             getFacade().edit(p);
+            JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
     }
 

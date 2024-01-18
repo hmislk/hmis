@@ -16,18 +16,18 @@
                             <div class="col-md-2">
 
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
-                                            inputStyleClass="form-control">      
+                                <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
+                                            >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100"
-                                            inputStyleClass="form-control">                                                                              
+                                            >                                                                              
                                 </p:calendar>
                                 <p:spacer height="10" width="5" ></p:spacer>
                                 <div class="d-grid gap-2">
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
-                                    <p:commandButton id="btnSearchAll" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
-                                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                                    <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
+                                    <p:commandButton id="btnSearchAll" class="ui-button-warning" icon="fas fa-search" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
+                                    <p:commandButton value="Excel" class="ui-button-success" icon="fas fa-file-excel" ajax="false">
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                                     </p:commandButton>
                                 </div>

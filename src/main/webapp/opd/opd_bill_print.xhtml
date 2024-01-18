@@ -29,7 +29,7 @@
                                 <div class="d-flex m-2">
                                     <!-- Print Button -->
                                     <p:commandButton value="Print" 
-                                                     class="ui-button-success m-1"
+                                                     class="ui-button-info m-1"
                                                      icon="fa fa-print"
                                                      ajax="false">
                                         <p:printer target="groupPrint" />
@@ -174,12 +174,6 @@
                                                          icon="fa fa-money-bill-wave">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
-                                        cancelled - #{b.cancelled}
-                                        <br/>
-                                        Refunded - #{b.refunded}
-                                        <br/>
-                                        #{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}
-
                                     </p:column>
                                 </p:dataTable>
 

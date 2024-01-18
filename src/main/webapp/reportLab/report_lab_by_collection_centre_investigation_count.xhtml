@@ -19,14 +19,14 @@
                     </f:facet>
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="Collecting Center"/>
-                        <p:autoComplete forceSelection="true" value="#{investigationMonthSummeryOwnControllerSession.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true" value="#{investigationMonthSummeryOwnControllerSession.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             <p:column>
                                 #{ix.name}
                             </p:column>
@@ -36,14 +36,13 @@
                         </p:autoComplete>
 
                     </h:panelGrid>
-                    <h:panelGrid columns="4">
-                        <p:spacer height="1" width="110"/>
-                        <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createItemNewChanges()}" ></p:commandButton>
+                    <h:panelGrid columns="4" class="my-2 ">
+                        <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-cogs" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createItemNewChanges()}" ></p:commandButton>
 
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" class="ui-button-info mx-1" icon="fas fa-print" value="Print"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-file-excel" value="Excel"   >
                             <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
                         </p:commandButton>
                     </h:panelGrid>

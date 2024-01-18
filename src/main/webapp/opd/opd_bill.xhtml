@@ -70,15 +70,16 @@
                                                         <h:outputText value=" (#{ix.fullName})" ></h:outputText>
                                                     </h:panelGroup>
                                                 </p:column>
+                                                <p:column style="text-align: right;" headerText="Value">
+                                                    <h:outputText value="#{ix.total}"></h:outputText>
+                                                </p:column>
                                                 <p:column  headerText="Dept">
                                                     <h:outputText value="#{ix.departmentName}"></h:outputText>
                                                 </p:column>
                                                 <p:column  headerText="Code">
                                                     <h:outputText value="#{ix.code}"></h:outputText>
                                                 </p:column>
-                                                <p:column style="text-align: right;" headerText="Value">
-                                                    <h:outputText value="#{ix.total}"></h:outputText>
-                                                </p:column>
+
                                             </p:selectOneListbox>
 
 
@@ -231,7 +232,7 @@
                                         </p:tab>
 
                                         <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" >
+                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" class="w-100">
                                                 <p:column>
                                                     <f:facet name="header">Item Name</f:facet>
                                                     <h:outputText value="#{bif.billItem.item.name}" />
@@ -248,7 +249,10 @@
                                                     </h:inputText>
                                                 </p:column>
                                                 <p:column>
-                                                    <p:commandButton ajax="false" value="Update" action="#{opdBillController.feeChangeListener(bif)}" />
+                                                    <p:commandButton ajax="false" 
+                                                                     value="Update" 
+                                                                     disabled="#{!bif.billItem.item.userChangable}"
+                                                                     action="#{opdBillController.feeChangeListener(bif)}" />
                                                 </p:column>
                                                 <p:column>
                                                     <f:facet name="header">Fee Name</f:facet>
@@ -378,7 +382,7 @@
                                                     </div>
 
                                                     <div class="row mt-1">
-                                                        
+
                                                         <div class="col-12">
                                                             <p:autoComplete  
                                                                 minQueryLength="4"
@@ -449,10 +453,10 @@
                                                 <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
-                                                class="row my-1"
+                                                class="row my-1 w-100"
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" class="w-100"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>

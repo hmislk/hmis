@@ -1082,7 +1082,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private boolean errorCheck() {
         if (getPatient().getPerson().getName() == null
                 || getPatient().getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
+            UtilityController.addErrorMessage("Please select a patient before billing");
             return true;
         }
         if (checkPatientAgeSex()) {
@@ -1102,7 +1102,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        }
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("Add tests");
+            UtilityController.addErrorMessage("Please Add tests before billing");
             return true;
         }
 

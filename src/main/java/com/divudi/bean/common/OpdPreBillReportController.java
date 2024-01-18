@@ -390,7 +390,7 @@ public class OpdPreBillReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         
         
-        return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml.xhtml?faces-redirect=true";
+        return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml?faces-redirect=true";
     }
     
             
