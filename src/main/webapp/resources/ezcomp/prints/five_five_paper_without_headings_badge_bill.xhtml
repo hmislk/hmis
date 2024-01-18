@@ -184,12 +184,12 @@
 
 
                 <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                    <div class="billline">
+<!--                    <div class="billline">
                         <div style="width: 100%;text-align: center;font-size: 10px;">
                             <p:barcode value="#{ffb.idStr}" type="code39" cache="false" 
                                        />
                         </div>
-                    </div>
+                    </div>-->
                 </h:panelGroup>
 
                 <div class="itemHeadingsFiveFive" >
@@ -425,9 +425,7 @@
 
                 </div>
 
-                <div style="text-decoration: overline; margin-top: 20px;">
-                    <h:outputLabel value="Cashier : #{ffb.creater.webUserPerson.name}"/>
-                </div>
+                
 
                 <div class="footer" style="text-align: center;">
                     <br/>
@@ -604,7 +602,9 @@
 
                     </table>
                 </div>
-
+                <div style="text-decoration: overline; margin-top: 20px;">
+                    <h:outputLabel value="Cashier : #{ffb.creater.webUserPerson.name}"/>
+                </div>
 
                 <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                     <div class="billline">

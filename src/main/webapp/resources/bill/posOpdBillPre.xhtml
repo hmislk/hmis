@@ -49,7 +49,7 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div class="billline">
+            <div class="">
                 <p:barcode value="#{cc.attrs.bill.idStr}" 
                            width="400"
                            height="100"
@@ -211,7 +211,7 @@
             <div  >
 
                 <table style="width: 100%; margin-left:0.5cm; ">
-                   <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td style="text-align: left;">
