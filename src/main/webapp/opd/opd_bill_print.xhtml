@@ -87,7 +87,10 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                         <ui:repeat value="#{opdBillController.bills}" var="ffpp">
-                                            <prints:five_five_paper_without_headings bill="#{ffpp}" duplicate="false"/>
+                                            <prints:five_five_paper_without_headings 
+                                                bill="#{ffpp}" 
+                                                duplicate="false"
+                                                payments="#{opdBillController.payments}"/>
                                         </ui:repeat>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >

@@ -663,6 +663,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public String settleBill() {
+        
+        if (referredByInstitution == null) {
+            referredByInstitution=sessionController.getCurrent().getInstitution();
+        }
+        
+        
         if (errorCheck()) {
             return null;
         }
@@ -965,6 +971,12 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private boolean errorCheck() {
+        
+        if (patient.getPerson().getArea()==null) {
+            UtilityController.addErrorMessage("Please Add Patient Area");
+            return true;
+        }
+        
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
