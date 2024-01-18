@@ -77,13 +77,13 @@
 
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd/patient_accept_payment?faces-redirect=true" 
+                            action="#{opdPreSettleController.navigateToSettleOpdPreBills()}" 
                             value="Accept Payments"
                             icon="fas fa-money-bill"></p:menuitem>
 
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd_search_pre_bill?faces-redirect=true" 
+                            action="#{opdPreSettleController.navigateToSettleOpdPreBills()}" 
                             actionListener="#{searchController.makeListNull}"  
                             value="Accept Payments for OPD Bills"
                             icon="fa fa-money-bill-alt"></p:menuitem>

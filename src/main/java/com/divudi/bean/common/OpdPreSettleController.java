@@ -69,7 +69,6 @@ public class OpdPreSettleController implements Serializable {
     SessionController sessionController;
     @Inject
     OpdPreBillController opdPreBillController;
-////////////////////////
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -150,6 +149,11 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
+    
+    public String navigateToSettleOpdPreBills(){
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+    
     public Double getEditingQty() {
         return editingQty;
     }
@@ -340,15 +344,11 @@ public class OpdPreSettleController implements Serializable {
         }
 
     }
-    
-    public String navigatetoBillView(){
-        return "opd/bill_reprint.xhtml?faces-redirect=true";
-    }
 
     public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
-            //return "";
+            return;
         }
 
         saveSaleBill();
@@ -361,11 +361,9 @@ public class OpdPreSettleController implements Serializable {
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
 
-        makeNull();
-        //    billPreview = true;
-        
-        navigatetoBillView();
-        
+//        makeNull();
+        billPreview = true;
+
     }
 
     public BilledBill createBilledBillForPreBill(Bill preBill) {
