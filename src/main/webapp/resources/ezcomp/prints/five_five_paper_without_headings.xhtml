@@ -347,13 +347,12 @@
                 </table>
 
             </div>
-            PMD:
+           
             <ui:repeat value="#{cc.attrs.payments}" var="ps">
-                #{ps}
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
                     <h:outputText 
-                        style="font-size: 5pt"  
-                        value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.chequeRefNo})"/>
+                        style="font-size: 8pt"  
+                        value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
                 </h:panelGroup>
             </ui:repeat>
 

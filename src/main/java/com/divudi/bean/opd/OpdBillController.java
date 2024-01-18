@@ -1367,7 +1367,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private boolean executeSettleBillActions() {
-        Date startTime = new Date();
         if (errorCheck()) {
             return false;
         }
@@ -2359,13 +2358,81 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(bill);
-                setPaymentMethodData(p, pm);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                    case OnCall:
+                    case OnlineSettlement:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
                 ps.add(p);
             }
         } else {
             Payment p = new Payment();
             p.setBill(bill);
-            setPaymentMethodData(p, pm);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    break;
+                case Cash:
+                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case Slip:
+                case OnCall:
+                case OnlineSettlement:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
             ps.add(p);
         }
         return ps;
