@@ -345,10 +345,10 @@ public class OpdPreSettleController implements Serializable {
         return "opd/bill_reprint.xhtml?faces-redirect=true";
     }
 
-    public String settleBillWithPay2() {
+    public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
-            return "";
+            //return "";
         }
 
         saveSaleBill();
