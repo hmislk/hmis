@@ -18,24 +18,24 @@
                     </f:facet>
 
                     <h:form>
-                        <h:panelGrid columns="4" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                          
                      
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                          
 
                             <h:outputLabel value="Institution"/>
-                            <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" 
                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" ></p:autoComplete>
 
-                            <h:outputLabel value="Department :" />
-                            <p:autoComplete value="#{searchController.department}" 
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.department}" 
                                             forceSelection="true"
                                             completeMethod="#{departmentController.completeDept}" 
                                             var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
@@ -46,15 +46,14 @@
                                     <h:outputLabel value="#{dep.institution.name}"/>
                                 </p:column>
                             </p:autoComplete>
-                            
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                              action="#{searchController.searchOpdBills}"/>
-                            <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-
-
 
 
 
@@ -62,6 +61,8 @@
                                      var="bill"  
                                      style="min-width: 100%; display: none"  
                                      paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="10"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      
