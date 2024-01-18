@@ -69,7 +69,6 @@ public class OpdPreSettleController implements Serializable {
     SessionController sessionController;
     @Inject
     OpdPreBillController opdPreBillController;
-////////////////////////
     @EJB
     private BillFacade billFacade;
     @EJB
