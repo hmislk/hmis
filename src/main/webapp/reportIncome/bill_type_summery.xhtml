@@ -11,8 +11,8 @@
         <ui:composition template="/reportCashier/report_cashier.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
-                    <p:panel header="Bill Type Summery" >
+<!--                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 -->
+                    <p:panel header="Bill Type Summary" >
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From"/>
@@ -86,7 +86,7 @@
                         <p:panel header="Data" >
                             <p:dataTable id="tblBills" value="#{billSearch.billSummeries}" var="bs" rowKey="#{bs.key}" rowIndexVar="n" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Bill Summeries"/>
+                                    <h:outputLabel value="Bill Summaries"/>
                                 </f:facet>
 
                                 <p:column headerText="Payment Method" style="text-align: left;" 
