@@ -27,12 +27,37 @@ import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
 
-
 /**
  *
  * @author buddhika
  */
 public class CommonFunctions {
+
+    public static String sanitizeStringForDatabase(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replaceAll("[\"'/\\\\]", "");
+
+    }
+
+    public static String removeNonUnicodeChars(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replaceAll("[^\\u0000-\\uFFFF]", "");
+    }
+
+    public static double stringToDouble(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            return Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            return 0.0; // Return 0.0 if the string cannot be parsed to a double
+        }
+    }
 
     public static double round(double numberToRound, int decimalPlaces) {
         if (numberToRound == 0) {
@@ -60,12 +85,12 @@ public class CommonFunctions {
         return minCount;
     }
 
-    public static LocalDateTime getLocalDateTime(Date dateTime){
+    public static LocalDateTime getLocalDateTime(Date dateTime) {
         Date input = dateTime;
         LocalDateTime date = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         return date;
     }
-    
+
     public static Date getStartOfMonth(Date date) {
         if (date == null) {
             date = new Date();
@@ -77,7 +102,7 @@ public class CommonFunctions {
         calendar.set(year, month, 1, 0, 0, 0);
         return calendar.getTime();
     }
-    
+
     public static long calculateAgeInDays(Date dob, Date toDate) {
         if (dob == null || toDate == null) {
             return 0l;
@@ -89,7 +114,7 @@ public class CommonFunctions {
         }
         return ageInDays;
     }
-    
+
     public static Date getEndOfMonth(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -168,8 +193,6 @@ public class CommonFunctions {
         return getStartOfMonth(new Date());
     }
 
-    
-
     public static Date getEndOfDay() {
         return getEndOfDay(new Date());
     }
@@ -190,7 +213,7 @@ public class CommonFunctions {
     }
 
     public static String nameToCode(String name) {
-        if(name==null){
+        if (name == null) {
             return "";
         }
         String code;
@@ -282,10 +305,7 @@ public class CommonFunctions {
         double roundOff = (double) Math.round(num * mul) / mul;
         return roundOff;
     }
-    
-    
-    
-    
+
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
         Date startOfThisMonth = com.divudi.java.CommonFunctions.getStartOfMonth(date);
@@ -640,7 +660,6 @@ public class CommonFunctions {
         }
     }
 
-   
     public long calculateDurationTime(Date dob, Date toDate) {
         if (dob == null || toDate == null) {
             return 0;
@@ -659,14 +678,10 @@ public class CommonFunctions {
         return dMin;
     }
 
-
-   
-
     public static Date getEndOfMonth() {
         return getEndOfMonth(new Date());
     }
 
-    
     public Date getFirstDayOfYear() {
         Date date = new Date();
         Calendar cal = Calendar.getInstance();
@@ -675,7 +690,6 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-   
     public Date getLastDayOfYear() {
         Date date = new Date();
         Calendar cal = Calendar.getInstance();
@@ -685,8 +699,6 @@ public class CommonFunctions {
         cal.set(cal.get(Calendar.YEAR), 11, 31, 23, 59, 59);
         return cal.getTime();
     }
-
-
 
     public static Date getStartOfBeforeDay(Date date) {
         if (date == null) {
@@ -702,8 +714,6 @@ public class CommonFunctions {
         ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
         return calendar.getTime();
     }
-
-
 
     public YearMonthDay guessAge(Date dofb) {
         YearMonthDay yearMonthDay = new YearMonthDay();
@@ -735,6 +745,5 @@ public class CommonFunctions {
 
         return yearMonthDay;
     }
-
 
 }

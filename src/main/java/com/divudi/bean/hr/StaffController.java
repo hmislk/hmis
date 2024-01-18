@@ -1362,6 +1362,17 @@ public class StaffController implements Serializable {
             temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
             items = getFacade().findByJpql(temSql);
     }
+    
+    public Staff findStaffByName(String name) {
+        String jpql = "select c "
+                + " from Staff c "
+                + " where c.retired=:ret "
+                + " and c.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
     public PersonFacade getPersonFacade() {
         return personFacade;

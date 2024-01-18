@@ -107,7 +107,7 @@
                             icon="fa fa-undo"></p:menuitem>   
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
+                            action="/opd/opd_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
                             value="Refunds for OPD Bills"
                             icon="fa fa-undo"></p:menuitem>    
@@ -935,7 +935,7 @@
                     <p:menuitem  
                         ajax="false"  
                         action="#{itemController.toManageItemdIndex()}" 
-                        value="Manage Services" 
+                        value="Manage Items" 
                         icon="fa fa-list"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>

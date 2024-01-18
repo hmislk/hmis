@@ -293,6 +293,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
             progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCountReportedIns(w, reportedInstitution);
+            if(temp.getCount() == 0){
+                continue;
+            }
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
                 items.add(temp);
@@ -376,6 +379,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             billTypes=new BillType[]{BillType.OpdBill, BillType.InwardBill,};
         }
         boolean flag=true;
+        if(item == null){
+            UtilityController.addSuccessMessage("Please Select Investigation");
+            return ;
+        }
         if (department!=null) {
             flag=false;
         }

@@ -69,6 +69,9 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     @Lob
     String qualification;
     String code = "";
+    
+    @Lob
+    private String description;
     @ManyToOne
     Person person;
     @ManyToOne
@@ -144,7 +147,6 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     boolean withOutNotice;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
-    
     
     @Transient
     private String name;
@@ -586,6 +588,8 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     public void setOrderNo(int orderNo) {
         this.orderNo = orderNo;
     }
+    
+    
 
     public StaffEmployment getStaffEmployment() {
         return staffEmployment;
@@ -719,6 +723,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
             name = getPerson().getNameWithTitle();
         }
         return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 

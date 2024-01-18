@@ -8,9 +8,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
                 <p:panel header="Items by Code" >
 
@@ -19,7 +19,13 @@
                         
 
                         <p:panel id="paItems">
-                            <p:dataTable id="tblItem" value="#{storeAmpController.itemsByCode}" var="i" >
+                            <p:dataTable id="tblItem" value="#{storeAmpController.itemsByCode}" var="i"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="10,20,50"
+                                         >
                                 <p:column headerText="Category" >
                                     <p:outputLabel value="#{i.category.name}"></p:outputLabel>
                                 </p:column>

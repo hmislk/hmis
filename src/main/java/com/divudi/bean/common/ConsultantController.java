@@ -35,8 +35,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -105,7 +105,7 @@ public class ConsultantController implements Serializable {
         current = null;
         getCurrent();
     }
-    
+
     public void downloadAsExcel() {
         getItems();
         try {
@@ -139,7 +139,7 @@ public class ConsultantController implements Serializable {
                 row.createCell(5).setCellValue(consultant.getPerson().getFax());
                 row.createCell(6).setCellValue(consultant.getPerson().getMobile());
                 row.createCell(7).setCellValue(consultant.getPerson().getAddress());
-                
+
                 row.createCell(8).setCellValue(consultant.getSpeciality().getDescription());
                 row.createCell(9).setCellValue(consultant.getRegistration());
                 row.createCell(10).setCellValue(consultant.getQualification());
@@ -177,7 +177,7 @@ public class ConsultantController implements Serializable {
         sql += " order by c.codeInterger , c.person.name ";
 
         items = getFacade().findByJpql(sql, m);
-        
+
     }
 
     public void setSelectedItems(List<Consultant> selectedItems) {
@@ -188,7 +188,7 @@ public class ConsultantController implements Serializable {
         return selectText;
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 
@@ -227,6 +227,33 @@ public class ConsultantController implements Serializable {
         // getItems();
     }
 
+    public void save(Consultant con) {
+        if (con == null) {
+            return;
+        }
+        if (con.getPerson() == null) {
+            return;
+        }
+        if (con.getPerson().getName().trim().equals("")) {
+            return;
+        }
+        if (con.getSpeciality() == null) {
+            return;
+        }
+        if (con.getPerson().getId() == null || con.getPerson().getId() == 0) {
+            getPersonFacade().create(con.getPerson());
+        } else {
+            getPersonFacade().edit(con.getPerson());
+        }
+        if (con.getId() != null && con.getId() > 0) {
+            getFacade().edit(con);
+        } else {
+            con.setCreatedAt(new Date());
+            con.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(con);
+        }
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -248,6 +275,17 @@ public class ConsultantController implements Serializable {
     }
 
     public ConsultantController() {
+    }
+
+    public Consultant getConsultantByName(String name) {
+        String jpql = "select c "
+                + " from Consultant c "
+                + " where c.retired=:ret "
+                + " and c.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
     }
 
     public Consultant getCurrent() {

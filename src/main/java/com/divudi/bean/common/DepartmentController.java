@@ -76,6 +76,8 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
+    
+   
 
     public void fillItems() {
         String j;
@@ -579,6 +581,10 @@ public class DepartmentController implements Serializable {
         } else {
             getFacade().edit(dep);
         }
+    }
+    
+    public Department findDepartment(Long id){
+        return getFacade().find(id);
     }
 
     /**

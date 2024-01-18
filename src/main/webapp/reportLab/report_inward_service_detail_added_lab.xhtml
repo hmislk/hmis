@@ -22,24 +22,24 @@
 
                 <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
+                    <p:calendar class="w-100 mx-4 my-1" inputStyleClass="w-100 my-1" id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy  HH:mm:ss" >
                     </p:calendar>
 
                     <h:outputLabel value="Department" ></h:outputLabel>
-                    <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}"  >
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}"  >
                     </p:autoComplete>
 
                     <h:outputLabel value="Instituion"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{serviceSummery.institution}"  
+                    <p:autoComplete  class="w-100 mx-4 my-1" inputStyleClass="w-100"  value="#{serviceSummery.institution}"  
                                     completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                     <h:outputLabel value="Service Name"/>
-                    <p:autoComplete value="#{serviceSummery.service}" completeMethod="#{itemController.completeItem}" var="ix" 
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{serviceSummery.service}" completeMethod="#{itemController.completeItem}" var="ix" 
                                     itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
                         <p:column>
                             #{ix.name}
@@ -53,19 +53,20 @@
                     </p:autoComplete>
 
                 </h:panelGrid>
-                <h:panelGrid columns="5">
-                    <p:spacer height="1" width="110"/>
+                <h:panelGrid columns="5" class="my-2">
+                  
                     <p:commandButton id="btnRefresh" value="Process" ajax="false" 
-                                     styleClass="noPrintButton" style="float: right;" 
+                                     class="ui-button-warning" icon="fas fa-cogs"
                                      action="#{serviceSummery.createServiceSummeryInwardAddedDate()}"/>
                     <p:defaultCommand target="btnRefresh"/>
 
                     <p:commandButton ajax="false" value="Print"  
-                                     styleClass="noPrintButton" style="float: right;" >
+                                     class="ui-button-info mx-1" icon="fas fa-print"
+                                     >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
 
-                    <p:commandButton value="Excel" ajax="false" style="float: right;">
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false" >
                         <p:dataExporter type="xlsx" target="opd" fileName="Service_Lab_Summery"  />
                     </p:commandButton>
                 </h:panelGrid>

@@ -190,6 +190,22 @@ public class SearchController implements Serializable {
     private Institution toInstitution;
     private int manageListIndex;
     private Patient patient;
+    private Institution dealer;
+    private List<Bill> grnBills;
+
+    public void createGrnWithDealerTable() {
+        Map m = new HashMap();
+        String sql = "select b from Bill b where b.retired=false and "
+                + " b.billType = :billType and b.institution = :del "
+                + "and b.createdAt between :fromDate and :toDate ";
+        
+        m.put("billType", BillType.PharmacyGrnBill);
+        m.put("del", getDealer());
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        
+        grnBills=getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
 
     public String navigateToPatientLabReports() {
         fillPatientLabReports(patient);
@@ -612,6 +628,60 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml)");
 
     }
+    
+    public void createPreRefundOpdTable() {
+
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from RefundBill b where "
+                + " b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false and b.deptId is not null "
+                + " and b.billType = :billType"
+                + " and b.institution = :ins";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.deptId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+//        temMap.put("billedClass", PreBill.class);
+//        temMap.put("billType", BillType.OpdBill);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billType", BillType.OpdBill);
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/opd/opd_search_pre_refund_bill_for_return_cash.xhtml)");
+
+    }
 
     public void reportSettledOPDBills() {
         Date startTime = new Date();
@@ -895,6 +965,22 @@ public class SearchController implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public Institution getDealer() {
+        return dealer;
+    }
+
+    public void setDealer(Institution dealer) {
+        this.dealer = dealer;
+    }
+
+    public List<Bill> getGrnBills() {
+        return grnBills;
+    }
+
+    public void setGrnBills(List<Bill> grnBills) {
+        this.grnBills = grnBills;
     }
 
     public class billsWithbill {
@@ -5221,15 +5307,27 @@ public class SearchController implements Serializable {
     }
 
     public void fillPatientBillsToPay() {
-        fillPatientPreBills(null, patient, true, null);
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
+        fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
     }
 
     public void fillPatientBillsPaid() {
-        fillPatientPreBills(null, patient, null, false);
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
     }
 
     public void fillPatientBillsPaidAndToPay() {
-        fillPatientPreBills(null, patient, null, null);
+        if (patient == null) {
+            UtilityController.addErrorMessage("Please select a Patient");
+            return;
+        }
+        fillPatientPreBills(BillType.OpdPreBill, patient, null, null);
     }
 
     public void createOpdPreTableNotPaid() {
@@ -5293,7 +5391,7 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
 
-        bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+        bills = getBillFacade().findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP, 25);
 
     }
 
@@ -5320,11 +5418,11 @@ public class SearchController implements Serializable {
             m.put("pt", pt);
         }
 
-        if (paidOnly != null) {
+        if (paidOnly!=null) {
             jpql += " and b.referenceBill is not null ";
         }
 
-        if (toPayOnly != null) {
+        if (toPayOnly!=null) {
             jpql += " and b.referenceBill is null ";
         }
 
@@ -5333,8 +5431,8 @@ public class SearchController implements Serializable {
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
-
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
+       
 
     }
 
@@ -5683,6 +5781,13 @@ public class SearchController implements Serializable {
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
+    
+    public void searchOpdBatchBills() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBathcBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+        checkLabReportsApproved(bills);
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
 
     public void searchOpdBills() {
         Date startTime = new Date();
@@ -5874,7 +5979,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
 
         bills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
+
     }
 
     public List<Bill> fillBills(BillType billType, Institution ins, Department dep, Patient patient) {
@@ -8865,4 +8970,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    
+    
 }

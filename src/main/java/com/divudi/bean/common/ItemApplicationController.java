@@ -120,6 +120,8 @@ public class ItemApplicationController {
         }
         return investigationsAndServices;
     }
+    
+    
 
     private List<ItemLight> fillPackages() {
         String jpql = "SELECT new com.divudi.data.ItemLight("

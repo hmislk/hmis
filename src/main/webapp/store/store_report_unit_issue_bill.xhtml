@@ -17,25 +17,27 @@
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}"  >
+                                            value="#{storeReportsTransfer.fromDepartment}"
+                                            class="w-100 mx-4" inputStyleClass="w-100">
                             </p:autoComplete>
                             <h:outputLabel value="Issue To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}"  >
+                                            value="#{storeReportsTransfer.toDepartment}" 
+                                            class="w-100 mx-4" inputStyleClass="w-100">
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="40">
-                            <p:spacer width="80" height="1"/>
+                        <h:panelGrid columns="6" class="my-2">
+                            
                             <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentUnitIssueByBillStore}" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill2" action="#{storeReportsTransfer.createStoreIssueReport}" ></p:commandButton>
 
