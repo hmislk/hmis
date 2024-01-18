@@ -26,17 +26,17 @@
     </properties>
   </persistence-unit>
 
-    <persistence-unit name="hmisPU" transaction-type="JTA">
+<!--    <persistence-unit name="hmisPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/sethmagc</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="FINE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
-            <!--      <property name="eclipselink.logging.level.sql" value="SEVERE"/>
+                  <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
             <property name="eclipselink.ddl-generation.index-foreign-keys" value="false"/>
-            <property name="javax.persistence.schema-generation.database.action" value="create"/>-->
+            <property name="javax.persistence.schema-generation.database.action" value="create"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
@@ -45,10 +45,10 @@
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
-            <!--      <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+                  <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.logging.level.sql" value="SEVERE"/>
             <property name="eclipselink.logging.parameters" value="true"/>
-            <property name="eclipselink.ddl-generation.index-foreign-keys" value="false"/>-->
+            <property name="eclipselink.ddl-generation.index-foreign-keys" value="false"/>
         </properties>
-    </persistence-unit>
+    </persistence-unit>-->
 </persistence>
