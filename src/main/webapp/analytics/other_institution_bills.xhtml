@@ -12,29 +12,29 @@
                     <f:facet name="header" >
                         <h:outputLabel value="Other Institution BILL List"/>                          
                     </f:facet>
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:datePicker styleClass="dateTimePicker" 
+                        <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" 
                                       id="fromDate" 
                                       value="#{searchController.fromDate}" 
                                       showTime="true"
                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                         </p:datePicker>
                         <h:outputLabel value="To Date"/>
-                        <p:datePicker id="toDate" value="#{searchController.toDate}" 
+                        <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" 
                                       showTime="true"
                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                         </p:datePicker>
                         <h:outputLabel value="Institution"/>
-                        <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" 
                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" 
                                          forceSelection="true" 
                                          value="#{searchController.otherInstitution}" ></p:autoComplete>
-
-
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                    </h:panelGrid>
+                    <h:panelGrid columns="6" class="my-2">
+                        <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillOtherInstitutionBills}"/>
-                        <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                        <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                             <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
                         </p:commandButton>
                     </h:panelGrid>
@@ -45,6 +45,7 @@
                                  var="bill"  
                                  style="min-width: 100%;"  
                                  paginator="true"
+                                 paginatorPosition="bottom"
                                  rows ="10"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15"
