@@ -227,7 +227,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
-    
+
     private List<Payment> payments;
 
     private List<BillItem> lstBillItems;
@@ -374,7 +374,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         bills = getFacade().findByJpql(jpql, m);
         return "/opd/opd_bill_print";
     }
-    
+
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -385,7 +385,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return null;
         }
 
-        
         if (bill.getBillType() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
@@ -1350,11 +1349,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String settleOpdBill() {
-        
+
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
-        if (referredByInstitution==null) {
-            referredByInstitution=sessionController.getCurrent().getInstitution();
-        }
 
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
@@ -1676,11 +1672,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private boolean errorCheck() {
-        if (patient.getPerson().getArea()==null) {
-            UtilityController.addErrorMessage("Please Add Patient Area");
-              return true;
-        }
-        
+
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No Items are added to the bill to settle");
             return true;
@@ -1697,6 +1689,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 || getPatient().getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
             return true;
+        }
+        if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
+            if (getPatient().getPerson().getArea() == null) {
+                UtilityController.addErrorMessage("Please Add Patient Area");
+                return true;
+            }
         }
 
         if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientPhoneNumber()) {
@@ -1986,7 +1984,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
-        setReferredByInstitution(null);
+//        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
@@ -2021,7 +2019,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private void clearBillValuesForMember() {
         setPatient(null);
         setReferredBy(null);
-        setReferredByInstitution(null);
+//        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
@@ -2244,15 +2242,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
     }
-    
-    public void searchOpdPayments(){
+
+    public void searchOpdPayments() {
         String j = "select b from Payment b"
                 + " where b.createdAt between :fd and :td "
                 + " and b.retired=false";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
+
         if (institution != null) {
             j += " and b.institution=:ins ";
             m.put("ins", institution);
@@ -2264,7 +2262,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
 
         j += " order by b.createdAt desc  ";
-        payments = getPaymentFacade().findByJpql(j,m);
+        payments = getPaymentFacade().findByJpql(j, m);
     }
 
     public PaymentFacade getPaymentFacade() {
@@ -2280,6 +2278,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         department = null;
 
     }
+
     public String navigateToNewOpdBill() {
         clearBillItemValues();
         clearBillValues();
@@ -2350,6 +2349,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     public void createPaymentsForBills(Bill b, List<BillEntry> billEntrys) {
         List<Payment> ps = createPayment(b, b.getPaymentMethod());
+        payments = ps;
         createBillFeePaymentsByPaymentsAndBillEntry(ps.get(0), billEntrys);
     }
 
@@ -3105,8 +3105,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         return opdItems;
     }
+
     public String navigateToOpdBillPayments() {
-        bills=null;
+        bills = null;
         return "/opd/analytics/opd_bill_payments";
     }
 
