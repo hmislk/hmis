@@ -42,13 +42,21 @@
                     rowsPerPageTemplate="5,10,15">
 
                     <p:column 
+                        headerText="Institution Code" 
+                        sortBy="#{ic.institutionCode}" 
+                        filterBy="#{ic.institutionCode}" 
+                        filterMatchMode="contains">
+                        <h:outputText value="#{ic.institutionCode}" />
+                    </p:column>
+                    
+                    <p:column 
                         headerText="Institution Name" 
                         sortBy="#{ic.institutionName}" 
                         filterBy="#{ic.institutionName}" 
                         filterMatchMode="contains">
                         <h:outputText value="#{ic.institutionName}" />
                     </p:column>
-
+                    
                     <p:column 
                         headerText="Item Count" 
                         sortBy="#{ic.itemCount}" 
