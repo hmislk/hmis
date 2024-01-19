@@ -129,6 +129,7 @@ public class ItemController implements Serializable {
     private InstitutionItemCount institutionItemCount;
 
     boolean masterItem;
+    
 
     ReportKeyWord reportKeyWord;
 

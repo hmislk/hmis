@@ -236,8 +236,12 @@
                             <tr>
                                 <td  style="overflow: visible;">
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{bip.item.printFeesForBills}">
+                                        <h:outputText value="ProfessionalFee : #{bip.item.professionalFee}"/>
+                                    </h:panelGroup>
                                 </td>
+                                
                                 <td style="text-align: right;" >
                                     <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
