@@ -235,10 +235,10 @@ public class DataUploadController implements Serializable {
 
             area = null;
             String name=null;
-            Cell codeCell = row.getCell(0);
+            Cell nameCell = row.getCell(0);
             
-            if (name != null && codeCell.getCellType() == CellType.STRING) {
-                name = codeCell.getStringCellValue();
+            if (nameCell.getCellType() == CellType.STRING) {
+                name = nameCell.getStringCellValue();
             }
             System.out.println("name = " + name);
             if (name == null || name.trim().equals("")) {
