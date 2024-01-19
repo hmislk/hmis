@@ -1372,7 +1372,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String settleOpdBill() {
-        billSessions.add(currentBillItem.getBillSession());
+//        billSessions.add(currentBillItem.getBillSession());
         if (currentBillItem != null) {
             currentBillItem.getBill().setSessionId(String.valueOf(billSessions.size()));
         }
