@@ -1349,7 +1349,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String settleOpdBill() {
-
+        billSessions.add(currentBillItem.getBillSession());
+        if (currentBillItem != null) {
+            currentBillItem.getBill().setSessionId(String.valueOf(billSessions.size()));
+        }
+        System.out.println("Sessions = " + billSessions.size());
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
 
         if (!executeSettleBillActions()) {
