@@ -407,6 +407,8 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFfee;
     @Transient
     List<ItemFee> itemFees;
+    private Boolean printFeesForBills;
+    
 
     @Transient
     private List<ItemFee> itemFeesActive;
@@ -1291,6 +1293,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setMasterItemReference(Item masterItemReference) {
         this.masterItemReference = masterItemReference;
+    }
+
+    public Boolean getPrintFeesForBills() {
+        return printFeesForBills;
+    }
+
+    public void setPrintFeesForBills(Boolean printFeesForBills) {
+        this.printFeesForBills = printFeesForBills;
     }
     
     

@@ -313,6 +313,15 @@ public class ConsultantController implements Serializable {
         }
         return items;
     }
+    
+    public List<Consultant> completeConsultants() {
+        if (items == null) {
+            String temSql;
+            temSql = "SELECT i FROM Consultant i where i.retired=false ";
+            items = getFacade().findByJpql(temSql);
+        }
+        return items;
+    }
 
     public PersonFacade getPersonFacade() {
         return personFacade;

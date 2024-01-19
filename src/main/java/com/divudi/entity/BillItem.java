@@ -142,7 +142,7 @@ public class BillItem implements Serializable {
     private UserStock transUserStock;
     @Transient
     private BillItem transBillItem;
-    @OneToMany(mappedBy = "billItem", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     @OrderBy("feeAdjusted")

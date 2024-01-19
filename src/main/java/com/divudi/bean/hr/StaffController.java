@@ -901,19 +901,19 @@ public class StaffController implements Serializable {
         if (selectText.trim().equals("")) {
             sql = "select c from Staff c "
                     + " where c.retired=false "
-                    + " and type(c)!=:class"
+//                    + " and type(c)!=:class"
                     + " order by c.person.name";
         } else {
             sql = "select c from Staff c"
                     + " where c.retired=false "
-                    + " and type(c)!=:class"
+//                    + " and type(c)!=:class"
                     + " and ((c.person.name) like :q or (c.code) like :p) "
                     + " order by c.person.name";
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
             hm.put("p", "%" + getSelectText().toUpperCase() + "%");
         }
 
-        hm.put("class", Consultant.class);
+//        hm.put("class", Consultant.class);
         selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
