@@ -1991,31 +1991,49 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private void addStaffToBillFees(List<BillFee> tmpBfs) {
+        System.out.println("addStaffToBillFees");
         if (tmpBfs == null) {
+            System.out.println("1");
             return;
         }
         if (tmpBfs.isEmpty()) {
+            System.out.println("2");
             return;
         }
         if (getCurrentlyWorkingStaff().isEmpty()) {
+            System.out.println("3");
             return;
         }
         for (BillFee bf : tmpBfs) {
+            System.out.println("bf = " + bf);
             if (bf.getFee() == null) {
+                System.out.println("4");
                 continue;
             }
             if (bf.getFee().getFeeType() == null) {
+                System.out.println("5");
+                continue;
+            }
+            if(bf.getFee().getSpeciality()==null){
+                System.out.println("6");
+                bf.setStaff(getSelectedCurrentlyWorkingStaff());
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
+                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
                 if(bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())){
+                    System.out.println("7");
                    if(bf.getFee().getStaff()==null){
-                       bf.getFee().setStaff(getSelectedCurrentlyWorkingStaff());
+                       System.out.println("8");
+                       bf.setStaff(getSelectedCurrentlyWorkingStaff());
                    }
                 }else{
+                    System.out.println("9");
                     for(Staff s: currentlyWorkingStaff){
+                        System.out.println("10");
                         if(bf.getFee().getSpeciality().equals(s.getSpeciality())){
-                            bf.getFee().setStaff(s);
+                            System.out.println("11");
+                            bf.setStaff(s);
                         }
                     }
                 }
