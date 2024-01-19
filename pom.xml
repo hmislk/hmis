@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>sethma</artifactId>
+    <artifactId>fhck</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>sethma</name>
+    <name>fhck</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -36,39 +36,26 @@
             <artifactId>javax.el</artifactId>
             <version>3.0.0</version>
         </dependency>
-        
-        
+       
+ 
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.2.5</version>
+            <version>5.2.3</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.2.5</version>
+            <version>5.2.3</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-excelant</artifactId>
-            <version>5.2.5</version>
-        </dependency>
-        <!-- Apache POI Scratchpad for HWPF and HSLF -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-scratchpad</artifactId>
-            <version>5.2.5</version>
+            <version>5.2.3</version>
         </dependency>
 
-        <!-- Apache POI OOXML Schemas (for XHTML Conversion) -->
-        <dependency>
-            <groupId>fr.opensagres.xdocreport</groupId>
-            <artifactId>org.apache.poi.xwpf.converter.xhtml</artifactId>
-            <version>1.0.6</version>
-        </dependency>
-        
-        
-        
         <dependency>
             <groupId>net.sourceforge.barbecue</groupId>
             <artifactId>barbecue</artifactId>
@@ -332,10 +319,6 @@
             <id>eclipselink</id>
             <layout>default</layout>
             <name>Repository for library EclipseLink (JPA 2.1)</name>
-        </repository>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
         </repository>
     </repositories>
 </project>

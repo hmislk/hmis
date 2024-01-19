@@ -11,7 +11,7 @@
     <ui:define name="admin">
 
         <h:panelGroup >
-            
+            <h:form  >
                 <p:growl />
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="txtName" />
@@ -35,19 +35,6 @@
                                                          return false;" action="#{areaController.delete()}"  value="Delete" process="btnDelete" update="lstSelect gpDetail"
                                              class=" m-1 ui-button-danger w-25">
                             </p:commandButton>
-                            <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadController.file}"
-                                              mode="simple"
-                                              label="Choose File"/>
-                                <p:commandButton id="btnUpload" 
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false"
-                                                 action="#{dataUploadController.uploadPatientAreas()}"  
-                                                 value="Upload as Excel" process="btnDelete"
-                                                 update="lstSelect"
-                                                 class=" m-1 ui-button-success w-25">
-                                </p:commandButton>
-                            </h:form>
                             <p:selectOneListbox  id="lstSelect"  value="#{areaController.current}" class="w-100" filter="true">
                                 <f:selectItems  value="#{areaController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                 <p:ajax update="gpDetail" process="lstSelect" >
@@ -74,7 +61,21 @@
                     </div>
 
                 </p:panel>
-            
+            </h:form>
+
+            <h:form enctype="multipart/form-data">
+                <p:fileUpload value="#{dataUploadController.file}"
+                              mode="simple"
+                              label="Choose File"/>
+                <p:commandButton id="btnUpload" 
+                                 icon="fas fa-file-excel"
+                                 ajax="false"
+                                 action="#{dataUploadController.uploadPatientAreas()}"  
+                                 value="Upload as Excel" process="btnDelete"
+                                 update="lstSelect"
+                                 class=" m-1 ui-button-success w-25">
+                </p:commandButton>
+            </h:form>
 
         </h:panelGroup>
 
