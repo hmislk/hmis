@@ -99,7 +99,7 @@ public class AreaController implements Serializable {
         current = new Area();
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 
