@@ -8,14 +8,16 @@ public class InstitutionItemCount {
     private Long institutionId;
     private String institutionName;
     private Long itemCount;
+    private String institutionCode;
 
     public InstitutionItemCount() {
     }
 
-    public InstitutionItemCount(Long institutionId, String institutionName, Long itemCount) {
+    public InstitutionItemCount(Long institutionId, String institutionName, String institutionCode, Long itemCount) {
         this.institutionId = institutionId;
         this.institutionName = institutionName;
         this.itemCount = itemCount;
+        this.institutionCode = institutionCode;
     }
 
     
@@ -42,6 +44,14 @@ public class InstitutionItemCount {
 
     public void setItemCount(Long itemCount) {
         this.itemCount = itemCount;
+    }
+
+    public String getInstitutionCode() {
+        return institutionCode;
+    }
+
+    public void setInstitutionCode(String institutionCode) {
+        this.institutionCode = institutionCode;
     }
     
     

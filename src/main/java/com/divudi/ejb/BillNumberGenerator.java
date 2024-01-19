@@ -82,7 +82,6 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
-
     CommonFunctions commonFunctions;
 
     public String fetchPaymentSchemeCount(PaymentScheme paymentScheme, BillType billType, Institution institution) {
@@ -459,42 +458,40 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(institution, toDepartment, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-        //System.err.println("fff " + b);
+        if (institution == null) {
+            return "";
+        }
+        if (toDepartment == null) {
+            return "";
+        }
+        if (toDepartment.getInstitution() == null) {
+            return "";
+        }
         String insCode = "";
-        if (institution.getInstitutionCode() == null) {
-            insCode = institution.getInstitutionCode();
-        } else if (institution.getCode() != null) {
-            insCode = institution.getCode();
+        if (toDepartment.getInstitution().equals(institution)) {
+            if (institution.getInstitutionCode() == null) {
+                insCode = institution.getInstitutionCode();
+            } else if (institution.getCode() != null) {
+                insCode = institution.getCode();
+            }
         }
         result.append(insCode);
         String deptCode = "";
-        if (toDepartment != null) {
-            if(toDepartment.getDepartmentCode()!=null){
-                deptCode = toDepartment.getDepartmentCode();
-            }else if(toDepartment.getCode()!=null){
-                deptCode = toDepartment.getCode();
-            }
+        if (toDepartment.getDepartmentCode() != null) {
+            deptCode = toDepartment.getDepartmentCode();
+        } else if (toDepartment.getCode() != null) {
+            deptCode = toDepartment.getCode();
         }
         result.append(deptCode);
 
         if (BillNumberSuffix.NONE != billNumberSuffix) {
             result.append(billNumberSuffix);
-//            System.err.println("R1 " + result);
         }
-
         result.append("/");
-
         result.append(++b);
-//        System.err.println("R1 " + result);
-
-//        System.err.println("3 " + billNumber.getLastBillNumber());
         billNumber.setLastBillNumber(b);
-//        System.err.println("4 " + billNumber.getLastBillNumber());
         billNumberFacade.edit(billNumber);
-//        System.err.println("5 " + billNumber.getLastBillNumber());
-//        System.err.println("Bill Num " + result);
         return result.toString();
-
     }
 
     public String institutionBillNumberGenerator(Institution institution, List<BillType> billTypes, BillClassType billClassType, String suffix) {
@@ -1106,15 +1103,19 @@ public class BillNumberGenerator {
     }
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType, BillClassType billClassType) {
+        if (dep == null) {
+            return "";
+        }
+        if (toDept == null) {
+            return "";
+        }
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
 
         result.append(dep.getDepartmentCode());
 
-        if (toDept != null) {
-            result.append(toDept.getDepartmentCode());
-        }
+        result.append(toDept.getDepartmentCode());
 
         result.append("/");
         result.append(++dd);

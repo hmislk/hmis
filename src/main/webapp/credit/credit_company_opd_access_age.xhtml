@@ -10,12 +10,12 @@
         <ui:composition template="/credit/index_opd_due_access.xhtml">
             <ui:define name="subcontent">
                 <h:form>            
-                    <p:commandButton id="btnSearch" ajax="false" value="Process Access Age" action="#{creditCompanyDueController.createAgeAccessTable()}"  />
+                    <p:commandButton class="ui-button-warning mx-3" icon="fas fa-cogs" id="btnSearch" ajax="false" value="Process Access Age" action="#{creditCompanyDueController.createAgeAccessTable()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
                                  filteredValue="#{creditCompanyDueController.filteredList}">                       
-                        <p:column headerText="Dealor Name" filterBy="#{i.string}" filterMatchMode="contains">       
+                        <p:column headerText="Dealer Name" filterBy="#{i.string}" filterMatchMode="contains">       
                             <h:outputLabel  value="#{i.string}"/>
                         </p:column>                               
                         <p:column headerText="0-30" filterBy="#{i.value1}" filterMatchMode="contains">   

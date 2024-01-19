@@ -28,7 +28,7 @@
 
             <p:column headerText="Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Id"/>
+                    <h:outputLabel value="ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{bPh.deptId}"/>
             </p:column>
@@ -91,7 +91,7 @@
 
             <p:column headerText="Checque" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{bPh.paymentMethod=='Cheque'}" value="#{bPh.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

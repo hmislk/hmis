@@ -15,7 +15,7 @@
     <cc:implementation>
         <p:dataTable id="refund" rowStyleClass="noDisplayRow" value="#{cc.attrs.data.bills}" var="b" sortBy="#{b.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
-                <h:outputLabel value="Opd Refunded" />
+                <h:outputLabel value="OPD Refunded" />
             </f:facet> 
             <p:column headerText="Time">
                 <f:facet name="header">  
@@ -28,14 +28,14 @@
 
             <p:column headerText="Refunded Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Refunded Id"/>
+                    <h:outputLabel value="Refunded ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{b.insId}" ></h:outputLabel>
             </p:column>
 
             <p:column headerText="Billed Id" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Billed Id"/>
+                    <h:outputLabel value="Billed ID"/>
                 </f:facet> 
                 <h:outputLabel value="#{b.billedBill.insId}" >
                 </h:outputLabel>
@@ -80,7 +80,7 @@
             </p:column>
             <p:column headerText="Checque" style=" text-align: right" >
                 <f:facet name="header">  
-                    <h:outputLabel value="Checque"/>
+                    <h:outputLabel value="Cheque"/>
                 </f:facet> 
                 <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>

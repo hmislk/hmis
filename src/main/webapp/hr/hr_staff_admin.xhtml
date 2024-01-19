@@ -277,7 +277,7 @@
                                                                 <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                                             </p:selectOneMenu>
                                                             <h:outputText  value="Roster" ></h:outputText>
-                                                            <p:selectOneMenu class=" mx-2" style="width: 300px"  value="#{staffController.current.roster}" disabled="true" >
+                                                            <p:selectOneMenu class=" mx-2" style="width: 300px"  value="#{staffController.current.roster}"  >
                                                                 <f:selectItem itemLabel="Select Roster"/>
                                                                 <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                                             </p:selectOneMenu>

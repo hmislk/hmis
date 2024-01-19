@@ -6,6 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
       xmlns:common="http://java.sun.com/jsf/composite/ezcomp/common"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
 
@@ -24,6 +25,7 @@
                                              class="ui-button-warning mx-2"
                                              style="float: right;"
                                              icon="fa fa-arrow-left"
+                                             actionListener="#{searchController.createOpdPreTable}"
                                              action="opd_search_pre_bill"/>
                             <p:defaultCommand target="settle"/>
                             <p:commandButton ajax= "false"  
@@ -33,18 +35,15 @@
                                              icon="fa fa-check"
                                              id="settle"
                                              action="#{opdPreSettleController.settleBillWithPay2}" />
-
-
-                            
                         </f:facet>
-                        
+
                         <h:panelGrid columns="20">
-                            <h:outputLabel value="Pharmacy Retail Bill" />
+                            <h:outputLabel value="Payment Method" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   
                                 id="cmbPs" 
                                 value="#{opdPreSettleController.preBill.paymentMethod}"  
-                                disabled="#{sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment eq false}">                                                                     
+                                disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                                 <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
                             </p:selectOneMenu>
@@ -155,15 +154,69 @@
                     </p:panel>
 
 
-<!--                    <p:panel rendered="#{opdPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                    <p:panel rendered="#{opdPreSettleController.billPreview}">
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
                             <p:printer target="gpBillPreview" />
                         </p:commandButton>
+
+                        <p:commandButton  
+                            id="btnSearch" 
+                            icon="fas fa-search" 
+                            class="ui-button-primary m-1" 
+                            ajax="false" 
+                            value="Search All"
+                            action="#{searchController.createOpdPreTable}"/>
+                        <p:commandButton 
+                            class="ui-button-warning m-1"
+                            icon="fas fa-search"
+                            ajax="false"
+                            value="Search Not Paid Only"
+                            action="#{searchController.createOpdPreTableNotPaid}"/>
+                        <p:commandButton
+                            ajax="false"
+                            icon="fas fa-search"
+                            class="m-1 ui-button-success" 
+                            value="Search Paid Only"
+                            action="#{searchController.createOpdPreTablePaid}"/>
+
+
+
+                        <!-- Controls Section -->
+                        <div class="d-flex m-2">
+                            <p:outputLabel value="Paper Type" class="fs-5 m-2"></p:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+
+
+                        </div>
+
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:saleBill bill="#{opdPreSettleController.bill}"/>
+
+                            <h:panelGroup id="groupPrint" >
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                    <prints:five_five_paper_with_headings bill="#{opdPreSettleController.saleBill}"/>                        
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                    <prints:five_five_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
+                                    <prints:posOpdBillWithoutLogo bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                    <prints:posOpdBill bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                    <prints:A4_paper_with_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+                                    <prints:A4_paper_without_headings bill="#{opdPreSettleController.saleBill}" duplicate="false"/>                        
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </h:panelGroup>
-                    </p:panel>-->
+                    </p:panel>
 
                 </h:form>
             </ui:define>
