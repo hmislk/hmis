@@ -519,6 +519,24 @@
 
                                 </p:panel>
 
+                                <p:panel class="m-1">
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                        <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
+                                    </f:facet>
+                                    <p:commandButton value="Reload" ajax="false" action="#{opdBillController.reloadCurrentlyWorkingStaff()}" ></p:commandButton>
+                                    <p:selectOneListbox value="#{opdBillController.selectedCurrentlyWorkingStaff}" var="d" >
+                                        <f:selectItems value="#{opdBillController.currentlyWorkingStaff}" var="s" itemLabel="#{s.name}" itemValue="#{s}" >
+                                        </f:selectItems>
+                                        <p:column headerText="Speciality" >
+                                            <h:outputText value="#{d.speciality.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Speciality" >
+                                            <h:outputText value="#{d.name}" ></h:outputText>
+                                        </p:column>
+                                    </p:selectOneListbox>
+                                </p:panel>
+
                                 <div class="row m-1" >
                                     <p:panel id="panelBillReferrals" >
                                         <f:facet name="header" >

@@ -2,6 +2,7 @@ package com.divudi.bean.opd;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.hr.WorkingTimeController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -48,6 +49,7 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.hr.WorkingTime;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
@@ -163,6 +165,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SearchController searchController;
     @Inject
     private AuditEventController auditEventController;
+    @Inject
+    WorkingTimeController workingTimeController;
     /**
      * Class Variables
      */
@@ -248,6 +252,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private List<ItemLight> opdItems;
     private boolean patientDetailsEditable;
 
+    private List<Staff> currentlyWorkingStaff;
+    private Staff selectedCurrentlyWorkingStaff;
+
     /**
      *
      * Navigation Methods
@@ -271,6 +278,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         batchBill = null;
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
+    }
+
+    public void reloadCurrentlyWorkingStaff() {
+        List<WorkingTime> wts = workingTimeController.findCurrentlyActiveWorkingTimes();
+        currentlyWorkingStaff = new ArrayList<>();
+        selectedCurrentlyWorkingStaff = null;
+        if (wts == null) {
+            return;
+        }
+        for (WorkingTime wt : wts) {
+            if (wt.getStaffShift() != null && wt.getStaffShift().getStaff() != null) {
+                currentlyWorkingStaff.add(wt.getStaffShift().getStaff());
+                selectedCurrentlyWorkingStaff = wt.getStaffShift().getStaff();
+            }
+        }
+
     }
 
     public List<Item> completeOpdItems(String query) {
@@ -1349,7 +1372,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public String settleOpdBill() {
-
+//        billSessions.add(currentBillItem.getBillSession());
+        if (currentBillItem != null) {
+            currentBillItem.getBill().setSessionId(String.valueOf(billSessions.size()));
+        }
+        System.out.println("Sessions = " + billSessions.size());
         String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
 
         if (!executeSettleBillActions()) {
@@ -1937,6 +1964,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             addingEntry.setBillItem(bi);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
             addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+            
+            addStaffToBillFees(addingEntry.getLstBillFees());
+            
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
             getLstBillEntries().add(addingEntry);
             bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -1958,6 +1988,57 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         clearBillItemValues();
         //UtilityController.addSuccessMessage("Item Added");
+    }
+
+    private void addStaffToBillFees(List<BillFee> tmpBfs) {
+        System.out.println("addStaffToBillFees");
+        if (tmpBfs == null) {
+            System.out.println("1");
+            return;
+        }
+        if (tmpBfs.isEmpty()) {
+            System.out.println("2");
+            return;
+        }
+        if (getCurrentlyWorkingStaff().isEmpty()) {
+            System.out.println("3");
+            return;
+        }
+        for (BillFee bf : tmpBfs) {
+            System.out.println("bf = " + bf);
+            if (bf.getFee() == null) {
+                System.out.println("4");
+                continue;
+            }
+            if (bf.getFee().getFeeType() == null) {
+                System.out.println("5");
+                continue;
+            }
+            if(bf.getFee().getSpeciality()==null){
+                System.out.println("6");
+                bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                continue;
+            }
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
+                if(bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())){
+                    System.out.println("7");
+                   if(bf.getFee().getStaff()==null){
+                       System.out.println("8");
+                       bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                   }
+                }else{
+                    System.out.println("9");
+                    for(Staff s: currentlyWorkingStaff){
+                        System.out.println("10");
+                        if(bf.getFee().getSpeciality().equals(s.getSpeciality())){
+                            System.out.println("11");
+                            bf.setStaff(s);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void clearBillItemValues() {
@@ -3217,4 +3298,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
     }
+
+    public List<Staff> getCurrentlyWorkingStaff() {
+        if (currentlyWorkingStaff == null) {
+            reloadCurrentlyWorkingStaff();
+        }
+        return currentlyWorkingStaff;
+    }
+
+    public void setCurrentlyWorkingStaff(List<Staff> currentlyWorkingStaff) {
+        this.currentlyWorkingStaff = currentlyWorkingStaff;
+    }
+
+    public Staff getSelectedCurrentlyWorkingStaff() {
+        return selectedCurrentlyWorkingStaff;
+    }
+
+    public void setSelectedCurrentlyWorkingStaff(Staff selectedCurrentlyWorkingStaff) {
+        this.selectedCurrentlyWorkingStaff = selectedCurrentlyWorkingStaff;
+    }
+
 }
