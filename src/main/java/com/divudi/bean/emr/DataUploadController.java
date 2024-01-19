@@ -254,6 +254,7 @@ public class DataUploadController implements Serializable {
 
             areas.add(area);
         }
+        areaController.recreateModel();
         return areas;
     }
 
