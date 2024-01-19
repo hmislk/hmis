@@ -32,8 +32,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -57,8 +57,8 @@ public class WorkingTimeController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from WorkingTime c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-    
-    public String navigateToMarkIn(){
+
+    public String navigateToMarkIn() {
         current = new WorkingTime();
         StaffShift staffShift = new StaffShift();
         current.setStaffShift(staffShift);
@@ -67,10 +67,8 @@ public class WorkingTimeController implements Serializable {
         current.setStartRecord(sr);
         return "/opd/markIn";
     }
-    
-    
-    
-    public String markIn(){
+
+    public String markIn() {
         fingerPrintRecordController.save(current.getStartRecord());
         staffShiftController.save(current.getStaffShift());
         save(current);
@@ -78,7 +76,7 @@ public class WorkingTimeController implements Serializable {
         return navigateToListCurrentWorkTimes();
     }
 
-    public String markOut(){
+    public String markOut() {
         FingerPrintRecord er = new FingerPrintRecord();
         er.setRecordTimeStamp(new Date());
         fingerPrintRecordController.save(er);
@@ -86,16 +84,16 @@ public class WorkingTimeController implements Serializable {
         save(current);
         return navigateToListCurrentWorkTimes();
     }
-    
-    public String cancel(){
+
+    public String cancel() {
         current.setRetired(true);
         current.setRetiredAt(new Date());
         current.setRetirer(sessionController.getLoggedUser());
         save(current);
         return navigateToListWorkTimes();
     }
-    
-    public String navigateToViewWorkTime(){
+
+    public String navigateToViewWorkTime() {
         String j = "select w "
                 + " from WorkingTime w "
                 + " where w.retired=:ret ";
@@ -104,24 +102,28 @@ public class WorkingTimeController implements Serializable {
         items = getFacade().findByJpql(j, m);
         return "/opd/workTimes";
     }
-    
-    public void saveWorkTime(){
+
+    public void saveWorkTime() {
         save(current);
         JsfUtil.addSuccessMessage("Saved");
     }
-    
-    public String navigateToListCurrentWorkTimes(){
+
+    public String navigateToListCurrentWorkTimes() {
+        items = findCurrentlyActiveWorkingTimes();
+        return "/opd/marked_ins_current";
+    }
+
+    public List<WorkingTime> findCurrentlyActiveWorkingTimes() {
         String j = "select w "
                 + " from WorkingTime w "
                 + " where w.retired=:ret "
                 + " and w.endRecord is null";
         Map m = new HashMap();
         m.put("ret", false);
-        items = getFacade().findByJpql(j, m);
-        return "/opd/marked_ins_current";
+        return getFacade().findByJpql(j, m);
     }
-    
-    public String navigateToListWorkTimes(){
+
+    public String navigateToListWorkTimes() {
         String j = "select w "
                 + " from WorkingTime w "
                 + " where w.retired=:ret "
@@ -131,9 +133,7 @@ public class WorkingTimeController implements Serializable {
         items = getFacade().findByJpql(j, m);
         return "/opd/workTimes";
     }
-    
-    
-    
+
     public List<WorkingTime> completeWorkingTime(String qry) {
         List<WorkingTime> a = null;
         if (qry != null) {
@@ -175,7 +175,7 @@ public class WorkingTimeController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void save(WorkingTime t) {
         if (t.getId() != null) {
             getFacade().edit(t);
@@ -244,7 +244,7 @@ public class WorkingTimeController implements Serializable {
     public List<WorkingTime> getItems() {
         if (items == null) {
             String j;
-            j="select d from WorkingTime d where d.retired=false order by d.name";
+            j = "select d from WorkingTime d where d.retired=false order by d.name";
             items = getFacade().findByJpql(j);
         }
         return items;
@@ -293,5 +293,4 @@ public class WorkingTimeController implements Serializable {
         }
     }
 
-    
 }

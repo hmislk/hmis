@@ -2,6 +2,7 @@ package com.divudi.bean.opd;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.hr.WorkingTimeController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -48,6 +49,7 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.hr.WorkingTime;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
@@ -163,6 +165,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SearchController searchController;
     @Inject
     private AuditEventController auditEventController;
+    @Inject
+    WorkingTimeController workingTimeController;
     /**
      * Class Variables
      */
@@ -248,6 +252,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private List<ItemLight> opdItems;
     private boolean patientDetailsEditable;
 
+    private List<Staff> currentlyWorkingStaff;
+    private Staff selectedCurrentlyWorkingStaff;
+
     /**
      *
      * Navigation Methods
@@ -271,6 +278,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         batchBill = null;
         bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
+    }
+
+    public void reloadCurrentlyWorkingStaff() {
+        List<WorkingTime> wts = workingTimeController.findCurrentlyActiveWorkingTimes();
+        currentlyWorkingStaff = new ArrayList<>();
+        selectedCurrentlyWorkingStaff = null;
+        if (wts == null) {
+            return;
+        }
+        for (WorkingTime wt : wts) {
+            if (wt.getStaffShift() != null && wt.getStaffShift().getStaff() != null) {
+                currentlyWorkingStaff.add(wt.getStaffShift().getStaff());
+                selectedCurrentlyWorkingStaff = wt.getStaffShift().getStaff();
+            }
+        }
+
     }
 
     public List<Item> completeOpdItems(String query) {
@@ -1941,6 +1964,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             addingEntry.setBillItem(bi);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
             addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+            
+            addStaffToBillFees(addingEntry.getLstBillFees());
+            
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
             getLstBillEntries().add(addingEntry);
             bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -1962,6 +1988,39 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
         clearBillItemValues();
         //UtilityController.addSuccessMessage("Item Added");
+    }
+
+    private void addStaffToBillFees(List<BillFee> tmpBfs) {
+        if (tmpBfs == null) {
+            return;
+        }
+        if (tmpBfs.isEmpty()) {
+            return;
+        }
+        if (getCurrentlyWorkingStaff().isEmpty()) {
+            return;
+        }
+        for (BillFee bf : tmpBfs) {
+            if (bf.getFee() == null) {
+                continue;
+            }
+            if (bf.getFee().getFeeType() == null) {
+                continue;
+            }
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                if(bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())){
+                   if(bf.getFee().getStaff()==null){
+                       bf.getFee().setStaff(getSelectedCurrentlyWorkingStaff());
+                   }
+                }else{
+                    for(Staff s: currentlyWorkingStaff){
+                        if(bf.getFee().getSpeciality().equals(s.getSpeciality())){
+                            bf.getFee().setStaff(s);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void clearBillItemValues() {
@@ -3221,4 +3280,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
     }
+
+    public List<Staff> getCurrentlyWorkingStaff() {
+        if (currentlyWorkingStaff == null) {
+            reloadCurrentlyWorkingStaff();
+        }
+        return currentlyWorkingStaff;
+    }
+
+    public void setCurrentlyWorkingStaff(List<Staff> currentlyWorkingStaff) {
+        this.currentlyWorkingStaff = currentlyWorkingStaff;
+    }
+
+    public Staff getSelectedCurrentlyWorkingStaff() {
+        return selectedCurrentlyWorkingStaff;
+    }
+
+    public void setSelectedCurrentlyWorkingStaff(Staff selectedCurrentlyWorkingStaff) {
+        this.selectedCurrentlyWorkingStaff = selectedCurrentlyWorkingStaff;
+    }
+
 }
