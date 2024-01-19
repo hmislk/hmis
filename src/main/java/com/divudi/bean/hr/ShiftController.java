@@ -12,6 +12,7 @@ import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.ShiftFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -130,12 +131,10 @@ public class ShiftController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (errorCheck()) {
             return;
         }
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
@@ -144,8 +143,6 @@ public class ShiftController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-
-        //     recreateModel();
         createShiftList();
         current = null;
     }
@@ -162,26 +159,20 @@ public class ShiftController implements Serializable {
     }
 
     public void delete() {
-
-        if (current != null) {
-            // removeAll();
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Seleced");
+            return;
+        } else {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
-
             getFacade().edit(current);
-
-//            getFacade().remove(current);
-//            getCurrentRoster().getShiftList().remove(getCurrent());
+            getCurrentRoster().getShiftList().remove(getCurrent());
             getRosterFacade().edit(getCurrentRoster());
             UtilityController.addSuccessMessage("Deleted Successfully");
-        } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
         }
-        //   recreateModel();
-
+        createShiftList();
         current = null;
-
     }
 
     public Shift getCurrent() {
@@ -239,15 +230,16 @@ public class ShiftController implements Serializable {
     }
 
     public void createShiftList() {
-        String sql = "Select s From Shift s "
+        String jpql = "Select s "
+                + " From Shift s "
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
-        //   + " order by s.shiftOrder ";
-        ////// // System.out.println("sql = " + sql);
-        HashMap hm = new HashMap();
-        hm.put("rs", getCurrentRoster());
-
-        shiftList = getFacade().findByJpql(sql, hm);
+        HashMap m = new HashMap();
+        m.put("rs", getCurrentRoster());
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        shiftList = getFacade().findByJpql(jpql, m);
+        JsfUtil.addSuccessMessage("Listed");
     }
 
     public void createShiftListReport() {
