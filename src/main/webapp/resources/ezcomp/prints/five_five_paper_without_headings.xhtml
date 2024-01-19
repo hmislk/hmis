@@ -233,21 +233,38 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
-                            <tr>
-                                <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel><br/>
-                                    <h:panelGroup rendered="#{bip.item.printFeesForBills}">
-                                        <h:outputText value="ProfessionalFee : #{bip.item.professionalFee}"/>
-                                    </h:panelGroup>
-                                </td>
-                                
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
+
+
+                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
+                                <tr>
+                                    <td  style="overflow: visible;">
+                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{bip.item.printFeesForBills}">
+                                <ui:repeat value="#{bip.billFees}" var="bf" >
+                                    <tr>
+                                        <td  style="overflow: visible;">
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.fee.name}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.feeValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </h:panelGroup>
+
 
                         </ui:repeat>
                     </h:panelGroup>
