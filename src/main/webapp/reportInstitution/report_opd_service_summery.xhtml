@@ -16,7 +16,7 @@
                 <f:facet name="header" > 
                    
                         <h:outputLabel value="Service Detail OPD"/>
-                         
+               </f:facet>          
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
@@ -69,7 +69,6 @@
                             <p:dataExporter type="xlsx" target="opd" fileName="Service_Summery"  />
                         </p:commandButton>
                     </h:panelGrid>
-                </f:facet>
            
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
