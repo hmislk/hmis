@@ -663,18 +663,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public String settleBill() {
-        
-        if (referredByInstitution == null) {
-            referredByInstitution=sessionController.getCurrent().getInstitution();
-        }
-        
-        
         if (errorCheck()) {
             return null;
         }
-
         savePatient(getPatient());
-
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
@@ -1156,7 +1148,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
-        setReferredByInstitution(null);
+//        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
