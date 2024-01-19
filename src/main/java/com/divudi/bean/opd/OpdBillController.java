@@ -254,6 +254,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
+    List<BillSession> billSessions;
 
     /**
      *
@@ -1388,10 +1389,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (ap.getSmsTemplateForOpdBillSetting() != null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
             sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
         }
-
+       
+        
         auditEventController.updateAuditEvent(eventUuid);
         return "/opd/opd_bill_print?faces-redirect=true";
     }
+    
 
     private boolean executeSettleBillActions() {
         if (errorCheck()) {
@@ -1520,6 +1523,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
     }
+    
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -1877,7 +1881,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.paymentSchemeController = paymentSchemeController;
     }
 
-    List<BillSession> billSessions;
     @EJB
     BillSessionFacade billSessionFacade;
     @Inject
