@@ -288,6 +288,12 @@
                 <hr/>
             </div>
 
+            <div >
+                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bi">
+                    <h1>#{bi.billSession.serialNo}</h1>
+                </ui:repeat>
+            </div>
+
 
             <div  >
 
@@ -348,7 +354,7 @@
                 </table>
 
             </div>
-           
+
             <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
                     <h:outputText 
