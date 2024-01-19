@@ -435,6 +435,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
+        
+        for(Bill b:bills){
+            getBillBean().checkBillItemFeesInitiated(b);
+        }
+        
         return "/opd/opd_bill_print";
     }
 
@@ -1354,6 +1359,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
 
+            getBillBean().checkBillItemFeesInitiated(myBill);
+            
             bills.add(myBill);
         }
 
@@ -1427,6 +1434,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             createPaymentsForBills(b, getLstBillEntries());
 
             getBillFacade().edit(b);
+            
+            getBillBean().checkBillItemFeesInitiated(b);
+            
             getBills().add(b);
 
         } else {
