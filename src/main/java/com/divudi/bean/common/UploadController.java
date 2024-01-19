@@ -45,6 +45,8 @@ public class UploadController implements Serializable {
 
     private Upload selected;
     private UploadedFile file;
+    
+  
 
     public String toAddNewWebImageUpload() {
         selected = new Upload();
