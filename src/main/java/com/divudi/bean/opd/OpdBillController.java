@@ -1658,6 +1658,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         //Department ID (DEPT ID)
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
+        
+        temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
 
         if (temp.getId() == null) {
             getFacade().create(temp);
