@@ -68,10 +68,10 @@ public class AreaController implements Serializable {
             return null;
         }
         System.out.println("findby area = " + "true");
-        String jpql = "select A "
-                + " from Area A "
-                + " where c.retired=:ret "
-                + " and c.name=:n";
+        String jpql = "select a "
+                + " from Area a "
+                + " where a.retired=:ret "
+                + " and a.name=:n";
         Map m = new HashMap<>();
         m.put("ret", false);
         m.put("n", name);
