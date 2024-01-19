@@ -16,7 +16,7 @@
     <cc:implementation>
         <div class="d-flex mt-1">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="col mx-2" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}"  id="txtVal">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />

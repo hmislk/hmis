@@ -426,7 +426,9 @@
                                     <h:panelGrid 
                                         columns="2" 
                                         class="w-100">
-                                        <p:outputLabel for="refIns" value="Institution" ></p:outputLabel>
+                                        <p:outputLabel value="Institution" ></p:outputLabel>
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+<!--                                        
                                         <p:autoComplete id="refIns" 
                                                         forceSelection="true" 
                                                         value="#{opdBillController.referredByInstitution}"
@@ -442,7 +444,7 @@
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
                                             <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
                                             <p:column headerText="Code">#{ri.institutionCode}</p:column>
-                                        </p:autoComplete>
+                                        </p:autoComplete>-->
 
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>

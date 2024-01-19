@@ -11,7 +11,9 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -20,27 +22,38 @@
 
 
 
-        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" style="page-break-after: always" >
+        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <div class="fiveinchbill " style="page-break-after: always" >
 
-            
-            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="OPD Invoice"   />    
+            <!--            <div class="institutionName">
+                            <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                        </div>-->
+            <!--            <div class="institutionContact" >
+                            <div>
+                                <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                            </div>
+                            <div >
+                                <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                                <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
+                                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                            </div>
+                            <div >
+                                <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                            </div>
+                        </div>-->
+
+            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-5">
+                <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" /> 
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <br/>
                 <hr></hr>   
-                <br/>
             </div>
 
             <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >
-
-
-
                     <tr>
                         <td style="text-align: left;" >
                             <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
@@ -119,7 +132,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.insId}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
 
@@ -182,18 +195,20 @@
 
                 </table>
             </div>
-
+            <div style="text-decoration: overline; margin-top: 20px;font-size: 12pt">
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
+            </div>
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
-                    <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                   />
-                    </div>
+                    <!--                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                                            <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                                       />
+                                        </div>-->
                 </div>
             </h:panelGroup>
 
-            <div class="itemHeadingsFiveFive" >
+            <div class="" >
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
@@ -268,14 +283,9 @@
 
             </div>
 
-
             <div class="billline">
-                <br/>
                 <hr/>
-                <br/>
-
             </div>
-
 
 
             <div  >
@@ -293,20 +303,10 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>
@@ -347,10 +347,15 @@
                 </table>
 
             </div>
+           
+            <ui:repeat value="#{cc.attrs.payments}" var="ps">
+                <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
+                </h:panelGroup>
+            </ui:repeat>
 
-            <div style="text-decoration: overline; margin-top: 20px;">
-                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
-            </div>
 
             <div class="footer" style="text-align: center;">
                 <br/>
