@@ -12,26 +12,30 @@
 
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="All SMS List"/>                          
+                            <h:outputLabel value="Audit Event List"/>                          
                         </f:facet>
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:datePicker styleClass="dateTimePicker" 
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" 
                                           id="fromDate" 
                                           value="#{auditEventController.fromDate}" 
                                           showTime="true"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                             </p:datePicker>
                             <h:outputLabel value="To Date"/>
-                            <p:datePicker id="toDate" value="#{auditEventController.toDate}" 
+                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{auditEventController.toDate}" 
                                           showTime="true"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
-                            <p:commandButton id="btnSearch" 
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton id="btnSearch"
+                                             class="ui-button-warning"
+                                             icon="fas fa-magnifying-glass"
                                              ajax="false" 
                                              value="Search" 
                                              action="#{auditEventController.fillAllAuditEvents}"/>
-                            <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
@@ -42,6 +46,7 @@
                                      var="ae"  
                                      style="min-width: 100%;"  
                                      paginator="true"
+                                     paginatorPosition="bottom"
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
@@ -64,7 +69,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Start"  >
+                            <p:column headerText="End"  >
                                 <h:outputLabel value="#{ae.eventEndTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
