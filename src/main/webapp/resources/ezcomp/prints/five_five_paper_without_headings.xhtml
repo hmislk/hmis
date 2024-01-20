@@ -24,10 +24,10 @@
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill " style="page-break-after: always" >
-         
-            
-            
-            
+
+
+
+
             <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-5">
                 <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" /> 
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
@@ -38,8 +38,12 @@
                 <hr></hr>   
             </div>
 
-            <div class="billDetailsFiveFive" >
+            <div class="billline">
                 <h1>#{cc.attrs.bill.sessionId}</h1>
+            </div>
+
+            <div class="billDetailsFiveFive" >
+
                 <table style="width: 99%!important;" >
                     <tr>
                         <td style="text-align: left;" >
@@ -295,11 +299,7 @@
                 <hr/>
             </div>
 
-            <div >
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bi">
-                    <h1>#{bi.billSession.serialNo}</h1>
-                </ui:repeat>
-            </div>
+
 
 
             <div  >

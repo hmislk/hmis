@@ -436,11 +436,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        
-        for(Bill b:bills){
+
+        for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
-        
+
         return "/opd/opd_bill_print";
     }
 
@@ -1361,7 +1361,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             createPaymentsForBills(myBill, tmp);
 
             getBillBean().checkBillItemFeesInitiated(myBill);
-            
+
             bills.add(myBill);
         }
 
@@ -1389,12 +1389,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (ap.getSmsTemplateForOpdBillSetting() != null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
             sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
         }
-       
-        
+
         auditEventController.updateAuditEvent(eventUuid);
         return "/opd/opd_bill_print?faces-redirect=true";
     }
-    
 
     private boolean executeSettleBillActions() {
         if (errorCheck()) {
@@ -1437,9 +1435,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             createPaymentsForBills(b, getLstBillEntries());
 
             getBillFacade().edit(b);
-            
+
             getBillBean().checkBillItemFeesInitiated(b);
-            
+
             getBills().add(b);
 
         } else {
@@ -1523,7 +1521,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             }
         }
     }
-    
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -1662,6 +1659,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         //Department ID (DEPT ID)
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
+
+        temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
+        
 
         if (temp.getId() == null) {
             getFacade().create(temp);
@@ -1970,9 +1970,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             addingEntry.setBillItem(bi);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
             addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
-            
+
             addStaffToBillFees(addingEntry.getLstBillFees());
-            
+
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
             getLstBillEntries().add(addingEntry);
             bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -2020,24 +2020,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 System.out.println("5");
                 continue;
             }
-            if(bf.getFee().getSpeciality()==null){
+            if (bf.getFee().getSpeciality() == null) {
                 System.out.println("6");
                 bf.setStaff(getSelectedCurrentlyWorkingStaff());
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
                 System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
-                if(bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())){
+                if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
                     System.out.println("7");
-                   if(bf.getFee().getStaff()==null){
-                       System.out.println("8");
-                       bf.setStaff(getSelectedCurrentlyWorkingStaff());
-                   }
-                }else{
+                    if (bf.getFee().getStaff() == null) {
+                        System.out.println("8");
+                        bf.setStaff(getSelectedCurrentlyWorkingStaff());
+                    }
+                } else {
                     System.out.println("9");
-                    for(Staff s: currentlyWorkingStaff){
+                    for (Staff s : currentlyWorkingStaff) {
                         System.out.println("10");
-                        if(bf.getFee().getSpeciality().equals(s.getSpeciality())){
+                        if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
                             System.out.println("11");
                             bf.setStaff(s);
                         }

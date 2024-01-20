@@ -911,6 +911,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.PreBill);
         temp.setDeptId(deptId);
 
+        temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
+        
+        
         if (temp.getId() == null) {
             getFacade().create(temp);
         } else {

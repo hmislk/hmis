@@ -48,6 +48,12 @@
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
+            
+             <div class="billline">
+                 <h1>
+                     #{cc.attrs.bill.sessionId}
+                 </h1>                         
+            </div>
 
             <div class="">
                 <p:barcode value="#{cc.attrs.bill.idStr}" 
