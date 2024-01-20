@@ -702,7 +702,7 @@ public class BillNumberGenerator {
         if (dd == null) {
             dd = 0l;
         }
-        dd++;
+//        dd++;
         return dd + "";
     }
 
