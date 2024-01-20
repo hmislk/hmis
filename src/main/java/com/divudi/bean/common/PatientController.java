@@ -1363,10 +1363,14 @@ public class PatientController implements Serializable {
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatientDetailsEditable(true);
+            controller.setPatient(null);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
             JsfUtil.addErrorMessage("No Patient found !");
+            controller.setPatient(null);
+            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
