@@ -3436,8 +3436,8 @@ public class BillBeanController implements Serializable {
             for (Fee i : itemFee) {
                 f = new BillFee();
                 f.setFee(i);
-                f.setFeeValue(i.getFee());
-                f.setFeeGrossValue(i.getFee());
+                f.setFeeValue(i.getFee() * billItem.getQty());
+                f.setFeeGrossValue(i.getFee() * billItem.getQty());
                 //////System.out.println("Fee Value is " + f.getFeeValue());
                 // f.setBill(billItem.getBill());
                 f.setBillItem(billItem);

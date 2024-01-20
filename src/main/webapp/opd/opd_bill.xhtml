@@ -87,10 +87,11 @@
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
-                                                <h:inputText autocomplete="off" 
-                                                             rendered="#{opdBillController.currentBillItem.item.requestForQuentity}"
-                                                             value="#{opdBillController.currentBillItem.qty}" >
-                                                </h:inputText>
+                                                <p:inputText 
+                                                    autocomplete="off" 
+                                                    class="w-100 m-1"
+                                                    value="#{opdBillController.currentBillItem.qty}" >
+                                                </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton id="btnAddIx" 
                                                              value="Add" 
@@ -98,7 +99,7 @@
                                                              class="w-100 mx-1 ui-button-success"
                                                              action="#{opdBillController.addToBill()}"  
                                                              process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
+                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
                                             </p:commandButton>
                                         </div>
                                     </div>

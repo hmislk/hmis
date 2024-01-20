@@ -190,12 +190,12 @@
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
 
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
-                    <!--                    <div style="width: 100%;text-align: center;font-size: 10px;">
-                                            <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                                       />
-                                        </div>-->
+                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                   />
+                    </div>
                 </div>
             </h:panelGroup>
 
@@ -230,6 +230,9 @@
                                     <td  style="overflow: visible;">
                                         <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                         </h:outputLabel>
+                                        <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
+                                        <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
                                     </td>
                                     <td>
                                         <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
@@ -243,7 +246,13 @@
                                 <ui:repeat value="#{bip.billFees}" var="bf" >
                                     <tr>
                                         <td  style="overflow: visible;">
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="2"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
                                             <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.fee.name}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
+                                            <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
                                             </h:outputLabel>
                                         </td>
                                         <td>

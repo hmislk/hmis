@@ -1126,6 +1126,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         getCurrentBillItem().setSessionDate(sessionDate);
+        if(getCurrentBillItem().getQty()==null){
+            getCurrentBillItem().setQty(1.0);
+        }
 
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
@@ -1140,7 +1143,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));
         getLstBillEntries().add(addingEntry);
         getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
-        getCurrentBillItem().setQty(1.0);
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
 
         calTotals();
@@ -1155,8 +1157,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     public void clearBillItemValues() {
         currentBillItem = null;
-
         recreateBillItems();
+        setItemLight(itemLight);
     }
 
     private void clearBillValues() {
@@ -1637,6 +1639,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
+            currentBillItem.setQty(1.0);
         }
 
         return currentBillItem;
