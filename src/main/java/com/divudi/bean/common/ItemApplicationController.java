@@ -76,16 +76,15 @@ public class ItemApplicationController {
         reloaded = null;
     }
 
-    
-
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Other">
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public List<ItemLight> getItems() {
-        if (items == null) {
-            items = fillAllItems();
-        }
+//        if (items == null) {
+//            items = fillAllItems();
+//        }
+        items = fillAllItems();
         return items;
     }
 
@@ -121,6 +120,8 @@ public class ItemApplicationController {
         }
         return investigationsAndServices;
     }
+    
+    
 
     private List<ItemLight> fillPackages() {
         String jpql = "SELECT new com.divudi.data.ItemLight("

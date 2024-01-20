@@ -14,15 +14,14 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{opdPreBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">      
+                                <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{opdPreBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{opdPreBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control" >                                                                              
+                                <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{opdPreBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                 </p:calendar>
                                 
-                                <p:spacer height="10" width="5" ></p:spacer>
-                                <div class="d-grid gap-2">
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{opdPreBillController.createBillFeePayments}" class="w-100"/>
+                                <div class="d-grid gap-2 my-2">
+                                    <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{opdPreBillController.createBillFeePayments}" />
                                 </div>
                                 
                                 

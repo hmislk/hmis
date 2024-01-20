@@ -15,19 +15,17 @@
 
                     <p:panel header="Category Stock Summery" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="8" class="my-2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                            <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reportsStock.department}" />
-                        </h:panelGrid>
-                         <h:panelGrid columns="3" >
-                              <p:commandButton ajax="false" value="Process" 
-                                              actionListener="#{reportsStock.fillCategoryStocksByCatagory()}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs"  ajax="false" value="Process" 
+                                             actionListener="#{reportsStock.fillCategoryStocksByCatagory()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print"  value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel"  ajax="false" value="Excel"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                         </h:panelGrid>

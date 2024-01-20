@@ -16,20 +16,20 @@
                 </div>
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadBean.file}"
+                        <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
                                          icon="fas fa-upload"
                                          class="ui-button-success"
-                                         action="#{dataUploadBean.uploadCollectingCentres()}"
+                                         action="#{dataUploadController.uploadCollectingCentres()}"
                                          ajax="false"/>
                         <p:commandButton value="Download Template" 
                                          ajax="false" 
                                          icon="fas fa-download"
                                          class="ui-button-warning mx-2"
                                          onclick="PrimeFaces.monitorDownload(start, stop);" >
-                            <p:fileDownload value="#{dataUploadBean.templateForCollectingCentreUpload}" />
+                            <p:fileDownload value="#{dataUploadController.templateForCollectingCentreUpload}" />
                         </p:commandButton>
 
                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
@@ -139,7 +139,7 @@
         <p:poll update="tbl"></p:poll>
 
         <p:dataTable id="tbl" 
-                     value="#{dataUploadBean.collectingCentres}" var="colcen" >
+                     value="#{dataUploadController.collectingCentres}" var="colcen" >
             <p:column >
                 <h:outputText value="#{colcen.name}" ></h:outputText>
             </p:column>

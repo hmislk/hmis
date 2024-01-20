@@ -24,9 +24,9 @@
                             <div class="col-md-8" >
                                 <p:panelGrid columns="2" class="w-100 table table-striped" >
                                     <f:facet name="header" >
-                                        <p:commandButton value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2" ></p:commandButton>
-                                        <p:commandButton value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2" ></p:commandButton>
-                                        <p:commandButton value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2" ></p:commandButton>
+                                        <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" ></p:commandButton>
+                                        <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" ></p:commandButton>
+                                        <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" ></p:commandButton>
                                     </f:facet>
 
 
@@ -112,7 +112,7 @@
                                                  class="w-100"
                                                  styleClass="mx-2">
                                 </p:commandButton>
-                                <p:commandButton value="Collecting Center Billing" 
+                                <p:commandButton value="Collecting Centre Billing" 
                                                  action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
                                                  ajax="false"
                                                  class="w-100"

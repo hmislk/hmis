@@ -407,6 +407,12 @@ public class ServiceController implements Serializable {
     public String generateShortCode(String name) {
         // Initialize the code as an empty string.
         String code = "";
+        if (name == null) {
+            return "";
+        }
+        if (name.trim().equals("")) {
+            return "";
+        }
 
         // Split the name into words using space as the delimiter.
         String[] words = name.split(" ");
@@ -431,7 +437,7 @@ public class ServiceController implements Serializable {
     public void genarateItemCode(List<Service> temp) {
         Integer max = 0;
         String itemPatternString = returnPatternForItemCode();
-        if (temp != null && !temp.isEmpty() && temp.size()!=0) {
+        if (temp != null && !temp.isEmpty() && temp.size() != 0) {
             for (Service service : temp) {
                 Integer itemCodeNumber = returnNumberForItemCode(service.getCode());
                 if (itemCodeNumber > max) {
@@ -505,7 +511,7 @@ public class ServiceController implements Serializable {
     }
 
     public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
-        List<Service> temp;
+        Service temp;
         HashMap hash = new HashMap();
         String sql = "select c from Service c "
                 + "where c.retired = false "
@@ -514,8 +520,8 @@ public class ServiceController implements Serializable {
 
         hash.put("sCode", genaratedServiceCode);
         hash.put("id", getCurrent().getId());
-        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
-        if (temp.size() != 0) {
+        temp = ejbFacade.findFirstByJpql(sql, hash, TemporalType.TIMESTAMP);
+        if (temp != null) {
             return false;
         }
         return true;
@@ -860,7 +866,7 @@ public class ServiceController implements Serializable {
         Map<String, Double> resultMap = new HashMap<>();
 
         if (file != null) {
-            try (InputStream input = file.getInputStream()) {
+            try ( InputStream input = file.getInputStream()) {
                 Workbook workbook = new XSSFWorkbook(input);
                 Sheet sheet = workbook.getSheetAt(0);
                 for (Row row : sheet) {

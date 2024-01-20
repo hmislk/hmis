@@ -833,7 +833,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
                     loggableInstitutions = fillLoggableInstitutions();
-                    userIcons = userIconController.fillUserIcons(u);
+                    userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -949,7 +949,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
-            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -991,7 +990,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
-            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -1120,15 +1118,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
 
-        userIcons = userIconController.fillUserIcons(loggedUser);
+        userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
-        if (userPrivilages == null || userPrivilages.isEmpty()) {
-            userPrivilages = fillUserPrivileges(loggedUser, null, true);
-            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
-            logout();
-        }
+//        if (userPrivilages == null || userPrivilages.isEmpty()) {
+//            userPrivilages = fillUserPrivileges(loggedUser, null, true);
+//            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
+//            logout();
+//        }
 
         String sql;
         Map m;
@@ -1139,12 +1137,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("dep", department);
         departmentPreference = getUserPreferenceFacade().findFirstByJpql(sql, m);
 
-        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
-            long i = searchController.createInwardBHTForIssueBillCount();
-            if (i > 0) {
-                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
-            }
-        }
+//        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
+//            long i = searchController.createInwardBHTForIssueBillCount();
+//            if (i > 0) {
+//                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+//            }
+//        }
 
         sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
         m = new HashMap();

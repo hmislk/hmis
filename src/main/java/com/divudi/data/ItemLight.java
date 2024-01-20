@@ -11,6 +11,7 @@ import com.divudi.entity.Item;
  * @author buddhika
  */
 public class ItemLight {
+
     Long id;
     int orderNo;
     private boolean isMasterItem;
@@ -94,6 +95,28 @@ public class ItemLight {
         return id;
     }
 
+    public ItemLight(Long id, String name, String code, Double total) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.total = total;
+    }
+
+    public ItemLight(Long id, String name, String code, String barcode,
+            String printName, String shortName, String fullName,
+            boolean isMasterItem, boolean hasReportFormat, Double total) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.barcode = barcode;
+        this.printName = printName;
+        this.shortName = shortName;
+        this.fullName = fullName;
+        this.isMasterItem = isMasterItem;
+        this.hasReportFormat = hasReportFormat;
+        this.total = total;
+    }
+
     public ItemLight(Item item) {
         this.id = item.getId();
         this.orderNo = item.getOrderNo();
@@ -141,6 +164,77 @@ public class ItemLight {
         this.printName = printName;
         this.shortName = shortName;
         this.fullName = fullName;
+    }
+
+    public ItemLight(Long id, int orderNo, boolean isMasterItem, boolean hasReportFormat,
+            Long categoryId, Long institutionId, Long departmentId, Long specialityId,
+            Long staffId, Long staffPersonId, String name, String code, String barcode,
+            String printName, String shortName, String fullName, Double total) {
+        this.id = id;
+        this.orderNo = orderNo;
+        this.isMasterItem = isMasterItem;
+        this.hasReportFormat = hasReportFormat;
+        this.categoryId = categoryId;
+        // Note: As per your class, you don't have fields to directly store staffPersonId,
+        // so you might need to adjust this part based on your actual requirements.
+        this.institutionId = institutionId;
+        this.departmentId = departmentId;
+        this.specialityId = specialityId;
+        this.staffId = staffId;
+        this.name = name;
+        this.code = code;
+        this.barcode = barcode;
+        this.printName = printName;
+        this.shortName = shortName;
+        this.fullName = fullName;
+        this.total = total;
+    }
+
+    public ItemLight(Long id, String name, String code, String barcode,
+            String printName, String shortName, String fullName,
+            boolean isMasterItem, boolean hasReportFormat,
+            Long categoryId, String categoryName,
+            Long departmentId, String departmentName,
+            Long institutionId, String institutionName,
+            Double total) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.barcode = barcode;
+        this.printName = printName;
+        this.shortName = shortName;
+        this.fullName = fullName;
+        this.isMasterItem = isMasterItem;
+        this.hasReportFormat = hasReportFormat;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.departmentId = departmentId;
+        this.departmentName = departmentName;
+        this.institutionId = institutionId;
+        this.institutionName = institutionName;
+        this.total = total;
+    }
+
+    public ItemLight(Long id, int orderNo, boolean isMasterItem, boolean hasReportFormat,
+            Long categoryId, Long institutionId, Long departmentId, Long specialityId,
+            Long staffId, String name, String code, String barcode,
+            String printName, String shortName, String fullName, Double total) {
+        this.id = id;
+        this.orderNo = orderNo;
+        this.isMasterItem = isMasterItem;
+        this.hasReportFormat = hasReportFormat;
+        this.categoryId = categoryId;
+        this.institutionId = institutionId;
+        this.departmentId = departmentId;
+        this.specialityId = specialityId;
+        this.staffId = staffId;
+        this.name = name;
+        this.code = code;
+        this.barcode = barcode;
+        this.printName = printName;
+        this.shortName = shortName;
+        this.fullName = fullName;
+        this.total = total;
     }
 
     public void setId(Long id) {

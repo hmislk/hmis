@@ -143,6 +143,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     //Inactive Status
     private boolean inactive;
+    private Institution parentInstitution;
 
     public String getEmailSendingUsername() {
         return emailSendingUsername;
@@ -681,6 +682,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setAllowedCreditLimit(double allowedCreditLimit) {
         this.allowedCreditLimit = allowedCreditLimit;
+    }
+
+    public Institution getParentInstitution() {
+        return parentInstitution;
+    }
+
+    public void setParentInstitution(Institution parentInstitution) {
+        this.parentInstitution = parentInstitution;
     }
     
     

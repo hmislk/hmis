@@ -7,12 +7,13 @@ package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,7 +72,7 @@ public class RevinewReportController implements Serializable {
     @Inject
     CommonController commonController;
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
     public RevinewReportController() {

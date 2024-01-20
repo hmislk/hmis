@@ -4,7 +4,6 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
-import static com.divudi.ejb.CommonFunctions.getEndOfDay;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;

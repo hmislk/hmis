@@ -29,8 +29,17 @@ public class UserIcon implements Serializable {
     private boolean retired;
     private double orderNumber;
     
-    
+    @ManyToOne
+    private Department department;
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+    
     public Long getId() {
         return id;
     }

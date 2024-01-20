@@ -9,34 +9,29 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
-
-
                     <p:panel header="Staff Stock Report by Batch" >
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Staff" >
-                            </h:outputLabel>
-                            <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{storeReportsStock.staff}"  >
+
+                        <h:panelGrid columns="7" class="my-2 " >
+                            <h:outputLabel value="Staff" ></h:outputLabel>
+                            <p:autoComplete class="w-100 mx-2" inputStyleClass="w-100" completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{storeReportsStock.staff}"  >
                             </p:autoComplete>
-                            </h:panelGrid>
-                        <h:panelGrid columns="4" ><p:spacer width="30" height="1"/>
-                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsStock.fillStaffStocks}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:spacer width="10" height="1" ></p:spacer>
+                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-fill" ajax="false" value="Fill" action="#{storeReportsStock.fillStaffStocks}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" >
                                 </p:printer>
                             </p:commandButton>
 
-                            <p:commandButton value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-                                               
-                                                    
-                                               />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List" />
                             </p:commandButton>
-
                         </h:panelGrid>
+
+
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tbl"
@@ -133,9 +128,9 @@
                                     </f:facet>
 
                                 </p:column>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>

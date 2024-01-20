@@ -11,11 +11,12 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Purchase Orders" >
-                        <f:facet name="header" >   
-                            <h:outputLabel value="Search Return Bill"/>  
+                        <f:facet name="header" >  
+                            <h:outputText styleClass="fa-solid fa-file-invoice"/>
+                            <h:outputLabel value="Search Return Bill" class="mx-4"/>  
                         </f:facet>
-                        <h:panelGroup class="d-flex gap-2">
-                            <h:panelGrid class="col-1 mx-1">
+                        <div class="row">
+                            <div class="col-md-2">
                                 <h:panelGrid columns="1" class="mt-1">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar 
@@ -36,26 +37,32 @@
                                         id="btnSearch" 
                                         ajax="false" 
                                         value="Search" 
-                                        class="mt-2  w-100"
+                                        class="w-100 ui-button-warning" 
+                                        icon="fas fa-search"
                                         action="#{searchController.createReturnBhtBills}"  />
+                                    <h:panelGrid columns="1" class="mt-2">
+                                        <h:outputLabel value="Sale Bill No"/>   
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />  
+                                        <h:outputLabel value="Return Bill No"/> 
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                        <h:outputLabel value="Bht No"/>
+                                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                        <h:outputLabel value="Patient Name"/>  
+                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                        <h:outputLabel value="Net Total"/>
+                                        <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/> 
+                                    </h:panelGrid>
                                 </h:panelGrid>
-
-                                <h:panelGrid columns="1" class="mt-2">
-                                    <h:outputLabel value="Sale Bill No"/>   
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />  
-                                    <h:outputLabel value="Return Bill No"/> 
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <h:outputLabel value="Bht No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                                    <h:outputLabel value="Patient Name"/>  
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <h:outputLabel value="Net Total"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/> 
-                                </h:panelGrid>
-                            </h:panelGrid>
-
-                            <p:panel>
-                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                            </div>
+                            <div class="col-md-10">
+                                <p:dataTable id="tblBills"
+                                             value="#{searchController.bills}"
+                                             var="bill"  
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,15"
+                                             size="10">
                                     <p:column headerText="Sale Bill No" >                              
                                         <h:outputLabel value="#{bill.billedBill.deptId}" ></h:outputLabel>
                                     </p:column>  
@@ -103,8 +110,9 @@
                                         </p:commandButton>                                
                                     </p:column>
                                 </p:dataTable>
-                            </p:panel>
-                        </h:panelGroup>
+                            </div>
+                        </div>
+
                     </p:panel>
                 </h:form>
             </ui:define>

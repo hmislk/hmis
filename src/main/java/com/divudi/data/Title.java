@@ -68,4 +68,17 @@ public enum Title {
 
         }
     }
+
+    public static Title getTitleEnum(String titleString) {
+        if (titleString == null || titleString.trim().equals("")) {
+            return Title.Other;
+        }
+        String cleanedTitle = titleString.replaceAll("[\\.\\s\\(\\)]", "");
+        for (Title title : Title.values()) {
+            if (title.name().equalsIgnoreCase(cleanedTitle)) {
+                return title;
+            }
+        }
+        return Title.Other;
+    }
 }

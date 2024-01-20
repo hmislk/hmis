@@ -11,7 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -49,6 +49,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -1878,6 +1879,9 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
+        if (consumeTime==0){
+            return 0;
+        }
         double count = 0;
         double calculation = 0;
 

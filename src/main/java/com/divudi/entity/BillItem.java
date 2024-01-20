@@ -142,7 +142,7 @@ public class BillItem implements Serializable {
     private UserStock transUserStock;
     @Transient
     private BillItem transBillItem;
-    @OneToMany(mappedBy = "billItem", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
     @OrderBy("feeAdjusted")
@@ -205,6 +205,7 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
+        System.out.println("qty = " + qty);
         descreption = billItem.getDescreption();
         billTime = billItem.getBillTime();
         grossValue = billItem.getGrossValue();
@@ -228,7 +229,7 @@ public class BillItem implements Serializable {
     }
 
     public void resetValue() {
-        qty = 0.0;
+        qty = 1.0;
         grossValue = 0;
         netValue = 0;
         discount = 0;

@@ -13,7 +13,7 @@ import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -31,6 +31,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +63,7 @@ public class SalaryCycleController implements Serializable {
     private SalaryCycleFacade facade;
     @EJB
     RosterFacade rosterFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @Inject
     private SessionController sessionController;
