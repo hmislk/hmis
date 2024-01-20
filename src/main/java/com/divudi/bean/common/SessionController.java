@@ -125,7 +125,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private UserPreference applicationPreference;
     private UserPreference institutionPreference;
     private UserPreference departmentPreference;
-    UserPreference userPreference;
+    private UserPreference userPreference;
     boolean logged = false;
     boolean activated = false;
     private String primeTheme;
