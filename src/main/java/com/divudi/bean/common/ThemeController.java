@@ -87,7 +87,11 @@ public class ThemeController implements Serializable {
             UtilityController.addSuccessMessage("Theme updated");
         }
     }
-
+    
+    public String navigateToChangeOwnTheme(){
+        return "/user_theme?faces-redirect=true";
+    }
+    
     public WebUserFacade getFacade() {
         return facade;
     }
