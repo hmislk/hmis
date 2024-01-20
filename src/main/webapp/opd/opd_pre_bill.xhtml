@@ -41,7 +41,7 @@
                                                 event="dateSelect" 
                                                 execute="calS" 
                                                 render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" 
-                                                listener="#{opdPreBillController.fillBillSessions}" />
+                                                />
                                         </p:calendar>
                                     </div>
                                     <div class="col-4">
@@ -106,7 +106,7 @@
                                                                itemLabel="#{item.name}"
                                                                itemValue="#{item}" >
                                                 </f:selectItems>
-                                                <p:ajax listener="#{opdPreBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
+                                                <p:ajax process="acIx" update="tblSs txtQty" ></p:ajax>
                                                 <p:column  headerText="Name">
                                                     <f:facet name="header" >
                                                         Name
@@ -133,9 +133,10 @@
 
                                         <div class="col-md-2">
                                             <h:panelGrid id="txtQty">
-                                                <h:inputText autocomplete="off" 
-                                                             rendered="#{opdPreBillController.currentBillItem.item.requestForQuentity}"
-                                                             value="#{opdPreBillController.currentBillItem.qty}" >
+                                                <h:inputText 
+                                                    autocomplete="off" 
+                                                    class="w-100 m-1"
+                                                    value="#{opdPreBillController.currentBillItem.qty}" >
                                                 </h:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
