@@ -32,6 +32,7 @@
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <p:spacer width="40" height="1" ></p:spacer>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
@@ -199,7 +200,7 @@
             </div>
 
 
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
