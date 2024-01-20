@@ -608,7 +608,7 @@
                                     <ui:repeat value="#{investigationItemController.items}" var="myIi" >
                                         <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
 
-                                            <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'}; border: 1px solid lightblue; " >
+                                           <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : 'lightyellow')}; border: 1px solid lightblue; " >
                                                 <h:outputLabel id="lblViewModeIi" 
                                                                rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
                                                                style="#{myIi.innerCssStyle}; color: black;" 

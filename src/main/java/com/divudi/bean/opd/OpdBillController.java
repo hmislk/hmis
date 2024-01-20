@@ -1661,7 +1661,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         temp.setDeptId(deptId);
 
         temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
-        
 
         if (temp.getId() == null) {
             getFacade().create(temp);
@@ -1927,7 +1926,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void addToBill() {
-
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1953,46 +1951,52 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
+        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
-        double qty = getCurrentBillItem().getQty();
-        for (int i = 0; i < qty; i++) {
-            BillItem bi = new BillItem();
-            bi.copy(getCurrentBillItem());
-            bi.setSessionDate(sessionDate);
+        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
+        
+
+        BillItem bi = new BillItem();
+        bi.copy(getCurrentBillItem());
+        bi.setSessionDate(sessionDate);
 //        New Session
-            //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
 //        New Session
-            //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-            lastBillItem = bi;
-            BillEntry addingEntry = new BillEntry();
-            addingEntry.setBillItem(bi);
-            addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+        lastBillItem = bi;
+        BillEntry addingEntry = new BillEntry();
+        addingEntry.setBillItem(bi);
+        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
 
-            addStaffToBillFees(addingEntry.getLstBillFees());
+        addStaffToBillFees(addingEntry.getLstBillFees());
 
-            addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
-            getLstBillEntries().add(addingEntry);
-            bi.setRate(getBillBean().billItemRate(addingEntry));
-            bi.setQty(1.0);
-            bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
+        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
+        getLstBillEntries().add(addingEntry);
+        System.out.println("bi.getQty() = " + bi.getQty());
+        bi.setRate(getBillBean().billItemRate(addingEntry));
+//            bi.setQty(1.0);
+        bi.setNetValue(bi.getRate() * bi.getQty());
+        
+        System.out.println("bi.getNetRate() = " + bi.getNetRate());
 
-            if (bi.getItem().isVatable()) {
-                bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
-            }
-
-            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
-
-            calTotals();
-
-            if (bi.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
-                return;
-            }
+        if (bi.getItem().isVatable()) {
+            bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
         }
+
+        bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+
+        calTotals();
+
+        if (bi.getNetValue() == 0.0) {
+            UtilityController.addErrorMessage("Please enter the rate");
+            return;
+        }
+
         clearBillItemValues();
+        setItemLight(itemLight);
         //UtilityController.addSuccessMessage("Item Added");
     }
 

@@ -174,7 +174,6 @@ public class PatientController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PatientController patientController;
-    
 
     /**
      *
@@ -1364,9 +1363,14 @@ public class PatientController implements Serializable {
         if (quickSearchPatientList == null) {
             JsfUtil.addErrorMessage("No Patient found !");
             controller.setPatientDetailsEditable(true);
+            controller.setPatient(null);
+            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+            controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.isEmpty()) {
             JsfUtil.addErrorMessage("No Patient found !");
+            controller.setPatient(null);
+            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
             controller.setPatientDetailsEditable(true);
             return;
         } else if (quickSearchPatientList.size() == 1) {
@@ -1798,7 +1802,7 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
     }
-    
+
     public String navigateToAddNewPatientForOpd(String phone) {
         current = null;
         getCurrent();
@@ -1967,8 +1971,7 @@ public class PatientController implements Serializable {
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
     }
-    
-    
+
     public String searchByPatientPhoneNumberForPatientLookup() {
         Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
         if (patientPhoneNumber == null) {
@@ -1989,10 +1992,8 @@ public class PatientController implements Serializable {
         }
         clearSearchDetails();
         return "";
-        
-        
+
     }
-    
 
     public void save(Patient p) {
         if (p == null) {
