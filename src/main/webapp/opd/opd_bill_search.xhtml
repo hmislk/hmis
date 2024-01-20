@@ -12,8 +12,8 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel value="OPD Bill Search " class="mx-4"/>                          
+                             <h:outputText styleClass="fas fa-search" />
+                             <h:outputLabel value="Opd Bill Search " class="mx-4"/>                          
                         </f:facet>
 
                         <div class="row">
@@ -38,39 +38,9 @@
                                                     navigator="false" 
                                                     styleClass="dateTimePicker"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                    class="my-1 w-100"
-                                                    inputStyleClass="form-control"
-                                                    maxdate="#{commonController.currentDateTime}">                                                                              
+                                                    class="w-100"
+                                                    inputStyleClass="form-control">                                                                              
                                         </p:calendar>
-
-                                         <p:spacer height="10" width="5" ></p:spacer>
-                                        <p:commandButton 
-                                            icon="fas fa-search"
-                                            id="btnSearch" 
-                                            ajax="false" 
-                                            value="Search" 
-                                            class="my-1 w-100 ui-button-warning"
-                                            action="#{searchController.searchOpdBills()}" />
-                                        <p:commandButton 
-                                            id="btnExcel"
-                                            icon="fas fa-file-excel"
-                                            ajax="false" 
-                                            value="Excel"
-                                            class="my-1 w-100 ui-button-success">
-                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            id="btnClear"
-                                            icon="fas fa-eraser"
-                                            value="Clear" 
-                                            class="my-1 w-100 ui-button-danger" 
-                                            action="#{searchController.clearOpdBillSearchData}"
-                                            process="btnClear"
-                                            update="searchKeyword"/>
-
-
-
-
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
@@ -98,7 +68,7 @@
                                                      autocomplete="off"
                                                      value="#{searchController.searchKeyword.netTotal}"/>
                                         <p:spacer height="10" width="5" ></p:spacer>
-
+                                        <hr/>
                                         <h:outputLabel value="From Institution" class="w-100"/>
                                         <p:selectOneMenu 
                                             id="cmdFromInstitution"
@@ -159,9 +129,34 @@
                                                            itemValue="#{d}" ></f:selectItems>
                                         </p:selectOneMenu>
 
+
                                     </h:panelGroup>
 
-
+                                    <div class="d-grid gap-2 mt-2">
+                                        <p:commandButton 
+                                            icon="fas fa-search"
+                                            id="btnSearch" 
+                                            ajax="false" 
+                                            value="Search" 
+                                            class="ui-button-success"
+                                            action="#{searchController.searchOpdBills()}" />
+                                        <p:commandButton 
+                                            id="btnExcel"
+                                            icon="fas fa-download"
+                                            ajax="false" 
+                                            value="Download"
+                                            class="w-100">
+                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnClear"
+                                            icon="fas fa-broom"
+                                            value="Clear" 
+                                            class="my-2 ui-button-warning" 
+                                            action="#{searchController.clearOpdBillSearchData}"
+                                            process="btnClear"
+                                            update="searchKeyword"/>
+                                    </div>
 
                                 </div>
                             </div>
@@ -172,7 +167,7 @@
                                              id="tblBills" 
                                              value="#{searchController.bills}" 
                                              var="bill"  
-                                             class="w-100"
+                                             style="min-width: 100%;"  
                                              rows ="10"
                                              rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
@@ -180,21 +175,21 @@
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              >
-                                    <p:column headerText="ID" filterBy="#{bill.id}" filterMatchMode="contains"
+                                    <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
                                               sortBy="#{bill.id}"
-                                              styleClass="alignTop" >
+                                              styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Ins Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
                                                        value="#{bill.insId}" 
-                                                       action="#{opdBillController.navigateToViewOpdBill()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Dep Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
-                                        <h:commandLink action="#{billSearch.navigateToViewOpdBill()}" value="#{bill.deptId}">
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                        <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
@@ -217,8 +212,8 @@
                                     <p:column headerText="Client"  sortBy="#{bill.patient.person.name}" 
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
-                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
+                                            <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
