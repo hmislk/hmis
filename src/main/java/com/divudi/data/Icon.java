@@ -21,6 +21,7 @@ public enum Icon {
     Accept_Payments_For_OPD_Bills("Admit.png", "/opd_search_pre_bill"),
     Accept_Payments_For_OPD_Batch_Bills("Admit.png", "/opd_search_pre_batch_bill"),
     Accept_Payments_For_Pharmacy_Bills("Admit.png", "/pharmacy/pharmacy_search_pre_bill");
+    
 
     public static Icon getPatient_Lookup() {
         return Patient_Lookup;
