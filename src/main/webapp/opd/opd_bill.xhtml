@@ -337,6 +337,12 @@
                                                         value="#{opdBillController.patient}" 
                                                         target="#{patientController.current}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
+                                                <p:commandButton value="New OPD Bill" 
+                                                                 class="ui-button-primary m-1"
+                                                                 icon="fa fa-plus"
+                                                                 action="#{opdBillController.navigateToNewOpdBill()}"
+                                                                 ajax="false">
+                                                </p:commandButton>
                                             </h:panelGrid>
                                         </div>
                                     </div>

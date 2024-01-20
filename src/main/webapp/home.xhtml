@@ -23,36 +23,26 @@
                             class="m-1"
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
                             actionListener="#{opdPreBillController.prepareNewBill}" 
-                            value="Payment-Pending Order"
+                            value="Billing for Cashier"
                             icon="fa fa-fw fa-cash-register"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
                     </h:form>
                 </h:panelGroup>
 
                 <h:panelGroup 
-
                     rendered="#{ui.icon eq 'Patient_Lookup'}"
                     layout="block"
                     class="col-md-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Patient Lookup">
-                        sdfsdf
-                    </p:panel>
+                    
                 </h:panelGroup>
 
                 <h:panelGroup 
-
                     rendered="#{ui.icon eq 'Patient_Add_New'}"
                     layout="block"
                     class="col-md-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Add New Patient">
-                        dfsdf
-                    </p:panel>
+
                 </h:panelGroup>
 
                 <h:panelGroup 
@@ -61,11 +51,16 @@
                     layout="block"
                     class="col-md-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Opd Billing">
-                        dfsdf
-                    </p:panel>
+                    <h:form >
+                        <p:commandButton 
+                            ajax="false" 
+                            class="m-1"
+                            action="/opd/opd_bill?faces-redirect=true" actionListener="#{billController.prepareNewBill}"
+                            value="OPD Billing"
+                            icon="fa fa-fw fa-cash-register"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>
                 </h:panelGroup>
 
 
@@ -76,11 +71,7 @@
                     layout="block"
                     class="col-md-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Collecting Centre Billing">
-                        dfsdf
-                    </p:panel>
+                    
                 </h:panelGroup>
 
                 <h:panelGroup 

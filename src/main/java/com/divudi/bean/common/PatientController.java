@@ -1798,6 +1798,14 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
     }
+    
+    public String navigateToAddNewPatientForOpd(String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
+        return "/opd/patient_edit?faces-redirect=true;";
+    }
 
     public String toViewPatient() {
         current = null;
@@ -1959,6 +1967,32 @@ public class PatientController implements Serializable {
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
     }
+    
+    
+    public String searchByPatientPhoneNumberForPatientLookup() {
+        Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+        if (patientPhoneNumber == null) {
+            searchedPatients = new ArrayList<>();
+            return "No Search Number Given";
+        }
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+        m.put("pp", patientPhoneNumber);
+        searchedPatients = getFacade().findByJpql(j, m);
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return navigateToAddNewPatientForOpd(searchPatientPhoneNumber);
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOpdPatientProfile();
+        }
+        clearSearchDetails();
+        return "";
+        
+        
+    }
+    
 
     public void save(Patient p) {
         if (p == null) {

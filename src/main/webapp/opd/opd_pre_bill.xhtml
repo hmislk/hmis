@@ -133,17 +133,17 @@
 
                                         <div class="col-md-2">
                                             <h:panelGrid id="txtQty">
-                                                <h:inputText autocomplete="off" 
-                                                             rendered="#{opdPreBillController.currentBillItem.item.requestForQuentity}"
+                                                <p:inputText autocomplete="off" 
+                                                             class="w-100"
                                                              value="#{opdPreBillController.currentBillItem.qty}" >
-                                                </h:inputText>
+                                                </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 onerror="Please Select Item"
                                                 icon="fa fa-plus"
-                                                class="w-100 mx-1 ui-button-success"
+                                                class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
                                                 process="acIx btnAddIx txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                 update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
