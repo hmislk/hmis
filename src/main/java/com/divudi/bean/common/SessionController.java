@@ -427,6 +427,45 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setInstitution(null);
         return "/admin/institutions/admin_mange_department_preferences?faces-redirect=true";
     }
+    
+    
+    public String navigateToManageWebUserPreferences(WebUser preferenceUser) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p "
+                + " from UserPreference p "
+                + " where p.webUser=:wu order by p.id desc";
+        m.put("wu", preferenceUser);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setWebUser(preferenceUser);
+        }
+        currentPreference.setDepartment(null);
+        currentPreference.setInstitution(null);
+        return "/admin/users/user_preferences?faces-redirect=true";
+    }
+    
+    public String navigateToManageOwnWebUserPreferences() {
+        if(loggedUser==null){
+            JsfUtil.addErrorMessage("User?");
+            return "";
+        }
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select p "
+                + " from UserPreference p "
+                + " where p.webUser=:wu order by p.id desc";
+        m.put("wu", loggedUser);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql, m);
+        if (currentPreference == null) {
+            currentPreference = new UserPreference();
+            currentPreference.setWebUser(loggedUser);
+        }
+        currentPreference.setDepartment(null);
+        currentPreference.setInstitution(null);
+        return "/user_own_preferances?faces-redirect=true";
+    }
 
     public void updateUserPreferences() {
         if (loggedPreference != null) {
