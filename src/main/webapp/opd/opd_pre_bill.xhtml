@@ -41,7 +41,7 @@
                                                 event="dateSelect" 
                                                 execute="calS" 
                                                 render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" 
-                                                />
+                                                listener="#{opdPreBillController.fillBillSessions}" />
                                         </p:calendar>
                                     </div>
                                     <div class="col-4">
@@ -106,7 +106,7 @@
                                                                itemLabel="#{item.name}"
                                                                itemValue="#{item}" >
                                                 </f:selectItems>
-                                                <p:ajax process="acIx" update="tblSs txtQty" ></p:ajax>
+                                                <p:ajax listener="#{opdPreBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
                                                 <p:column  headerText="Name">
                                                     <f:facet name="header" >
                                                         Name
@@ -133,18 +133,17 @@
 
                                         <div class="col-md-2">
                                             <h:panelGrid id="txtQty">
-                                                <h:inputText 
-                                                    autocomplete="off" 
-                                                    class="w-100 m-1"
-                                                    value="#{opdPreBillController.currentBillItem.qty}" >
-                                                </h:inputText>
+                                                <p:inputText autocomplete="off" 
+                                                             class="w-100"
+                                                             value="#{opdPreBillController.currentBillItem.qty}" >
+                                                </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 onerror="Please Select Item"
                                                 icon="fa fa-plus"
-                                                class="w-100 mx-1 ui-button-success"
+                                                class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
                                                 process="acIx btnAddIx txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
                                                 update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
