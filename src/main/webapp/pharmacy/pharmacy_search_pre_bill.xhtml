@@ -97,7 +97,7 @@
                                     paginatorPosition="bottom"
                                     class="my-4"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
+                                    rowsPerPageTemplate="10,15,20"
                                     >
 
                                     <p:column headerText="No" width="2%" >
@@ -149,7 +149,6 @@
                                             disabled="#{bill.referenceBill ne null or bill.cancelled}">   
                                         </p:commandButton>
                                     </p:column>
-
                                     <p:column width="35%">
                                         <p:dataTable value="#{bill.cashBillsPre}" var="rb">
                                             <p:column  >                                                               
