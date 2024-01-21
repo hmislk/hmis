@@ -51,7 +51,9 @@
                     <div class="mt-4">
                         <p:commandButton ajax="false"
                                          value="Select"
+                                         id="btnSelect"
                                          action="#{sessionController.selectDepartment()}" class="w-100 p-1"/>
+                        <p:defaultCommand target="btnSelect"> </p:defaultCommand>
                     </div>
                 </div>
 

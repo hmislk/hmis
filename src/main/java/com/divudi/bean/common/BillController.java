@@ -2162,6 +2162,7 @@ public class BillController implements Serializable {
         printPreview = false;
         paymentMethodData = null;
         paymentScheme = null;
+        
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
     }

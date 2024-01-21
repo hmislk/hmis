@@ -787,6 +787,7 @@ public class Bill implements Serializable {
         invoiceNumber = bill.getInvoiceNumber();
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
+        sessionId=bill.getSessionId();
         //      referenceBill=bill.getReferenceBill();
     }
 
