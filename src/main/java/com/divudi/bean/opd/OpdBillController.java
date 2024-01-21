@@ -131,6 +131,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SmsFacade SmsFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    
 
     /**
      * Controllers
@@ -255,6 +256,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
+    
+    public boolean duplicatePrint;
 
     /**
      *
@@ -440,7 +443,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
-
+        duplicatePrint=true;
         return "/opd/opd_bill_print";
     }
 
@@ -1466,6 +1469,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
+        duplicatePrint=false;
         return true;
     }
 
@@ -3332,5 +3336,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setSelectedCurrentlyWorkingStaff(Staff selectedCurrentlyWorkingStaff) {
         this.selectedCurrentlyWorkingStaff = selectedCurrentlyWorkingStaff;
     }
+
+    public boolean isDuplicatePrint() {
+        return duplicatePrint;
+    }
+
+    public void setDuplicatePrint(boolean duplicatePrint) {
+        this.duplicatePrint = duplicatePrint;
+    }
+    
+    
 
 }
