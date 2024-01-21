@@ -184,6 +184,8 @@
 
                     </tr>
 
+
+
                 </table>
             </div>
             <div style="text-decoration: overline; margin-top: 20px;font-size: 12pt">
@@ -195,6 +197,15 @@
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
                                    />
+                    </div>
+                </div>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 12pt" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
             </h:panelGroup>
@@ -231,7 +242,11 @@
                                         <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                         </h:outputLabel>
                                         <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
-                                        <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="("  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value=")"  style="text-transform: capitalize!important;"  >
                                         </h:outputLabel>
                                     </td>
                                     <td>
