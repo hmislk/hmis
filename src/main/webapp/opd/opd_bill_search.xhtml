@@ -11,9 +11,38 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel>
-                        <f:facet name="header" >
-                             <h:outputText styleClass="fas fa-search" />
-                             <h:outputLabel value="Opd Bill Search " class="mx-4"/>                          
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Opd Bill Search " class="mx-4"/>
+                                </div>  
+                                <div class="d-flex">
+                                    <p:commandButton 
+                                        icon="fas fa-search"
+                                        id="btnSearch" 
+                                        ajax="false" 
+                                        value="Search" 
+                                        class="ui-button-success"
+                                        action="#{searchController.searchOpdBills()}" />
+                                    <p:commandButton 
+                                        id="btnExcel"
+                                        icon="fas fa-download"
+                                        ajax="false" 
+                                        value="Download"
+                                        class="w-100 mx-2">
+                                        <p:dataExporter fileName="OPD Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        id="btnClear"
+                                        icon="fas fa-broom"
+                                        value="Clear" 
+                                        class="my-2 ui-button-warning" 
+                                        action="#{searchController.clearOpdBillSearchData}"
+                                        process="btnClear"
+                                        update="searchKeyword"/>
+                                </div>
+                            </div>
                         </f:facet>
 
                         <div class="row">
@@ -132,31 +161,7 @@
 
                                     </h:panelGroup>
 
-                                    <div class="d-grid gap-2 mt-2">
-                                        <p:commandButton 
-                                            icon="fas fa-search"
-                                            id="btnSearch" 
-                                            ajax="false" 
-                                            value="Search" 
-                                            class="ui-button-success"
-                                            action="#{searchController.searchOpdBills()}" />
-                                        <p:commandButton 
-                                            id="btnExcel"
-                                            icon="fas fa-download"
-                                            ajax="false" 
-                                            value="Download"
-                                            class="w-100">
-                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            id="btnClear"
-                                            icon="fas fa-broom"
-                                            value="Clear" 
-                                            class="my-2 ui-button-warning" 
-                                            action="#{searchController.clearOpdBillSearchData}"
-                                            process="btnClear"
-                                            update="searchKeyword"/>
-                                    </div>
+
 
                                 </div>
                             </div>

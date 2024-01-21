@@ -26,10 +26,11 @@
         <div class="fiveinchbill " style="page-break-after: always" >
 
 
+            
 
-
-            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-5">
-                <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" /> 
+            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-2">
+                <div class="d-flex align-items-center">          <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                    <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4></div>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -38,9 +39,7 @@
                 <hr></hr>   
             </div>
 
-            <div class="billline">
-                <h1>#{cc.attrs.bill.sessionId}</h1>
-            </div>
+           
 
             <div class="billDetailsFiveFive" >
 
@@ -186,7 +185,7 @@
 
                 </table>
             </div>
-            <div style="text-decoration: overline; margin-top: 20px;font-size: 12pt">
+            <div style="text-decoration: overline; margin-top: 20px;font-size: 10pt">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
 

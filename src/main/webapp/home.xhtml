@@ -77,7 +77,7 @@
                             style="width: 150px;height: 70px;font-size: 12pt"
                             ajax="false" 
                             class="m-1 ui-button-success"
-                            action="/opd/opd_bill?faces-redirect=true" actionListener="#{billController.prepareNewBill}"
+                            action="#{opdBillController.navigateToNewOpdBill()}" actionListener="#{billController.prepareNewBill}"
                             value="OPD Billing"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
                         </p:commandButton>
@@ -128,7 +128,7 @@
                             style="width: 150px;height: 70px;font-size: 12pt"
                             ajax="false" 
                             class="m-1 ui-button-success"
-                            action="opd_search_pre_batch_bill?faces-redirect=true"
+                            action="opd_search_pre_bill?faces-redirect=true"
                             value="Accept Payment For OPD Bill"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
                         </p:commandButton>
