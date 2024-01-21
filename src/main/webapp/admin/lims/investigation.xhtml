@@ -166,7 +166,6 @@
                                     <p:spacer ></p:spacer>
                                     <p:outputLabel id="tmpRf" value="#{itemController.current.hasReportFormat}" ></p:outputLabel>
 
-
                                     <h:outputText value="Master Item Reference" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:autoComplete 
@@ -237,7 +236,6 @@
                                         </p:column>
                                     </p:autoComplete>
 
-
                                     <h:outputText value="Institution" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:selectOneMenu class="form-control" id="cmbIns"    value="#{investigationController.current.institution}" >
@@ -256,36 +254,45 @@
                                 </h:panelGrid>
                             </p:tab>
                             <p:tab title="Pricing Details">
-                                <p:panelGrid columns="2" >
+                                <h:panelGrid columns="3" >
 
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.userChangable}" itemLabel="Can change rate during Billing" />
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.userChangable}" itemLabel="Can change rate during Billing"/>
-
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.chargesVisibleForInward}" itemLabel="Rates visible during Inward Billing"/>
 
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.chargesVisibleForInward}" itemLabel="Rates visible during Inward Billing" class="mt-2"/>
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.marginNotAllowed}" itemLabel="Margins Not Allowed"/>
-
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
 
-
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.marginNotAllowed}" itemLabel="Margins Not Allowed" class="mt-2"/>
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.discountAllowed}" itemLabel="Discount Allowed"/>
+                                    <h:outputText value="" ></h:outputText>
 
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.requestForQuentity}" itemLabel="Request for Quentity" class="mt-2"/>
+                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="" ></h:outputText>
 
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.discountAllowed}" itemLabel="Discount Allowed" class="mt-2"/>
+                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="" ></h:outputText>
+
+                                </h:panelGrid >
+                                <h:panelGrid columns="3" class="mt-3">
 
                                     <h:outputText value="VATable" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
                                     <p:selectBooleanCheckbox  value="#{investigationController.current.vatable}" >
                                     </p:selectBooleanCheckbox>
 
                                     <h:outputText value="VAT Percentage" ></h:outputText>
-                                    <p:inputText  autocomplete="off" 
-                                                  value="#{investigationController.current.vatPercentage}"  ></p:inputText>
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:inputText  
+                                        class="mt-2"
+                                        autocomplete="off" 
+                                                  value="#{investigationController.current.vatPercentage}"  >
+                                    </p:inputText>
 
-
-                                </p:panelGrid>
+                                </h:panelGrid>
                             </p:tab>
                             <p:tab title="Editing Details">
                                 <p:panelGrid columns="2" >
