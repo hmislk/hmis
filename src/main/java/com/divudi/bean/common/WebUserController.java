@@ -810,6 +810,15 @@ public class WebUserController implements Serializable {
         listWebUserDashboards();
         return "/admin_manage_dashboards";
     }
+    
+    public String toManageUserPreferences() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        return sessionController.navigateToManageWebUserPreferences(current);
+    }
 
     public void addWebUserDashboard() {
         if (current == null) {

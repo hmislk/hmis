@@ -15,33 +15,35 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Sale Bill For Cashier" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
+                            <h:outputLabel value="Reprint Sale Bill For Cashier" class="mt-2" ></h:outputLabel>
+                            
+                            <p:commandButton 
+                                value="Reprint" 
+                                style="float: right;"
+                                class="ui-button-info mx-2"
+                                icon="fa fa-print"
+                                ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" action="pharmacy_cancel_bill_retail_cash" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel" 
+                                style="float: right;"
+                                class="ui-button-danger"
+                                icon="fa fa-cancel"
+                                action="pharmacy_cancel_bill_retail_cash" 
+                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                             </p:commandButton>
                            
                         </f:facet>
 
-                     
+                        <h:panelGroup id="gpBillPreview" >
+                            <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                        </h:panelGroup>
                     </p:panel>
-
-
-
-
-                    <h:panelGroup id="gpBillPreview" >
-                        <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                    </h:panelGroup>
-
 
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

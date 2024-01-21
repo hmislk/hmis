@@ -15,28 +15,28 @@
                 <h:form>
                     <p:panel header="Reprint"  rendered="#{!billController.printPreview}">
                         <f:facet name="header" >
-                            <h:outputLabel value="Paymetn For OPD Bill" ></h:outputLabel>
+                            <h:outputLabel value="Payment For OPD Bill" ></h:outputLabel>
                         </f:facet>
 
                         <p:panel>
                             <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Patient Detail">
+                                <p:panel header="Patient Details">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
-                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value="Age:" />
                                         <h:outputLabel value="#{billSearch.bill.patient.age}"  />
-                                        <h:outputLabel value="Sex" >
+                                        <h:outputLabel value="Sex:" >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.patient.person.sex}" >
                                         </h:outputLabel>
-                                        <h:outputLabel value="Phone" >
+                                        <h:outputLabel value="Phone:" >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.patient.person.phone}" >
                                         </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
-                                <p:panel header="Bill Detail">
+                                <p:panel header="Bill Details">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.deptId}" >
@@ -62,7 +62,7 @@
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
-                            <p:panel header="Bill Item Detail">
+                            <p:panel header="Bill Item Details">
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true" value="#{billSearch.billFees2}" var="bip" >
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
@@ -110,7 +110,7 @@
                             <p:panel>
                                 <p:panelGrid columns="2" >
 
-                                    <p:outputLabel value="Payment Methord" />
+                                    <p:outputLabel value="Payment Method" />
                                     <p:panelGrid columns="5" >
                                         <h:panelGrid columns="1">                                
                                             <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
@@ -153,11 +153,11 @@
                         <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
                             <div id="centrewrapper">
                                 <div id="centrecell">
-                                    <div class="centrecontent">
-                                        <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <div class="centrecontent my-3">
+                                        <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print" ajax="false" action="#"  >
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
-                                        <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
+                                        <p:commandButton class="mx-2" value="Back" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
                                         </p:commandButton>
 
 
@@ -167,8 +167,8 @@
                                             <h:panelGroup id="gpBillPreview" >
 
                                                 <div  class="fiveinchbill">
-                                                    <div class="heading" >
-                                                        <p:outputLabel value="Opd Payment Bill" />
+                                                    <div class="heading h3" >
+                                                        <p:outputLabel value="OPD Payment Bill" />
                                                     </div>
 
                                                     <div  class="receiptno">
@@ -195,8 +195,8 @@
 
                                                     </div>
 
-                                                    <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.nameWithTitle}" styleClass="ptname" />
-
+                                                    <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.nameWithTitle}" styleClass="ptname" /> <br/>
+                                                    
                                                     <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.phone}" styleClass="phone" />
 
 
@@ -281,7 +281,7 @@
                                                             <h:panelGroup rendered="#{billController.opdBill.referenceBill.balance gt 1}" >
                                                                 <tr>
                                                                     <td style="text-align: left; min-width: 3cm;">
-                                                                        <h:outputLabel value="Paying" style="  text-align: right!important;  font-size: 15px!important;   "/>
+                                                                        <h:outputLabel value="Balance" style="  text-align: right!important;  font-size: 15px!important;   "/>
                                                                     </td>
                                                                     <td style="text-align: right!important; ">
                                                                         <h:outputLabel value="#{billController.opdBill.referenceBill.balance}"  style=" font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
@@ -296,7 +296,7 @@
                                                     </div>
 
                                                     <div class="cashier" >
-                                                        <h:outputLabel value="Cashier : #{billController.opdBill.creater.code}"/>
+                                                        <h:outputLabel value="Cashier : #{billController.opdBill.creater.name}"/>
 
 
                                                     </div>

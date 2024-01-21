@@ -131,6 +131,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private SmsFacade SmsFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    
 
     /**
      * Controllers
@@ -255,6 +256,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private List<Staff> currentlyWorkingStaff;
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
+    
+    public boolean duplicatePrint;
 
     /**
      *
@@ -440,7 +443,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
-
+        duplicatePrint=true;
         return "/opd/opd_bill_print";
     }
 
@@ -1466,6 +1469,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
+        duplicatePrint=false;
         return true;
     }
 
@@ -1523,39 +1527,41 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private void saveBatchBill() {
-        Bill tmp = new BilledBill();
-        tmp.setBillType(BillType.OpdBathcBill);
-        tmp.setPaymentScheme(paymentScheme);
-        tmp.setPaymentMethod(paymentMethod);
-        tmp.setInstitution(sessionController.getInstitution());
-        tmp.setDepartment(sessionController.getDepartment());
-        tmp.setFromInstitution(sessionController.getInstitution());
-        tmp.setFromDepartment(sessionController.getDepartment());
-        tmp.setPatient(patient);
-        tmp.setInsId(
+        Bill newBatchBill = new BilledBill();
+        newBatchBill.setBillType(BillType.OpdBathcBill);
+        newBatchBill.setPaymentScheme(paymentScheme);
+        newBatchBill.setPaymentMethod(paymentMethod);
+        newBatchBill.setInstitution(sessionController.getInstitution());
+        newBatchBill.setDepartment(sessionController.getDepartment());
+        newBatchBill.setFromInstitution(sessionController.getInstitution());
+        newBatchBill.setFromDepartment(sessionController.getDepartment());
+        newBatchBill.setPatient(patient);
+        newBatchBill.setInsId(
                 getBillNumberGenerator().institutionBillNumberGenerator(
                         getSessionController().getInstitution(),
                         BillType.OpdBathcBill,
                         BillClassType.BilledBill,
                         BillNumberSuffix.NONE));
-        tmp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
+        newBatchBill.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
                 getSessionController().getInstitution(),
                 getSessionController().getDepartment(),
                 BillType.OpdBathcBill,
                 BillClassType.BilledBill));
-        tmp.setGrantTotal(total);
-        tmp.setDiscount(discount);
-        tmp.setBillTime(new Date());
-        tmp.setBillTotal(netTotal);
-        tmp.setBillDate(new Date());
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        getBillFacade().create(tmp);
+        newBatchBill.setGrantTotal(total);
+        newBatchBill.setDiscount(discount);
+        newBatchBill.setBillTime(new Date());
+        newBatchBill.setBillTotal(netTotal);
+        newBatchBill.setBillDate(new Date());
+        newBatchBill.setCreatedAt(new Date());
+        newBatchBill.setCreater(getSessionController().getLoggedUser());
+        newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);
+        
+        getBillFacade().create(newBatchBill);
 
         double dbl = 0;
         double reminingCashPaid = cashPaid;
         for (Bill b : bills) {
-            b.setBackwardReferenceBill(tmp);
+            b.setBackwardReferenceBill(newBatchBill);
             dbl += b.getNetTotal();
 
             if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
@@ -1572,15 +1578,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             reminingCashPaid = reminingCashPaid - b.getNetTotal();
             getBillFacade().edit(b);
 
-            tmp.getForwardReferenceBills().add(b);
+            newBatchBill.getForwardReferenceBills().add(b);
         }
 
-        tmp.setNetTotal(dbl);
+        newBatchBill.setNetTotal(dbl);
 
-        tmp.setCashBalance(reminingCashPaid);
-        getBillFacade().edit(tmp);
-        setBatchBill(tmp);
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
+        newBatchBill.setCashBalance(reminingCashPaid);
+        getBillFacade().edit(newBatchBill);
+        setBatchBill(newBatchBill);
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(newBatchBill, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
 
@@ -1610,64 +1616,67 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         getSessionController().setLoggedUser(wb);
     }
 
-    private Bill saveBill(Department bt, Bill temp) {
-        temp.setBillType(BillType.OpdBill);
-        temp.setDepartment(getSessionController().getDepartment());
-        temp.setInstitution(getSessionController().getInstitution());
-        temp.setToDepartment(bt);
-        temp.setToInstitution(bt.getInstitution());
+    private Bill saveBill(Department bt, Bill newBill) {
+        newBill.setBillType(BillType.OpdBill);
+        newBill.setDepartment(getSessionController().getDepartment());
+        newBill.setInstitution(getSessionController().getInstitution());
+        newBill.setToDepartment(bt);
+        newBill.setToInstitution(bt.getInstitution());
 
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        newBill.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        newBill.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        temp.setStaff(staff);
-        temp.setToStaff(toStaff);
-        temp.setReferredBy(referredBy);
-        temp.setReferenceNumber(referralId);
-        temp.setReferredByInstitution(referredByInstitution);
-        temp.setCreditCompany(creditCompany);
-        temp.setCollectingCentre(collectingCentre);
-        temp.setComments(comment);
+        newBill.setStaff(staff);
+        newBill.setToStaff(toStaff);
+        newBill.setFromStaff(selectedCurrentlyWorkingStaff);
+        
+        newBill.setReferredBy(referredBy);
+        newBill.setReferenceNumber(referralId);
+        newBill.setReferredByInstitution(referredByInstitution);
+        
+        newBill.setCreditCompany(creditCompany);
+        newBill.setCollectingCentre(collectingCentre);
+        newBill.setComments(comment);
 
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+        getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
 
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPatient(patient);
+        newBill.setBillDate(new Date());
+        newBill.setBillTime(new Date());
+        newBill.setPatient(patient);
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
+        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
-        temp.setPaymentScheme(getPaymentScheme());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
+        newBill.setPaymentScheme(getPaymentScheme());
+        newBill.setPaymentMethod(paymentMethod);
+        newBill.setCreatedAt(new Date());
+        newBill.setCreater(getSessionController().getLoggedUser());
 
         //SETTING INS ID
         recurseCount = 0;
-        String insId = generateBillNumberInsId(temp);
+        String insId = generateBillNumberInsId(newBill);
 
         if (insId.equals("")) {
             return null;
         }
-        temp.setInsId(insId);
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        newBill.setInsId(insId);
+        if (newBill.getId() == null) {
+            getFacade().create(newBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(newBill);
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
-        temp.setDeptId(deptId);
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
+        newBill.setDeptId(deptId);
 
-        temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
+        newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment()));
 
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        if (newBill.getId() == null) {
+            getFacade().create(newBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(newBill);
         }
-        return temp;
+        return newBill;
 
     }
 
@@ -3327,5 +3336,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     public void setSelectedCurrentlyWorkingStaff(Staff selectedCurrentlyWorkingStaff) {
         this.selectedCurrentlyWorkingStaff = selectedCurrentlyWorkingStaff;
     }
+
+    public boolean isDuplicatePrint() {
+        return duplicatePrint;
+    }
+
+    public void setDuplicatePrint(boolean duplicatePrint) {
+        this.duplicatePrint = duplicatePrint;
+    }
+    
+    
 
 }

@@ -48,11 +48,15 @@
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
-            
-             <div class="billline">
-                 <h1>
-                     #{cc.attrs.bill.sessionId}
-                 </h1>                         
+
+            <div class="billline">
+                <h1>
+                    #{cc.attrs.bill.sessionId}
+                </h1>                         
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
             <div class="">
@@ -214,10 +218,21 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div  >
+            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 14px;">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
+                    </div>
+                </div>
+            </h:panelGroup>
 
-                <table style="width: 100%; margin-left:0.5cm; ">
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+           
+
+            <div  >
+                <h:panelGroup rendered="false" >
+                    <table style="width: 100%; margin-left:0.5cm; ">
+
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td style="text-align: left;">
@@ -232,21 +247,29 @@
                             </tr>
 
                         </ui:repeat>
-                    </h:panelGroup>
-                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;" >
-                            <h:outputLabel value="Value" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
 
-                </table>
-
+                    </table>
+                </h:panelGroup>
             </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+            <table style="width: 100%; margin-left:0.5cm; ">
+                <tr>
+                    <td class="totalsBlock" style="text-align: left; width: 60%;" >
+                        <h:outputLabel value="Value" />
+                    </td>
+                    <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.total}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+
+            </table>
+
+
 
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           

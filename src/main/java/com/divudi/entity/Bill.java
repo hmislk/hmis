@@ -34,8 +34,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -85,7 +83,7 @@ public class Bill implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    ////////////////////////////////////////////////////
+
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Payment> payments = new ArrayList<>();
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -289,7 +287,6 @@ public class Bill implements Serializable {
     private WebUser fromWebUser;
     double claimableTotal;
 
-    //Denormalization
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date appointmentAt;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -297,8 +294,6 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     Bill paidBill;
     double qty;
-    @Transient
-    double transTotalSaleValue;
 
     //Sms Info
     private Boolean smsed = false;
@@ -311,11 +306,9 @@ public class Bill implements Serializable {
 
     //Print Information
     private boolean printed;
-//    @ManyToOne
-//    private WebUser printedUser;
-//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-//    private Date printedAt;
 
+    @Transient
+    double transTotalSaleValue;
     @Transient
     double transTotalCCFee;
     @Transient
@@ -330,21 +323,18 @@ public class Bill implements Serializable {
     double vatPlusStaffFee;
     @Transient
     double vatPlusHosFee;
-
     @Transient
     private boolean approvedAnyTest = false;
-
     @Transient
     private IdentifiableWithNameOrCode referredInstituteOrDoctor;
-
     @Transient
     private String billPrint;
-
     @Transient
     private String billTemplate;
-
     @Transient
     private String ageAtBilledDate;
+    @Transient
+    private Bill tmpRefBill;
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -1562,9 +1552,6 @@ public class Bill implements Serializable {
         this.bookingId = bookingId;
     }
 
-    @Transient
-    private Bill tmpRefBill;
-
     public Bill getTmpRefBill() {
         return tmpRefBill;
     }
@@ -1597,23 +1584,6 @@ public class Bill implements Serializable {
         this.backwardReferenceBill = backwardReferenceBill;
     }
 
-//    public List<BillItem> getTransActiveBillItem() {
-//        if (billItems != null) {
-//            transActiveBillItem = new ArrayList<>();
-//            for (BillItem b : billItems) {
-//                if (!b.isRetired()) {
-//                    transActiveBillItem.add(b);
-//                }
-//            }
-//        } else {
-//            transActiveBillItem = new ArrayList<>();
-//        }
-//        return transActiveBillItem;
-//    }call me internet is dead slow
-//
-//    public void setTransActiveBillItem(List<BillItem> transActiveBillItem) {
-//        this.transActiveBillItem = transActiveBillItem;
-//    }
     public List<Bill> getForwardReferenceBills() {
         if (forwardReferenceBills == null) {
             forwardReferenceBills = new ArrayList<>();
@@ -2039,21 +2009,6 @@ public class Bill implements Serializable {
         this.printed = printed;
     }
 
-//    public WebUser getPrintedUser() {
-//        return printedUser;
-//    }
-//
-//    public void setPrintedUser(WebUser printedUser) {
-//        this.printedUser = printedUser;
-//    }
-//
-//    public Date getPrintedAt() {
-//        return printedAt;
-//    }
-//
-//    public void setPrintedAt(Date printedAt) {
-//        this.printedAt = printedAt;
-//    }
     public boolean isApprovedAnyTest() {
         return approvedAnyTest;
     }
