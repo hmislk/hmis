@@ -11,20 +11,23 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
+
                 <h:panelGroup 
                     id="panelBillingForCashier" 
                     rendered="#{ui.icon eq 'Billing_For_Cashier'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
+
                     >
                     <h:form>
                         <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
                             ajax="false" 
-                            class="m-1"
+                            class="m-1 ui-button-success"
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
                             actionListener="#{opdPreBillController.prepareNewBill}" 
-                            value="Billing for Cashier"
-                            icon="fa fa-fw fa-cash-register"
+                            value="Billing For Cashier"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
                     </h:form>
                 </h:panelGroup>
@@ -32,32 +35,50 @@
                 <h:panelGroup 
                     rendered="#{ui.icon eq 'Patient_Lookup'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-                    
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/patient_search.xhtml"   
+                            value="Patient Lookup"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
                 </h:panelGroup>
+
+
 
                 <h:panelGroup 
                     rendered="#{ui.icon eq 'Patient_Add_New'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/patient_edit.xhtml"   
+                            value="Add New Patient"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
                 </h:panelGroup>
 
                 <h:panelGroup 
                     id="panelOPDBilling" 
                     rendered="#{ui.icon eq 'Opd_Billing'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
                     <h:form >
                         <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
                             ajax="false" 
-                            class="m-1"
-                            action="/opd/opd_bill?faces-redirect=true" actionListener="#{billController.prepareNewBill}"
+                            class="m-1 ui-button-success"
+                            action="#{opdBillController.navigateToNewOpdBill()}" actionListener="#{billController.prepareNewBill}"
                             value="OPD Billing"
-                            icon="fa fa-fw fa-cash-register"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
                         </p:commandButton>
                     </h:form>
@@ -69,21 +90,21 @@
                     id="panelCollectingCentreBilling" 
                     rendered="#{ui.icon eq 'Collecting_Centre_Billing'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-                    
+
                 </h:panelGroup>
 
                 <h:panelGroup 
                     id="panelMedicalPackageBilling" 
                     rendered="#{ui.icon eq 'Medical_Package_Billing'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-2"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Medical Package Billing">
-                        dfsdf
+
                     </p:panel>
                 </h:panelGroup>
 
@@ -91,38 +112,57 @@
                     id="panelAcceptPayments" 
                     rendered="#{ui.icon eq 'Accept_Payments'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1  mx-4"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept_Payments">
-                        dfsdf
-                    </p:panel>
+
                 </h:panelGroup>
 
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPD_Bills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept Payments For OPD Bills">
-                        dfsdf
-                    </p:panel>
+                    <h:form >
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd_search_pre_bill?faces-redirect=true"
+                            value="Accept Payment For OPD Bill"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>               
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    id="opdBilSearch" 
+                    rendered="#{ui.icon eq 'Search_Opd_Bill'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form >
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/opd_bill_search?faces-redirect=true"
+                            value="OPD Bill Search"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>               
                 </h:panelGroup>
 
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPDBatchBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Accept Payments For OPD Batch Bills">
-                        dfsdf
+
                     </p:panel>
                 </h:panelGroup>
 
@@ -130,14 +170,16 @@
                     id="panelAcceptPaymentsForPharmacyBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_Pharmacy_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Accept Payments For Pharmacy Bills">
-                        dfsdf
+
                     </p:panel>
-                </h:panelGroup>
+                </h:panelGroup> 
+
+
             </ui:repeat>
         </div>
 

@@ -257,7 +257,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private Staff selectedCurrentlyWorkingStaff;
     List<BillSession> billSessions;
     
-    public boolean duplicatePrint;
+    private boolean duplicatePrint;
 
     /**
      *
