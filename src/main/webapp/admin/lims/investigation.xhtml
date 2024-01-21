@@ -289,35 +289,41 @@
                                     <p:inputText  
                                         class="mt-2"
                                         autocomplete="off" 
-                                                  value="#{investigationController.current.vatPercentage}"  >
+                                        value="#{investigationController.current.vatPercentage}"  >
                                     </p:inputText>
 
                                 </h:panelGrid>
                             </p:tab>
                             <p:tab title="Editing Details">
-                                <p:panelGrid columns="2" >
+                                <h:panelGrid columns="3" >
                                     <p:outputLabel value="ID" />
-                                    <p:outputLabel value="#{investigationController.current.id}" />
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:outputLabel value="#{investigationController.current.id}" class="mt-2"/>
 
+                                    <p:selectBooleanCheckbox class="mt-2" value="#{investigationController.current.inactive}" itemLabel="Item Inactive"/>
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.inactive}" itemLabel="Item Inactive"/>
+                                    <h:outputText value="" ></h:outputText>
 
                                     <p:outputLabel value="Created By" />
-                                    <p:outputLabel value="#{investigationController.current.creater.webUserPerson.name}" />
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:outputLabel value="#{investigationController.current.creater.webUserPerson.name}" class="mt-2"/>
 
                                     <p:outputLabel value="Created At" />
-                                    <p:outputLabel value="#{investigationController.current.createdAt}" >
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:outputLabel value="#{investigationController.current.createdAt}" class="mt-2" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
 
                                     <p:outputLabel value="Last Editor" />
-                                    <p:outputLabel value="#{investigationController.current.editer.webUserPerson.name}" />
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:outputLabel value="#{investigationController.current.editer.webUserPerson.name}" class="mt-2"/>
 
                                     <p:outputLabel value="Last Edite at" />
-                                    <p:outputLabel value="#{investigationController.current.editedAt}" >
+                                    <h:outputLabel value=" : " style="width: 40px; text-align: center"/>
+                                    <p:outputLabel value="#{investigationController.current.editedAt}" class="mt-2" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
-                                </p:panelGrid>
+                                </h:panelGrid>
 
                             </p:tab>
                             <p:tab title="Manage" >
