@@ -207,6 +207,9 @@ public class UserPreference implements Serializable {
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy ccItemListingStrategy;
+    
+    private boolean autodisplayMenu = true;
+    
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1078,5 +1081,15 @@ public class UserPreference implements Serializable {
     public void setNicRegex(String nicRegex) {
         this.nicRegex = nicRegex;
     }
+
+    public boolean isAutodisplayMenu() {
+        return autodisplayMenu;
+    }
+
+    public void setAutodisplayMenu(boolean autodisplayMenu) {
+        this.autodisplayMenu = autodisplayMenu;
+    }
+    
+    
 
 }

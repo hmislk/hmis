@@ -601,10 +601,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         for (Department d : billDepts) {
-            PreBill myBill = new PreBill();
-            myBill = saveBill(d, myBill);
+            PreBill newPreBill = new PreBill();
+            newPreBill = saveBill(d, newPreBill);
 
-            if (myBill == null) {
+            if (newPreBill == null) {
                 return false;
             }
 
@@ -612,9 +612,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
             for (BillEntry e : lstBillEntries) {
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
+                    BillItem bi = getBillBean().saveBillItem(newPreBill, e, getSessionController().getLoggedUser());
                     //getBillBean().calculateBillItem(myBill, e);
-                    myBill.getBillItems().add(bi);
+                    newPreBill.getBillItems().add(bi);
                     tmp.add(e);
                 }
             }
@@ -622,10 +622,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                myBill.setCashPaid(cashPaid);
 //            }
-            getBillFacade().edit(myBill);
+            getBillFacade().edit(newPreBill);
 
-            getBillBean().calculateBillItems(myBill, tmp);
-            bills.add(myBill);
+            getBillBean().calculateBillItems(newPreBill, tmp);
+            bills.add(newPreBill);
         }
 
         return true;
@@ -676,8 +676,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
         savePatient(getPatient());
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
-            PreBill temp = new PreBill();
-            PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
+            PreBill newPreBill = new PreBill();
+            PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), newPreBill);
 
             if (b == null) {
                 return null;
@@ -862,64 +862,66 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     }
 
-    private PreBill saveBill(Department bt, PreBill temp) {
-        temp.setBillType(BillType.OpdPreBill);
-        temp.setDepartment(getSessionController().getDepartment());
-        temp.setInstitution(getSessionController().getInstitution());
-        temp.setToDepartment(bt);
-        temp.setToInstitution(bt.getInstitution());
+    private PreBill saveBill(Department bt, PreBill updatingPreBill) {
+        updatingPreBill.setBillType(BillType.OpdPreBill);
+        updatingPreBill.setDepartment(getSessionController().getDepartment());
+        updatingPreBill.setInstitution(getSessionController().getInstitution());
+        updatingPreBill.setToDepartment(bt);
+        updatingPreBill.setToInstitution(bt.getInstitution());
 
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        updatingPreBill.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        updatingPreBill.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        temp.setStaff(staff);
-        temp.setToStaff(toStaff);
-        temp.setReferredBy(referredBy);
-        temp.setReferenceNumber(referralId);
-        temp.setReferredByInstitution(referredByInstitution);
-        temp.setCreditCompany(creditCompany);
-        temp.setComments(comment);
+        updatingPreBill.setStaff(staff);
+        updatingPreBill.setToStaff(toStaff);
+        updatingPreBill.setFromStaff(selectedCurrentlyWorkingStaff);
+        
+        updatingPreBill.setReferredBy(referredBy);
+        updatingPreBill.setReferenceNumber(referralId);
+        updatingPreBill.setReferredByInstitution(referredByInstitution);
+        updatingPreBill.setCreditCompany(creditCompany);
+        updatingPreBill.setComments(comment);
 
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+        getBillBean().setPaymentMethodData(updatingPreBill, paymentMethod, getPaymentMethodData());
 
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPatient(getPatient());
+        updatingPreBill.setBillDate(new Date());
+        updatingPreBill.setBillTime(new Date());
+        updatingPreBill.setPatient(getPatient());
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
-        temp.setPaymentScheme(getPaymentScheme());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
+        updatingPreBill.setPaymentScheme(getPaymentScheme());
+        updatingPreBill.setPaymentMethod(paymentMethod);
+        updatingPreBill.setCreatedAt(new Date());
+        updatingPreBill.setCreater(getSessionController().getLoggedUser());
 
         //SETTING INS ID
         recurseCount = 0;
-        String insId = generateBillNumberInsId(temp);
+        String insId = generateBillNumberInsId(updatingPreBill);
 
         if (insId.equals("")) {
             return null;
         }
-        temp.setInsId(insId);
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        updatingPreBill.setInsId(insId);
+        if (updatingPreBill.getId() == null) {
+            getFacade().create(updatingPreBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(updatingPreBill);
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.PreBill);
-        temp.setDeptId(deptId);
+        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(updatingPreBill.getDepartment(), updatingPreBill.getToDepartment(), updatingPreBill.getBillType(), BillClassType.PreBill);
+        updatingPreBill.setDeptId(deptId);
 
-        temp.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(temp.getDepartment()));
+        updatingPreBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(updatingPreBill.getDepartment()));
         
         
-        if (temp.getId() == null) {
-            getFacade().create(temp);
+        if (updatingPreBill.getId() == null) {
+            getFacade().create(updatingPreBill);
         } else {
-            getFacade().edit(temp);
+            getFacade().edit(updatingPreBill);
         }
-        return temp;
+        return updatingPreBill;
 
     }
 

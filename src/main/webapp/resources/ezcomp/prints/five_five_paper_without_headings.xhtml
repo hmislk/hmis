@@ -26,10 +26,11 @@
         <div class="fiveinchbill " style="page-break-after: always" >
 
 
+            
 
-
-            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-5">
-                <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" /> 
+            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-2">
+                <div class="d-flex align-items-center">          <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                    <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4></div>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -38,9 +39,7 @@
                 <hr></hr>   
             </div>
 
-            <div class="billline">
-                <h1>#{cc.attrs.bill.sessionId}</h1>
-            </div>
+           
 
             <div class="billDetailsFiveFive" >
 
@@ -184,9 +183,11 @@
 
                     </tr>
 
+
+
                 </table>
             </div>
-            <div style="text-decoration: overline; margin-top: 20px;font-size: 12pt">
+            <div style="text-decoration: overline; margin-top: 20px;font-size: 10pt">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
 
@@ -195,6 +196,15 @@
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
                                    />
+                    </div>
+                </div>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
             </h:panelGroup>
@@ -231,7 +241,11 @@
                                         <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                         </h:outputLabel>
                                         <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
-                                        <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="("  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value=")"  style="text-transform: capitalize!important;"  >
                                         </h:outputLabel>
                                     </td>
                                     <td>

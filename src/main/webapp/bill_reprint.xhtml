@@ -83,17 +83,17 @@
                                 <h:panelGroup id="groupPrint" >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="ffb">
-                                            <prints:five_five_paper_with_headings bill="#{ffb}"/>                        
+                                            <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
                                         </ui:repeat>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="ffpp">
-                                            <prints:five_five_paper_without_headings bill="#{ffpp}" dup="false"/>
+                                            <prints:five_five_paper_without_headings bill="#{ffpp}"  duplicate="true"/>
                                         </ui:repeat>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="pp">
-                                            <prints:posOpdBill bill="#{pp}" duplicate="false"/>                        
+                                            <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
                                         </ui:repeat>
                                     </h:panelGroup>
                                 </h:panelGroup>
