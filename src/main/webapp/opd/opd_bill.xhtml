@@ -616,9 +616,9 @@
                                                     <p:commandButton 
                                                         id="btnDocSave" 
                                                         value="Add New" 
+                                                        ajax="false"
                                                         process="btnDocSave panDoc" 
-
-                                                        update="msg panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                        update="msg panDoc cmbDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                                     </p:commandButton>
                                                 </h:panelGrid>  
                                             </p:dialog> 
