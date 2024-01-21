@@ -184,6 +184,15 @@
 
                     </tr>
 
+                    <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" >
+                        <div class="billline">
+                            <div style="width: 100%;text-align: center;font-size: 10px;">
+                                <h:outputLabel value="Doctor : " ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
                 </table>
             </div>
             <div style="text-decoration: overline; margin-top: 20px;font-size: 12pt">
