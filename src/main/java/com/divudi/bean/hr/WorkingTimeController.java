@@ -10,6 +10,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.entity.hr.FingerPrintRecord;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.hr.WorkingTime;
@@ -46,6 +47,8 @@ public class WorkingTimeController implements Serializable {
     FingerPrintRecordController fingerPrintRecordController;
     @Inject
     StaffShiftController staffShiftController;
+    @Inject
+    OpdBillController opdBillController;
     @EJB
     private WorkingTimeFacade ejbFacade;
     List<WorkingTime> selectedItems;
@@ -73,6 +76,7 @@ public class WorkingTimeController implements Serializable {
         staffShiftController.save(current.getStaffShift());
         save(current);
         JsfUtil.addSuccessMessage("Marked In");
+        opdBillController.reloadCurrentlyWorkingStaff();
         return navigateToListCurrentWorkTimes();
     }
 
@@ -82,6 +86,7 @@ public class WorkingTimeController implements Serializable {
         fingerPrintRecordController.save(er);
         current.setEndRecord(er);
         save(current);
+         opdBillController.reloadCurrentlyWorkingStaff();
         return navigateToListCurrentWorkTimes();
     }
 

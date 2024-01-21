@@ -198,7 +198,7 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
-                                    <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
