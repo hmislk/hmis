@@ -77,6 +77,7 @@ public class WorkingTimeController implements Serializable {
         save(current);
         JsfUtil.addSuccessMessage("Marked In");
         opdBillController.reloadCurrentlyWorkingStaff();
+        opdBillController.reloadCurrentlyWorkingStaff();
         return navigateToListCurrentWorkTimes();
     }
 
@@ -86,6 +87,7 @@ public class WorkingTimeController implements Serializable {
         fingerPrintRecordController.save(er);
         current.setEndRecord(er);
         save(current);
+         opdBillController.reloadCurrentlyWorkingStaff();
          opdBillController.reloadCurrentlyWorkingStaff();
         return navigateToListCurrentWorkTimes();
     }
