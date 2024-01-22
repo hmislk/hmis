@@ -14,6 +14,7 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:panel>
+
                         <f:facet name="header">
                             <h:outputLabel value="Manage Format - Single Item" ></h:outputLabel>
                             <p:commandButton 
@@ -23,8 +24,8 @@
                                 ajax="false" >
                             </p:commandButton>
                         </f:facet>
-                        <h:panelGrid columns="2"  >
-                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}" style="position: static">
+                        <h:panelGrid columns="2" >
+                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
 
                                 <p:panel header="Investigation" >
                                     <p:autoComplete 
@@ -74,12 +75,11 @@
                                                 update="dlgTest"
                                                 actionListener="#{investigationItemController.toAddNewTestOthers()}"/>
 
-                                            <p:commandButton ajax="false" value="Label"  action="#{investigationItemController.addNewLabel()}"/>
+                                            <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
                                             <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
-                                            <p:commandButton ajax="false"  value="Calculation"  action="#{investigationItemController.addNewCalculation()}"/>
+                                            <p:commandButton ajax="false"  value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
                                             <p:commandButton ajax="false"  value="Flag" action="#{investigationItemController.addNewFlag() }"/>
                                         </div>
-
 
                                     </p:panel>
 
@@ -325,7 +325,7 @@
                                             <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                             <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
-                                        <p:commandButton action="#{investigationItemController.removeItem()}" value="Remove" ajax="false"/> 
+                                        <p:commandButton action="#{investigationItemController.removeItem()}" icon=" fa-solid fa-trash " class="ui-button-danger" value="Remove" ajax="false"/> 
                                     </diV>
 
                                     <h:panelGrid id="pDetails" class="w-100">
@@ -512,7 +512,7 @@
                                                         </p:selectOneMenu>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="row mt-2">
                                                     <div class="col-8 d-flex gap-1 justify-content-between">
                                                         <h:outputText value="Text Decoration" class="mt-2 w-100"/>
@@ -527,7 +527,7 @@
 
                                             <p:tab title="Automation" >
                                                 <h:panelGrid  columns="3" class="gap-2">
-                                                    
+
                                                     <h:outputText value="Automated"/>
                                                     <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:selectBooleanCheckbox 
@@ -552,14 +552,14 @@
                                                     <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:autoComplete 
                                                         value="#{investigationItemController.current.test}"
-                                                                    completeMethod="#{itemController.completeMachineTests}"
-                                                                    var="t" 
-                                                                    class="w-100"
-                                                                    inputStyleClass="form-control"
-                                                                    
-                                                                    itemValue="#{t}"
-                                                                    itemLabel="#{t.code}"
-                                                                    >
+                                                        completeMethod="#{itemController.completeMachineTests}"
+                                                        var="t" 
+                                                        class="w-100"
+                                                        inputStyleClass="form-control"
+
+                                                        itemValue="#{t}"
+                                                        itemLabel="#{t.code}"
+                                                        >
                                                         <p:column >
                                                             <p:outputLabel value="#{t.code}" ></p:outputLabel>
                                                         </p:column>
@@ -629,10 +629,17 @@
                                             <p:tab title="Developer" >
                                                 <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                                                 </p:dialog>
-                                                <p:outputLabel value="ID : " ></p:outputLabel>
+                                                <p:outputLabel value="ID"></p:outputLabel>
+                                                <p:outputLabel value=" : " style="width: 30px; text-align: center"></p:outputLabel>
                                                 <p:inputText value="#{investigationItemController.current.id}"/>
 
-                                                <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
+                                                <p:commandButton 
+                                                    value="Download" 
+                                                    ajax="false" 
+                                                    class="ui-button-warning mx-2"
+                                                    style="float: right"
+                                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                                    icon="fa fa-download">
                                                     <p:fileDownload value="#{investigationItemController.downloadingFile}" />
                                                 </p:commandButton>
 
@@ -653,7 +660,6 @@
                                 </p:panel>
 
                             </h:panelGrid>
-
 
                             <p:panel id="pPreview"   >
 
@@ -702,7 +708,7 @@
                                         <ui:repeat value="#{investigationItemController.items}" var="myIi" >
                                             <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
 
-                                                <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : 'lightyellow')}; border: 1px solid lightblue; " >
+                                                <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : (myIi.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
                                                     <h:outputLabel id="lblViewModeIi" 
                                                                    rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
                                                                    style="#{myIi.innerCssStyle}; color: black;" 
@@ -752,27 +758,36 @@
                                     </div>
                                 </h:panelGroup>
                             </p:panel> 
-                        </h:panelGrid>  
-                    </p:panel>
+                        </h:panelGrid> 
 
-                    <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
-                </h:form>
-
-                <h:form enctype="multipart/form-data">
-                    <p:panel header="Upload Format" >
-                        <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
-                        <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
                     </p:panel>
                 </h:form>
+                
+                
+                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
 
-                <h:form >
-                    <p:panel header="Correct Format from Old Databases" >
-                        <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
-                    </p:panel>
-                </h:form>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <h:form enctype="multipart/form-data">
+                            <p:panel header="Upload Format" >
+                                <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
+                                <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
+                            </p:panel>
+                        </h:form>
+                    </div>
+                    <div class="col-6">
+                        <h:form >
+                            <p:panel header="Correct Format from Old Databases" >
+                                <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </div>
+
+
+
+
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
