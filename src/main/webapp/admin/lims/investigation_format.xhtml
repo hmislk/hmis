@@ -418,37 +418,51 @@
                                             </p:tab>
 
                                             <p:tab title="Positioning" >
-                                                <h:panelGrid  columns="11">
-                                                    <h:outputText value="Left" />
-                                                    <p:inputText style="width: 50px;" maxlength="2" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}"/>
-                                                    <div style="min-width: 20px;"></div>
-                                                    <h:outputText value="Top"/>
-                                                    <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}"/>
-                                                    <div style="min-width: 20px;"></div>
-                                                    <h:outputText value="Width"/>
-                                                    <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}" />
-                                                    <div style="min-width: 20px;"></div>
-                                                    <h:outputText value="Height"/>
-                                                    <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
 
-                                                </h:panelGrid>
-                                                <h:panelGrid columns="5" >
+                                                <div class="row">
+                                                    <div class="col-3 d-flex gap-2">
+                                                        <h:outputText value="Left" class="mt-2"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}"/>
 
-                                                    <h:outputText value="Text-Align"/>
-                                                    <p:selectOneMenu  id="cmbTxtAlign" value="#{investigationItemController.current.cssTextAlign}"  >
-                                                        <f:selectItem itemLabel="Left" itemValue="Left"/>
-                                                        <f:selectItem itemLabel="Right" itemValue="Right"/>
-                                                        <f:selectItem itemLabel="Center" itemValue="Center"/>
-                                                        <f:selectItem itemLabel="Justify" itemValue="Justify"/>
-                                                        <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
-                                                    </p:selectOneMenu>
+                                                    </div>
+                                                    <div class="col-3 d-flex gap-2">
+                                                        <h:outputText value="Top" class="mt-2"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}"/>
+                                                    </div>
+                                                    <div class="col-3 d-flex gap-2">
+                                                        <h:outputText value="Width" class="mt-2"/>
+                                                        <p:inputText style="width: 60px;" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}" />
+                                                    </div>
+                                                    <div class="col-3 d-flex gap-2">
+                                                        <h:outputText value="Height" class="mt-2"/>
+                                                        <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
+                                                    </div>
+                                                </div>
 
-                                                    <h:outputText value="Vertical-Align" style="vertical-align: "/>
-                                                    <p:selectOneMenu  id="cmbTxtVerticalAlign" value="#{investigationItemController.current.cssVerticalAlign}"  >
-                                                        <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
-                                                    </p:selectOneMenu>
+                                                <div class="row mt-2">
+                                                    <div class="col-3">
+                                                        <h:outputText value="Text-Align" class="mt-2"/>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <p:selectOneMenu class="w-100" id="cmbTxtAlign" value="#{investigationItemController.current.cssTextAlign}"  >
+                                                            <f:selectItem itemLabel="Left" itemValue="Left"/>
+                                                            <f:selectItem itemLabel="Right" itemValue="Right"/>
+                                                            <f:selectItem itemLabel="Center" itemValue="Center"/>
+                                                            <f:selectItem itemLabel="Justify" itemValue="Justify"/>
+                                                            <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                    
+                                                    <div class="col-3">
+                                                        <h:outputText value="Vertical-Align" class="mt-2"/>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <p:selectOneMenu class="w-100" id="cmbTxtVerticalAlign" value="#{investigationItemController.current.cssVerticalAlign}"  >
+                                                            <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>
 
-                                                </h:panelGrid>
                                             </p:tab>
 
 
