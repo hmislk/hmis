@@ -87,6 +87,8 @@ public class PharmacyController implements Serializable {
     private AmpController ampController;
     @Inject
     VtmController vtmController;
+    @Inject
+    AtmController atmController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -296,6 +298,8 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToAtm() {
+        atmController.getItems();
+        atmController.getCurrent();
         return "/pharmacy/admin/atm";
     }
 
