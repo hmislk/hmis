@@ -251,8 +251,16 @@ public class AtmController implements Serializable {
     }
 
     public List<Atm> getItems() {
-//        items = getFacade().findAll("name", true);
+         String sql = " select c from Atm c where "
+                + " c.retired=false "
+                + " order by c.name ";
+
+        items = getFacade().findByJpql(sql);
         return items;
+    }
+
+    public void setItems(List<Atm> items) {
+        this.items = items;
     }
 
     /**
