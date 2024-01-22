@@ -15,7 +15,7 @@
                 <h:form id="form">
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputText value="Manage Format - All Item" class="mt-2"></h:outputText>
+                            <h:outputLabel value="Manage Format - All Item" class="mt-2"></h:outputLabel>
 
                             <div class="d-flex" style="float: right;">
                                 <p:commandButton 
@@ -126,93 +126,116 @@
                                                 <p:inputText value="#{investigationItemController.movePercent}" style="width: 80px;"></p:inputText>
                                             </div>
                                         </f:facet>
-                                        
-                                        
 
                                         <div class="row">
-                                            <div class="col-1"></div>
-                                            <div class="col-1">
-                                                <p:commandButton 
-                                                    id="up" 
-                                                    icon="fa fa-arrow-up"
-                                                    action="#{investigationItemController.moveUpAllReportItems}" 
-                                                    ajax="false"/>
+                                            <div class="col-4">
+                                                <div class="row">
+                                                    <div class="col-3"></div>
+                                                    <div class="col-3">
+                                                        <p:commandButton 
+                                                            id="up" 
+                                                            icon="fa fa-arrow-up"
+                                                            action="#{investigationItemController.moveUpAllReportItems}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                    <div class="col-3"></div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-3">
+                                                        <p:commandButton 
+                                                            id="left" 
+                                                            icon="fa fa-arrow-left"
+                                                            action="#{investigationItemController.moveLeftAllReportItems}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                    <div class="col-3"></div>
+                                                    <div class="col-3">
+                                                        <p:commandButton 
+                                                            id="right" 
+                                                            icon="fa fa-arrow-right"
+                                                            action="#{investigationItemController.moveRightAllReportItems}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-3"></div>
+                                                    <div class="col-3">
+                                                        <p:commandButton 
+                                                            id="down" 
+                                                            icon="fa fa-arrow-down"
+                                                            action="#{investigationItemController.moveDownAllReportItems}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                    <div class="col-3"></div>
+                                                </div>
+                                                <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                <p:tooltip for="left" value="Move Left"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                <p:tooltip for="right" value="Move Right"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
                                             </div>
-                                            <div class="col-1"></div>
+                                            <div class="col-8 mt-3">
+
+                                                <div class="row">
+                                                    <div class="col-7"><p:outputLabel value="New Width Percentage" class="mt-2"></p:outputLabel></div>
+                                                    <div class="col-3"><p:inputText class="w-100"  value="#{investigationItemController.fixWidth}" ></p:inputText></div>
+                                                    <div class="col-2">
+                                                        <p:commandButton 
+                                                            value="Fix" 
+                                                            class="ui-button-success" 
+                                                            action="#{investigationItemController.fixWidthAllReportItems()}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-7"><p:outputLabel value="New Height Percentage" class="mt-2"></p:outputLabel></div>
+                                                    <div class="col-3"><p:inputText class="w-100" value="#{investigationItemController.fixHeight}" ></p:inputText></div>
+                                                    <div class="col-2">
+                                                        <p:commandButton 
+                                                            value="Fix" 
+                                                            class="ui-button-success" 
+                                                            action="#{investigationItemController.fixHeightAllReportItems()}" 
+                                                            ajax="false"/>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-
-                                        <div class="row">
-                                            <div class="col-1">
-                                                <p:commandButton 
-                                                    id="left" 
-                                                    icon="fa fa-arrow-left"
-                                                    action="#{investigationItemController.moveLeftAllReportItems}" 
-                                                    ajax="false"/>
-                                            </div>
-                                            <div class="col-1"></div>
-                                            <div class="col-1">
-                                                <p:commandButton 
-                                                    id="right" 
-                                                    icon="fa fa-arrow-right"
-                                                    action="#{investigationItemController.moveRightAllReportItems}" 
-                                                    ajax="false"/>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-1"></div>
-                                            <div class="col-1">
-                                                <p:commandButton 
-                                                    id="down" 
-                                                    icon="fa fa-arrow-down"
-                                                    action="#{investigationItemController.moveDownAllReportItems}" 
-                                                    ajax="false"/>
-                                            </div>
-                                            <div class="col-1"></div>
-                                        </div>
-                                        
-                                        <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
-                                        <p:tooltip for="left" value="Move Left"  showDelay="0" hideDelay="0"></p:tooltip>
-                                        <p:tooltip for="right" value="Move Right"  showDelay="0" hideDelay="0"></p:tooltip>
-                                        <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
-
-
-
-                                        <h:outputLabel/>
-
-                                        <h:outputLabel/>
-
-
-                                        <h:outputLabel/>
-
-
-                                        <h:outputLabel/>
-
-                                        <h:outputLabel/>
                                     </p:panel>
 
-                                    <p:panelGrid columns="3" >
-                                        <p:outputLabel value="New Width Percentage" ></p:outputLabel>
-                                        <p:inputText value="#{investigationItemController.fixWidth}" ></p:inputText>
-                                        <p:commandButton value="Fix" action="#{investigationItemController.fixWidthAllReportItems()}" ajax="false"/>
-                                        <p:outputLabel value="New Height Percentage" ></p:outputLabel>
-                                        <p:inputText value="#{investigationItemController.fixHeight}" ></p:inputText>
-                                        <p:commandButton value="Fix" action="#{investigationItemController.fixHeightAllReportItems()}" ajax="false"/>
-
-                                    </p:panelGrid>
-
-                                    <p:panelGrid columns="2" style="noborder">
+                                    <p:panel class="mt-2">
                                         <f:facet name="header">
-                                            <h:outputLabel value="Update All"/>
+                                            <h:outputLabel value="Update All" class="mt-2"/>
+                                            <p:commandButton 
+                                                value="Update" 
+                                                style="float: right;"
+                                                action="#{investigationItemController.updateAllFontValues}" 
+                                                ajax="false"/>
                                         </f:facet>
-                                        <p:outputLabel value="Font Size"/>
-                                        <p:inputText value="#{investigationItemController.fontSize}" autocomplete="off"/>
-
-                                        <p:outputLabel value="Font Family"/>
-                                        <p:inputText value="#{investigationItemController.fontFamily}"/>
-
-                                        <p:commandButton value="Update" action="#{investigationItemController.updateAllFontValues}" ajax="false"/>
-                                    </p:panelGrid>
+                                        
+                                        <div class="row">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Font Size" class="mt-2"/>
+                                            </div>
+                                            <div class="col-8">
+                                                <p:inputText 
+                                                    value="#{investigationItemController.fontSize}" 
+                                                    class="w-100" 
+                                                    autocomplete="off"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-1">
+                                            <div class="col-2">
+                                                <p:outputLabel value="Font Family" class="mt-2"/>
+                                            </div>
+                                            <div class="col-8">
+                                                <p:inputText 
+                                            class="w-100" 
+                                            value="#{investigationItemController.fontFamily}"/>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                    </p:panel>
 
 
 
