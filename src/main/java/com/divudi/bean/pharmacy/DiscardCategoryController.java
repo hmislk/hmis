@@ -13,6 +13,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.DiscardCategory;
 import com.divudi.facade.DiscardCategoryFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -26,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -98,6 +99,9 @@ public class DiscardCategoryController implements Serializable {
     }
 
     public DiscardCategory getCurrent() {
+        if (current == null) {
+            current = new DiscardCategory();
+        }
         return current;
     }
 
@@ -134,7 +138,11 @@ public class DiscardCategoryController implements Serializable {
                     + " where c.retired=false "
                     + " order by c.name";
             items = getFacade().findByJpql(j);
+            if (items == null) {
+                items = new ArrayList<>();
+            }
         }
+
         return items;
     }
 

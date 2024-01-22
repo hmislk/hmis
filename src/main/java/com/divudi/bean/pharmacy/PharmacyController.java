@@ -93,6 +93,8 @@ public class PharmacyController implements Serializable {
     ManufacturerController manufaturerController;
     @Inject
     ImporterController importerController;
+    @Inject
+    DiscardCategoryController discardCategoryController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -311,6 +313,11 @@ public class PharmacyController implements Serializable {
         manufaturerController.getItems();
         manufaturerController.getCurrent();
         return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
+    }
+    public String navigateToDiscardCategory() {
+        discardCategoryController.getItems();
+        discardCategoryController.getCurrent();
+        return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
     
     public String navigateToImporters() {
