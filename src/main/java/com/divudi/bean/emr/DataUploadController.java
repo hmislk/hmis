@@ -196,6 +196,7 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForAtmUpload;
     private StreamedContent templateForVmpUpload;
     private StreamedContent templateForAmpUpload;
+    private StreamedContent templateForAmpMinimalUpload;
 
     List<Item> itemsToSave;
     List<Item> itemsSkipped;
@@ -2702,6 +2703,42 @@ public class DataUploadController implements Serializable {
                 .stream(() -> inputStream)
                 .build();
     }
+     
+     public void createTemplateForAmpMinimalUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Category", "Vmp Name", "Amp Name", "Code", "Bar code"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForAmpMinimalUpload = DefaultStreamedContent.builder()
+                .name("template_for_Amp_Minimal_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
 
     public void createTemplateForPatientUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -2781,6 +2818,15 @@ public class DataUploadController implements Serializable {
             // Handle IOException
         }
         return templateForAtmUpload;
+    }
+    
+    public StreamedContent getTemplateForAmpMinimalUpload() {
+        try {
+            createTemplateForAmpMinimalUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForAmpMinimalUpload;
     }
     public StreamedContent getTemplateForVmpUpload() {
         try {
