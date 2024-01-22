@@ -18,78 +18,99 @@
 
                         <div class="row">
                             <div class="col-2">
-                                <h:panelGrid columns="1" >
-                                    <h:outputLabel class="my-1"  value="From Date"/>
-                                    <p:calendar 
-                                        class="my-1" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}"
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        maxdate="#{commonFunctionsController.endOfDay}">    
-                                       
-                                    </p:calendar>
-                                    <h:outputLabel class="my-1"  value="To Date"/>
-                                    <p:calendar 
-                                        class="my-1"  
-                                        id="toDate"
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                        maxdate="#{commonFunctionsController.endOfDay}">                                                                                
-                                    </p:calendar>
-                                    
-                                    <p:commandButton  id="btnSearch" class="ui-button-success w-100 my-1" icon="fas fa-search" ajax="false" value="Search All" action="#{searchController.createPharmacyPreTable}"/>
-                                    <p:commandButton ajax="false" class=" ui-button-warning w-100 " icon="fas fa-search" value="Search Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
-                                    <p:commandButton ajax="false" class=" ui-button-warning w-100 my-1" icon="fas fa-search" value="Search Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
-                                    <h:outputLabel/>
-                                    <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
-                                    <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                </h:panelGrid>
-                            </div>
-                            <div class="col-9">
-                                <h:panelGrid columns="5" class="float-left">
-                                    <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="Patient Name"/>                               
-                                    <h:outputLabel value="Total"/>
-                                    <h:outputLabel value="Net Total"/>   
-                                    <h:outputLabel value="Pharmacy"/>   
 
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                    <p:selectOneMenu value="#{searchController.reportKeyWord.department}">
-                                        <f:selectItem itemLabel="Select Department"/>
-                                        <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                    </p:selectOneMenu>
-                                </h:panelGrid>
+                                <h:outputLabel class="my-1"  value="From Date"/>
+                                <p:calendar 
+                                    class="my-1 w-100" 
+                                    inputStyleClass="form-control"
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}"
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    maxdate="#{commonFunctionsController.endOfDay}">    
+
+                                </p:calendar>
+                                <h:outputLabel class="my-1"  value="To Date"/>
+                                <p:calendar 
+                                    class="my-1 w-100"  
+                                    inputStyleClass="form-control"
+                                    id="toDate"
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    maxdate="#{commonFunctionsController.endOfDay}">                                                                                
+                                </p:calendar>
+
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
+                                <h:outputLabel value="Patient Name"/>    
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
+                                <h:outputLabel value="Total"/>
+                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.total}" />
+                                <h:outputLabel value="Net Total"/>   
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
+                                <h:outputLabel value="Pharmacy"/>   
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    value="#{searchController.reportKeyWord.department}">
+                                    <f:selectItem itemLabel="Select Department"/>
+                                    <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:commandButton  
+                                    id="btnSearch" 
+                                    class="ui-button-success w-100 mt-3" 
+                                    icon="fas fa-search" 
+                                    ajax="false" 
+                                    value="Search All" 
+                                    action="#{searchController.createPharmacyPreTable}"/>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class=" ui-button-warning w-100 my-1" 
+                                    icon="fas fa-search" 
+                                    value="Search Not Paid Only" 
+                                    action="#{searchController.createPharmacyPreTableNotPaid}"/>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class=" ui-button-warning w-100" 
+                                    icon="fas fa-search" 
+                                    value="Search Paid Only" 
+                                    action="#{searchController.createPharmacyPreTablePaid}"/>
+                                <h:outputLabel/>
 
                                 <p:defaultCommand target="btnSearch"/>
+
+                                <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
+                                <p:spacer height="30"/>
+
+                            </div>
+                            <div class="col-10">
 
                                 <p:dataTable 
                                     rowIndexVar="i"
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
-                                    var="bill"   
+                                    var="bill" 
+                                    rows="10"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     class="my-4"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
+                                    rowsPerPageTemplate="10,15,20"
                                     >
 
-                                    <p:column headerText="No" styleClass="alignTop" style="width: 30px">
+                                    <p:column headerText="No" width="2%" >
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" style="width: 80px">
+                                    <p:column headerText="Bill No" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>   
-                                    <p:column headerText="Department"  style="width: 90px">
+                                    <p:column headerText="Department" >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
                                     </p:column>   
-                                    <p:column headerText="Billed At"  style="width: 150px">
+                                    <p:column headerText="Billed At" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -102,7 +123,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                             
                                     </p:column>                 
-                                    <p:column headerText="Billed By" style="width: 90px">
+                                    <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
@@ -112,7 +133,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column>                                                          
-                                    <p:column headerText="Net Value" style="width: 90px">
+                                    <p:column headerText="Net Value" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -120,14 +141,15 @@
 
                                     </p:column>
 
-                                    <p:column headerText="Accept" style="width: 150px">
-                                        <p:commandButton ajax="false"  value="AcceptPayment" 
-                                                         action="#{pharmacyPreSettleController.toSettle(bill)}" 
-                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">   
+                                    <p:column headerText="Accept" width="10%">
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            value="Accept Payment" 
+                                            action="#{pharmacyPreSettleController.toSettle(bill)}" 
+                                            disabled="#{bill.referenceBill ne null or bill.cancelled}">   
                                         </p:commandButton>
                                     </p:column>
-
-                                    <p:column style="width: 650px">
+                                    <p:column width="35%">
                                         <p:dataTable value="#{bill.cashBillsPre}" var="rb">
                                             <p:column  >                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
@@ -161,8 +183,12 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>
-                                            <p:column>
-                                                <p:commandButton ajax="false" value="View Payment Bill" action="pharmacy_reprint_bill_sale_cashier" disabled="#{bill.referenceBill eq null}">
+                                            <p:column width="15%">
+                                                <p:commandButton 
+                                                    ajax="false" 
+                                                    value="View Payment Bill" 
+                                                    action="pharmacy_reprint_bill_sale_cashier" 
+                                                    disabled="#{bill.referenceBill eq null}">
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
                                                 </p:commandButton>
                                             </p:column>

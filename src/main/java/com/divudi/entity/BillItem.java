@@ -205,6 +205,7 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
+        System.out.println("qty = " + qty);
         descreption = billItem.getDescreption();
         billTime = billItem.getBillTime();
         grossValue = billItem.getGrossValue();
@@ -228,7 +229,7 @@ public class BillItem implements Serializable {
     }
 
     public void resetValue() {
-        qty = 0.0;
+        qty = 1.0;
         grossValue = 0;
         netValue = 0;
         discount = 0;

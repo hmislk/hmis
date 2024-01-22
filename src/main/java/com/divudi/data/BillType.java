@@ -132,7 +132,15 @@ public enum BillType {
     // channel Session sperate X-ray scan or channel
     Channel,
     XrayScan,
-    
+    // Cash Handling and Transfer Processes
+    InitialFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
+    ShiftBalanceTransferBill, // For transferring the total balance from one shift to another
+    TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
+    TransactionVerificationBill, // For the incoming cashier to verify all transaction types
+    DepositProcessingBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
+    WithdrawalProcessingBill, // For handling withdrawal transactions from the bank for operational purposes
+    FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
+    FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
     ;
 
     public String getLabel() {
@@ -240,10 +248,25 @@ public enum BillType {
                 return "X-Ray and Scan";
             case InwardFinalBill:
                 return "Inward Final Bill";
-
+            case InitialFundBill:
+                return "Initial Fund Bill";
+            case ShiftBalanceTransferBill:
+                return "Shift Balance Transfer Bill";
+            case TransactionHandoverBill:
+                return "Transaction Handover Bill";
+            case TransactionVerificationBill:
+                return "Transaction Verification Bill";
+            case DepositProcessingBill:
+                return "Deposit Processing Bill";
+            case WithdrawalProcessingBill:
+                return "Withdrawal Processing Bill";
+            case FinancialReconciliationBill:
+                return "Financial Reconciliation Bill";
+            case FinancialAuditingBill:
+                return "Financial Auditing Bill";
+            default:
+                return this.toString();
         }
-
-        return "Other";
     }
 
     private BillType parent = null;

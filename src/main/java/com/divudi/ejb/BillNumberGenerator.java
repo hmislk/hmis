@@ -683,6 +683,29 @@ public class BillNumberGenerator {
 
     }
 
+    public String generateDailyBillNumberForOpd(Department department) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "SELECT count(b) FROM Bill b "
+                + " where (b.billType=:bTp1 or b.billType=:bTp2) "
+                + " and b.billDate=:bd "
+                + " and (type(b)=:class1 or type(b)=:class2) "
+                + " and b.department=:dep ";
+        hm = new HashMap();
+        hm.put("bTp1", BillType.OpdBill);
+        hm.put("bTp2", BillType.OpdPreBill);
+        hm.put("dep", department);
+        hm.put("bd", new Date());
+        hm.put("class1", BilledBill.class);
+        hm.put("class2", PreBill.class);
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        if (dd == null) {
+            dd = 0l;
+        }
+//        dd++;
+        return dd + "";
+    }
+
     private BillNumber fetchLastBillNumber(Department department, BillType billType, BillClassType billClassType) {
         String sql = "SELECT b FROM "
                 + " BillNumber b "

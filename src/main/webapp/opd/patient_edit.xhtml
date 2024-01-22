@@ -135,13 +135,12 @@
                                         <div class="col-md-3">
                                             <p:outputLabel value="Phone for Quick Search:"  class="form-label" />
                                             <p:inputText 
+                                                required="true"
                                                 value="#{patientController.current.phoneNumberStringTransient}" 
                                                 class="form-control" 
                                                 validatorMessage="Please enter Valid Phone Number."
+                                                validator="#{patientController.validateMobile}"
                                                 >
-                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                                </c:if>
                                             </p:inputText>
 
                                         </div>
@@ -151,10 +150,8 @@
                                                 value="#{patientController.current.person.mobile}" 
                                                 class="form-control" 
                                                 validatorMessage="Please enter Valid other contact Number."
+                                                validator="#{patientController.validateMobile}"
                                                 >
-                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                                </c:if>
                                             </p:inputText>
 
                                         </div>
@@ -178,9 +175,30 @@
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
-                                        <div class="col-md-12">
+                                        <div class="col-md-8">
                                             <p:outputLabel value="Address:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.person.address}" style="width: 100%;" class="form-control" />
+
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="Area"  class="form-label" />
+                                            <p:autoComplete 
+                                                id="area" 
+                                                class="w-100 -mx-2"
+                                                inputStyleClass="form-control"
+                                                forceSelection="true"
+                                                value="#{patientController.current.person.area}"  
+                                                completeMethod="#{areaController.completeArea}" 
+                                                var="pa"
+                                                placeholder="Area"
+                                                itemLabel="#{pa.name}" 
+                                                itemValue="#{pa}" 
+                                                size="10"  
+                                                required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
+                                                requiredMessage="Need an Area"
+                                                >
+                                                
+                                            </p:autoComplete> 
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">

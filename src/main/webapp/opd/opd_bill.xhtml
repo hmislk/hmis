@@ -21,8 +21,18 @@
                     <p:growl id="msg" ></p:growl>
                     <p:panel class="m-0 p-0" >
                         <f:facet name="header" >
-                            <h:outputText styleClass="fa-solid fa-circle-plus" />
-                            <h:outputLabel value="OPD Billing" class="mx-4"></h:outputLabel>
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                <h:outputLabel value="OPD Billing" class="mx-4"></h:outputLabel>
+                            </div>
+                            <p:commandButton value="New OPD Bill" 
+                                             class="ui-button-primary m-1 d-flex justify-content-end"
+                                             icon="fa fa-plus"
+                                             action="#{opdBillController.navigateToNewOpdBill()}"
+                                             ajax="false">
+                            </p:commandButton>
+                            </div>
                         </f:facet>
                         <p:focus id="focusIx" for="acIx" />
 
@@ -54,11 +64,15 @@
                                                 class="w-100"
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
-                                                value="#{opdBillController.itemLight}" var="ix" >
+                                                value="#{opdBillController.itemLight}" 
+                                                var="ix"
+                                                
+                                                >
                                                 <f:selectItems value="#{opdBillController.opdItems}"
                                                                var="item" 
                                                                itemLabel="#{item.name}"
-                                                               itemValue="#{item}" >
+                                                               itemValue="#{item}"
+                                                               >
                                                 </f:selectItems>
                                                 <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx" update="tblSs txtQty" ></p:ajax>
                                                 <p:column  headerText="Name">
@@ -87,10 +101,11 @@
                                         </div>
                                         <div class="col-md-2" >
                                             <h:panelGrid id="txtQty">
-                                                <h:inputText autocomplete="off" 
-                                                             rendered="#{opdBillController.currentBillItem.item.requestForQuentity}"
-                                                             value="#{opdBillController.currentBillItem.qty}" >
-                                                </h:inputText>
+                                                <p:inputText 
+                                                    autocomplete="off" 
+                                                    class="w-100 m-1"
+                                                    value="#{opdBillController.currentBillItem.qty}" >
+                                                </p:inputText>
                                             </h:panelGrid>
                                             <p:commandButton id="btnAddIx" 
                                                              value="Add" 
@@ -98,7 +113,7 @@
                                                              class="w-100 mx-1 ui-button-success"
                                                              action="#{opdBillController.addToBill()}"  
                                                              process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
+                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty">
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -337,6 +352,7 @@
                                                         value="#{opdBillController.patient}" 
                                                         target="#{patientController.current}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
+
                                             </h:panelGrid>
                                         </div>
                                     </div>
@@ -556,9 +572,7 @@
                                                         itemLabel="#{ri.name}" 
                                                         itemValue="#{ri}"
                                                         size="10"
-                                                        minQueryLength="4"
                                                         inputStyleClass="form-control"
-                                                        placeholder="Type at least 4 letters to search"
                                                         class="w-100">
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
                                             <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
@@ -613,8 +627,6 @@
                                                         id="cmbDoc" 
                                                         value="#{opdBillController.referredBy}" 
                                                         completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                        minQueryLength="4"
-                                                        placeholder="Type at least 4 letters to search"
                                                         itemLabel="#{ix.person.name}" 
                                                         itemValue="#{ix}" 
                                                         inputStyleClass="form-control"
