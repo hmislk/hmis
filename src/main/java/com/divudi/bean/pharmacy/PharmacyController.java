@@ -89,6 +89,8 @@ public class PharmacyController implements Serializable {
     VtmController vtmController;
     @Inject
     AtmController atmController;
+    @Inject
+    ManufacturerController manufaturerController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -266,92 +268,98 @@ public class PharmacyController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
-        return "/pharmacy/admin/items";
+        return "/pharmacy/admin/items?faces-redirect=true";
     }
 
     public String navigateToManagePharmaceuticals() {
-        return "/pharmacy/admin/index";
+        return "/pharmacy/admin/index?faces-redirect=true";
     }
 
     public String navigateToListAllPharmaceuticalItemsLight() {
-        return "/pharmacy/admin/items";
+        return "/pharmacy/admin/items?faces-redirect=true";
     }
 
     public String navigateToDosageForms() {
-        return "/pharmacy/admin/dosage_forms";
+        return "/pharmacy/admin/dosage_forms?faces-redirect=true";
     }
 
     public String navigateToPharmaceuticalItemCategories() {
-        return "/pharmacy/admin/pharmaceutical_item_category";
+        return "/pharmacy/admin/pharmaceutical_item_category?faces-redirect=true";
     }
 
     public String navigateToAtc() {
-        return "/pharmacy/admin/atc";
+        return "/pharmacy/admin/atc?faces-redirect=true";
     }
 
     public String navigateToAmp() {
-        return "/pharmacy/admin/amp";
+        return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
     public String navigateToAmpp() {
-        return "/pharmacy/admin/ampp";
+        return "/pharmacy/admin/ampp?faces-redirect=true";
     }
 
     public String navigateToAtm() {
         atmController.getItems();
         atmController.getCurrent();
-        return "/pharmacy/admin/atm";
+        return "/pharmacy/admin/atm?faces-redirect=true";
+    }
+    
+    public String navigateToManufacturers() {
+        manufaturerController.getItems();
+        manufaturerController.getCurrent();
+        return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
     }
 
     public String navigateToVmp() {
-        return "/pharmacy/admin/vmp";
+        return "/pharmacy/admin/vmp?faces-redirect=true";
     }
 
     public String navigateToVtm() {
         vtmController.fillItems();
-        return "/pharmacy/admin/vtm";
+        return "/pharmacy/admin/vtm?faces-redirect=true";
     }
 
     public String navigateToVmpp() {
-        return "/pharmacy/admin/vmpp";
+        return "/pharmacy/admin/vmpp?faces-redirect=true";
     }
 
     public String navigateToDosageFormsMultiple() {
-        return "/pharmacy/admin/dosage_forms_multiple";
+        return "/pharmacy/admin/dosage_forms_multiple?faces-redirect=true";
     }
 
     public String navigateToAtcMultiple() {
-        return "/pharmacy/admin/atc_multiple";
+        return "/pharmacy/admin/atc_multiple?faces-redirect=true";
     }
 
     public String navigateToAmpMultiple() {
         fillAmps();
-        return "/pharmacy/admin/amp_multiple";
+        return "/pharmacy/admin/amp_multiple?faces-redirect=true";
     }
 
     public String navigateToAmppMultiple() {
         fillAmpps();
-        return "/pharmacy/admin/ampp_multiple";
+        return "/pharmacy/admin/ampp_multiple?faces-redirect=true";
     }
 
     public String navigateToAtmMultiple() {
         fillAtms();
-        return "/pharmacy/admin/atm_multiple";
+        return "/pharmacy/admin/atm_multiple?faces-redirect=true";
     }
 
     public String navigateToVmpMultiple() {
         fillVmps();
-        return "/pharmacy/admin/vmp_multiple";
+        return "/pharmacy/admin/vmp_multiple?faces-redirect=true";
     }
 
     public String navigateToVtmMultiple() {
         fillVtms();
-        return "/pharmacy/admin/vtm_multiple";
+        return "/pharmacy/admin/vtm_multiple?faces-redirect=true";
     }
 
     public String navigateToVmppMultiple() {
         fillVmpps();
-        return "/pharmacy/admin/vmpp_multiple";
+        return "/pharmacy/admin/vmpp_multiple?faces-redirect=true";
     }
 
     // </editor-fold>
