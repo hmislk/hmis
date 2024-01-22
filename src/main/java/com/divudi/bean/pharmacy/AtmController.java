@@ -44,7 +44,7 @@ public class AtmController implements Serializable {
     private AtmFacade ejbFacade;
     List<Atm> selectedItems;
     private Atm current;
-    private List<Atm> items = null;
+    private List<Atm> items;
     List<Atm> atmList;
     String selectText;
 
