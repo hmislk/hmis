@@ -91,6 +91,8 @@ public class PharmacyController implements Serializable {
     AtmController atmController;
     @Inject
     ManufacturerController manufaturerController;
+    @Inject
+    ImporterController importerController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -309,6 +311,12 @@ public class PharmacyController implements Serializable {
         manufaturerController.getItems();
         manufaturerController.getCurrent();
         return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
+    }
+    
+    public String navigateToImporters() {
+        importerController.getItems();
+        importerController.getCurrent();
+        return "/pharmacy/pharmacy_importer?faces-redirect=true";
     }
 
     public String navigateToVmp() {
