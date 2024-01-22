@@ -26,7 +26,7 @@
                         <h:panelGrid columns="2"  >
                             <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}" style="position: static">
 
-                                <p:panel header="Investigation" style="width: 25%"  >
+                                <p:panel header="Investigation" >
                                     <p:autoComplete 
                                         widgetVar="aPt" 
                                         id="acPt" 
@@ -87,6 +87,9 @@
                                     <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
                                         <p:commandButton 
                                             ajax="false" 
+                                            class="ui-button-success mb-2"
+                                            icon="fa fa-save"
+                                            style="float: right"
                                             value="Save" 
                                             action="#{investigationItemController.addNewTest()}" 
                                             >
@@ -300,10 +303,12 @@
                                 <p:panel id="pIx" class="mt-2">
 
                                     <f:facet name="header">
-                                        Investigation Items List
+                                        <h:outputText value="Investigation Items List" class="mt-2"/>
                                         <p:commandButton 
                                             value="Save" 
                                             style="float: right"
+                                            class="ui-button-success"
+                                            icon="fa fa-save"
                                             action="#{investigationItemController.saveSelected()}" 
                                             ajax="false" >
                                         </p:commandButton>
@@ -522,10 +527,12 @@
 
                                             <p:tab title="Automation" >
                                                 <h:panelGrid  columns="2">
+                                                    
                                                     <h:outputText value="Automated"/>
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
-
-
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{investigationItemController.current.automated}" 
+                                                        itemLabel="Automated" >
+                                                    </p:selectBooleanCheckbox>
 
                                                     <p:outputLabel value="Test Component" ></p:outputLabel>
                                                     <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.current.sampleComponent}" >
@@ -557,6 +564,7 @@
                                                     <p:inputText value="#{investigationItemController.current.resultCode}" ></p:inputText>
 
                                                     <p:outputLabel value="Sample" ></p:outputLabel>
+                                                    
                                                     <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
                                                         <f:selectItem itemLabel="Please select a sample"/>
                                                         <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
