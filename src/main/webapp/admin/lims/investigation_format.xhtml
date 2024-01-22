@@ -526,29 +526,37 @@
                                             </p:tab>
 
                                             <p:tab title="Automation" >
-                                                <h:panelGrid  columns="2">
+                                                <h:panelGrid  columns="3" class="gap-2">
                                                     
                                                     <h:outputText value="Automated"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:selectBooleanCheckbox 
                                                         value="#{investigationItemController.current.automated}" 
                                                         itemLabel="Automated" >
                                                     </p:selectBooleanCheckbox>
 
                                                     <p:outputLabel value="Test Component" ></p:outputLabel>
-                                                    <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.current.sampleComponent}" >
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:selectOneMenu id="cmbTestComponent" class="w-100" value="#{investigationItemController.current.sampleComponent}" >
                                                         <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Machine"/>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
                                                     <p:selectOneMenu value="#{investigationItemController.current.machine}" >
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                                         <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Test"/>
-                                                    <p:autoComplete value="#{investigationItemController.current.test}"
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:autoComplete 
+                                                        value="#{investigationItemController.current.test}"
                                                                     completeMethod="#{itemController.completeMachineTests}"
-                                                                    var="t" inputStyle="width:200px;"
+                                                                    var="t" 
+                                                                    class="w-100"
+                                                                    inputStyleClass="form-control"
+                                                                    
                                                                     itemValue="#{t}"
                                                                     itemLabel="#{t.code}"
                                                                     >
@@ -561,17 +569,19 @@
                                                     </p:autoComplete>
 
                                                     <h:outputText value="Result Code"/>
-                                                    <p:inputText value="#{investigationItemController.current.resultCode}" ></p:inputText>
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:inputText class="w-100" value="#{investigationItemController.current.resultCode}" ></p:inputText>
 
                                                     <p:outputLabel value="Sample" ></p:outputLabel>
-                                                    
-                                                    <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:selectOneMenu class="w-100" id="cmbSample"  value="#{investigationItemController.current.sample}" >
                                                         <f:selectItem itemLabel="Please select a sample"/>
                                                         <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Container / Tube" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.current.tube}" >
+                                                    <h:outputLabel value=" : " style="width: 30px; text-align: center"/>
+                                                    <p:selectOneMenu class="w-100" id="cmbTube"  value="#{investigationItemController.current.tube}" >
                                                         <f:selectItem itemLabel="Please select a Tube"/>
                                                         <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
