@@ -133,7 +133,7 @@
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Measurement Units" 
-                                                action="#{pharmacyController.navigateToManufacturers()}" />
+                                                action="pharmacy_measurement_unit" />
                                             <p:commandButton class="w-100" ajax="false" value="Frequencies" action="pharmacy_frequency_unit" />
                                         </div>
                                     </p:tab>
@@ -169,8 +169,8 @@
                                     <p:tab title="Institutions">
 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="/pharmacy/pharmacy_manufacturer" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Importers" action="/pharmacy/pharmacy_importer" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="#{pharmacyController.navigateToManufacturers()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Importers" action="#{pharmacyController.navigateToImporters()}" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Supplier" action="/pharmacy/pharmacy_dealer" ></p:commandButton>                                
                                             <p:commandButton class="w-100" ajax="false" value="Item Suppliers" action="/pharmacy/pharmacy_items_distributors" ></p:commandButton>
                                         </div>
