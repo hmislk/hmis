@@ -20,8 +20,18 @@
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
+                                                 icon="fa fa-upload"
                                                  action="#{dataUploadController.uploadVtms()}"
                                                  ajax="false"/>
+                                <p:commandButton 
+                                    value="Download Template" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                    icon="fa fa-download">
+                                    <p:fileDownload value="#{dataUploadController.templateForVtmUpload}" />
+                                </p:commandButton>
                             </h:form>
 
                             <table class="table">
