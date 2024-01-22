@@ -64,6 +64,11 @@ public class MeasurementUnitController implements Serializable {
         current = new MeasurementUnit();
         return "/pharmacy/admin/unit";
     }
+    
+    public String navigateToManageMeasurementUnit() {
+        current = new MeasurementUnit();
+        return "/pharmacy/admin/manage_unit";
+    }
 
     public String navigateToListAllMeasurementUnit() {
 
