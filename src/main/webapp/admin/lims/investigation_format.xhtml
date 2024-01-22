@@ -26,7 +26,7 @@
                         <h:panelGrid columns="2"  >
                             <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}" style="position: static">
 
-                                <p:panel header="Investigation"   >
+                                <p:panel header="Investigation" style="width: 25%"  >
                                     <p:autoComplete 
                                         widgetVar="aPt" 
                                         id="acPt" 
@@ -420,20 +420,20 @@
                                             <p:tab title="Positioning" >
 
                                                 <div class="row">
-                                                    <div class="col-3 d-flex gap-2">
+                                                    <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Left" class="mt-2"/>
                                                         <p:inputText style="width: 60px;" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}"/>
 
                                                     </div>
-                                                    <div class="col-3 d-flex gap-2">
+                                                    <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Top" class="mt-2"/>
                                                         <p:inputText style="width: 60px;" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}"/>
                                                     </div>
-                                                    <div class="col-3 d-flex gap-2">
+                                                    <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Width" class="mt-2"/>
                                                         <p:inputText style="width: 60px;" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}" />
                                                     </div>
-                                                    <div class="col-3 d-flex gap-2">
+                                                    <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Height" class="mt-2"/>
                                                         <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
                                                     </div>
@@ -452,7 +452,7 @@
                                                             <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
                                                         </p:selectOneMenu>
                                                     </div>
-                                                    
+
                                                     <div class="col-3">
                                                         <h:outputText value="Vertical-Align" class="mt-2"/>
                                                     </div>
@@ -467,51 +467,57 @@
 
 
                                             <p:tab title="Font" >
-                                                <h:panelGrid  columns="5">
+                                                <div class="row">
+                                                    <div class="col-8 d-flex gap-1 justify-content-between">
+                                                        <h:outputText value="Font Family" class="w-50 mt-2"/>
+                                                        <p:inputText class="w-100" autocomplete="off" id="txtFontFamily" value="#{investigationItemController.current.cssFontFamily}"/>
+                                                    </div>
+                                                    <div class="col-2 d-flex gap-1 justify-content-between">
+                                                        <h:outputText value="Size" class="mt-2" />
+                                                        <p:inputText style="width: 70px;" autocomplete="off" id="txtFontSize" value="#{investigationItemController.current.riFontSize}"/>
+                                                    </div>
+                                                </div>
 
-                                                    <h:outputText value="Font Family"/>
-                                                    <p:inputText autocomplete="off" id="txtFontFamily" value="#{investigationItemController.current.cssFontFamily}"/>
-                                                    <div style="min-width: 20px;"></div>
-
-                                                    <h:outputText value="Font Size"/>
-                                                    <p:inputText style="width: 50px;" autocomplete="off" id="txtFontSize" value="#{investigationItemController.current.riFontSize}"/>
-
-                                                </h:panelGrid>
-                                                <h:panelGrid  columns="5">
-                                                    <h:outputText value="Font Style"/>
-                                                    <p:selectOneMenu  id="cmbPos" value="#{investigationItemController.current.cssFontStyle}" >
-                                                        <f:selectItem itemLabel="Normal" itemValue="Normal"/>
-                                                        <f:selectItem itemLabel="Italic" itemValue="Italic"/>
-                                                        <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
-                                                    </p:selectOneMenu>
-                                                    <div style="min-width: 20px;"></div>
-
-                                                    <h:outputText value="Font Weight"/>
-                                                    <p:selectOneMenu id="txtFontWeight" value="#{investigationItemController.current.cssFontWeight}">
-                                                        <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
-                                                        <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
-                                                        <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
-                                                        <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
-                                                        <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
-                                                        <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
-                                                        <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
-                                                        <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
-                                                        <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
-                                                        <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
-                                                        <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
-                                                        <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
-                                                        <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
-                                                        <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
-                                                    </p:selectOneMenu>
-
-
-                                                    <h:outputText value="Text Decoration"/>
-                                                    <p:selectOneMenu id="txtFontDec" value="#{investigationItemController.current.cssTextDecoration}">
-                                                        <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
-                                                        <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
-                                                        <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
-                                                    </p:selectOneMenu>
-                                                </h:panelGrid>
+                                                <div class="row mt-2">
+                                                    <div class="col-6 d-flex gap-1 justify-content-between">
+                                                        <h:outputText value="Font Style" class="w-50 mt-2"/>
+                                                        <p:selectOneMenu  id="cmbPos" value="#{investigationItemController.current.cssFontStyle}" >
+                                                            <f:selectItem itemLabel="Normal" itemValue="Normal"/>
+                                                            <f:selectItem itemLabel="Italic" itemValue="Italic"/>
+                                                            <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                    <div class="col-6 d-flex gap-1 justify-content-between">
+                                                        <h:outputText value="Font Weight" class="w-50 mt-2"/>
+                                                        <p:selectOneMenu  id="txtFontWeight" value="#{investigationItemController.current.cssFontWeight}">
+                                                            <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                            <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                            <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                            <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                            <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                            <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                            <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                            <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                            <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                            <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                            <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                            <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                            <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                            <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="row mt-2">
+                                                    <div class="col-8 d-flex gap-1 justify-content-between">
+                                                        <h:outputText value="Text Decoration" class="mt-2 w-100"/>
+                                                        <p:selectOneMenu class="w-100" id="txtFontDec" value="#{investigationItemController.current.cssTextDecoration}">
+                                                            <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                            <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                            <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>
                                             </p:tab>
 
                                             <p:tab title="Automation" >
