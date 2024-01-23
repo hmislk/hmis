@@ -16,17 +16,17 @@
                 <p:panel  header="Channel Bill List With VAT 15%">
                     <h:panelGrid columns="2" class="my-2"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  completeMethod="#{webUserController.completeUser}"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{channelReportController.reportKeyWord.webUser}" ></p:autoComplete>
                         <h:outputLabel value="Session Date"/>
-                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4 my-1" value="#{channelReportController.sessoinDate}" />
                         <h:outputLabel value="Without Agency"/>
                         <p:selectBooleanCheckbox class="w-100 mx-4" value="#{channelReportController.agncyOnCall}" />
                     </h:panelGrid>
