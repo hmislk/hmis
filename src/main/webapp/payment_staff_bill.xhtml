@@ -15,12 +15,12 @@
                     <h:panelGroup rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                         <p:panel header="Staff Payments" >
 
-                            <h:panelGrid columns="3" class="my-1">
+                            <h:panelGrid columns="2" >
 
                                 <h:outputLabel  value="Select Speciality" ></h:outputLabel>
-                                <p:spacer width="30"/>
+                                
                                 <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.speciality}"
-                                                inputStyleClass="w-100" class="w-100"
+                                                inputStyleClass="mx-1 w-100" class="mx-1 w-100"
                                                 id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                 >
@@ -28,9 +28,9 @@
                                 </p:autoComplete>
 
                                 <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
-                                <p:spacer width="30"/>
+                              
                                 <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.currentStaff}"
-                                                inputStyleClass="w-100 my-1" class="w-100 my-1"
+                                                inputStyleClass="mx-1 w-100" class="mx-1 w-100 my-1"
                                                 id="scStaff"
                                                 completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                 >
@@ -39,8 +39,8 @@
 
 
                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                <p:spacer width="30"/>
-                                <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="w-100">                                      
+                               
+                                <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                 </p:selectOneMenu>
 
@@ -48,21 +48,13 @@
                                                                     </p:commandButton>-->  
                                 <p:commandButton value="Process" action="#{staffPaymentBillController.calculateDueFees}" ajax="false" icon="fa-solid fa-arrows-rotate"
                                                  class="w-100 ui-button-warning my-1" />
-                                <p:spacer/>
+                               
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
-                                                 class="w-100 ui-button-success my-1" >
+                                                 class="w-100 ui-button-success my-1 mx-2" >
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
                                 </p:commandButton>
                             </h:panelGrid>
 
-                            <div class="row">
-                                <div class="col-7">
-                                    
-                                </div>
-                                <div class="col-5">
-                                    
-                                </div>
-                            </div>
                             <p:dataTable   id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                            selection="#{staffPaymentBillController.payingBillFees}"
                                            class="w-100"
