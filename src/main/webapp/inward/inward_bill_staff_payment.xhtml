@@ -149,12 +149,12 @@
                                     </h:outputLabel>  
                                 </h:panelGrid>
                             </p:panel>
-                            <h:panelGroup >
-                                <p:commandButton ajax="false" value="Pay" action="#{inwardStaffPaymentBillController.settleBill()}"  >
+                            <div class="w-25" >
+                                <p:commandButton ajax="false" value="Pay" action="#{inwardStaffPaymentBillController.settleBill()}" class="w-25 ui-button-success my-1" >
                                     <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                 </p:commandButton>
 
-                            </h:panelGroup>
+                            </div>
 
 
                         </p:panel>
