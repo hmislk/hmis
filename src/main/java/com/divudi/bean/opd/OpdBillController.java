@@ -2330,12 +2330,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void searchOpdPayments() {
+        billType = BillType.OpdBill;
         String j = "select b from Payment b"
                 + " where b.createdAt between :fd and :td "
-                + " and b.retired=false";
+                + " and b.retired=false"
+                + " and b.bill.billType = :bt ";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bt", billType);
 
         if (institution != null) {
             j += " and b.institution=:ins ";

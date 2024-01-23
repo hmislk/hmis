@@ -1020,9 +1020,6 @@ public class Bill implements Serializable {
 
     public void setCashPaid(Double cashPaid) {
         this.cashPaid = cashPaid;
-
-        cashBalance = netTotal - cashPaid;
-
     }
 
     public Double getCashBalance() {
