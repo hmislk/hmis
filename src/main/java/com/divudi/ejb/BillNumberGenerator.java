@@ -92,13 +92,13 @@ public class BillNumberGenerator {
         String sql = "SELECT count(b) FROM PreBill b "
                 + "  where  b.retired=false "
                 + " and b.institution=:ins "
-                + " and b.billType = :bt "
-                + " and b.createdAt between :f and :t";
+                + " and b.billType = :bt ";
+                
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
-        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
-        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
+//        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
+//        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
         return (i + 1) + "";
