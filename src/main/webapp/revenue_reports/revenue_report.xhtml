@@ -15,25 +15,25 @@
                 <h:form>
 
                     <p:panel header="Revenue Summery" >
-                        <p:panelGrid columns="2" >
-                            <p:outputLabel value="From" ></p:outputLabel>
-                            <p:calendar value="#{revenueController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                        <h:panelGrid columns="2" class="my-2">
+                          <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{revenueController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                             </p:calendar>
                             <p:outputLabel value="To" ></p:outputLabel>
-                            <p:calendar value="#{revenueController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{revenueController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                             </p:calendar>
-                        </p:panelGrid>
-                        <p:panelGrid columns="3" >
-                            <p:commandButton value="Process" ajax="false"
+                        </h:panelGrid>
+                        <h:panelGrid columns="6">
+                            <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
                                             action="#{revenueController.fillRevenueReport()}" >
                             </p:commandButton>
-                            <p:commandButton value="Excel" >
-
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
+                                <p:printer target="tbl" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Print" >
-
-                            </p:commandButton>
-                        </p:panelGrid>
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" actionListener="#{searchController.createDueFeeTableAll()}">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Revenue_Summery"  />
+                            </p:commandButton> 
+                        </h:panelGrid>
 
                         <p:dataTable id="tbl"
                                      value="#{revenueController.rows}" var="r" >
