@@ -25,7 +25,7 @@
 
 
                         <h:outputLabel value="Service Name"/>
-                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{creditSummeryController.item}" completeMethod="#{itemController.completeService}" var="ix" 
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{creditSummeryController.item}" completeMethod="#{itemController.completeService}" var="ix" 
                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
                             <p:column>
                                 #{ix.name}
@@ -44,16 +44,16 @@
                         </p:autoComplete>
 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{creditSummeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{creditSummeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                     </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  
-                                         class="ui-button-warning" icon="fas fa-refresh" action="#{creditSummeryController.createDailyCashTable}"/>
+                        <p:commandButton id="btnRefresh" value="Process" ajax="false"  
+                                         class="ui-button-warning" icon="fas fa-cogs" action="#{creditSummeryController.createDailyCashTable}"/>
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>

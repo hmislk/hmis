@@ -22,11 +22,11 @@
                     <h:panelGrid columns="2" class="my-2" >
 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{creditSummeryController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{creditSummeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{creditSummeryController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{creditSummeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="Credit Company"/>
                         <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" id="creditCom" forceSelection="true" value="#{creditSummeryController.institution}" 
@@ -34,14 +34,14 @@
 
                         </p:autoComplete>
                         <h:outputLabel value="VAT Reg. No"/>
-                        <p:inputText class="w-100 mx-4" value="#{creditSummeryController.vatRegNo}" autocomplete="off" />
+                        <p:inputText class="w-100 mx-4 my-1" value="#{creditSummeryController.vatRegNo}" autocomplete="off" />
                         <h:outputLabel value="Invoice No"/>
                         <p:inputText class="w-100 mx-4" value="#{creditSummeryController.invoceNo}" autocomplete="off" />
                         <h:outputLabel value="With Footer"/>
-                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{creditSummeryController.withFooter}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4 my-1" value="#{creditSummeryController.withFooter}" />
                     </h:panelGrid>
                 <h:panelGrid columns="5" class="my-2" >
-                        <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" value="Refresh" ajax="false"   action="#{creditSummeryController.createCreditDueTable}" />
+                        <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" value="Process" ajax="false"   action="#{creditSummeryController.createCreditDueTable}" />
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
