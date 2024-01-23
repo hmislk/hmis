@@ -50,7 +50,7 @@
                                                 widgetVar="aPt" 
                                                 id="acPt" 
                                                 forceSelection="true"
-                                                placeholder="Investigation"
+                                                placeholder="Investigations"
                                                 converter="ixcon"
                                                 value="#{investigationItemController.currentInvestigation}" 
                                                 completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
@@ -155,100 +155,160 @@
                                         disabled="#{investigationItemController.current eq null}">
                                     </p:commandButton>
 
-                                    <p:dialog id="ixitemDetails" widgetVar="ixitemDetails" >
-                                        <p:commandButton value="Save" action="#{investigationItemController.saveSelected()}" 
-                                                         process="@this pDetails" update="tbl"
-                                                         oncomplete="PF('ixitemDetails').hide()">
-                                        </p:commandButton>
-                                        <p:panel  id="pDetails" >
-                                            <p:panelGrid style="width: 95%;" >
-                                                <p:row >
-                                                    <p:column >
-                                                        <h:outputText value="Name"   />
-                                                    </p:column>
-                                                    <p:column colspan="4" >
-                                                        <p:inputText style="min-width: 400px!important;" autocomplete="off" id="lblIiName" value="#{investigationItemController.current.name}" >
-                                                        </p:inputText>
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row >
-                                                    <p:column >
-                                                        <h:outputText value="Type"/>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:selectOneMenu id="cmbItemType" 
-                                                                         value="#{investigationItemController.current.ixItemType}" >
-                                                            <f:selectItem itemLabel="Please select" />
-                                                            <f:selectItem itemLabel="Label" itemValue="Label"/>
-                                                            <f:selectItem itemLabel="Value" itemValue="Value"/>
-                                                            <f:selectItem itemLabel="Calculation" itemValue="Calculation"/>
-                                                            <f:selectItem itemLabel="Flag" itemValue="Flag"/>
-                                                            <f:selectItem itemLabel="List" itemValue="List"/>
-                                                            <f:selectItem itemLabel="Dynamic Label" itemValue="DynamicLabel"/>
-                                                            <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
-                                                            <f:selectItem itemLabel="Template" itemValue="Template"/>
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:spacer height="1" width="5"></p:spacer>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <h:outputText value="Value Type"/>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:selectOneMenu id="cmbValueType" value="#{investigationItemController.current.ixItemValueType}"  >
-                                                            <f:selectItem itemLabel="Please select" />
-                                                            <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
-                                                        </p:selectOneMenu>
-                                                    </p:column>
-                                                </p:row>
+                                    <p:dialog id="ixitemDetails" widgetVar="ixitemDetails" header="Edit Details" width="700px">
 
-                                            </p:panelGrid>
-                                            <p:panelGrid columns="2" >
-                                                <h:outputText value="Automated"/>
-                                                <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                        <div class="row ">
+                                            <div class="col-11"></div>
+                                            <div class="col-1">
+                                                <p:commandButton 
+                                                    icon="fa fa-save"
+                                                    class="ui-button-success"
+                                                    style="float: right;"
+                                                    value="Save" 
+                                                    action="#{investigationItemController.saveSelected()}" 
+                                                    process="@this pDetails" 
+                                                    update="tbl"
+                                                    oncomplete="PF('ixitemDetails').hide()">
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
 
+                                        <h:panelGroup  id="pDetails" >
 
+                                            <div class="row mt-2" >
+                                                <div class="col-3"><h:outputLabel value="Name" class="mt-2" /></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:inputText 
+                                                        class="w-100"
+                                                        autocomplete="off" 
+                                                        id="lblIiName" 
+                                                        value="#{investigationItemController.current.name}" >
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
 
-                                                <p:outputLabel value="Test Component" ></p:outputLabel>
-                                                <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.current.sampleComponent}" >
-                                                    <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </p:selectOneMenu>
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Type" class="mt-2"/></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":" class="mt-2" ></p:outputLabel></div>
+                                                <div class="col-4">
+                                                    <p:selectOneMenu 
+                                                        id="cmbItemType" 
+                                                        class="w-100"
+                                                        value="#{investigationItemController.current.ixItemType}" >
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItem itemLabel="Label" itemValue="Label"/>
+                                                        <f:selectItem itemLabel="Value" itemValue="Value"/>
+                                                        <f:selectItem itemLabel="Calculation" itemValue="Calculation"/>
+                                                        <f:selectItem itemLabel="Flag" itemValue="Flag"/>
+                                                        <f:selectItem itemLabel="List" itemValue="List"/>
+                                                        <f:selectItem itemLabel="Dynamic Label" itemValue="DynamicLabel"/>
+                                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
+                                                        <f:selectItem itemLabel="Template" itemValue="Template"/>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
 
-                                                <h:outputText value="Machine"/>
-                                                <p:selectOneMenu value="#{investigationItemController.current.machine}" >
-                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
-                                                </p:selectOneMenu>
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Value Type" class="mt-2"/></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":" class="mt-2" ></p:outputLabel></div>
+                                                <div class="col-4">
+                                                    <p:selectOneMenu 
+                                                        class="w-100"
+                                                        id="cmbValueType" 
+                                                        value="#{investigationItemController.current.ixItemValueType}"  >
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
 
-                                                <h:outputText value="Test"/>
-                                                <p:autoComplete value="#{investigationItemController.current.test}"
-                                                                completeMethod="#{itemController.completeMachineTests}"
-                                                                var="t" inputStyle="width:200px;"
-                                                                itemValue="#{t}"
-                                                                itemLabel="#{t.code}"
-                                                                >
-                                                    <p:column >
-                                                        <p:outputLabel value="#{t.code}" ></p:outputLabel>
-                                                    </p:column>
-                                                    <p:column >
-                                                        <p:outputLabel value="#{t.name}" ></p:outputLabel>
-                                                    </p:column>
-                                                </p:autoComplete>
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Automated" class="mt-2"/></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                                </div>
+                                            </div>
 
-                                                <p:outputLabel value="Sample" ></p:outputLabel>
-                                                <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
-                                                    <f:selectItem itemLabel="Please select a sample"/>
-                                                    <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </p:selectOneMenu>
+                                            <div class="row mt-2">
+                                                <div class="col-3"><p:outputLabel value="Test Component"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:selectOneMenu
+                                                        class="w-100" 
+                                                        id="cmbTestComponent"  
+                                                        value="#{investigationItemController.current.sampleComponent}" >
+                                                        <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>                                                
 
-                                                <h:outputText value="Container / Tube" ></h:outputText>
-                                                <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.current.tube}" >
-                                                    <f:selectItem itemLabel="Please select a Tube"/>
-                                                    <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </p:selectOneMenu>
-                                            </p:panelGrid>
-                                        </p:panel>
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Machine" class="mt-2"/></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:selectOneMenu 
+                                                        class="w-100"
+                                                        value="#{investigationItemController.current.machine}" >
+                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                        <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>  
+
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Test" class="mt-2"/></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:autoComplete 
+                                                        value="#{investigationItemController.current.test}"
+                                                        completeMethod="#{itemController.completeMachineTests}"
+                                                        var="t" 
+                                                        class="w-100"
+                                                        inputStyleClass="form-control"
+                                                        itemValue="#{t}"
+                                                        itemLabel="#{t.code}"
+                                                        >
+                                                        <p:column >
+                                                            <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                                        </p:column>
+                                                        <p:column >
+                                                            <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                                        </p:column>
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>  
+
+                                            <div class="row mt-2">
+                                                <div class="col-3"><p:outputLabel value="Sample"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:selectOneMenu 
+                                                        class="w-100"
+                                                        id="cmbSample"  
+                                                        value="#{investigationItemController.current.sample}" >
+                                                        <f:selectItem itemLabel="Please select a sample"/>
+                                                        <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>  
+
+                                            <div class="row mt-2">
+                                                <div class="col-3"><h:outputLabel value="Container / Tube" class="mt-2"></h:outputLabel></div>
+                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:selectOneMenu 
+                                                        class="w-100"
+                                                        id="cmbTube"  
+                                                        value="#{investigationItemController.current.tube}" >
+                                                        <f:selectItem itemLabel="Please select a Tube"/>
+                                                        <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>  
+
+                                        </h:panelGroup>
                                     </p:dialog>
                                 </h:panelGroup>
                             </div>
@@ -263,7 +323,8 @@
                                         var="ii"
                                         paginator="true"
                                         paginatorPosition="bottom"
-                                        selectionMode="single" 
+                                        selectionMode="single"
+                                        
                                         rows="10"
                                         rowKey="#{ii.id}" 
                                         selection="#{investigationItemController.current}">
