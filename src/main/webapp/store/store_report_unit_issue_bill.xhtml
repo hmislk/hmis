@@ -17,7 +17,7 @@
 
                     <p:panel header="Unit Issue Report" >
 
-                        <h:panelGrid columns="2" class="my-" >
+                        <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -38,14 +38,14 @@
 
                         <h:panelGrid columns="6" class="my-2">
                             
-                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentUnitIssueByBillStore}" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill2" action="#{storeReportsTransfer.createStoreIssueReport}" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning" icon="fas fa-fill" ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentUnitIssueByBillStore}" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-fill" ajax="false" value="Fill2" action="#{storeReportsTransfer.createStoreIssueReport}" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Excel" class="ui-button-success mx-2" icon="fas fa-file-excel" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Unit_Issue_Report"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -54,16 +54,16 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Unit Issue By Bill - From "/>
+                                    <h:outputLabel value="Unit Issue By Bill - From : &nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
-                                    <h:outputLabel value=" &emsp;&emsp;To "/>
+                                    <h:outputLabel value=" &emsp;&emsp;To : &nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDepartment.name}"/>
 
-                                    <h:outputLabel value="&emsp;&emsp;From : " style=" white-space:pre-line;"/>
+                                    <h:outputLabel value="&emsp;&emsp;From : &nbsp;" style=" white-space:pre-line;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
-                                    <h:outputLabel value="&emsp;&emsp;To : "/>
+                                    <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.toDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"  ></f:convertDateTime>
                                     </h:outputLabel>

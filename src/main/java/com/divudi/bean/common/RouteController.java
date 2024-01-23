@@ -49,6 +49,10 @@ public class RouteController implements Serializable {
         current = new Route();
         return "/admin/institutions/route?faces-redirect=true";
     }
+    public String manageRoutes() {
+        current = new Route();
+        return "/admin/institutions/manage_routes?faces-redirect=true";
+    }
 
     public String toListRoutes() {
         fillItems();

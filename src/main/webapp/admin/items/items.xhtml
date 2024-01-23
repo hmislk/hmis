@@ -21,33 +21,33 @@
                                 <div class="container">
                                     <h:panelGrid columns="3">
                                         <p:commandButton 
-                                                id="btnAddIx"
-                                                value="Add Investigation"
-                                                class="w-100 ui-button-success"
-                                                update="lstSelect gpDetail detailFocus" 
-                                                process="btnAddIx" 
-                                                action="#{itemController.prepareAddingInvestigation()}" >
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnAddService"
-                                                value="Add Service"
-                                                class="w-100 m-1 ui-button-success"
-                                                update="lstSelect gpDetail detailFocus" 
-                                                process="btnAddService" 
-                                                action="#{itemController.prepareAddingService()}" >
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnDelete" 
-                                                class="w-100 m-1 ui-button-danger"
-                                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            id="btnAddIx"
+                                            value="Add Investigation"
+                                            class="w-100 ui-button-success"
+                                            update="lstSelect gpDetail detailFocus" 
+                                            process="btnAddIx" 
+                                            action="#{itemController.prepareAddingInvestigation()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnAddService"
+                                            value="Add Service"
+                                            class="w-100 m-1 ui-button-success"
+                                            update="lstSelect gpDetail detailFocus" 
+                                            process="btnAddService" 
+                                            action="#{itemController.prepareAddingService()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnDelete" 
+                                            class="w-100 m-1 ui-button-danger"
+                                            onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                             return false;" 
-                                                action="#{itemController.delete()}"
-                                                value="Delete"
-                                                update="lstSelect gpDetail selectFocus msg"
-                                                process="btnDelete">
-                                            </p:commandButton>
+                                            action="#{itemController.delete()}"
+                                            value="Delete"
+                                            update="lstSelect gpDetail selectFocus msg"
+                                            process="btnDelete">
+                                        </p:commandButton>
                                     </h:panelGrid>
-                                   
+
 
                                     <div class="row">
                                         <div class="col-12">
@@ -225,6 +225,8 @@
                                                 <p:selectBooleanCheckbox value="#{itemController.current.discountAllowed}" itemLabel="Discount Allowed"/>
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{itemController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
                                                 <h:outputText value="Created Person"/>
                                                 <h:outputText value="#{itemController.current.creater.webUserPerson.nameWithTitle}"/>
                                                 <h:outputText value="Item Id"/>

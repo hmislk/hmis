@@ -92,28 +92,43 @@
                                      var="item"
                                      paginator="true"
                                      rows="10"
-                                     id="tblView"
+                                     id="tblExport"
                                      >
-
-                            <p:column>
+                            
+                            <p:column sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="contains">
                                 <f:facet name="header">
-                                    <h:outputText value="Category"/>
-                                </f:facet>
-                                <h:outputText value="#{item.id}"/>
-                            </p:column>
-
-                            <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Name"/>
-                                </f:facet>
-                                <h:outputText value="#{item.name}"/>
-                            </p:column>
-                            <p:column  sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputText value="Code"/>
+                                    <h:outputText value="Service Code"/>
                                 </f:facet>
                                 <h:outputText value="#{item.code}"/>
                             </p:column>
+                            
+                            <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.institutionId}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="CC Name"/>
+                                </f:facet>
+                                <h:outputText value="#{itemController.filterInstitution.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="CC Code"/>
+                                </f:facet>
+                                <h:outputText value="#{itemController.filterInstitution.code}"/>
+                            </p:column>
+                            
+                            <p:column sortBy="#{item.categoryName}" filterBy="#{item.categoryName}" filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputText value="Service Category"/>
+                                </f:facet>
+                                <h:outputText value="#{item.categoryName}"/>
+                            </p:column>
+                            
+                            
                             <p:column  sortBy="#{item.total}" filterBy="#{item.total}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <h:outputText value="Price"/>

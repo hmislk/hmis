@@ -90,6 +90,7 @@
                                                          action="#{patientController.searchPatientForOpd()}" 
                                                          ajax="false" 
                                                          class="m-1 ui-button-warning" />
+                                        <p:defaultCommand target="btnSearch"> </p:defaultCommand>
 
                                         <p:commandButton value="Clear" 
                                                          action="#{patientController.clearSearchDetails()}"
@@ -110,7 +111,7 @@
                                             id="btnSearchbyPhoneNo"
                                             icon="fa fa-search"
                                             value="Quick Search"
-                                            action="#{patientController.searchByPatientPhoneNumber()}" 
+                                            action="#{patientController.searchByPatientPhoneNumberForPatientLookup()}" 
                                             ajax="false" 
                                             class="mt-2 ml-2" 
                                             style="width: auto;"/>

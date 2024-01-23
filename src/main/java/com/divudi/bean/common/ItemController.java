@@ -129,6 +129,7 @@ public class ItemController implements Serializable {
     private InstitutionItemCount institutionItemCount;
 
     boolean masterItem;
+    
 
     ReportKeyWord reportKeyWord;
 
@@ -180,12 +181,12 @@ public class ItemController implements Serializable {
 
         // Query for items with institutions
         String jpqlWithIns = "select new com.divudi.data.InstitutionItemCount("
-                + "i.institution.id, i.institution.name, count(i)) "
+                + "i.institution.id, i.institution.name, i.institution.code, count(i)) "
                 + "from Item i "
                 + "where i.retired=:ret "
                 + "and i.institution is not null "
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv) "
-                + "group by i.institution.id, i.institution.name "
+                + "group by i.institution.id, i.institution.name, i.institution.code "
                 + "order by i.institution.name";
 
         Map<String, Object> m = new HashMap<>();
@@ -195,7 +196,7 @@ public class ItemController implements Serializable {
 
         // Get count of items without an institution
         Long countWithoutInstitution = itemFacade.countByJpql(jpqlWithoutIns, m);
-        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution", countWithoutInstitution);
+        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution","No Code", countWithoutInstitution);
 
         // Get list of items with an institution
         List<InstitutionItemCount> withInsList = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpqlWithIns, m);

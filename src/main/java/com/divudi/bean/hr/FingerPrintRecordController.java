@@ -195,6 +195,16 @@ public class FingerPrintRecordController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void save(FingerPrintRecord r) {
+        if (r.getId() != null) {
+            getFacade().edit(r);
+        } else {
+            r.setCreatedAt(new Date());
+            r.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(r);
+        }
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;

@@ -160,7 +160,6 @@ public class BillBeanController implements Serializable {
 //            return false;
 //        }
 //    }
-
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
     }
@@ -1781,7 +1780,7 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
         String sql;
         Map temMap = new HashMap();
@@ -2802,6 +2801,45 @@ public class BillBeanController implements Serializable {
         return deptSet.size();
     }
 
+    public void checkBillItemFeesInitiated(Bill b) {
+        if (b == null) {
+            return;
+        }
+        if (b.getBillItems() == null) {
+            b.setBillItems(fillBillItems(b));
+        }
+        if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+            return;
+        }
+        for (BillItem bi : b.getBillItems()) {
+            if (bi.getBillFees() == null || bi.getBillFees().isEmpty()) {
+                bi.setBillFees(fillBillItemFees(bi));
+            }
+        }
+    }
+
+    public List<BillItem> fillBillItems(Bill b) {
+        String j = "Select bi "
+                + " from BillItem bi "
+                + " where bi.bill=:b "
+                + " and bi.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("b", b);
+        return billItemFacade.findByJpql(j, m);
+    }
+
+    public List<BillFee> fillBillItemFees(BillItem bi) {
+        String j = "Select bf "
+                + " from BillFee bf "
+                + " where bf.billItem=:bi "
+                + " and bf.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bi", bi);
+        return billFeeFacade.findByJpql(j, m);
+    }
+
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu) {
         e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
@@ -3398,8 +3436,8 @@ public class BillBeanController implements Serializable {
             for (Fee i : itemFee) {
                 f = new BillFee();
                 f.setFee(i);
-                f.setFeeValue(i.getFee());
-                f.setFeeGrossValue(i.getFee());
+                f.setFeeValue(i.getFee() * billItem.getQty());
+                f.setFeeGrossValue(i.getFee() * billItem.getQty());
                 //////System.out.println("Fee Value is " + f.getFeeValue());
                 // f.setBill(billItem.getBill());
                 f.setBillItem(billItem);

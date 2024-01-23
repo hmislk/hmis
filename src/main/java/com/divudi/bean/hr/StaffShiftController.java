@@ -34,8 +34,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -142,6 +142,18 @@ public class StaffShiftController implements Serializable {
         if (staffshift != null) {
             getEjbFacade().edit(staffshift);
             UtilityController.addSuccessMessage("Updated");
+        }
+    }
+
+    public void save(StaffShift ss) {
+        if (ss != null) {
+            if (ss.getId() == null) {
+                ss.setCreatedAt(new Date());
+                ss.setCreater(sessionController.getLoggedUser());
+                getEjbFacade().create(ss);
+            } else {
+                getEjbFacade().edit(ss);
+            }
         }
     }
 
@@ -264,7 +276,7 @@ public class StaffShiftController implements Serializable {
 //    }
     public void createStaffShiftTablebyShiftDate() {
         Date startTime = new Date();
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -300,7 +312,7 @@ public class StaffShiftController implements Serializable {
         m.put("td", toDate);
 
         staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
     }
@@ -462,7 +474,6 @@ public class StaffShiftController implements Serializable {
     /**
      *
      */
-    
     public CommonController getCommonController() {
         return commonController;
     }

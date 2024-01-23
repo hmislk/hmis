@@ -198,13 +198,13 @@ public class SearchController implements Serializable {
         String sql = "select b from Bill b where b.retired=false and "
                 + " b.billType = :billType and b.institution = :del "
                 + "and b.createdAt between :fromDate and :toDate ";
-        
+
         m.put("billType", BillType.PharmacyGrnBill);
         m.put("del", getDealer());
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
-        
-        grnBills=getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        grnBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public String navigateToPatientLabReports() {
@@ -628,7 +628,7 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml)");
 
     }
-    
+
     public void createPreRefundOpdTable() {
 
         bills = null;
@@ -5302,8 +5302,9 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search not Paid only(/opd_search_pre_batch_bill.xhtml)");
     }
 
-    public void createOpdPreTable() {
+    public String createOpdPreTable() {
         createPreTable(BillType.OpdPreBill);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
 
     public void fillPatientBillsToPay() {
@@ -5330,12 +5331,14 @@ public class SearchController implements Serializable {
         fillPatientPreBills(BillType.OpdPreBill, patient, null, null);
     }
 
-    public void createOpdPreTableNotPaid() {
+    public String createOpdPreTableNotPaid() {
         createPreTableNotPaid(BillType.OpdPreBill);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
 
-    public void createOpdPreTablePaid() {
+    public String createOpdPreTablePaid() {
         createPreTablePaid(BillType.OpdPreBill);
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
     }
 
     public void createPharmacyPreTable() {
@@ -5418,11 +5421,11 @@ public class SearchController implements Serializable {
             m.put("pt", pt);
         }
 
-        if (paidOnly!=null) {
+        if (paidOnly != null) {
             jpql += " and b.referenceBill is not null ";
         }
 
-        if (toPayOnly!=null) {
+        if (toPayOnly != null) {
             jpql += " and b.referenceBill is null ";
         }
 
@@ -5432,7 +5435,6 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("ins", getSessionController().getInstitution());
         bills = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP, 25);
-       
 
     }
 
@@ -5781,7 +5783,7 @@ public class SearchController implements Serializable {
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
+
     public void searchOpdBatchBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBathcBill, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
@@ -6133,7 +6135,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (((b.insId) like :billNo )or((b.deptId) like :billNo ))";
+            sql += " and  b.deptId like :billNo";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
@@ -8970,6 +8972,4 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-    
-    
 }

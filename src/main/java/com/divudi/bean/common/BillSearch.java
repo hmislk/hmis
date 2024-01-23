@@ -2235,6 +2235,8 @@ public class BillSearch implements Serializable {
         }
         paymentMethod = bill.getPaymentMethod();
         createBillItems();
+        billBean.checkBillItemFeesInitiated(bill);
+        
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;

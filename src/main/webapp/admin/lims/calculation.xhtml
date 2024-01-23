@@ -9,116 +9,189 @@
         <ui:composition template="/admin/lims/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Manage Investigatio Calculations" >
-                        <p:commandButton 
-                            class="my-1"
-                            value="Back" 
-                            action="/admin/lims/investigation" ajax="false" ></p:commandButton>
-                        <p:panelGrid columns="1" >
-                            <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
-                                <p:ajax event="change" process="@this" update="acIx" />
-                            </p:selectBooleanCheckbox>
-                            <p:panelGrid columns="2" >
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Manage Investigation Calculations" class="mt-2"></h:outputLabel>
+                            <p:commandButton 
+                                class="my-1"
+                                value="Back" 
+                                style="float: right;"
+                                action="/admin/lims/investigation" 
+                                ajax="false" >
+                            </p:commandButton>
+                        </f:facet>
 
-                                <h:outputLabel value="Investigation" ></h:outputLabel>
-                                <p:autoComplete converter="ixcon" forceSelection="true" id="acIx"  value="#{ixCalController.ix}" completeMethod="#{investigationController.completeInvest}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                    <p:ajax event="itemSelect" process="acIx" update="tbl acIiv" />
-                                </p:autoComplete>
+                        <div class="row">
+                            <div class="col-8">
+                                <p:selectBooleanCheckbox 
+                                    itemLabel="Master Items Only" 
+                                    value="#{investigationController.listMasterItemsOnly}">
+                                    <p:ajax event="change" process="@this" update="acIx" />
+                                </p:selectBooleanCheckbox>
 
-                                <h:outputLabel value="Calculation Field" ></h:outputLabel>
-                                <p:selectOneMenu id="acIiv" value="#{ixCalController.cal }" >
-                                    <f:selectItem itemLabel="Select" />
-                                    <f:selectItems value="#{ixCalController.cals}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv}" />
-                                    <f:ajax event="change" execute="acIiv" render="tbl" />
-                                </p:selectOneMenu>
-                            </p:panelGrid>
+                                <div class="row mt-3">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Investigation" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:autoComplete 
+                                            converter="ixcon" 
+                                            forceSelection="true" 
+                                            id="acIx"  
+                                            value="#{ixCalController.ix}" 
+                                            completeMethod="#{investigationController.completeInvest}" 
+                                            var="ix" 
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" >
+                                            <p:ajax event="itemSelect" process="acIx" update="tbl acIiv" />
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
 
-                            <p:panel>
-                                <p:panelGrid columns="2" id="gridDetails" >
-
-                                    <h:outputLabel value="Type" />
-                                    <p:selectOneMenu id="cmbCal" value="#{ixCalController.addingIxCal.calculationType}" required="true" requiredMessage="Please select a calculation type" >
-                                        <f:selectItems value="#{enumController.calculationTypes}" var="itv" itemLabel="#{itv.label}" itemValue="#{itv}" ></f:selectItems>
-                                        <f:ajax event="change" execute="@this" render="gridDetails" ></f:ajax>
-                                    </p:selectOneMenu>
-
-                                    <h:panelGroup   id="lblVal">
-                                        <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="Value" />
-                                    </h:panelGroup>
-                                    <h:panelGroup  id="cmbVal"  >
-                                        <p:selectOneMenu rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="#{ixCalController.addingIxCal.valIxItem }"  required="true" requiredMessage="Please select a Value" >
-                                            <f:selectItem itemLabel="Select Value" />
-                                            <f:selectItems value="#{ixCalController.vals}" var="v" itemLabel="#{v.name}" itemValue="#{v}" />
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Calculation Field" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="acIiv" 
+                                            value="#{ixCalController.cal }" >
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{ixCalController.cals}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv}" />
+                                            <f:ajax event="change" execute="acIiv" render="tbl" />
                                         </p:selectOneMenu>
-                                    </h:panelGroup>
-                                    <h:panelGroup id="lblCon" >
-                                        <h:outputLabel  value="Constant"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"   />
-                                    </h:panelGroup>
-                                    <h:panelGroup id="txtCon" >
-                                        <p:inputText autocomplete="off"  
-                                                     value="#{ixCalController.addingIxCal.constantValue}"  
-                                                     required="true" 
-                                                     requiredMessage="Please select a constant" 
-                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"/>
-                                    </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <p:panel class="mt-3">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Add Values ..."></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGrid columns="2" id="gridDetails" class="mb-2">
+
+                                        <h:panelGroup>
+                                            <h:outputLabel value="Type" />
+                                            <h:outputLabel value=": " style="width: 60px; text-align: center; float: right;" />
+                                        </h:panelGroup>
+                                        <p:selectOneMenu 
+                                            id="cmbCal" 
+                                            style="width: 20em;"
+                                            value="#{ixCalController.addingIxCal.calculationType}" 
+                                            required="true" 
+                                            requiredMessage="Please select a calculation type" >
+                                            <f:selectItems 
+                                                value="#{enumController.calculationTypes}" 
+                                                var="itv" itemLabel="#{itv.label}" 
+                                                itemValue="#{itv}" ></f:selectItems>
+                                            <f:ajax event="change" execute="@this" render="gridDetails" ></f:ajax>
+                                        </p:selectOneMenu>
+
+                                        <h:panelGroup  id="lblVal">
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   value="Value" />
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}" value=": " style="width: 60px; text-align: center; float: right;"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup  id="cmbVal"  >
+                                            <p:selectOneMenu 
+                                                class="w-100"
+                                                rendered="#{ixCalController.addingIxCal.calculationType eq 'Value'}"   
+                                                value="#{ixCalController.addingIxCal.valIxItem }"  
+                                                required="true" 
+                                                requiredMessage="Please select a Value" >
+                                                <f:selectItem itemLabel="Select Value" />
+                                                <f:selectItems value="#{ixCalController.vals}" var="v" itemLabel="#{v.name}" itemValue="#{v}" />
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="lblCon" >
+                                            <h:outputLabel value="Constant"  rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}" />
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}" value=": " style="width: 60px; text-align: center; float: right;"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="txtCon" >
+                                            <p:inputText 
+                                                autocomplete="off"
+                                                class="w-100"
+                                                value="#{ixCalController.addingIxCal.constantValue}"  
+                                                required="true" 
+                                                requiredMessage="Please select a constant" 
+                                                rendered="#{ixCalController.addingIxCal.calculationType eq 'Constant'}"/>
+                                        </h:panelGroup>
 
 
-                                    <h:panelGroup id="lblMaleCon" >
-                                        <h:outputLabel  value="Constant for Males"  
-                                                        rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"   />
-                                    </h:panelGroup>
-                                    <h:panelGroup id="txtMaleCon" >
-                                        <p:inputText autocomplete="off"  
-                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" 
-                                                     value="#{ixCalController.addingIxCal.maleConstantValue}"  
-                                                     required="true" requiredMessage="Please select a constant for males" />
-                                    </h:panelGroup>
+                                        <h:panelGroup id="lblMaleCon" >
+                                            <h:outputLabel value="Constant for Males" rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"   />
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" value=": " style="width: 60px; text-align: center; float: right;"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="txtMaleCon" >
+                                            <p:inputText 
+                                                autocomplete="off"  
+                                                class="w-100"
+                                                rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" 
+                                                value="#{ixCalController.addingIxCal.maleConstantValue}"  
+                                                required="true" 
+                                                requiredMessage="Please select a constant for males" />
+                                        </h:panelGroup>
 
-                                    <h:panelGroup id="lblFemaleCon" >
-                                        <h:outputLabel  value="Constant for Females"  
-                                                        rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"    />
-                                    </h:panelGroup>
+                                        <h:panelGroup id="lblFemaleCon" >
+                                            <h:outputLabel value="Constant for Females" rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}"/>
+                                            <h:outputLabel rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" value=": " style="width: 60px; text-align: center; float: right;"/>
+                                        </h:panelGroup>
 
-                                    <h:panelGroup id="txtFemaleCon" >
-                                        <p:inputText autocomplete="off"   
-                                                     value="#{ixCalController.addingIxCal.femaleConstantValue}"
-                                                     required="true" 
-                                                     requiredMessage="Please select a constant for females"
-                                                     rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" />
-                                    </h:panelGroup>
+                                        <h:panelGroup id="txtFemaleCon" >
+                                            <p:inputText 
+                                                class="w-100"
+                                                autocomplete="off"   
+                                                value="#{ixCalController.addingIxCal.femaleConstantValue}"
+                                                required="true" 
+                                                requiredMessage="Please select a constant for females"
+                                                rendered="#{ixCalController.addingIxCal.calculationType eq 'GenderDependentConstant'}" />
+                                        </h:panelGroup>
 
+                                    </h:panelGrid>
 
-                                    <p:commandButton ajax="false" value="Remove Last" action="#{ixCalController.removeLastCal() }"   >
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Remove Last" 
+                                        class="ui-button-danger"
+                                        icon=" fa-solid fa-trash"
+                                        action="#{ixCalController.removeLastCal() }"   >
                                     </p:commandButton>
-                                    <p:commandButton value="Add" action="#{ixCalController.addCal()}" ajax="false"   >
+
+                                    <p:commandButton 
+                                        value="Add"
+                                        class="ui-button-success mx-2"
+                                        icon="fa-solid fa-check"
+                                        action="#{ixCalController.addCal()}" 
+                                        ajax="false"   >
                                     </p:commandButton>
-                                </p:panelGrid>
 
+                                </p:panel>
+                            </div>
+                            <div class="col-4">
+                                <p:panel class="mt-3">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Calculations ..."></h:outputLabel>
+                                    </f:facet>
+                                    <p:dataTable id="tbl" value="#{ixCalController.items}" var="c"  class="mt-2">
+                                        <p:column >
+                                            <h:outputLabel value="#{c.calculationType}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column >
+                                            <h:outputLabel value="#{c.constantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
+                                            <h:outputLabel  value="#{c.valIxItem.name}"  rendered="#{c.calculationType eq 'Value'}"  />
+                                            <h:outputLabel value="Males : #{c.maleConstantValue}, Females : #{c.femaleConstantValue}" rendered="#{c.calculationType eq 'GenderDependentConstant'}"  />
+                                        </p:column>
 
-                            </p:panel>
-                            <p:panel >
-                                <p:dataTable id="tbl" value="#{ixCalController.items}" var="c" >
-                                    <p:column >
-                                        <h:outputLabel value="#{c.calculationType}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputLabel value="#{c.constantValue}" rendered="#{c.calculationType eq 'Constant'}"  />
-                                        <h:outputLabel  value="#{c.valIxItem.name}"  rendered="#{c.calculationType eq 'Value'}"  />
-                                        <h:outputLabel value="Males : #{c.maleConstantValue}, Females : #{c.femaleConstantValue}" rendered="#{c.calculationType eq 'GenderDependentConstant'}"  />
-                                    </p:column>
-
-                                </p:dataTable>
-
-                            </p:panel>
-                        </p:panelGrid>
-
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
 
                     </p:panel>
-
-
                 </h:form>
-
-
             </ui:define>
         </ui:composition>
     </h:body>

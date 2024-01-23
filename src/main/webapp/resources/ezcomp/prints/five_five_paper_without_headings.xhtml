@@ -11,7 +11,9 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -20,27 +22,28 @@
 
 
 
-        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" style="page-break-after: always" >
+        <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <div class="fiveinchbill " style="page-break-after: always" >
+
 
             
-            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="OPD Invoice"   />    
+
+            <div style="font-weight: bold;text-align: left;font-size: 12pt" class="mt-2">
+                <div class="d-flex align-items-center">          <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                    <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4></div>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <br/>
                 <hr></hr>   
-                <br/>
             </div>
 
+           
+
             <div class="billDetailsFiveFive" >
+
                 <table style="width: 99%!important;" >
-
-
-
                     <tr>
                         <td style="text-align: left;" >
                             <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
@@ -119,7 +122,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.insId}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
 
@@ -180,11 +183,15 @@
 
                     </tr>
 
+
+
                 </table>
             </div>
+            <div style="text-decoration: overline; margin-top: 20px;font-size: 10pt">
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
+            </div>
 
-
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
@@ -192,8 +199,17 @@
                     </div>
                 </div>
             </h:panelGroup>
+            
+            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
+                <div >
+                    <div style="width: 100%;text-align: center;font-size: 10px;">
+                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
+                    </div>
+                </div>
+            </h:panelGroup>
 
-            <div class="itemHeadingsFiveFive" >
+            <div class="" >
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
@@ -217,17 +233,51 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
-                            <tr>
-                                <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel>
-                                </td>
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
+
+
+                            <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
+                                <tr>
+                                    <td  style="overflow: visible;">
+                                        <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="("  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                        <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value=")"  style="text-transform: capitalize!important;"  >
+                                        </h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{bip.item.printFeesForBills}">
+                                <ui:repeat value="#{bip.billFees}" var="bf" >
+                                    <tr>
+                                        <td  style="overflow: visible;">
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="2"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.fee.name}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="10"  rendered="#{bip.qty gt 0.0}" ></p:spacer>
+                                            <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.feeValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </h:panelGroup>
+
 
                         </ui:repeat>
                     </h:panelGroup>
@@ -268,13 +318,10 @@
 
             </div>
 
-
             <div class="billline">
-                <br/>
                 <hr/>
-                <br/>
-
             </div>
+
 
 
 
@@ -293,20 +340,10 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>
@@ -348,9 +385,14 @@
 
             </div>
 
-            <div style="text-decoration: overline; margin-top: 20px;">
-                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
-            </div>
+            <ui:repeat value="#{cc.attrs.payments}" var="ps">
+                <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
+                </h:panelGroup>
+            </ui:repeat>
+
 
             <div class="footer" style="text-align: center;">
                 <br/>
