@@ -27,7 +27,7 @@
                     <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="To" />
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel  value="Department" />
                     <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{commonReport1.department}" 
@@ -37,18 +37,18 @@
                                     requiredMessage="You must select a department" >
                     </p:autoComplete>
                     <h:outputLabel  value="Item" />
-                    <au:complete_opd_service_Investigation value="#{commonReport1.item}" />
+                    <au:complete_opd_service_Investigation  value="#{commonReport1.item}" />
                     <h:outputLabel  value="Item Category" />
                     <au:complete_opd_catagery_service_Investigation value="#{commonReport1.category}" />
                     <h:outputLabel  value="Income Department" />
-                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{commonReport1.incomeDepartment}" 
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{commonReport1.incomeDepartment}" 
                                     placeholder="Income Department"
                                     completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                     itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                     requiredMessage="You must select a department" ></p:autoComplete>
                 </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2" >
-                    <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" value="Refresh" ajax="false" 
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" value="Process" ajax="false" 
                                      action="#{commonReport1.createWithCreditbyDepartmentBilledBillItem()}">
                     </p:commandButton>
                     <p:defaultCommand target="btnRefresh"/>
