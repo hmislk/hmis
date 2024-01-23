@@ -174,12 +174,6 @@
                                                          icon="fa fa-money-bill-wave">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
-                                        cancelled - #{b.cancelled}
-                                        <br/>
-                                        Refunded - #{b.refunded}
-                                        <br/>
-                                        #{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}
-
                                     </p:column>
                                 </p:dataTable>
 

@@ -80,6 +80,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.PhaseId;
+import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -173,6 +174,7 @@ public class PatientController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PatientController patientController;
+    
 
     /**
      *
@@ -287,6 +289,15 @@ public class PatientController implements Serializable {
         String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
         Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
         return convertedPhoneNumber;
+    }
+
+    public void validateMobile(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+        String mobileRegex = sessionController.getApplicationPreference().getMobileRegex();
+        if (mobileRegex != null && !mobileRegex.isEmpty()) {
+            if (!value.toString().matches(mobileRegex)) {
+                throw new ValidatorException(new FacesMessage("Please enter a valid number"));
+            }
+        }
     }
 
     public void convertOldPersonPhoneToPatientPhoneLong() {
@@ -675,7 +686,7 @@ public class PatientController implements Serializable {
         patientEncounterController.fillPatientInvestigations(current);
         return "/emr/patient_profile?faces-redirect=true;";
     }
-    
+
 //    public String toEmrPatientProfile() {
 //        if (current == null) {
 //            JsfUtil.addErrorMessage("No patient selected");
@@ -689,7 +700,6 @@ public class PatientController implements Serializable {
 //        patientEncounterController.fillPatientInvestigations(current);
 //        return "/emr/patient_profile?faces-redirect=true;";
 //    }
-    
     public String navigateToOpdBilling() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -1332,7 +1342,7 @@ public class PatientController implements Serializable {
 
     public void searchByPatientPhoneNumber() {
         Long patientPhoneNumber = removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
-        if(patientPhoneNumber==null){
+        if (patientPhoneNumber == null) {
             searchedPatients = new ArrayList<>();
             return;
         }

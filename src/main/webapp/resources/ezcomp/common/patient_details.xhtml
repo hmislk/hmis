@@ -184,50 +184,46 @@
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:datePicker 
-
+                                                <p:calendar 
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
                                                     inputStyleClass="form-control"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                                    placeholder="Date of Birth (dd/mm/yyyy)"
+                                                    placeholder="Date of Birth"
                                                     >
                                                     <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                                                </p:datePicker>
+                                                </p:calendar>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-3 p-1">
-                                        <p:inputText 
-                                            id="txtMobile" 
-
-                                            autocomplete="off" 
-                                            placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
-                                            class="form-control" 
-                                            validatorMessage="Please enter valid Number">
-                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                            </c:if>
-                                        </p:inputText>
-                                    </div>
+                                    
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtPhone" 
-
                                             autocomplete="off" 
-                                            placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            placeholder="Phone Number for Quick Search"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
+                                            validator="#{patientController.validateMobile}"
                                             class="form-control" validatorMessage="Please enter valid Number">
-                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                            </c:if>
                                         </p:inputText>
                                     </div>
+                                    
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText 
+                                            id="txtMobile" 
+                                            autocomplete="off" 
+                                            placeholder="Other Contact Number"
+                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            class="form-control" 
+                                            validator="#{patientController.validateMobile}"
+                                            validatorMessage="Please enter valid Number">
+                                        </p:inputText>
+                                    </div>
+                                    
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
 
