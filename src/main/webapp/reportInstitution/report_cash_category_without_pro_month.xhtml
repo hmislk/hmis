@@ -18,11 +18,11 @@
                 </f:facet>
                 <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
@@ -34,7 +34,7 @@
                     </h:panelGrid>
 
                 <h:panelGrid columns="6" class="my-2">
-                        <p:commandButton value="Refresh" ajax="false" class="ui-button-warning" icon="fas fa-refresh"
+                        <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
                                          action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
                         <p:commandButton ajax="false" value="Print"  class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="panelPrint" />
