@@ -25,7 +25,7 @@
                                 <p:commandButton id="btnSearchAll" ajax="false" icon="fas fa-search"
                                                  class="w-100 ui-button-warning my-1" value="Search All" action="#{searchController.createDueFeeTableInwardAll}"  />                                 
                                 <p:commandButton id="btnSearchAllCancelled" rendered="false" ajax="false" value="Search All with cancelled bills" action="#{searchController.createDueFeeTableInwardAllWithCancelled()}"  />                                 
-                                <p:commandButton ajax="false" value="Excel" icon="fas fa-search"
+                                <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel"
                                                  class="w-100 ui-button-success" >
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>
