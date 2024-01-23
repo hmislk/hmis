@@ -19,17 +19,18 @@
                     <f:facet name="header" >
                         <h:outputLabel value="List of Investigations"></h:outputLabel>
                     </f:facet>
-                    <p:commandButton ajax="false" value="Process" action="#{investigationController.listAllIxs}" icon="pi pi-play" />
+                    <h:panelGrid columns="6" class="my-2" >
+                        <p:commandButton class="ui-button-warning" ajax="false" value="Process" action="#{investigationController.listAllIxs}" icon="fas fa-cogs" />
 
-                    <p:commandButton id="excel" ajax="false" value="Download as Excel" class="m-2" icon="pi pi-file-excel">
+                        <p:commandButton class="ui-button-success mx-2" id="excel" ajax="false" value="Download as Excel" icon="fas fa-file-excel">
                         <p:dataExporter target="tbl" type="csv" fileName="List of All Investigations" />
                     </p:commandButton>
 
-                    <p:commandButton value="Download as JSON" ajax="false" icon="pi pi-arrow-down">
+                        <p:commandButton class="ui-button-success" icon="fas fa-download" value="Download as JSON" ajax="false">
                         <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
                     </p:commandButton>
 
-
+                    </h:panelGrid>
 
 
 
@@ -37,7 +38,7 @@
                                  rowIndexVar="rowIndex" 
                                  value="#{investigationController.allIxs}" 
                                  var="ix" 
-
+                                 paginatorPosition="bottom"
                                  rows="20"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
