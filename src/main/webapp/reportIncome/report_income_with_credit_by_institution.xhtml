@@ -22,9 +22,9 @@
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{institutionLabSumeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To Date" />
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
-                            <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
+                            <h:outputLabel styleClass="noPrintButton" value="Institution"  ></h:outputLabel>
                             <p:selectOneMenu class="w-100 mx-4" autoWidth="false"  value="#{institutionLabSumeryController.institution}"                                    
                                              requiredMessage="You must select a institution" >
                                 <f:selectItem itemLabel="Select Institution"/>
@@ -33,7 +33,7 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-2" >
-                            <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" value="Refresh" ajax="false" />
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" value="Process" ajax="false" />
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
