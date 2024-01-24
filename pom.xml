@@ -57,6 +57,14 @@
         </dependency>
 
         <dependency>
+            <groupId>fr.opensagres.xdocreport</groupId>
+            <artifactId>org.apache.poi.xwpf.converter.xhtml</artifactId>
+            <version>1.0.6</version>
+        </dependency>
+        
+        
+        
+        <dependency>
             <groupId>net.sourceforge.barbecue</groupId>
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
@@ -280,7 +288,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.3.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
@@ -319,6 +327,10 @@
             <id>eclipselink</id>
             <layout>default</layout>
             <name>Repository for library EclipseLink (JPA 2.1)</name>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
         </repository>
     </repositories>
 </project>
