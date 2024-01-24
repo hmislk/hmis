@@ -28,28 +28,29 @@
                                         <h:outputLabel value="Item" ></h:outputLabel>
                                         <p:autoComplete   forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.stock}" 
                                                           completeMethod="#{pharmacyController.completeAllStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" class="w-100" inputStyleClass="w-100">
-                                            <p:column headerText="Item">
-                                                <h:outputLabel value="#{i.itemBatch.item.name}" 
-                                                               style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                        commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
+                                            <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 300px!important;">
+                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Rate">
+                                            <p:column headerText="Rate" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Stocks">
+                                            <p:column headerText="Stocks" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                        commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
+                                            <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="@this" render="det"/>
+                                            <f:ajax event="itemSelect" execute="@this"  render="det"/>
                                         </p:autoComplete>
                                         <h:outputLabel value="New Quentity" ></h:outputLabel>
                                         <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
@@ -64,16 +65,16 @@
 
                             </div>
                             <div class="col-md-6">
-                                <p:panel class="w-100">
+                                <p:panel class="w-100" id="det">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="3" id="det" class="w-100"></h:panelGrid>
+                                    <h:panelGrid columns="3" class="w-100"></h:panelGrid>
                                     <div>
                                         <div class="row">
                                             <div class="col-md-3">
-                                                <h:outputLabel value="Stock Id"/>
+                                                <h:outputLabel value="Stock ID"/>
                                             </div>
                                             <div class="col-md-2">
                                                 <h:outputLabel value=":"/>
@@ -84,7 +85,7 @@
                                         </div>
 
                                         <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Item Id"/></div>
+                                            <div class="col-md-3"><h:outputLabel value="Item ID"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.id}" ></h:outputLabel></div>
                                         </div>
@@ -119,8 +120,11 @@
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Expiry"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel></div>
                                         </div>
                                     </div>
@@ -134,8 +138,8 @@
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
-                        <p:commandButton ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
-                        <p:commandButton ajax="false" value="Print">
+                        <p:commandButton class="ui-button-success" icon="fas fa-plus" ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
+                        <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print">
                             <p:printer target="print"/>
                         </p:commandButton>
                         <p:panel id="print">
