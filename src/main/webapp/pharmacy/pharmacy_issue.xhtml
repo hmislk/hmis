@@ -13,7 +13,7 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form id="bill" >
+                <h:form id="bill" rendered="#{!pharmacyIssueController.billPreview}" >
                     <p:growl id="panelError" />
                     <p:panel>
                         <f:facet name="header" >
@@ -191,6 +191,7 @@
                                     
                                     <h:panelGrid columns="2" class="my-4 d-flex justify-content-end">
                                             <p:commandButton  accesskey="s" value="Issue" 
+                                                              ajax="false"
                                                               action="#{pharmacyIssueController.settleBill()}" 
                                                               class="ui-button-warning"
                                                               actionListener="#{pharmacyIssueController.calculateAllRates}">
