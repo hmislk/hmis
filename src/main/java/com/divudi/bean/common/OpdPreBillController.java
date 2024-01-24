@@ -675,7 +675,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             return null;
         }
         savePatient(getPatient());
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             PreBill newPreBill = new PreBill();
             PreBill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), newPreBill);
 

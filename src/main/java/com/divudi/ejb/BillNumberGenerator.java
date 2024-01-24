@@ -12,12 +12,14 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -683,27 +685,61 @@ public class BillNumberGenerator {
 
     }
 
-    public String generateDailyBillNumberForOpd(Department department) {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "SELECT count(b) FROM Bill b "
+    public String generateDailyBillNumberForOpd(Department department, Category cat, Staff fromStaff) {
+        String sql = "SELECT count(b) FROM Bill b "
                 + " where (b.billType=:bTp1 or b.billType=:bTp2) "
                 + " and b.billDate=:bd "
-                + " and (type(b)=:class1 or type(b)=:class2) "
-                + " and b.department=:dep ";
-        hm = new HashMap();
+                + " and (type(b)=:class1 or type(b)=:class2) ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (fromStaff != null) {
+            sql += " and b.fromStaff=:staff ";
+            hm.put("staff", fromStaff);
+        }
+
         hm.put("bTp1", BillType.OpdBill);
         hm.put("bTp2", BillType.OpdPreBill);
-        hm.put("dep", department);
         hm.put("bd", new Date());
         hm.put("class1", BilledBill.class);
         hm.put("class2", PreBill.class);
+
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        if (dd == null) {
-            dd = 0l;
-        }
-//        dd++;
-        return dd + "";
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+
+// Overloaded methods
+    public String generateDailyBillNumberForOpd(Department department) {
+        return generateDailyBillNumberForOpd(department, null, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Department department, Category cat) {
+        return generateDailyBillNumberForOpd(department, cat, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Department department, Staff fromStaff) {
+        return generateDailyBillNumberForOpd(department, null, fromStaff);
+    }
+
+    public String generateDailyBillNumberForOpd(Category cat, Staff fromStaff) {
+        return generateDailyBillNumberForOpd(null, cat, fromStaff);
+    }
+
+    public String generateDailyBillNumberForOpd(Category cat) {
+        return generateDailyBillNumberForOpd(null, cat, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Staff fromStaff) {
+        return generateDailyBillNumberForOpd(null, null, fromStaff);
     }
 
     private BillNumber fetchLastBillNumber(Department department, BillType billType, BillClassType billClassType) {
