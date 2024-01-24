@@ -420,7 +420,7 @@
                                     value="Inward Billing" 
                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-                        <p:menuitem  ajax="false"  action="/inward/inward_bill_surgery_issue?faces-redirect=true" 
+                        <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
                                      value="Theater Billing "
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
