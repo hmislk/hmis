@@ -122,18 +122,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     }
     
     public void fillCreditCompaniesByPatient(){
-        System.out.println("fillCreditCompaniesByPatient");
         encounterCreditCompanys=new ArrayList<>();
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
                 + " and ecc.patientEncounter=:pEnc ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
-        System.out.println("hm = " + hm);
-        System.out.println("pEnc = " + current);
         encounterCreditCompanys= encounterCreditCompanyFacade.findByJpql(sql, hm);
         
-        System.out.println("companies : "+encounterCreditCompanys.size());
     }
 
     public void resetSpecialities() {

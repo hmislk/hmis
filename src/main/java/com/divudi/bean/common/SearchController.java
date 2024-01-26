@@ -5816,7 +5816,6 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         createTableByKeyword(BillType.CollectingCentreBill);
         checkLabReportsApproved(bills);
-        System.out.println("bill = " + bills.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
     }
 

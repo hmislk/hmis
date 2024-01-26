@@ -218,7 +218,6 @@ public class SmsManagerEjb {
     public SmsSentResponse sendSmsByApplicationPreference(String number, String message, UserPreference pf) {
         SmsSentResponse r = new SmsSentResponse();
         if (null == pf.getSmsAuthenticationType()) {
-            System.out.println("This authentication is NOT supported to send SMS yet.");
             r.setSentSuccefully(false);
             r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
             return r;

@@ -62,7 +62,6 @@ public class AuditEventApplicationController {
                 auditEventFacade.edit(auditEvent);
             }
         } catch (Exception e) {
-            System.err.println("e = " + e);
         }
     }
 

@@ -268,7 +268,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void createDiagnosisCard() {
-        System.out.println("createDiagnosisCard");
         if (selectedDiagnosisCardTemplate == null || selectedDiagnosisCardTemplate.getComments() == null) {
             return;
         }
@@ -639,7 +638,6 @@ public class InpatientClinicalDataController implements Serializable {
             if (dx != null) {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-                System.out.println("diagnosios name :" + diagnosisName + " " + details);
                 pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
@@ -648,18 +646,12 @@ public class InpatientClinicalDataController implements Serializable {
         }
 
         String currentDxAsString = "";
-        System.out.println("currentDxAsString = " + currentDxAsString);
-        System.out.println("getEncounterDiagnoses() = " + getEncounterDiagnoses());
         for (ClinicalFindingValue dx : getEncounterDiagnoses()) {
-            System.out.println("dx = " + dx);
             if (dx != null) {
-                System.out.println("dx.getItemValue() = " + dx.getItemValue());
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
-                System.out.println("dx.getStringValue() = " + dx.getStringValue());
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
 
                 currentDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
-                System.out.println("currentDxAsString = " + currentDxAsString);
             }
         }
 
