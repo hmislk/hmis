@@ -1,6 +1,6 @@
 package com.divudi.bean.cashTransaction;
 // <editor-fold defaultstate="collapsed" desc="Imports">
-
+import java.util.HashMap;
 // </editor-fold>  
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
@@ -15,7 +15,6 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
