@@ -159,11 +159,9 @@ public class ItemController implements Serializable {
         // Get count of items without a department
         Long countWithoutDepartment = itemFacade.countByJpql(jpqlWithoutDept, m);
         DepartmentItemCount icWithoutDept = new DepartmentItemCount(-1L, "No Department", countWithoutDepartment);
-        System.out.println("icWithoutDept = " + icWithoutDept);
 
         // Get list of items with a department
         List<DepartmentItemCount> withDeptList = (List<DepartmentItemCount>) itemFacade.findLightsByJpql(jpqlWithDept, m);
-        System.out.println("withDeptList = " + withDeptList);
 
         // Create final list and add count for items without a department first
         departmentItemCounts = new ArrayList<>();
@@ -389,8 +387,6 @@ public class ItemController implements Serializable {
 
         jpql += "ORDER BY i.name";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         return lst;
@@ -599,7 +595,27 @@ public class ItemController implements Serializable {
             Item item = getFacade().findFirstByJpql(jpql, m);
             return item;
         } catch (Exception e) {
-            System.out.println("name = " + name);
+            return null;
+        }
+    }
+    
+    public Item findItemByName(String name,String code, Department dept) {
+        try {
+            String jpql;
+            Map m = new HashMap();
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.retired=:ret "
+                    + " and i.department=:dept "
+                    + " and i.code=:code "
+                    + " and i.name=:name ";
+            m.put("ret", false);
+            m.put("name", name);
+            m.put("code", code);
+            m.put("dept", dept);
+            Item item = getFacade().findFirstByJpql(jpql, m);
+            return item;
+        } catch (Exception e) {
             return null;
         }
     }
@@ -618,8 +634,6 @@ public class ItemController implements Serializable {
             m.put("mi", true);
             return getFacade().findFirstByJpql(jpql, m);
         } catch (Exception e) {
-            System.out.println("e = " + e);
-            System.out.println("name = " + name);
             return null;
         }
     }
@@ -1139,11 +1153,8 @@ public class ItemController implements Serializable {
             tmpMap.put("mi", true);
             tmpMap.put("ret", false);
             jpql += " order by damith.name";
-            System.out.println("tmpMap = " + tmpMap);
-            System.out.println("jpql = " + jpql);
 
             lst = getFacade().findByJpql(jpql, tmpMap);
-            System.out.println("lst = " + lst);
         }
 
         return lst;

@@ -2128,11 +2128,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
-        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
-        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
 
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
@@ -2151,12 +2149,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
 
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
-        System.out.println("bi.getQty() = " + bi.getQty());
         bi.setRate(getBillBean().billItemRate(addingEntry));
 //            bi.setQty(1.0);
         bi.setNetValue(bi.getRate() * bi.getQty());
 
-        System.out.println("bi.getNetRate() = " + bi.getNetRate());
 
         if (bi.getItem().isVatable()) {
             bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
@@ -2177,48 +2173,34 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     private void addStaffToBillFees(List<BillFee> tmpBfs) {
-        System.out.println("addStaffToBillFees");
         if (tmpBfs == null) {
-            System.out.println("1");
             return;
         }
         if (tmpBfs.isEmpty()) {
-            System.out.println("2");
             return;
         }
         if (getCurrentlyWorkingStaff().isEmpty()) {
-            System.out.println("3");
             return;
         }
         for (BillFee bf : tmpBfs) {
-            System.out.println("bf = " + bf);
             if (bf.getFee() == null) {
-                System.out.println("4");
                 continue;
             }
             if (bf.getFee().getFeeType() == null) {
-                System.out.println("5");
                 continue;
             }
             if (bf.getFee().getSpeciality() == null) {
-                System.out.println("6");
                 bf.setStaff(getSelectedCurrentlyWorkingStaff());
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
                 if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    System.out.println("7");
                     if (bf.getFee().getStaff() == null) {
-                        System.out.println("8");
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
                     }
                 } else {
-                    System.out.println("9");
                     for (Staff s : currentlyWorkingStaff) {
-                        System.out.println("10");
                         if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            System.out.println("11");
                             bf.setStaff(s);
                         }
                     }

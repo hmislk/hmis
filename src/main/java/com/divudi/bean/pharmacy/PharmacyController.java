@@ -249,11 +249,8 @@ public class PharmacyController implements Serializable {
                 parameters.put("fi", institution);
             }
 
-            System.out.println("JPQL: " + jpql.toString());
-            System.out.println("Parameters: " + parameters);
 
             bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
-            System.out.println("Bills: " + bills);
         } catch (Exception e) {
             e.printStackTrace();
             // Handle the exception appropriately

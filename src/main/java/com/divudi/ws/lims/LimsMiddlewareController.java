@@ -144,12 +144,9 @@ public class LimsMiddlewareController {
     }
 
     private String processSysmexRestMessage(String message) {
-        System.out.println("processSysmexRestMessage");
         SysMex sysmex = parseSysMexMessage(message);
         Long sampleId = sysmex.getSampleIdLong();
-        System.out.println("sampleId = " + sampleId);
         PatientSample ps = patientSampleFromId(sampleId);
-        System.out.println("ps = " + ps);
         String temMsgs = "";
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
@@ -262,7 +259,6 @@ public class LimsMiddlewareController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response limsProcessAnalyzerMessage(String requestBody, @HeaderParam("Authorization") String authorizationHeader) {
 
-        System.out.println("limsProcessAnalyzerMessage");
 
         try {
             JSONObject requestJson = new JSONObject(requestBody);
@@ -276,7 +272,6 @@ public class LimsMiddlewareController {
             String base64EncodedMessage = requestJson.getString("message");
             byte[] decodedMessageBytes = Base64.getDecoder().decode(base64EncodedMessage);
             String receivedMessage = new String(decodedMessageBytes, StandardCharsets.UTF_8);
-            System.out.println("receivedMessage = " + receivedMessage);
 
             if (!isValidCredentials(username, password)) {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
