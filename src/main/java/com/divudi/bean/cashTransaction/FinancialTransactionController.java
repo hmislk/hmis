@@ -6,6 +6,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
@@ -15,6 +16,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -161,6 +163,7 @@ public class FinancialTransactionController implements Serializable {
      * Payments from ShiftBalanceTransferBill User may change them settle to
      * print
      *
+     * @return 
      */
 // </editor-fold>      
 // <editor-fold defaultstate="collapsed" desc="DepositProcessingBill">
@@ -170,7 +173,21 @@ public class FinancialTransactionController implements Serializable {
     
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalProcessingBill">
-    //Damith
+    
+    
+    public String navigateToCreateNewWithdrawalProcessingBill(){
+        prepareToAddNewWithdrawalProcessingBill();
+        return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
+    }
+    
+    private void prepareToAddNewWithdrawalProcessingBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.WithdrawalProcessingBill);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+    
+    
+//Damith
 // </editor-fold>      
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
