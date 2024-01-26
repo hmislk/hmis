@@ -118,15 +118,12 @@
                                 </f:facet>
                                 <h:outputText value="#{itemController.filterInstitution.code}"/>
                             </p:column>
-                            
                             <p:column sortBy="#{item.categoryName}" filterBy="#{item.categoryName}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <h:outputText value="Service Category"/>
                                 </f:facet>
                                 <h:outputText value="#{item.categoryName}"/>
                             </p:column>
-                            
-                            
                             <p:column  sortBy="#{item.total}" filterBy="#{item.total}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <h:outputText value="Price"/>
