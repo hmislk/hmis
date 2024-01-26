@@ -94,14 +94,12 @@
                                      rows="10"
                                      id="tblExport"
                                      >
-                            
                             <p:column sortBy="#{item.code}" filterBy="#{item.code}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <h:outputText value="Service Code"/>
                                 </f:facet>
                                 <h:outputText value="#{item.code}"/>
                             </p:column>
-                            
                             <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <h:outputText value="Service Name"/>
