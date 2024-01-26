@@ -1477,7 +1477,27 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
-        if (getCurrentPtIx().getBillItem().getBill().getCashPaid() >= getCurrentPtIx().getBillItem().getBill().getTotal()) {
+        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
+                if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+                    Sms e = new Sms();
+                    e.setPending(true);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setBill(currentPtIx.getBillItem().getBill());
+                    e.setPatientReport(currentPatientReport);
+                    e.setPatientInvestigation(currentPtIx);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+                    e.setSendingMessage(smsBody(currentPatientReport));
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    e.setSentSuccessfully(false);
+                    getSmsFacade().create(e);
+                }
+            }
+        }else{
             if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
                 Sms e = new Sms();
                 e.setPending(true);
@@ -1496,7 +1516,6 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
-
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
 
             if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
