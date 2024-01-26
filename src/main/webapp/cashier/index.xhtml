@@ -8,9 +8,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <div class="row" >
-                    <div class="col-2" >
-                        <h:form>
+                <h:form>
+                    <div class="row" >
+                        <div class="col-2" >
+
                             <p:panel header="Financial Transaction Manager" rendered="true">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
@@ -19,17 +20,18 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
                                     </p:commandButton>
-                                    
-                                    
+
+
                                 </div>
                             </p:panel>
-                        </h:form>
+
+                        </div>
+                        <div class="col-10" >
+                            <ui:insert name="subcontent" >
+                            </ui:insert>
+                        </div>
                     </div>
-                    <div class="col-10" >
-                        <ui:insert name="subcontent" >
-                        </ui:insert>
-                    </div>
-                </div>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
