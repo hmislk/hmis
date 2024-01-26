@@ -680,6 +680,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public void setStrTenderedValue(String strTenderedValue) {
+
         this.strTenderedValue = strTenderedValue;
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
@@ -3137,6 +3138,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     }
 
     public PaymentMethod getPaymentMethod() {
+        if (paymentMethod == paymentMethod.Card) {
+            strTenderedValue = String.valueOf(netTotal);
+
+        } else {
+            strTenderedValue="";
+        }
+         try {
+            cashPaid = Double.parseDouble(strTenderedValue);
+        } catch (NumberFormatException e) {
+            
+        }
+
         return paymentMethod;
     }
 

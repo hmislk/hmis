@@ -55,6 +55,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold> 
+    
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
         return "/cashier/index?faces-redirect=false;";
