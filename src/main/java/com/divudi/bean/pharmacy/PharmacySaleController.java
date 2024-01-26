@@ -1054,7 +1054,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private void savePreBillFinally(Patient pt) {
-
+        if (getPreBill().getId() == null) {
+            getBillFacade().create(getPreBill());
+        }
         getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
@@ -1085,9 +1087,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setDeptId(deptId);
         getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
-        }
+        
 
     }
 
