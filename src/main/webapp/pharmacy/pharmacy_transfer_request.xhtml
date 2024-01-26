@@ -24,6 +24,40 @@
                     <div class="col-6">
                         <p:panel >
                             <f:facet name="header" >  
+                                <h:outputLabel styleClass="fas fa-building" />
+                                <h:outputLabel value="Select Department" class="mx-4" />
+                            </f:facet>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
+                                                     forceSelection="true" class="w-100" inputStyleClass="w-100"
+                                                     completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                </div>
+                                <div class="col-3">
+                                    <p:commandButton  
+                                        value="Request" 
+                                        action="#{transferRequestController.request}" 
+                                        ajax="false"
+                                        icon="fas fa-check" 
+                                        class="ui-button-success w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-3">
+                                    <p:commandButton  
+                                        value="New Bill" 
+                                        action="#{transferRequestController.recreate}" 
+                                        ajax="false"  
+                                        icon="fas fa-plus"
+                                        class="ui-button-warning w-100">
+                                    </p:commandButton> 
+                                </div>
+                            </div>
+
+                        </p:panel>
+                    </div>
+                    <div class="col-6">
+                        <p:panel >
+                            <f:facet name="header" >  
                                 <h:outputLabel styleClass="fas fa-cube" />
                                 <h:outputLabel value="Add Items" class="mx-4" />
                             </f:facet>
@@ -61,40 +95,6 @@
 
 
 
-
-                        </p:panel>
-                    </div>
-                    <div class="col-6">
-                        <p:panel >
-                            <f:facet name="header" >  
-                                <h:outputLabel styleClass="fas fa-building" />
-                                <h:outputLabel value="Select Department" class="mx-4" />
-                            </f:facet>
-                            <div class="row">
-                                <div class="col-6">
-                                    <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
-                                                     forceSelection="true" class="w-100" inputStyleClass="w-100"
-                                                     completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                                </div>
-                                <div class="col-3">
-                                    <p:commandButton  
-                                        value="Request" 
-                                        action="#{transferRequestController.request}" 
-                                        ajax="false"
-                                        icon="fas fa-check" 
-                                        class="ui-button-success w-100">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-3">
-                                    <p:commandButton  
-                                        value="New Bill" 
-                                        action="#{transferRequestController.recreate}" 
-                                        ajax="false"  
-                                        icon="fas fa-plus"
-                                        class="ui-button-warning w-100">
-                                    </p:commandButton> 
-                                </div>
-                            </div>
 
                         </p:panel>
                     </div>
