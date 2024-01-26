@@ -72,7 +72,7 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                         </h:outputText>
                     </p:column>
-                    
+
                     <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
                         <p:inputText autocomplete="off" value="#{ph.qty}" >
                             <f:ajax 
@@ -88,21 +88,49 @@
             </h:panelGroup>
 
             <p:panel rendered="#{issueReturnController.printPreview}">
-                <p:commandButton ajax="false" action="/pharmacy/pharmacy_search_issue_bill" 
-                                 value="Pharmacy Issue Bill Search" actionListener="#{issueReturnController.makeNull}" 
-                                 />                    
-                <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
-                    <p:printer target="gpBillPreview1" ></p:printer>
-                </p:commandButton>
-                <p:commandButton value="Print Sale Bill" ajax="false" action="#">
-                    <p:printer target="gpBillPreview2" ></p:printer>
-                </p:commandButton>
-                <p:panel   id="gpBillPreview1">
+                <f:facet name="header">    
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p:commandButton 
+                                ajax="false"
+                                class="ui-button-warning"
+                                icon="fa fa-search"
+                                action="/pharmacy/pharmacy_search_issue_bill" 
+                                value="Search Pharmacy Issue Bill" 
+                                actionListener="#{issueReturnController.makeNull}" 
+                                >
+                            </p:commandButton> 
+                        </div>
+                        <div class="d-flex">
+                            <p:commandButton 
+                                class="ui-button-info mx-2"
+                                icon="fa fa-print"
+                                value="Print Return Bill" 
+                                ajax="false" action="#"  >
+                                <p:printer target="gpBillPreview1" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                value="Print Sale Bill" 
+                                ajax="false" action="#">
+                                <p:printer target="gpBillPreview2" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                </f:facet>
+
+                <h:panelGroup id="gpBillPreview1">
                     <ph:returnBill bill="#{issueReturnController.returnBill}"/>                
-                </p:panel>
-                <p:panel   id="gpBillPreview2">
+                </h:panelGroup>
+
+                <p:spacer height="15px"/>
+
+                <h:panelGroup id="gpBillPreview2">
                     <ph:issueBill  bill="#{issueReturnController.bill}"/>                
-                </p:panel>
+                </h:panelGroup>
             </p:panel>
 
         </h:form>
