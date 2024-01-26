@@ -139,22 +139,6 @@
 
                                     </p:panel>
 
-                                    <p:commandButton 
-                                        id="btnMatch" 
-                                        value="Make All to Match Investigation" 
-                                        ajax="false" 
-                                        action="#{investigationItemController.makeAllIxItemsToMachIxDetails}">
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        id="btnIxMaster" 
-                                        value="Back to Investigations" 
-                                        ajax="false" 
-                                        action="/lab/investigation"
-                                        actionListener="#{investigationItemController.toInvestigationMaster()}"
-                                        disabled="#{investigationItemController.current eq null}">
-                                    </p:commandButton>
-
                                     <p:dialog id="ixitemDetails" widgetVar="ixitemDetails" header="Edit Details" width="700px">
 
                                         <div class="row ">
@@ -177,8 +161,7 @@
 
                                             <div class="row mt-2" >
                                                 <div class="col-3"><h:outputLabel value="Name" class="mt-2" /></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:inputText 
                                                         class="w-100"
                                                         autocomplete="off" 
@@ -190,8 +173,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Type" class="mt-2"/></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":" class="mt-2" ></p:outputLabel></div>
-                                                <div class="col-4">
+                                                <div class="col-5">
                                                     <p:selectOneMenu 
                                                         id="cmbItemType" 
                                                         class="w-100"
@@ -211,8 +193,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Value Type" class="mt-2"/></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":" class="mt-2" ></p:outputLabel></div>
-                                                <div class="col-4">
+                                                <div class="col-5">
                                                     <p:selectOneMenu 
                                                         class="w-100"
                                                         id="cmbValueType" 
@@ -225,7 +206,6 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Automated" class="mt-2"/></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
                                                 <div class="col-8">
                                                     <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
                                                 </div>
@@ -233,8 +213,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><p:outputLabel value="Test Component"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:selectOneMenu
                                                         class="w-100" 
                                                         id="cmbTestComponent"  
@@ -246,8 +225,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Machine" class="mt-2"/></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:selectOneMenu 
                                                         class="w-100"
                                                         value="#{investigationItemController.current.machine}" >
@@ -259,8 +237,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Test" class="mt-2"/></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:autoComplete 
                                                         value="#{investigationItemController.current.test}"
                                                         completeMethod="#{itemController.completeMachineTests}"
@@ -282,8 +259,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><p:outputLabel value="Sample"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:selectOneMenu 
                                                         class="w-100"
                                                         id="cmbSample"  
@@ -296,8 +272,7 @@
 
                                             <div class="row mt-2">
                                                 <div class="col-3"><h:outputLabel value="Container / Tube" class="mt-2"></h:outputLabel></div>
-                                                <div class="col-1 d-flex justify-content-center"><p:outputLabel value=":"  class="mt-2"></p:outputLabel></div>
-                                                <div class="col-8">
+                                                <div class="col-9">
                                                     <p:selectOneMenu 
                                                         class="w-100"
                                                         id="cmbTube"  
@@ -316,6 +291,15 @@
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputLabel value="Item List" class="mt-2"></h:outputLabel>
+                                        <p:commandButton 
+                                        id="btnMatch" 
+                                        style="float: right;"
+                                        icon="fa fa-check"
+                                        class="ui-button-success"
+                                        value="Make All to Match Investigation" 
+                                        ajax="false" 
+                                        action="#{investigationItemController.makeAllIxItemsToMachIxDetails}">
+                                    </p:commandButton>
                                     </f:facet>
                                     <p:dataTable 
                                         id="tbl" 
