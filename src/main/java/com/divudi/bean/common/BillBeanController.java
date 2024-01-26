@@ -9,6 +9,8 @@ import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.OpdBillingStrategy;
+import com.divudi.data.OpdTokenNumberGenerationStrategy;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cheque;
@@ -2791,14 +2793,46 @@ public class BillBeanController implements Serializable {
         return packageItems;
     }
 
-    public int checkDepartment(List<BillEntry> billEntrys) {
-        Department tdep = new Department();
+    public int calculateNumberOfBillsPerOrder(List<BillEntry> billEntrys) {
         Set<Department> deptSet = new HashSet();
-
         for (BillEntry be : billEntrys) {
             deptSet.add(be.getBillItem().getItem().getDepartment());
         }
         return deptSet.size();
+    }
+
+    public int checkDepartment(List<BillEntry> billEntries) {
+        OpdBillingStrategy strategy = sessionController.getDepartmentPreference().getOpdBillingStrategy();
+
+        if (strategy == OpdBillingStrategy.SINGLE_BILL_FOR_ALL_ORDERS) {
+            return 1;
+        }
+
+        Set<Department> deptSet = new HashSet<>();
+        Map<Department, Set<Category>> deptCategoryMap = new HashMap<>();
+
+        for (BillEntry be : billEntries) {
+            Department dept = be.getBillItem().getItem().getDepartment();
+            Category cat = be.getBillItem().getItem().getCategory();
+
+            deptSet.add(dept);
+
+            if (strategy == OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT_AND_CATEGORY) {
+                deptCategoryMap.computeIfAbsent(dept, k -> new HashSet<>()).add(cat);
+            }
+        }
+
+        if (strategy == OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT) {
+            return deptSet.size();
+        } else if (strategy == OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT_AND_CATEGORY) {
+            int count = 0;
+            for (Set<Category> categories : deptCategoryMap.values()) {
+                count += categories.size();
+            }
+            return count;
+        }
+
+        return 0; // Fallback case, should not reach here.
     }
 
     public void checkBillItemFeesInitiated(Bill b) {

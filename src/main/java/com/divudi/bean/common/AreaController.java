@@ -49,7 +49,6 @@ public class AreaController implements Serializable {
         }
         if (area.getId() != null) {
             getFacade().edit(area);
-            System.out.println("save area = " + "true");
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             area.setCreatedAt(new Date());
@@ -67,7 +66,6 @@ public class AreaController implements Serializable {
         if (name.trim().equals("")) {
             return null;
         }
-        System.out.println("findby area = " + "true");
         String jpql = "select a "
                 + " from Area a "
                 + " where a.retired=:ret "

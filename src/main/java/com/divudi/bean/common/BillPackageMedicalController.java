@@ -335,7 +335,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
             return;
         }
         savePatient(getPatient());
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());

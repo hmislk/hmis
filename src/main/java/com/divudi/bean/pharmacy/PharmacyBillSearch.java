@@ -1601,7 +1601,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-//            if (checkDepartment(getBill().getReferenceBill())) {
+//            if (calculateNumberOfBillsPerOrder(getBill().getReferenceBill())) {
 //                return;
 //            } before
             ////System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());

@@ -389,7 +389,7 @@ public class BillBhtController implements Serializable {
 
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
         // System.err.println("1");
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             //   System.err.println("2");
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);

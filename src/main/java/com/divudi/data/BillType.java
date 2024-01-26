@@ -134,7 +134,9 @@ public enum BillType {
     XrayScan,
     // Cash Handling and Transfer Processes
     InitialFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
+    ShiftClosureSummaryBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
     ShiftBalanceTransferBill, // For transferring the total balance from one shift to another
+    ShiftBalanceTransferReceiveBill, // For receiving the transferred balance from one shift to another
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
     TransactionVerificationBill, // For the incoming cashier to verify all transaction types
     DepositProcessingBill, // For processing deposits of all payment types into the bank by the main or bulk cashier

@@ -1001,7 +1001,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     
     public void saveEncounterCreditCompanies(PatientEncounter current){
          if (!encounterCreditCompanies.isEmpty() && current != null) {
-             System.out.println("current : "+ current.getName());
             for(EncounterCreditCompany ecc:encounterCreditCompanies){
                 ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
