@@ -8,33 +8,29 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form >
-
-
-                    <div class="row" >
-                        <div class="col-md-3" >
-                            <h:form>
-                                <p:commandButton 
-                                    value="New Initial Fund Bill"
-                                    ajax="false" 
-                                    action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
-                                </p:commandButton>
-                            </h:form>
-                        </div>
-                        <div class="col-md-9" >
-                            <ui:insert name="subcontent" >
-
-                            </ui:insert>
-                        </div>
+                <div class="row" >
+                    <div class="col-2" >
+                        <h:form>
+                            <p:panel header="Financial Transaction Manager" rendered="true">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton 
+                                        value="New Initial Fund Bill"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
+                                    </p:commandButton>
+                                    
+                                    
+                                </div>
+                            </p:panel>
+                        </h:form>
                     </div>
-
-                </h:form>
-
-
+                    <div class="col-10" >
+                        <ui:insert name="subcontent" >
+                        </ui:insert>
+                    </div>
+                </div>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
