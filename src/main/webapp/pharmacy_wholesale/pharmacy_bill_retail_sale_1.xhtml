@@ -1004,7 +1004,7 @@
 
                 <h:form>
 
-                    
+
                     <p:panel  rendered="#{pharmacyWholeSaleController1.billPreview}" >
 
                         <p:commandButton id="nullButton3" value="No Action"
@@ -1032,6 +1032,12 @@
                                     action="pharmacy_bill_retail_sale_1" 
                                     actionListener="#{pharmacyWholeSaleController1.resetAll()}" >
                                 </p:commandButton>
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.loggedPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
 
                             </div>
                             <div class="d-flex gap-2">
@@ -1043,74 +1049,51 @@
                             </div>
                         </div>
 
-                        <div class="mt-5">
-                            <h:panelGroup   id="gpBillPreview"> 
-                                <phi:saleBill bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill>
-                            </h:panelGroup>
-                        </div>
-                        
-                    </p:panel>
-                    
-                    
+                        <!--                        <div class="mt-5">
+                                                    <h:panelGroup   id="gpBillPreview"> 
+                                                        <phi:saleBill bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill>
+                                                    </h:panelGroup>
+                                                </div>-->
 
-<!--                    <p:panel  rendered="#{pharmacyWholeSaleController1.billPreview}" >
+                        <h:panelGroup id="gpBillPreview" >
 
-
-
-
-                        <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />  
-
-                        <div class="nonPrintBlock" >
-                            <p:commandButton accesskey="p" id="btnPrint" value="Print" icon="fas fa-print" class="ui-button-info" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton accesskey="n" value="New Bill"  
-                                                                 icon="fa-solid fa-plus"
-                                                                 class="mx-2 ui-button-warning"  
-                                             ajax="false" action="pharmacy_bill_retail_sale" 
-
-                                             actionListener="#{pharmacyWholeSaleController1.resetAll()}" ></p:commandButton>
-                            <p:commandButton disabled="true" value="Sale 1" icon="fas fa-file-invoice" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController1.pharmacyWholeSale()}" />
-                        </div>
-
-                        <h:panelGroup   id="gpBillPreview" > 
-
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill>
+                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}" >
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
+                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
                                 </div>
 
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                    </h:panelGroup>
+                                </div>
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_prabodha>
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
-
                             </h:panelGroup>                            
 
-                        </h:panelGroup>                     
+                        </h:panelGroup>  
+
+                    </p:panel>
 
 
-                    </p:panel>-->
+
+
 
 
 
