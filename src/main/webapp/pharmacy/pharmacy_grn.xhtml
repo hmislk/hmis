@@ -15,25 +15,26 @@
 
                 <h:panelGrid columns="7" style="min-width: 100%;">
                     <h:outputLabel value="DEALOR"/>
+
                     <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <h:outputLabel value="GRN Institution"/>
                     <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
-                                    completeMethod="#{institutionController.completeCompany}" 
-                                    forceSelection="true"
-                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                                     completeMethod="#{institutionController.completeCompany}" 
+                                     forceSelection="true"
+                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
                         <f:selectItem itemLabel="SelectPayment method"/>
                         <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
                     </p:selectOneMenu>
                     <p:commandButton  value="Settle" action="#{grnController.settle}"
-                                      
-                                    ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                      class="ui-button-success"
+                                      icon="fas fa-check"
+                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
-
 
 
                 <p:dataTable var="bi" styleClass="noBorder" 
@@ -45,8 +46,11 @@
 
                     <f:facet name="header">  
                         <h:outputLabel  value="Ordered Bill Item"/>   
-                        <p:commandButton ajax="false" value="Remove All" 
-                                        action="#{grnController.removeSelected()}"/>
+                        <p:commandButton ajax="false" value="Remove All"
+                                         style="float: right;"
+                                         class="ui-button-danger"
+                                         icon="fas fa-trash"
+                                         action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
@@ -113,8 +117,8 @@
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>  
-                    
-                   
+
+
                     <p:column headerText="Sale Price"  > 
                         <p:cellEditor>
                             <f:facet name="output">
@@ -172,10 +176,12 @@
                     </p:column>  
 
 
-                    <p:column >
+                    <p:column width="6%">
                         <p:commandButton value="Remove" ajax="false"
-                                         
-                                        action="#{grnController.removeItem(bi)}"/>
+                                         style="float: right;"
+                                         icon="fas fa-trash"
+                                         class="ui-button-danger"
+                                         action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
                 </p:dataTable>  
@@ -183,12 +189,12 @@
                 <p:panel>
                     <p:panelGrid columns="2" style="min-width: 100%">
 
-                        <p:panelGrid columns="2">
+                        <h:panelGrid columns="2">
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
                             <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
-                        </p:panelGrid>                    
+                        </h:panelGrid>                    
 
                         <p:panelGrid columns="2" id="tot">
                             <p:outputLabel value="Gross Total"/>
@@ -214,21 +220,21 @@
             </h:panelGroup>
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
-                                 
-                                actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
+
+                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   style="border: none;">
-                    
+
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:grn bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
-                    
+
 <!--                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                        <ph:grn_detail bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>-->
-                    
+    <ph:grn_detail bill="#{grnController.grnBill}"/>
+</h:panelGroup>-->
+
 
                 </p:panel>
             </p:panel>
