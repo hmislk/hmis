@@ -15,7 +15,9 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -48,6 +50,8 @@ public class FinancialTransactionController implements Serializable {
     private Payment currentPayment;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
+    private List<Bill> shiftBalanceTransferBills;
+    private Bill selectedBill;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -63,6 +67,12 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCreateNewInitialFundBill() {
         prepareToAddNewInitialFundBill();
         return "/cashier/initial_fund_bill?faces-redirect=false;";
+    }
+
+    public String navigateShiftBalanceTransferReceiveBill() {
+        prepareToAddNewInitialFundBill();
+        getAllShiftBalanceTransferBill();
+        return "/cashier/shift_balance_transfer_receive_bill";
     }
 
     private void prepareToAddNewInitialFundBill() {
@@ -154,7 +164,7 @@ public class FinancialTransactionController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="ShiftBalanceTransferReceiveBill">
     /**
      *
-     * Pasindu
+     * pavan
      *
      * Another User create a ShiftBalanceTransferBill It has a toStaff attribute
      * loggedUser.getStaff =toStaff List such bills Click on one of them Copy
@@ -162,6 +172,61 @@ public class FinancialTransactionController implements Serializable {
      * print
      *
      */
+    
+    private List<Bill> getAllShiftBalanceTransferBill() {
+        String sql;
+        shiftBalanceTransferBills = null;
+        Map tempMap = new HashMap();
+        sql = "select s from Bill s"
+                + "where s.retired=false"
+                + "and s.BillType = :billtype"
+                + "and s.toStaff = :logStaff"
+                + "order by b.createdAt";
+        tempMap.put("billtype", BillType.ShiftBalanceTransferBill);
+        tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
+        shiftBalanceTransferBills = billFacade.findByJpql(sql, tempMap);
+        System.out.println("shiftBalanceTransferBills = " + shiftBalanceTransferBills.size());
+        return shiftBalanceTransferBills;
+    }
+
+    private void getPaymentsFromShiftBalanceTransferBill() {
+        currentBillPayments = null;
+        if (selectedBill != null) {
+            for (Payment p : selectedBill.getPayments()) {
+                currentBillPayments.add(p);
+            }
+        }
+        System.out.println("payments" + currentBillPayments.size());
+        
+    }
+
+    private String SettleShiftBalanceTransferReceiveBill() {
+        if(selectedBill != null){
+            getPaymentsFromShiftBalanceTransferBill();
+        }
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.InitialFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        removePayment();
+        billController.save(currentBill);
+        for (Payment p : currentBillPayments) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            paymentController.save(p);
+        }
+        shiftBalanceTransferBills.remove(currentBill);
+        return "/cashier/shift_balance_transfer_receive_bill_print";
+    }
+    
 // </editor-fold>      
 // <editor-fold defaultstate="collapsed" desc="DepositProcessingBill">
     
@@ -211,5 +276,23 @@ public class FinancialTransactionController implements Serializable {
         this.removingPayment = removingPayment;
     }
 
+    public List<Bill> getShiftBalanceTransferBills() {
+        return shiftBalanceTransferBills;
+    }
+
+    public void setShiftBalanceTransferBills(List<Bill> shiftBalanceTransferBills) {
+        this.shiftBalanceTransferBills = shiftBalanceTransferBills;
+    }
+    
+     public Bill getSelectedBill() {
+        return selectedBill;
+    }
+
+    public void setSelectedBill(Bill selectedBill) {
+        this.selectedBill = selectedBill;
+    }
+
     // </editor-fold>  
+
+   
 }
