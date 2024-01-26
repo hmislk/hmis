@@ -717,7 +717,12 @@
                 </p:submenu>
 
                 <p:submenu  icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
-
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                        value="Financial Transaction Manager" 
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
                     <p:submenu label="Pay"
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
