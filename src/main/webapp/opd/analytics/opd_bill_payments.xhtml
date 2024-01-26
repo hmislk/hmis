@@ -163,7 +163,13 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-
+                                    
+                                    <p:column headerText="Cash Total"  
+                                              styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{payment.bill.cashPaid}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
                                     <p:column headerText="Bill Total" sortBy="#{payment.bill.total}" 
                                               styleClass="averageNumericColumn">

@@ -19,11 +19,11 @@
                 </f:facet>
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Billed Institution"/>
@@ -35,7 +35,7 @@
 
                         <h:outputLabel value="Select Income Institution"/>
 
-                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}"
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 my-1" completeMethod="#{institutionController.completeCompany}"
                                         forceSelection="true"
                                         value="#{bookKeepingSummery.incomeInstitution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />

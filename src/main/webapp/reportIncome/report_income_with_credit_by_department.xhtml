@@ -24,7 +24,7 @@
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{labReportSearchByDepartmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To" />
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{labReportSearchByDepartmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{labReportSearchByDepartmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel  value="Department" />
                             <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{labReportSearchByDepartmentController.department}" 
@@ -34,7 +34,7 @@
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-refresh" value="Refresh" ajax="false" 
+                            <p:commandButton id="btnRefresh" class="ui-button-warning" icon="fas fa-cogs" value="Process" ajax="false" 
                                              action="#{labReportSearchByDepartmentController.createWithCreditbyDepartment()}">
                             </p:commandButton>
                             <p:defaultCommand target="btnRefresh"/>

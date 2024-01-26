@@ -273,6 +273,7 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
         getSaleBill().setBalance(getSaleBill().getNetTotal());
+        getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
 

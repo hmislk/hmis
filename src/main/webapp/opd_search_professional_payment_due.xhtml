@@ -11,116 +11,125 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
-                        <f:facet name="header">
-                            <h:panelGrid columns="6" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTable}"/>
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createDueFeeTableAll()}"/>                                
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
-                                    <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
-                                </p:commandButton>  
-                                <h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
-                                <h:outputLabel value="Opd Bill No"/>
-                                <h:outputLabel value="Patient Name"/>
-                                <h:outputLabel value="Speciality"/> 
-                                <h:outputLabel value="Doctor Name"/>      
-                                <h:outputLabel value="Service Name"/>  
-                                <h:outputLabel value="Charges"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+                    <p:panel header="OPD Payments Due Search" >
+                       
+                            <div class="row">
+                                <div class="col-2">
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" class="w-100" inputStyleClass="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" class="my-1 w-100" inputStyleClass="my-1 w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                    </p:calendar>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTable}" icon="fas fa-search"
+                                                     class="w-100 ui-button-warning"/>
+                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createDueFeeTableAll()}" 
+                                                     icon="fas fa-search"
+                                                     class="w-100 my-1 ui-button-warning"/>                                
+                                    <p:commandButton ajax="false" value="Excel" class="w-100 ui-button-success"
+                                                     icon="fas fa-file-excel">
+                                        <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
+                                    </p:commandButton>  
+                                    
+                                    <h:outputLabel value="Opd Bill No"/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Patient Name"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Speciality"/> 
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Doctor Name"/>      
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Service Name"/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="my-1 w-100"/>
+                                    <h:outputLabel value="Charges"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="my-1 w-100"/>
+                                    
+                                    <p:defaultCommand target="btnSearch" />
 
-                            </h:panelGrid>
+                                </div>
+                                <div class="col-10">
+                                    <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
+                                        <f:facet name="header">
+                                            #{searchController.total}
+                                        </f:facet>
 
-                        </f:facet>
-                        <br/><br/>
+                                        <p:column headerText="No" styleClass="alignTop">
+                                            <h:outputLabel value="#{i+1}"/>
+                                        </p:column>
 
-                        <p:defaultCommand target="btnSearch" />
+                                        <p:column headerText="Speciality">
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.staff.speciality.name}">
+                                                </h:outputLabel>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
-                            <f:facet name="header">
-                                #{searchController.total}
-                            </f:facet>
+                                        <p:column headerText="Doctor" >
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.staff.person.name}">
+                                                </h:outputLabel>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                            <p:column headerText="No" styleClass="alignTop">
-                                <h:outputLabel value="#{i+1}"/>
-                            </p:column>
+                                        <p:column headerText="Patient" >
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
 
-                            <p:column headerText="Speciality">
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.staff.speciality.name}">
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                            <p:column headerText="Doctor" >
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.staff.person.name}">
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
+                                        <p:column headerText="Bill No">
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.bill.insId}">
+                                                </h:outputLabel>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                            <p:column headerText="Patient" >
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
+                                        <p:column headerText="Payment Methord">
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.bill.paymentMethod}">
+                                                </h:outputLabel>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
-
-                            <p:column headerText="Bill No">
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.insId}">
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
-                            
-                            <p:column headerText="Payment Methord">
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.paymentMethod}">
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
-
-                            <p:column headerText="BilledAt" >
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
+                                        <p:column headerText="BilledAt" >
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.bill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                </h:outputLabel>
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
 
-                            <p:column headerText="Test" >
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.billItem.item.name}" />
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
+                                        <p:column headerText="Test" >
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.billItem.item.name}" />
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                            <p:column headerText="Charge" styleClass="averageNumericColumn">
-                                <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.feeValue}" />
-                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                </h:commandLink>
-                            </p:column>
+                                        <p:column headerText="Charge" styleClass="averageNumericColumn">
+                                            <h:commandLink action="payment_staff_bill" >
+                                                <h:outputLabel value="#{bf.feeValue}" />
+                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                            </h:commandLink>
+                                        </p:column>
 
-                        </p:dataTable>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+
+                          
+
+
+
+
 
                     </p:panel>
 

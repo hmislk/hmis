@@ -29,7 +29,7 @@
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{institutionLabSumeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To Date" />
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <p:selectOneMenu class="w-100 mx-4" value="#{institutionLabSumeryController.institution}" autoWidth="false"                                    
@@ -38,7 +38,7 @@
                                 <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  value="#{institutionLabSumeryController.department}"
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 my-1"  value="#{institutionLabSumeryController.department}"
                                             completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                             itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                             requiredMessage="You must select a department" >
@@ -47,7 +47,7 @@
                             <p:inputText class="w-100 mx-4" value="#{institutionLabSumeryController.netTotal}" />
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
-                            <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" value="Refresh" ajax="false" action="#{institutionLabSumeryController.createLabBills()}" />
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" value="Process" ajax="false" action="#{institutionLabSumeryController.createLabBills()}" />
                             <!--<p:defaultCommand target="btnRefresh"/>-->
 
                             <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
