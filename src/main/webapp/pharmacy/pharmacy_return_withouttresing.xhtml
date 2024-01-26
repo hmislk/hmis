@@ -50,68 +50,75 @@
                                         <p:watermark value="Return  Dealer/Supplier" for="acDept"/>
 
                                     </f:facet>
-                                    <h:panelGrid columns="1" >
+                                    <h:panelGrid columns="5">
+                                        <h:panelGrid columns="1">
+                                            <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                            <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
+                                                            value="#{pharmacyReturnwithouttresing.stock}" 
+                                                            completeMethod="#{pharmacyReturnwithouttresing.completeAvailableStocks}" 
+                                                            var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
+                                                            style="width: 50px!important;">
+                                                <p:column headerText="Item">
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Rate">
+                                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Stocks">
+                                                    <h:outputLabel value="#{i.stock}" >
+                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Expiry">
+                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
+                                                <p:ajax event="itemSelect"   
+                                                        listener="#{pharmacyReturnwithouttresing.handleSelect}" 
+                                                        update="txtQty txtRate focusQty" ></p:ajax>
+                                            </p:autoComplete>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1">
+                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyReturnwithouttresing.qty}" style="width: 50px!important;">
+                                                <p:ajax event="keyup"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                            </p:inputText>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1">
+                                            <p:outputLabel value="Rate" ></p:outputLabel>
+                                            <p:outputLabel id="txtRate" value="#{pharmacyReturnwithouttresing.billItem.netRate}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1">
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:outputLabel id="txtVal" value="#{pharmacyReturnwithouttresing.billItem.netValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1">
+                                            <p:outputLabel value="" ></p:outputLabel>
+                                            <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
+                                                              action="#{pharmacyReturnwithouttresing.addBillItem}"
 
+                                                              process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
+                                                              update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
-                                        <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                        <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
-                                                        value="#{pharmacyReturnwithouttresing.stock}" 
-                                                        completeMethod="#{pharmacyReturnwithouttresing.completeAvailableStocks}" 
-                                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
-                                                        style="width: 50px!important;">
-                                            <p:column headerText="Item">
-                                                <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Code">
-                                                <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Rate">
-                                                <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Stocks">
-                                                <h:outputLabel value="#{i.stock}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
-                                            <p:ajax event="itemSelect"   
-                                                    listener="#{pharmacyReturnwithouttresing.handleSelect}" 
-                                                    update="txtQty txtRate focusQty" ></p:ajax>
-                                        </p:autoComplete>
-
-
-                                        <p:outputLabel value="Quentity" ></p:outputLabel>
-                                        <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyReturnwithouttresing.qty}" style="width: 50px!important;">
-                                            <p:ajax event="keyup"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
-                                            <p:ajax event="blur"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
-                                        </p:inputText>
-
-                                        <p:outputLabel value="Rate" ></p:outputLabel>
-                                        <p:outputLabel id="txtRate" value="#{pharmacyReturnwithouttresing.billItem.netRate}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
-                                        <p:outputLabel value="Value" ></p:outputLabel>
-                                        <p:outputLabel id="txtVal" value="#{pharmacyReturnwithouttresing.billItem.netValue}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-
-                                        <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacyReturnwithouttresing.addBillItem}"
-                                                          
-                                                          process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
-                                                          update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
-
+                                        </h:panelGrid>
+                                        
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
 
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="1" >
 
 
 
@@ -223,7 +230,7 @@
                                         <h:panelGrid columns="20"  >
                                             <p:commandButton  accesskey="s" value="Return" 
                                                               action="#{pharmacyReturnwithouttresing.settleBill()}" 
-                                                              
+
                                                               actionListener="#{pharmacyReturnwithouttresing.calculateAllRates}">
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -231,7 +238,7 @@
                                                 </f:facet>
                                             </p:commandButton>
                                             <p:commandButton accesskey="n" value="New Issue Bill"  
-                                                             
+
                                                              ajax="false" action="/pharmacy/pharmacy_return_withouttresing"
                                                              actionListener="#{pharmacyReturnwithouttresing.resetAll()}"  ></p:commandButton>
 
@@ -298,7 +305,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Return"
-                                             
+
                                              ajax="false" action="/pharmacy/pharmacy_return_withouttresing" 
                                              actionListener="#{pharmacyReturnwithouttresing.resetAll()}" ></p:commandButton>
 
