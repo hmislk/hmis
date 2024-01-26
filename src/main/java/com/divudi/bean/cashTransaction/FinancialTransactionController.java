@@ -161,6 +161,7 @@ public class FinancialTransactionController implements Serializable {
      * Payments from ShiftBalanceTransferBill User may change them settle to
      * print
      *
+     * @return 
      */
 // </editor-fold>      
 // <editor-fold defaultstate="collapsed" desc="DepositProcessingBill">
@@ -170,7 +171,21 @@ public class FinancialTransactionController implements Serializable {
     
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalProcessingBill">
-    //Damith
+    
+    
+    public String navigateToCreateNewWithdrawalProcessingBill(){
+        prepareToAddNewWithdrawalProcessingBill();
+        return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
+    }
+    
+    private void prepareToAddNewWithdrawalProcessingBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.WithdrawalProcessingBill);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+    
+    
+//Damith
 // </editor-fold>      
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
