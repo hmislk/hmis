@@ -142,6 +142,23 @@ public class ReportFormatController implements Serializable {
             return;
         }
     }
+    
+    public void removeUploadedFile(){
+        if (getUpload() == null || getUpload().getId() == null) {
+            JsfUtil.addErrorMessage("Select Category");
+            return;
+        }
+        byte[] fileBytes;
+        try {
+            getUpload().setBaImage(null);
+            uploadController.saveUpload(getUpload());
+            
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+    }
 
     public ReportFormat getCurrent() {
         if (current == null) {

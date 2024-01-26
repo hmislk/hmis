@@ -18,55 +18,56 @@
 
                         <div class="row">
                             <div class="col-2">
-                                <h:panelGrid columns="1" >
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                    </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                    </p:calendar>
-                                    <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <h:outputLabel value="Patient Name"/>   
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <h:outputLabel value="From Department Name"/>   
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.department}" />
-                                    <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                    <h:outputLabel value="Net Total"/>
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                    <p:commandButton 
-                                        class="w-100 ui-button-warning" 
-                                        id="btnSearch"
-                                        ajax="false"
-                                        value="Search"
-                                        icon="fas fa-search"
-                                        action="#{searchController.listPharmacyIssue}"/>
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel value="Bill No" class="mt-2"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
+                                <h:outputLabel value="Patient Name"/>   
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
+                                <h:outputLabel value="From Department Name"/>   
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.department}" />
+                                <h:outputLabel value="Total"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.total}" />
+                                <h:outputLabel value="Net Total"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
+                                <p:commandButton 
+                                    class="w-100 mt-2 ui-button-warning" 
+                                    id="btnSearch"
+                                    ajax="false"
+                                    value="Search"
+                                    icon="fas fa-search"
+                                    action="#{searchController.listPharmacyIssue}"/>
 
-                                </h:panelGrid>
+
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
-                                    rowIndexVar="i" 
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
                                     var="bill"  
+                                    rows="10"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
+                                    rowsPerPageTemplate="10,20,30"
                                     >
-
-                                    <p:column headerText="No" styleClass="alignTop">
-                                        <h:outputLabel value="#{i+1}"/>
-                                    </p:column>
-
-                                    <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
-                                        </p:commandButton>
-                                    </p:column>
 
                                     <p:column headerText="Bill No" >                                
                                         <h:outputLabel  value="#{bill.deptId}"  />
@@ -198,6 +199,13 @@
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="View">
+                                        <p:commandButton ajax="false" value="View Bill"
+                                                         action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>
