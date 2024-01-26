@@ -19,7 +19,7 @@
                     <p:panel rendered="#{!pharmacyIssueController.billPreview}">
                         <f:facet name="header" >
                             <i Class="fas fa-building mt-2" />
-                            <h:outputLabel class="mx-3 mt-2" value="Department Issue" />
+                            <h:outputLabel class="mx-2 mt-2" value="Department Issue" />
                             <p:commandButton 
                                 accesskey="n"
                                 style="float: right;"
@@ -96,7 +96,7 @@
                                                 <p:ajax event="blur"  listener="#{pharmacyIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </div>
-                                        <div class="col-1">
+                                        <div class="col-1 d-grid">
                                             <p:outputLabel value="Rate" ></p:outputLabel>
                                             <p:outputLabel 
                                                 class="my-2"
@@ -105,7 +105,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </p:outputLabel>
                                         </div>
-                                        <div class="col-1">
+                                        <div class="col-1 d-grid">
                                             <p:outputLabel value="Value" ></p:outputLabel>
                                             <p:outputLabel class="my-2" id="txtVal" value="#{pharmacyIssueController.billItem.netValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
