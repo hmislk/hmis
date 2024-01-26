@@ -87,6 +87,11 @@ public class TransferRequestController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
         
     }
+    
+    public void changeDepartment(){
+        billItems = null;
+        bill.setToDepartment(null);
+    }
 
     private boolean checkItems(Item item) {
         for (BillItem b : getBillItems()) {
