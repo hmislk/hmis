@@ -15,39 +15,50 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint Pre Bill" ></h:outputLabel>
-                            <hr/>
-                            <p:commandButton value="Reprint" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" 
-                                            action="pharmacy_cancel_bill_unit_issue" 
-                                             disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Return Item" 
-                                            action="pharmacy_bill_return_issue"   
-                                             disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
-                                <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" 
-                                                             target="#{issueReturnController.bill}"  />
-                            </p:commandButton>
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Reprint Pre Bill" ></h:outputLabel>
+                                <div class="d-flex">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-danger"
+                                        icon="fa fa-cancel"
+                                        value="To Cancel" 
+                                        action="pharmacy_cancel_bill_unit_issue" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Return" 
+                                        class="mx-2 ui-button-warning"
+                                        icon="fa fa-money-bill-wave"
+                                        action="pharmacy_bill_return_issue"   
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{issueReturnController.bill}"  />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        value="Reprint" 
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
                         </f:facet>
+
+                        <h:panelGroup id="gpBillPreview" >
+                            <ph:issue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                        </h:panelGroup>
 
                     </p:panel>
 
-
-
-
-                    <h:panelGroup id="gpBillPreview" >
-                        <ph:issue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                    </h:panelGroup>
-
-
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>
