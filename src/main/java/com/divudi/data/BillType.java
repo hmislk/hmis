@@ -135,8 +135,8 @@ public enum BillType {
     // Cash Handling and Transfer Processes
     ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
     ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
-    BalanceTransferFundBill, // For transferring the total balance from one shift to another
-    BalanceTransferReceiveFundBill, // For receiving the transferred balance from one shift to another
+    FundTransferBill, // For transferring the total balance from one shift to another
+    FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
     @Deprecated
@@ -256,7 +256,7 @@ public enum BillType {
                 return "Inward Final Bill";
             case ShiftStartFundBill:
                 return "Initial Fund Bill";
-            case BalanceTransferFundBill:
+            case FundTransferBill:
                 return "Shift Balance Transfer Bill";
             case TransactionHandoverBill:
                 return "Transaction Handover Bill";
@@ -270,6 +270,8 @@ public enum BillType {
                 return "Financial Reconciliation Bill";
             case FinancialAuditingBill:
                 return "Financial Auditing Bill";
+            case FundTransferReceivedBill:
+                return "Fund Transfer Received Bill";
             default:
                 return this.toString();
         }
