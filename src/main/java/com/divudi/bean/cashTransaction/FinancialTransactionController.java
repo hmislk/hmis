@@ -71,6 +71,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateShiftBalanceTransferReceiveBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftStartFundBill);
+        currentBill.setBillClassType(BillClassType.Bill);
         prepareToAddNewInitialFundBill();
         getAllShiftBalanceTransferBill();
         return "/cashier/shift_balance_transfer_receive_bill";
@@ -253,7 +256,7 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        if (currentBill.getBillType() != BillType.ShiftStartFundBill) {
+        if (currentBill.getBillType() != BillType.ShiftBalanceTransferReceiveBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
