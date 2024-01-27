@@ -127,6 +127,28 @@ public class FinancialTransactionController implements Serializable {
         currentPayment = null;
     }
 
+    public void addPaymentToShiftEndFundBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillType() != BillType.ShiftEndFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateShiftEndFundBillTotal();
+        currentPayment = null;
+    }
+
     public void removePayment() {
         getCurrentBillPayments().remove(removingPayment);
         calculateInitialFundBillTotal();
@@ -139,6 +161,16 @@ public class FinancialTransactionController implements Serializable {
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+
+    private void calculateShiftEndFundBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
     }
 
     public String settleInitialFundBill() {
@@ -178,12 +210,16 @@ public class FinancialTransactionController implements Serializable {
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
     public String navigateToCreateShiftEndSummaryBill() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             fillPaymentsFromShiftStartToNow();
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
             currentBill.setBillClassType(BillClassType.Bill);
             currentBill.setReferenceBill(nonClosedShiftStartFundBill);
+        }else{
+            currentBill = null;
         }
         return "/cashier/shift_end_summery_bill";
     }
