@@ -65,16 +65,18 @@ public class FinancialTransactionController implements Serializable {
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
+        resetClassVariables();
         return "/cashier/index?faces-redirect=false;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
-
+        resetClassVariables();
         prepareToAddNewInitialFundBill();
         return "/cashier/initial_fund_bill?faces-redirect=false;";
     }
 
     public String navigateShiftBalanceTransferReceiveBill() {
+        resetClassVariables();
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftStartFundBill);
         currentBill.setBillClassType(BillClassType.Bill);
@@ -194,7 +196,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("ofb", BillType.ShiftStartFundBill);
         nonClosedShiftStartFundBill = billFacade.findFirstByJpql(jpql, m);
-        }
+    }
 
     public void listBillsFromInitialFundBillUpToNow() {
         List<Bill> shiftStartFundBill;
@@ -230,7 +232,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if(currentBill.getReferenceBill()==null){
+        if (currentBill.getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
@@ -241,8 +243,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
-        
-
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -250,10 +250,10 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        
+
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-        
+
         return "/cashier/shift_end_summery_bill_print";
     }
 
@@ -419,7 +419,7 @@ public class FinancialTransactionController implements Serializable {
 
     public Bill getNonClosedShiftStartFundBill() {
         return nonClosedShiftStartFundBill;
-}
+    }
 
     public void setNonClosedShiftStartFundBill(Bill nonClosedShiftStartFundBill) {
         this.nonClosedShiftStartFundBill = nonClosedShiftStartFundBill;
