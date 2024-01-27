@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -21,7 +22,7 @@
                                 style="float: right;"
                                 value="Settle" 
                                 ajax="false" 
-                                action="#{financialTransactionController.settleShiftStartFundBill()}" >
+                                action="#{financialTransactionController.settleInitialFundBill()}" >
                             </p:commandButton>
                         </f:facet>
                         <p:panel header="Add Funds" >
@@ -78,21 +79,22 @@
 
                                         </h:panelGroup>
 
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cash"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-2"
+                                                id="txtValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+                                        </h:panelGroup>
 
                                     </h:panelGroup>
 
 
-                                    <h:panelGroup
-                                        class="row my-1"
-                                        layout="block" 
-                                        id="cash"  rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
-                                        <p:outputLabel value="Value" ></p:outputLabel>
-                                        <p:inputText 
-                                            class="mx-2"
-                                            id="txtValue" 
-                                            value="#{financialTransactionController.currentPayment.paidValue}" >
-                                        </p:inputText>
-                                    </h:panelGroup>
+
 
 
                                 </div>
@@ -109,7 +111,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment txtValue"
+                                        update="tblPayments totals cmdPayment paymentDetails"
                                         action="#{financialTransactionController.addPaymentToInitialFundBill()}" >
                                     </p:commandButton>
                                 </div>
@@ -157,7 +159,7 @@
                                         value="Remove" 
                                         action="#{financialTransactionController.removePayment}" 
                                         process="btnRemove tblPayments"
-                                        update="tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
                                         >
                                         <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
