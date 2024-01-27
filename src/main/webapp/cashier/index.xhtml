@@ -44,10 +44,17 @@
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="New Initial Fund Bill"
+                                        value="Fund Withdrawal"
                                         icon=""
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewWithdrawalProcessingBill()}" >
+                                    </p:commandButton>
+                                     <p:commandButton 
+                                        value="Fund Deposit"
+                                        icon=""
+                                        ajax="false" 
+                                        action="/cashier/deposit_funds">
+<!--                                        action="#{financialTransactionController.navigateToCreateNewWithdrawalProcessingBill()}" >-->
                                     </p:commandButton>
                                 </div>
                             </p:panel>
