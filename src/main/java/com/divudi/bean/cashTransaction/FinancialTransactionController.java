@@ -16,7 +16,6 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -54,8 +53,6 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> shiftBalanceTransferBills;
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
-    private Bill nonClosedShiftStartFundBill;
-    private List<Payment> paymentsFromShiftSratToNow;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -65,30 +62,18 @@ public class FinancialTransactionController implements Serializable {
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Navigational Methods">
     public String navigateToFinancialTransactionIndex() {
-        resetClassVariables();
         return "/cashier/index?faces-redirect=false;";
     }
 
-    public void resetClassVariables() {
-        currentBill = null;
-        currentPayment = null;
-        removingPayment = null;
-        currentBillPayments = null;
-        shiftBalanceTransferBills = null;
-        fundBillsForClosureBills = null;
-        selectedBill = null;
-        nonClosedShiftStartFundBill = null;
-        paymentsFromShiftSratToNow = null;
-    }
-
     public String navigateToCreateNewInitialFundBill() {
-        resetClassVariables();
         prepareToAddNewInitialFundBill();
         return "/cashier/initial_fund_bill?faces-redirect=false;";
     }
 
     public String navigateShiftBalanceTransferReceiveBill() {
-        resetClassVariables();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftStartFundBill);
+        currentBill.setBillClassType(BillClassType.Bill);
         prepareToAddNewInitialFundBill();
         getAllShiftBalanceTransferBill();
         return "/cashier/shift_balance_transfer_receive_bill";
@@ -136,10 +121,9 @@ public class FinancialTransactionController implements Serializable {
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
-        currentBill.setNetTotal(total);
     }
 
-    public String settleShiftStartFundBill() {
+    public String settleInitialFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -151,15 +135,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
-        currentBill.setBillDate(new Date());
-        currentBill.setBillTime(new Date());
-
-        findNonClosedShiftStartFundBillIsAvailable();
-        if (nonClosedShiftStartFundBill != null) {
-            JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
-            return "";
-        }
 
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
@@ -175,26 +150,13 @@ public class FinancialTransactionController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
-    public String navigateToCreateShiftEndSummaryBill() {
-        findNonClosedShiftStartFundBillIsAvailable();
-        if (nonClosedShiftStartFundBill != null) {
-            fillPaymentsFromShiftStartToNow();
-            currentBill = new Bill();
-            currentBill.setBillType(BillType.ShiftEndFundBill);
-            currentBill.setBillClassType(BillClassType.Bill);
-            currentBill.setReferenceBill(nonClosedShiftStartFundBill);
-        } else {
-            currentBill = null;
-        }
-        return "/cashier/shift_end_summery_bill";
+    public String navigateToShiftClosureSummaryBill() {
+
+        return "/cashier/shift_closure_summery_bill";
     }
 
-    public void fillPaymentsFromShiftStartToNow() {
-
-    }
-
-    public void findNonClosedShiftStartFundBillIsAvailable() {
-        nonClosedShiftStartFundBill = null;
+    public boolean nonClosedShiftStartFundBillIsAvailable() {
+        List<Bill> NonClosedShiftStartFundBills;
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.staff=:staff "
@@ -205,7 +167,11 @@ public class FinancialTransactionController implements Serializable {
         m.put("staff", sessionController.getLoggedUser().getStaff());
         m.put("ret", false);
         m.put("ofb", BillType.ShiftStartFundBill);
-        nonClosedShiftStartFundBill = billFacade.findFirstByJpql(jpql, m);
+        NonClosedShiftStartFundBills = billFacade.findByJpql(jpql, m);
+        if (NonClosedShiftStartFundBills.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     public void listBillsFromInitialFundBillUpToNow() {
@@ -223,48 +189,14 @@ public class FinancialTransactionController implements Serializable {
         shiftStartFundBill = billFacade.findByJpql(jpql, m);
 
     }
-
-    public void copyPaymentsFromInitialFundBill(List<Bill> initialFundBills) {
-        currentBillPayments = null;
+    
+    public void copyPaymentsFromInitialFundBill(List<Bill> initialFundBills){
+        currentBillPayments=null;
         if (initialFundBills != null) {
-            for (Bill b : initialFundBills) {
-
+            for(Bill b:initialFundBills){
+               
             }
         }
-    }
-
-    public String settleShiftEndFundBill() {
-        if (currentBill == null) {
-            JsfUtil.addErrorMessage("Error - current bill is null");
-            return "";
-        }
-        if (currentBill.getBillType() != BillType.ShiftEndFundBill) {
-            JsfUtil.addErrorMessage("Error. Shift End Bill Type is wrong");
-            return "";
-        }
-        if (currentBill.getReferenceBill() == null) {
-            JsfUtil.addErrorMessage("Error");
-            return "";
-        }
-        currentBill.setDepartment(sessionController.getDepartment());
-        currentBill.setInstitution(sessionController.getInstitution());
-        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
-        currentBill.setBillDate(new Date());
-        currentBill.setBillTime(new Date());
-
-        billController.save(currentBill);
-        for (Payment p : getCurrentBillPayments()) {
-            p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
-            paymentController.save(p);
-        }
-
-        nonClosedShiftStartFundBill.setReferenceBill(currentBill);
-        billController.save(nonClosedShiftStartFundBill);
-
-        return "/cashier/shift_end_summery_bill_print";
     }
 
 // </editor-fold>  
@@ -324,7 +256,7 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        if (currentBill.getBillType() != BillType.ShiftStartFundBill) {
+        if (currentBill.getBillType() != BillType.ShiftBalanceTransferReceiveBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
@@ -426,21 +358,4 @@ public class FinancialTransactionController implements Serializable {
     public void setFundBillsForClosureBills(List<Bill> fundBillsForClosureBills) {
         this.fundBillsForClosureBills = fundBillsForClosureBills;
     }
-
-    public Bill getNonClosedShiftStartFundBill() {
-        return nonClosedShiftStartFundBill;
-    }
-
-    public void setNonClosedShiftStartFundBill(Bill nonClosedShiftStartFundBill) {
-        this.nonClosedShiftStartFundBill = nonClosedShiftStartFundBill;
-    }
-
-    public List<Payment> getPaymentsFromShiftSratToNow() {
-        return paymentsFromShiftSratToNow;
-    }
-
-    public void setPaymentsFromShiftSratToNow(List<Payment> paymentsFromShiftSratToNow) {
-        this.paymentsFromShiftSratToNow = paymentsFromShiftSratToNow;
-    }
-
 }
