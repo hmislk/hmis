@@ -20,10 +20,10 @@
                             </p:selectOneMenu>
 
                             <p:outputLabel class="mx-5" value="#{financialTransactionController.currentBill.total}" ></p:outputLabel>
-                            <p:commandButton class="ui-button-success" value="Settle" ajax="false" action="#{financialTransactionController.settleShiftBalanceTransferReceiveBill()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-success" value="Settle" ajax="false" action="#{financialTransactionController.settleFundTransferReceiveBill()}" ></p:commandButton>
 
                         </div>
-                        <p:dataTable id="tblbill" value="#{financialTransactionController.shiftBalanceTransferBills}" var="bp" selectionMode="single"
+                        <p:dataTable id="tblbill" value="#{financialTransactionController.fundTransferBillsToReceive}" var="bp" selectionMode="single"
                                      selection="#{financialTransactionController.selectedBill}">
 
                             <p:column headerText="Staff" >
