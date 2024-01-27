@@ -14,11 +14,6 @@
 
                 <h:form >
                     <p:commandButton 
-                        value="Fund Bill Index" 
-                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" 
-                        ajax="false" >
-                    </p:commandButton>
-                    <p:commandButton 
                         value="test"
                         ajax="false" >
                     </p:commandButton>
@@ -26,9 +21,9 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <div><h:outputText value="Iniaitl Fund Bill" ></h:outputText></div>
+                                <div><h:outputText value="Shift Start Funds" ></h:outputText></div>
                                 <div class="d-flex">
-                                    <h:outputText value="Total Funds : " class="mx-2"></h:outputText>
+                                    <h:outputText value="Total Funds : "></h:outputText>
                                     <h:outputText value="#{financialTransactionController.currentBill.total}" ></h:outputText>
                                 </div>
                             </div>
@@ -58,17 +53,24 @@
                             <div class="col-lg-6 justify-content-center">
 
                                 <p:panel >
-
                                     <f:facet name="header">
                                         <h:outputText value="Fund Bill Preview" ></h:outputText>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            value="Print" >
+                                            <p:printer target="divPrint" />
+                                        </p:commandButton>
                                     </f:facet>
-                                    <div class="d-flex justify-content-center">
-                                        <prints:five_five_paper_with_headings_for_shift_start_fund_bill payments="#{financialTransactionController.currentBillPayments}" bill="#{financialTransactionController.currentBill}"/>  
-                                    </div>
+                                    <h:panelGrid id="divPrint">
+                                        <div class="d-flex justify-content-center">
+                                            <prints:five_five_paper_with_headings_for_shift_start_fund_bill payments="#{financialTransactionController.currentBillPayments}" bill="#{financialTransactionController.currentBill}"/>  
+                                        </div>
+                                    </h:panelGrid>
+
                                 </p:panel>
-
-
-
                             </div>
 
                         </div>
