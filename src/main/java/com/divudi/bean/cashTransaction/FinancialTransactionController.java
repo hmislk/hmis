@@ -161,6 +161,7 @@ public class FinancialTransactionController implements Serializable {
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
     }
 
     private void calculateShiftEndFundBillTotal() {
@@ -169,6 +170,7 @@ public class FinancialTransactionController implements Serializable {
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
     }
 
     public String settleInitialFundBill() {
