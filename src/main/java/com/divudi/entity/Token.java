@@ -50,6 +50,7 @@ public class Token implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    PatientEncounter patientEncounter;
 
     public Long getId() {
         return id;
@@ -158,6 +159,9 @@ public class Token implements Serializable {
     }
 
     public Patient getPatient() {
+        if (patientEncounter != null) {
+            patient = patientEncounter.getPatient();
+        }
         return patient;
     }
 
