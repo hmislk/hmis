@@ -20,11 +20,11 @@
                     <h:form class="container-fluid" >
                         <p:panel >
                             <f:facet name="header" >
-                                <h:outputText value="Currently WOrking" >
+                                <h:outputText value="Currently Working" >
                                 </h:outputText>
                             </f:facet>
                             
-                            <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" rows="10"
+                            <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
                                          rowKey="#{w.id}" >
                                 <p:column headerText="Name">
                                     <h:outputLabel value="#{w.staffShift.staff.person.nameWithTitle}" ></h:outputLabel>
@@ -39,10 +39,16 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Retire" 
+                                        class="ui-button-danger"
+                                        icon="fas fa-door-open"
                                         action="#{workingTimeController.markOut()}" >
                                         <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="View" action="#{workingTimeController.navigateToViewWorkTime}" >
+                                    <p:commandButton ajax="false"
+                                                     value="View"
+                                                     class="ui-button-success mx-2"
+                                                     icon="fas fa-eye"
+                                                     action="#{workingTimeController.navigateToViewWorkTime}" >
                                         <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <h:form>
+            <ui:composition template="./index.xhtml">
+
+                <ui:define name="subcontent">
+
+                    <p:panelGrid 
+                        columns="2" 
+                        rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}"
+                        >
+                        <p:outputLabel value="Staff" ></p:outputLabel>
+                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel>
+                        <p:outputLabel value="Start Date " ></p:outputLabel>
+                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billDate}" ></p:outputLabel>
+                        <p:outputLabel value="Start Time" ></p:outputLabel>
+                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billTime}" ></p:outputLabel>
+                        <p:outputLabel value="Total Value" ></p:outputLabel>
+                        <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel>
+
+
+                        <p:commandButton ajax="false" value="Close Start Fund Bill" 
+                                         action="#{financialTransactionController.settleShiftEndFundBill()}" ></p:commandButton>
+                        
+                    </p:panelGrid>
+
+
+                    <p:panelGrid 
+                        columns="2" 
+                        rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"
+                        >
+                        <p:outputLabel value="No Shift Start Fund Bill Available to Close" ></p:outputLabel>
+
+
+                    </p:panelGrid>
+
+                </ui:define>
+            </ui:composition>
+        </h:form>
+    </h:body>
+</html>

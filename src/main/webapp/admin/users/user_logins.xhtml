@@ -79,7 +79,7 @@
                                 </h:outputLabel>
                             </h:panelGrid>
 
-                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index">
+                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
                                 <p:column headerText="No" width="30px" >
                                     <h:outputLabel value="#{index +1}" ></h:outputLabel>
                                 </p:column>
@@ -97,12 +97,12 @@
                                     <h:outputLabel value="#{b.webUser.webUserPerson.name}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Login At">
+                                <p:column headerText="Login At"  sortBy="#{b.logedAt}">
                                     <h:outputLabel value="#{b.logedAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Log out at">
+                                <p:column headerText="Log out at" sortBy="#{b.logoutAt}" >
                                     <h:outputLabel value="#{b.logoutAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>

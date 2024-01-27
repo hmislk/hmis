@@ -1,5 +1,6 @@
 package com.divudi.bean.cashTransaction;
 // <editor-fold defaultstate="collapsed" desc="Imports">
+
 import java.util.HashMap;
 // </editor-fold>  
 import com.divudi.bean.common.BillController;
@@ -50,6 +51,7 @@ public class FinancialTransactionController implements Serializable {
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
     private List<Bill> shiftBalanceTransferBills;
+    private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     // </editor-fold>  
 
@@ -69,6 +71,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateShiftBalanceTransferReceiveBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftStartFundBill);
+        currentBill.setBillClassType(BillClassType.Bill);
         prepareToAddNewInitialFundBill();
         getAllShiftBalanceTransferBill();
         return "/cashier/shift_balance_transfer_receive_bill";
@@ -76,7 +81,7 @@ public class FinancialTransactionController implements Serializable {
 
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
-        currentBill.setBillType(BillType.InitialFundBill);
+        currentBill.setBillType(BillType.ShiftStartFundBill);
         currentBill.setBillClassType(BillClassType.Bill);
     }
     // </editor-fold>  
@@ -87,7 +92,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentBill.getBillType() != BillType.InitialFundBill) {
+        if (currentBill.getBillType() != BillType.ShiftStartFundBill) {
             JsfUtil.addErrorMessage("Error");
             return;
         }
@@ -123,7 +128,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if (currentBill.getBillType() != BillType.InitialFundBill) {
+        if (currentBill.getBillType() != BillType.ShiftStartFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
@@ -144,15 +149,58 @@ public class FinancialTransactionController implements Serializable {
 
 // <editor-fold defaultstate="collapsed" desc="Sample Code Block">
 // </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="ShiftClosureSummaryBill">
-    /**
-     *
-     * User click to Crete Close Bill Search the initial bill If not found >
-     * error message if found > create new bill settle to print
-     *
-     */
+// <editor-fold defaultstate="collapsed" desc="ShiftEndFundBill">
+    public String navigateToShiftClosureSummaryBill() {
+
+        return "/cashier/shift_closure_summery_bill";
+    }
+
+    public boolean nonClosedShiftStartFundBillIsAvailable() {
+        List<Bill> NonClosedShiftStartFundBills;
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.staff=:staff "
+                + " and b.retired=:ret "
+                + " and b.billType=:ofb "
+                + " and b.referenceBill is null";
+        Map m = new HashMap();
+        m.put("staff", sessionController.getLoggedUser().getStaff());
+        m.put("ret", false);
+        m.put("ofb", BillType.ShiftStartFundBill);
+        NonClosedShiftStartFundBills = billFacade.findByJpql(jpql, m);
+        if (NonClosedShiftStartFundBills.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    public void listBillsFromInitialFundBillUpToNow() {
+        List<Bill> shiftStartFundBill;
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.staff=:staff "
+                + " and b.retired=:ret "
+                + " and b.billType=:ofb "
+                + " and b.referenceBill is null";
+        Map m = new HashMap();
+        m.put("staff", sessionController.getLoggedUser().getStaff());
+        m.put("ret", false);
+        m.put("ofb", BillType.ShiftStartFundBill);
+        shiftStartFundBill = billFacade.findByJpql(jpql, m);
+
+    }
+    
+    public void copyPaymentsFromInitialFundBill(List<Bill> initialFundBills){
+        currentBillPayments=null;
+        if (initialFundBills != null) {
+            for(Bill b:initialFundBills){
+               
+            }
+        }
+    }
+
 // </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="ShiftBalanceTransferBill">
+// <editor-fold defaultstate="collapsed" desc="BalanceTransferFundBill">
     /**
      *
      * User click to Crete Transfer Bill Add (fromStaff 0 the user) Select User
@@ -160,17 +208,17 @@ public class FinancialTransactionController implements Serializable {
      *
      */
 // </editor-fold>   
-// <editor-fold defaultstate="collapsed" desc="ShiftBalanceTransferReceiveBill">
+// <editor-fold defaultstate="collapsed" desc="BalanceTransferReceiveFundBill">
     /**
      *
      * pavan
      *
-     * Another User create a ShiftBalanceTransferBill It has a toStaff attribute
+     * Another User create a BalanceTransferFundBill It has a toStaff attribute
      * loggedUser.getStaff =toStaff List such bills Click on one of them Copy
-     * Payments from ShiftBalanceTransferBill User may change them settle to
+     * Payments from BalanceTransferFundBill User may change them settle to
      * print
      *
-     * @return 
+     * @return
      */
     public List<Bill> getAllShiftBalanceTransferBill() {
         String sql;
@@ -181,7 +229,7 @@ public class FinancialTransactionController implements Serializable {
                 + "and s.billType = :btype "
                 + "and s.toStaff = :logStaff "
                 + "order by s.createdAt ";
-        tempMap.put("btype", BillType.ShiftBalanceTransferBill);
+        tempMap.put("btype", BillType.BalanceTransferFundBill);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         shiftBalanceTransferBills = billFacade.findByJpql(sql, tempMap);
         return shiftBalanceTransferBills;
@@ -202,17 +250,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
+
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
-        if (currentBill.getBillType() != BillType.InitialFundBill) {
+
+        if (currentBill.getBillType() != BillType.BalanceTransferReceiveFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
+
         getPaymentsFromShiftBalanceTransferBill();
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
@@ -230,24 +278,21 @@ public class FinancialTransactionController implements Serializable {
     }
 
 // </editor-fold>      
-// <editor-fold defaultstate="collapsed" desc="DepositProcessingBill">
+// <editor-fold defaultstate="collapsed" desc="DepositFundBill">
     //Lawan
 // </editor-fold>  
-// <editor-fold defaultstate="collapsed" desc="WithdrawalProcessingBill">
-    
-    
-    public String navigateToCreateNewWithdrawalProcessingBill(){
+// <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
+    public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
         return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
     }
-    
+
     private void prepareToAddNewWithdrawalProcessingBill() {
         currentBill = new Bill();
-        currentBill.setBillType(BillType.WithdrawalProcessingBill);
+        currentBill.setBillType(BillType.WithdrawalFundBill);
         currentBill.setBillClassType(BillClassType.Bill);
     }
-    
-    
+
 //Damith
 // </editor-fold>      
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
@@ -306,4 +351,11 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold>  
+    public List<Bill> getFundBillsForClosureBills() {
+        return fundBillsForClosureBills;
+    }
+
+    public void setFundBillsForClosureBills(List<Bill> fundBillsForClosureBills) {
+        this.fundBillsForClosureBills = fundBillsForClosureBills;
+    }
 }
