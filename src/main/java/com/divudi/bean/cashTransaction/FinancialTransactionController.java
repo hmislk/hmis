@@ -154,6 +154,15 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
 
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+
+        findNonClosedShiftStartFundBillIsAvailable();
+        if (nonClosedShiftStartFundBill != null) {
+            JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
+            return "";
+        }
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
