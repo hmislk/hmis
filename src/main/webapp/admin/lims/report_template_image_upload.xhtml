@@ -38,7 +38,11 @@
                             title="Upload Image"
                             listener="#{reportFormatController.uploadPhoto}" />
 
-                        <p:commandButton ajax="false" value="Test"/>
+                       
+                        <p:commandButton ajax="false" value="Remove Format"
+                                         class="ui-button-danger"
+                                         icon="fas fa-trash"
+                                         action="#{reportFormatController.removeUploadedFile()}"></p:commandButton>
 
                         <p:graphicImage
                             id="image"

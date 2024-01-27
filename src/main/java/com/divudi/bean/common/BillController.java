@@ -341,6 +341,19 @@ public class BillController implements Serializable {
 
     }
 
+    public void save(Bill sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getFacade().create(sb);
+        }else{
+            getFacade().edit(sb);
+        }
+    }
+
     public void saveBillPharmacyCredit() {
 
         BilledBill temp = new BilledBill();
@@ -1264,7 +1277,7 @@ public class BillController implements Serializable {
 
         savePatient();
 
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 
@@ -1489,7 +1502,6 @@ public class BillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(tmp);
 
-        
         for (Bill b : bills) {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
@@ -2162,7 +2174,7 @@ public class BillController implements Serializable {
         printPreview = false;
         paymentMethodData = null;
         paymentScheme = null;
-        
+
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
     }

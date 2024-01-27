@@ -29,21 +29,15 @@ public class ImageController implements Serializable {
     }
 
     public StreamedContent getPhotoById() {
-        System.err.println("Get Photo By Id");
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
-            System.err.println("Contex Response");
             // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
             return new DefaultStreamedContent();
         } else {
             // So, browser is requesting the image. Get ID value from actual request param.
             String id = context.getExternalContext().getRequestParameterMap().get("id");
-            System.err.println("Patient Id = " + id);
             Patient pt = patientController.findPatientById(id);
             if (pt != null) {
-                System.out.println("Patient = " + pt);
-                System.out.println("File Type = " + pt.getFileType());
-                System.out.println("File Name = " + pt.getFileName());
                 String imageType = pt.getFileType();
                 if (imageType == null || imageType.trim().equals("")) {
                     imageType = "image/png";

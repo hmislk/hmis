@@ -236,8 +236,6 @@ public class ShiftController implements Serializable {
                 + " and s.roster=:rs ";
         HashMap m = new HashMap();
         m.put("rs", getCurrentRoster());
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         shiftList = getFacade().findByJpql(jpql, m);
         JsfUtil.addSuccessMessage("Listed");
     }

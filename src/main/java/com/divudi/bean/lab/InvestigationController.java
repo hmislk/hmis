@@ -1333,14 +1333,11 @@ public class InvestigationController implements Serializable {
     }
 
     public void saveSelected() {
-        System.out.println("this = " + this);
-        System.out.println("save seelcted");
 
         if (getCurrent() == null) {
             return;
         }
         
-        System.out.println("getCurrent().isIsMasterItem() = " + getCurrent().isIsMasterItem());
 
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
@@ -1375,7 +1372,6 @@ public class InvestigationController implements Serializable {
             getItemFacade().create(sc);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        System.out.println("getCurrent().isIsMasterItem() = " + getCurrent().isIsMasterItem());
         recreateModel();
         getItems();
     }
