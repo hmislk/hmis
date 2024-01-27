@@ -12,20 +12,17 @@
             <ui:define name="subcontent">
                 <p:panel header="Iniaitl Fund Bill" >
                     <p:panel header="Funds" >
-                        <p:outputLabel value="Payment Method" ></p:outputLabel>
-                        <p:selectOneMenu id="cmdPayment" value="#{financialTransactionController.currentPayment.paymentMethod}" >
-                            <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                            <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
-                        </p:selectOneMenu>
-                        <p:outputLabel value="Value" ></p:outputLabel>
-                        <p:inputText id="txtValue" value="#{financialTransactionController.currentPayment.paidValue}" ></p:inputText>
-                        <p:commandButton
-                            id="btnAdd"
-                            value="Add"
-                            process="btnAdd cmdPayment txtValue"
-                            update="tblPayments totals cmdPayment txtValue"
-                            action="#{financialTransactionController.addPaymentToInitialFundBill()}" ></p:commandButton>
+                        <div class="d-flex align-items-center my-2 ">
+                            <p:outputLabel value="Payment Method" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" id="cmdPayment" value="#{financialTransactionController.currentPayment.paymentMethod}" >
+                                <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                            </p:selectOneMenu>
 
+                            <p:outputLabel class="mx-5" value="#{financialTransactionController.currentBill.total}" ></p:outputLabel>
+                            <p:commandButton value="Settle" ajax="false" action="#{financialTransactionController.settleShiftBalanceTransferReceiveBill()}" ></p:commandButton>
+
+                        </div>
                         <p:dataTable id="tblbill" value="#{financialTransactionController.shiftBalanceTransferBills}" var="bp" selectionMode="single"
                                      selection="#{financialTransactionController.selectedBill}">
 
@@ -42,7 +39,7 @@
                                 <h:outputText value="#{bp.paidValue}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Action" >
-                                 <p:commandButton 
+                                <p:commandButton 
                                     id="btnRemove"
                                     value="Remove" 
                                     action="#{financialTransactionController.removePayment}" 
@@ -55,10 +52,7 @@
                         </p:dataTable>
 
                     </p:panel>
-                    <p:panel id="totals" header="Funds" >
-                        <p:outputLabel value="#{financialTransactionController.currentBill.total}" ></p:outputLabel>
-                        <p:commandButton value="Settle" ajax="false" action="#{financialTransactionController.SettleShiftBalanceTransferReceiveBill()}" ></p:commandButton>
-                    </p:panel>
+
 
                 </p:panel>
             </ui:define>

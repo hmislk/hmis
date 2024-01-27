@@ -1,6 +1,6 @@
 package com.divudi.bean.cashTransaction;
 // <editor-fold defaultstate="collapsed" desc="Imports">
-
+import java.util.HashMap;
 // </editor-fold>  
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
@@ -15,7 +15,6 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -172,47 +171,50 @@ public class FinancialTransactionController implements Serializable {
      * Payments from ShiftBalanceTransferBill User may change them settle to
      * print
      *
+     * @return 
      */
-    
-    private List<Bill> getAllShiftBalanceTransferBill() {
+    public List<Bill> getAllShiftBalanceTransferBill() {
         String sql;
         shiftBalanceTransferBills = null;
         Map tempMap = new HashMap();
-        sql = "select s from Bill s"
-                + "where s.retired=false"
-                + "and s.BillType = :billtype"
-                + "and s.toStaff = :logStaff"
-                + "order by b.createdAt";
-        tempMap.put("billtype", BillType.ShiftBalanceTransferBill);
+        sql = "select s from Bill s "
+                + "where s.retired=false "
+                + "and s.billType = :btype "
+                + "and s.toStaff = :logStaff "
+                + "order by s.createdAt ";
+        tempMap.put("btype", BillType.ShiftBalanceTransferBill);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         shiftBalanceTransferBills = billFacade.findByJpql(sql, tempMap);
-        System.out.println("shiftBalanceTransferBills = " + shiftBalanceTransferBills.size());
         return shiftBalanceTransferBills;
     }
 
-    private void getPaymentsFromShiftBalanceTransferBill() {
+    public void getPaymentsFromShiftBalanceTransferBill() {
         currentBillPayments = null;
         if (selectedBill != null) {
             for (Payment p : selectedBill.getPayments()) {
                 currentBillPayments.add(p);
             }
         }
-        System.out.println("payments" + currentBillPayments.size());
-        
+
     }
 
-    private String SettleShiftBalanceTransferReceiveBill() {
-        if(selectedBill != null){
-            getPaymentsFromShiftBalanceTransferBill();
+    public String settleShiftBalanceTransferReceiveBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
         }
+        
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        
         if (currentBill.getBillType() != BillType.InitialFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        
+        getPaymentsFromShiftBalanceTransferBill();
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -227,16 +229,27 @@ public class FinancialTransactionController implements Serializable {
         shiftBalanceTransferBills.remove(currentBill);
         return "/cashier/shift_balance_transfer_receive_bill_print";
     }
-    
+
 // </editor-fold>      
 // <editor-fold defaultstate="collapsed" desc="DepositProcessingBill">
-    
     //Lawan
-    
-    
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalProcessingBill">
-    //Damith
+    
+    
+    public String navigateToCreateNewWithdrawalProcessingBill(){
+        prepareToAddNewWithdrawalProcessingBill();
+        return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
+    }
+    
+    private void prepareToAddNewWithdrawalProcessingBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.WithdrawalProcessingBill);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+    
+    
+//Damith
 // </editor-fold>      
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
@@ -284,8 +297,8 @@ public class FinancialTransactionController implements Serializable {
     public void setShiftBalanceTransferBills(List<Bill> shiftBalanceTransferBills) {
         this.shiftBalanceTransferBills = shiftBalanceTransferBills;
     }
-    
-     public Bill getSelectedBill() {
+
+    public Bill getSelectedBill() {
         return selectedBill;
     }
 
@@ -294,6 +307,4 @@ public class FinancialTransactionController implements Serializable {
     }
 
     // </editor-fold>  
-
-   
 }
