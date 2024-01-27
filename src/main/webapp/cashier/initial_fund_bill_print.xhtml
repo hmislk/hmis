@@ -18,24 +18,62 @@
                         action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" 
                         ajax="false" >
                     </p:commandButton>
+                    <p:commandButton 
+                        value="test"
+                        ajax="false" >
+                    </p:commandButton>
 
-                    <p:panel header="Iniaitl Fund Bill" >
-                        <h:outputText value="#{financialTransactionController.currentBill.total}" >
-                        </h:outputText>
+                    <p:panel >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div><h:outputText value="Iniaitl Fund Bill" ></h:outputText></div>
+                                <div class="d-flex">
+                                    <h:outputText value="Total Funds : " class="mx-2"></h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.total}" ></h:outputText>
+                                </div>
+                            </div>
+                        </f:facet>
+
+
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText value="Fund Details" ></h:outputText>
+                                    </f:facet>
+
+                                    <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                        <p:column headerText="Payment Method" >
+                                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Payment Method" >
+                                            <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+
+                            </div>
+
+                            <div class="col-lg-6 justify-content-center">
+
+                                <p:panel >
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Fund Bill Preview" ></h:outputText>
+                                    </f:facet>
+                                    <div class="d-flex justify-content-center">
+                                        <prints:five_five_paper_with_headings_for_shift_start_fund_bill payments="#{financialTransactionController.currentBillPayments}" bill="#{financialTransactionController.currentBill}"/>  
+                                    </div>
+                                </p:panel>
+
+
+
+                            </div>
+
+                        </div>
 
                     </p:panel>
-                    <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paidValue}" ></h:outputText>
-                        </p:column>
-                    </p:dataTable>
-                    
-                    
-                    
-                    <prints:five_five_paper_with_headings_for_shift_start_fund_bill bill="#{financialTransactionController.currentBill}"/>  
 
                 </h:form>
             </ui:define>
