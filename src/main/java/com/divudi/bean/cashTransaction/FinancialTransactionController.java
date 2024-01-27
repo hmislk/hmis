@@ -256,7 +256,7 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        if (currentBill.getBillType() != BillType.ShiftBalanceTransferReceiveBill) {
+        if (currentBill.getBillType() != BillType.BalanceTransferReceiveFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
