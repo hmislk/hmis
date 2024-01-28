@@ -15,20 +15,19 @@
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
-                            <p:outputLabel value="Iniaitl Withdrawal Processing Bill" class="mx-2 mt-2"></p:outputLabel>
+                            <p:outputLabel value="Initial Withdrawal Processing Bill" class="mx-2 mt-2"></p:outputLabel>
                             <p:commandButton 
                                 icon="fa-solid fa-check"
                                 class="ui-button-success"
                                 style="float: right;"
-                                value="Settle" 
+                                value="Withdraw" 
                                 ajax="false" 
                                 action="#{financialTransactionController.settleInitialFundBill()}" >
                             </p:commandButton>
                         </f:facet>
                         <p:panel header="Add Withdrawal" >
-
+ 
                             <div class="row">
-                                <div class="col-md-1"/>
                                 <div class="col-md-4">
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>
                                     <p:selectOneMenu 
@@ -38,59 +37,90 @@
                                         value="#{financialTransactionController.currentPayment.paymentMethod}" >
                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                                        <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
                                 </div>
-                                <div class="col-md-4">
-                                    <p:outputLabel value="Value" ></p:outputLabel>
-                                    <p:inputText 
-                                        class="mx-2"
-                                        id="txtValue" 
-                                        value="#{financialTransactionController.currentPayment.paidValue}" >
-                                    </p:inputText>
+                                <div class="col-md-7" >
+                                    <h:panelGroup id="paymentDetails" >
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="cheque" 
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+
+                                            <div class="d-flex">
+                                                <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
+                                                <p:watermark value="Value" for="txtVal" />
+
+                                                <p:inputText class="mx-2" autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
+
+                                                <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                                    <f:selectItem itemLabel="Select Bank"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:selectOneMenu>
+
+                                                <p:calendar class="mx-2" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:calendar>
+
+                                                <p:watermark value="Cheque No" for="chequNo"/>
+                                                <p:watermark value="Cheque Date" for="ChequeDate"/>
+                                            </div>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="cash"  
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
+                                            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-3"
+                                                id="txtCashValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="card"  
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+                                            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-3"
+                                                id="txtCardValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+
+                                        </h:panelGroup>
+
+                                        <p:watermark value="0.00" for="txtCardValue" />
+                                        <p:watermark value="0.00" for="txtCashValue" />
+                                    </h:panelGroup>
+
+
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-1">
                                     <p:commandButton
                                         id="btnAdd"
                                         style="float: right;"
                                         value="Add"
                                         icon="fa fa-plus"
                                         class="ui-button-success"
-                                        process="btnAdd cmdPayment txtValue"
-                                        update="tblPayments totals cmdPayment txtValue"
-                                        action="#{financialTransactionController.addPaymentToInitialFundBill()}" >
+                                        process="btnAdd cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        action="#{financialTransactionController.addPaymentToWithdrawalFundBill()}" >
                                     </p:commandButton>
                                 </div>
-                                <div class="col-md-1"/>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-1"/>
-                                <div class="col-md-10">
-                                    
-<!--                                    <h:panelGroup
-                                        class="row my-1"
-                                        id="creditCard" 
-                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >1125
-                                        <pa:creditCard paymentMethodData="#{financialTransactionController.currentPayment.paymentMethod}"/>
-                                    </h:panelGroup>
-                                    
-                                    <h:panelGroup
-                                        class="row my-1"
-                                        id="cheque"  
-                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >11
-                                        <pa:cheque paymentMethodData="#{financialTransactionController.currentPayment.paymentMethod}"/>
-                                    </h:panelGroup>
-                                    
-                                    <h:panelGroup 
-                                        class="row my-1"
-                                        id="slip"  
-                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}" >11
-                                        <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                    </h:panelGroup>-->
-
-                                </div>
-                                <div class="col-md-1"/>
-                            </div>
+                            </div>    
 
                         </p:panel>
                         <p:panel >
@@ -120,17 +150,17 @@
                                 <p:column headerText="Payment Method" >
                                     <h:outputText value="#{bp.paidValue}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Action" >
+                                <p:column headerText="Action" width="20%">
                                     <p:commandButton 
                                         class="ui-button-danger"
                                         icon=" fa-solid fa-trash"
                                         id="btnRemove"
                                         value="Remove" 
-                                        action="#" 
+                                        action="#{financialTransactionController.removePayment}" 
                                         process="btnRemove tblPayments"
-                                        update="tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
                                         >
-                                        <f:setPropertyActionListener value="#{bp}" target="" ></f:setPropertyActionListener>
+                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
