@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -118,6 +119,10 @@ public class SearchController implements Serializable {
     AuditEventApplicationController auditEventApplicationController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    OpdPreSettleController opdPreSettleController;
+    @Inject
+    PharmacyPreSettleController pharmacyPreSettleController;
 
     /**
      * Properties
@@ -192,6 +197,89 @@ public class SearchController implements Serializable {
     private Patient patient;
     private Institution dealer;
     private List<Bill> grnBills;
+    Bill currentBill;
+    private Long currentBillId;
+    private Bill preBill;
+    boolean billPreview;
+
+    public void searchBillFromBillId() {
+        if (currentBillId == null) {
+            JsfUtil.addErrorMessage("Enter COrrect Bill Number !");
+        }
+        String sql = "Select b from Bill b"
+                + " where b.retired=false "
+                + " and b.id=:bid ";
+        HashMap hm = new HashMap();
+        hm.put("bid", currentBillId);
+        currentBill = getBillFacade().findFirstByJpql(sql, hm);
+        System.out.println("currentBill" + currentBill.getId());
+    }
+
+    public String settleBillByBarcode() {
+        searchBillFromBillId();
+        String action;
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error : Bill Not Found");
+            return " ";
+        }
+        
+        if (currentBill.isPaid()) {
+            JsfUtil.addErrorMessage("Error : Bill is Already Paid");
+            return " ";
+        }
+        action = toSettle(currentBill);
+        return action;
+    }
+
+    public String toSettle(Bill args) {
+        System.out.println("bill = " + args.getId());
+        String sql = "Select b from BilledBill b"
+                + " where b.referenceBill=:bil"
+                + " and b.retired=false "
+                + " and b.cancelled=false ";
+        HashMap hm = new HashMap();
+        hm.put("bil", args);
+        Bill b = getBillFacade().findFirstByJpql(sql, hm);
+
+        if (b != null) {
+            UtilityController.addErrorMessage("Allready Paid");
+            return "";
+        } else {
+            
+            BillType btype = args.getBillType();
+            switch (btype) {
+                case OpdPreBill:
+                    setPreBillForOpd(args);
+                    return "/opd_bill_pre_settle";
+             
+                case PharmacyPre:
+                    setPreBillForPharmecy(args);
+                    return "/pharmacy/pharmacy_bill_pre_settle";
+                
+                default:
+                    throw new AssertionError();
+            }
+
+        }
+    }
+    
+    public void setPreBillForOpd(Bill preBill) {
+        makeNull();
+        opdPreSettleController.setPreBill(preBill);
+        //System.err.println("Setting Bill " + preBill);
+        opdPreSettleController.setBillPreview(false);
+
+    }
+    
+     public void setPreBillForPharmecy(Bill preBill) {
+        makeNull();
+        pharmacyPreSettleController.setPreBill(preBill);
+        //System.err.println("Setting Bill " + preBill);
+        pharmacyPreSettleController.setBillPreview(false);
+
+    }
+    
+    
 
     public void createGrnWithDealerTable() {
         Map m = new HashMap();
@@ -981,6 +1069,14 @@ public class SearchController implements Serializable {
 
     public void setGrnBills(List<Bill> grnBills) {
         this.grnBills = grnBills;
+    }
+
+    public Long getCurrentBillId() {
+        return currentBillId;
+    }
+
+    public void setCurrentBillId(Long currentBillId) {
+        this.currentBillId = currentBillId;
     }
 
     public class billsWithbill {

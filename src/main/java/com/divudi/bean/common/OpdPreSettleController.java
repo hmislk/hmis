@@ -152,8 +152,8 @@ public class OpdPreSettleController implements Serializable {
     }
 
     
-    public String navigateToSettleOpdPreBills(){
-        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    public String navigateToScanBills(){
+        return "/cashier/scan_bill_by_barcode_scanner?faces-redirect=true";
     }
     
     public Double getEditingQty() {
@@ -309,35 +309,6 @@ public class OpdPreSettleController implements Serializable {
 
     }
     
-    public void searchBillFromBillId(){
-        Long id = billID;
-         String sql = "Select b from Bill b"
-                + " where b.retired=false "
-                + " and b.id=:bid ";
-        HashMap hm = new HashMap();
-        hm.put("bid", id);
-        currentBill = getBillFacade().findFirstByJpql(sql, hm);
-        System.out.println("currentBill"+ currentBill.getId());
-    }
-    
-    public String addBillByBarcode(){
-        searchBillFromBillId();
-        if(currentBill == null){
-            JsfUtil.addErrorMessage("Error : Bill Not Found");
-            return " ";
-        }
-        if(currentBill.getBillType()!= BillType.OpdPreBill){
-            JsfUtil.addErrorMessage("Error : Bill is Not a Pre Bill");
-            return " ";
-        }
-        if(currentBill.isPaid()){
-            JsfUtil.addErrorMessage("Error : Bill is Already Paid");
-            return " ";
-        }
-        String link = toSettle(currentBill);
-        return link;
-    }
-    
     private void saveSaleBillItems() {
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
@@ -382,7 +353,7 @@ public class OpdPreSettleController implements Serializable {
         if (errorCheckForSaleBill()) {
             return;
         }
-
+        
         saveSaleBill();
         saveSaleBillItems();
 
