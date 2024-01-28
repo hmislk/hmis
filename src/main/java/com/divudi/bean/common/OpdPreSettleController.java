@@ -101,6 +101,8 @@ public class OpdPreSettleController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    private Long billID;
+    private Bill currentBill;
 
     private Patient newPatient;
     private Patient searchedPatient;
@@ -306,7 +308,36 @@ public class OpdPreSettleController implements Serializable {
         getBillFacade().edit(getPreBill());
 
     }
-
+    
+    public void searchBillFromBillId(){
+        Long id = billID;
+         String sql = "Select b from Bill b"
+                + " where b.retired=false "
+                + " and b.id=:bid ";
+        HashMap hm = new HashMap();
+        hm.put("bid", id);
+        currentBill = getBillFacade().findFirstByJpql(sql, hm);
+        System.out.println("currentBill"+ currentBill.getId());
+    }
+    
+    public String addBillByBarcode(){
+        searchBillFromBillId();
+        if(currentBill == null){
+            JsfUtil.addErrorMessage("Error : Bill Not Found");
+            return " ";
+        }
+        if(currentBill.getBillType()!= BillType.OpdPreBill){
+            JsfUtil.addErrorMessage("Error : Bill is Not a Pre Bill");
+            return " ";
+        }
+        if(currentBill.isPaid()){
+            JsfUtil.addErrorMessage("Error : Bill is Already Paid");
+            return " ";
+        }
+        String link = toSettle(currentBill);
+        return link;
+    }
+    
     private void saveSaleBillItems() {
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
@@ -491,8 +522,9 @@ public class OpdPreSettleController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-
+    
     public String toSettle(Bill args) {
+        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
@@ -1047,5 +1079,23 @@ public class OpdPreSettleController implements Serializable {
     public void setOpdPreBillController(OpdPreBillController opdPreBillController) {
         this.opdPreBillController = opdPreBillController;
     }
+
+    public Bill getCurrentBill() {
+        return currentBill;
+    }
+
+    public void setCurrentBill(Bill currentBill) {
+        this.currentBill = currentBill;
+    }
+
+    public Long getBillID() {
+        return billID;
+    }
+
+    public void setBillID(Long billID) {
+        this.billID = billID;
+    }
+    
+    
 
 }
