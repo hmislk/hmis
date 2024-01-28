@@ -721,9 +721,8 @@ public class BillNumberGenerator {
     public String generateDailyTokenNumber(Department department, Category cat, Staff fromStaff) {
         String sql = "SELECT count(b) "
                 + " FROM Token b "
-                + " where (b.tokenType=:bTp1 or b.billType=:bTp2) "
-                + " and b.billDate=:bd "
-                + " and (type(b)=:class1 or type(b)=:class2) ";
+                + " where (b.tokenType=:bTp1) "
+                + " and b.tokenDate=:bd ";
         HashMap hm = new HashMap();
 
         if (department != null) {

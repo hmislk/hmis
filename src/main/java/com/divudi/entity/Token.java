@@ -33,17 +33,21 @@ public class Token implements Serializable {
     private String tokenId;
     private String tokenNumber;
     @Enumerated(EnumType.ORDINAL)
-    private TokenType tokenType;
     @Temporal(javax.persistence.TemporalType.DATE)
+    private Date tokenDate;
+    private TokenType tokenType;
+    @ManyToOne
+    private Category caterory;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date issuedAt;
     private boolean called;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date calledAt;
     private boolean inProgress;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date startedAt;
     private boolean completed;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
     @ManyToOne
     private Patient patient;
@@ -63,7 +67,7 @@ public class Token implements Serializable {
     private Department serviceCounter;
     @ManyToOne
     private WebUser createdBy;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     private boolean retired;
     @ManyToOne
@@ -332,6 +336,22 @@ public class Token implements Serializable {
 
     public void setCounter(Department counter) {
         this.counter = counter;
+    }
+
+    public Date getTokenDate() {
+        return tokenDate;
+    }
+
+    public void setTokenDate(Date tokenDate) {
+        this.tokenDate = tokenDate;
+    }
+
+    public Category getCaterory() {
+        return caterory;
+    }
+
+    public void setCaterory(Category caterory) {
+        this.caterory = caterory;
     }
     
     
