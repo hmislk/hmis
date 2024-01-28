@@ -135,6 +135,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     List<Department> departments;
 
     private List<Department> loggableDepartments;
+    private List<Department> loggableSubDepartments;
     private List<Institution> loggableInstitutions;
     private List<UserIcon> userIcons;
 
@@ -163,7 +164,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         return "/index1.xhtml";
     }
-    
+
     public void redirectToIndex1(ComponentSystemEvent event) {
         if (!FacesContext.getCurrentInstance().isPostback()) {
             try {
@@ -427,8 +428,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setInstitution(null);
         return "/admin/institutions/admin_mange_department_preferences?faces-redirect=true";
     }
-    
-    
+
     public String navigateToManageWebUserPreferences(WebUser preferenceUser) {
         String jpql;
         Map m = new HashMap();
@@ -445,9 +445,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setInstitution(null);
         return "/admin/users/user_preferences?faces-redirect=true";
     }
-    
+
     public String navigateToManageOwnWebUserPreferences() {
-        if(loggedUser==null){
+        if (loggedUser == null) {
             JsfUtil.addErrorMessage("User?");
             return "";
         }
@@ -871,6 +871,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
+                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
                     userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
@@ -987,6 +988,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
+            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
@@ -1028,6 +1030,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
+            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
@@ -1078,6 +1081,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
+                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
                     loadDashboards();
@@ -1182,7 +1186,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
 //            }
 //        }
-
         sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
         m = new HashMap();
         m.put("ins", institution);
@@ -1295,6 +1298,22 @@ public class SessionController implements Serializable, HttpSessionListener {
         return departmentFacade.findByJpql(sql, m);
     }
 
+    private List<Department> fillLoggableSubDepts(List<Department> loggableDepts) {
+        if (loggableDepts == null || loggableDepts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String sql;
+        Map m = new HashMap();
+        m.put("loggableDepts", loggableDepts);
+        sql = "select distinct d "
+                + " from Department d "
+                + " where d.retired=false "
+                + " and d.superDepartment in :loggableDepts "
+                + " order by d.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
     public List<Institution> fillLoggableInstitutions() {
         WebUser e = getLoggedUser();
         if (e == null) {
@@ -1337,6 +1356,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         recordLogout();
         setLoggedUser(null);
         loggableDepartments = null;
+        loggableSubDepartments = null;
         loggableInstitutions = null;
         userIcons = null;
         setLogged(false);
@@ -1579,7 +1599,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return userPrivilages;
     }
-    
+
     public void fillCurrentPreferences() {
         String jpql;
         Map m = new HashMap();
@@ -1592,7 +1612,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         currentPreference.setWebUser(null);
         currentPreference.setInstitution(null);
-        
+
     }
 
     public String getBillNo() {
@@ -1934,6 +1954,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return loggableDepartments;
     }
+    
+    
 
     public List<Institution> getLoggableInstitutions() {
         if (loggableInstitutions == null) {
@@ -1978,6 +2000,14 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
         }
 
+    }
+
+    public List<Department> getLoggableSubDepartments() {
+        return loggableSubDepartments;
+    }
+
+    public void setLoggableSubDepartments(List<Department> loggableSubDepartments) {
+        this.loggableSubDepartments = loggableSubDepartments;
     }
 
 }

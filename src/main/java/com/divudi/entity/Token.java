@@ -4,12 +4,18 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.TokenType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import org.checkerframework.common.value.qual.EnumVal;
 
 /**
  *
@@ -18,39 +24,61 @@ import javax.persistence.Id;
 @Entity
 public class Token implements Serializable {
 
-    // <editor-fold defaultstate="collapsed" desc="Class variables">
-    private String tokenId;
-    private String tokenNumber;
-    private Date issuedAt;
-    private boolean isCalled;
-    private Date calledAt;
-    private boolean isInProgress;
-    private Date startedAt;
-    private boolean isCompleted;
-    private Date completedAt;
-    private Patient patient;
-    private Department serviceDepartment;
-    private Department fromDepartment;
-    private Department toDepartment;
-    private Institution serviceInstitution;
-    private Institution fromInstitution;
-    private Institution toInstitution;
-    private Department serviceCounter;
-    private WebUser createdBy;
-    private Date CreatedAt;
-    private boolean retired;
-    private WebUser retiredBy;
-    private Staff staff;
-    private Staff fromStaff;
-    private Staff toStaff;
-// </editor-fold> 
-    
-    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    PatientEncounter patientEncounter;
+
+    // <editor-fold defaultstate="collapsed" desc="Class variables">
+    private String tokenId;
+    private String tokenNumber;
+    @Enumerated(EnumType.ORDINAL)
+    private TokenType tokenType;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date issuedAt;
+    private boolean called;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date calledAt;
+    private boolean inProgress;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date startedAt;
+    private boolean completed;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date completedAt;
+    @ManyToOne
+    private Patient patient;
+    @ManyToOne
+    private Department department;
+    @ManyToOne
+    private Department fromDepartment;
+    @ManyToOne
+    private Department toDepartment;
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Institution fromInstitution;
+    @ManyToOne
+    private Institution toInstitution;
+    @ManyToOne
+    private Department serviceCounter;
+    @ManyToOne
+    private WebUser createdBy;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date createdAt;
+    private boolean retired;
+    @ManyToOne
+    private WebUser retiredBy;
+    @ManyToOne
+    private Staff staff;
+    @ManyToOne
+    private Staff fromStaff;
+    @ManyToOne
+    private Staff toStaff;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
+    @ManyToOne
+    private Department counter;
+// </editor-fold> 
 
     public Long getId() {
         return id;
@@ -110,14 +138,6 @@ public class Token implements Serializable {
         this.issuedAt = issuedAt;
     }
 
-    public boolean isIsCalled() {
-        return isCalled;
-    }
-
-    public void setIsCalled(boolean isCalled) {
-        this.isCalled = isCalled;
-    }
-
     public Date getCalledAt() {
         return calledAt;
     }
@@ -126,12 +146,12 @@ public class Token implements Serializable {
         this.calledAt = calledAt;
     }
 
-    public boolean isIsInProgress() {
-        return isInProgress;
+    public boolean isInProgress() {
+        return inProgress;
     }
 
-    public void setIsInProgress(boolean isInProgress) {
-        this.isInProgress = isInProgress;
+    public void setInProgress(boolean inProgress) {
+        this.inProgress = inProgress;
     }
 
     public Date getStartedAt() {
@@ -142,12 +162,12 @@ public class Token implements Serializable {
         this.startedAt = startedAt;
     }
 
-    public boolean isIsCompleted() {
-        return isCompleted;
+    public boolean isCompleted() {
+        return completed;
     }
 
-    public void setIsCompleted(boolean isCompleted) {
-        this.isCompleted = isCompleted;
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 
     public Date getCompletedAt() {
@@ -169,12 +189,12 @@ public class Token implements Serializable {
         this.patient = patient;
     }
 
-    public Department getServiceDepartment() {
-        return serviceDepartment;
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setServiceDepartment(Department serviceDepartment) {
-        this.serviceDepartment = serviceDepartment;
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public Department getFromDepartment() {
@@ -193,12 +213,12 @@ public class Token implements Serializable {
         this.toDepartment = toDepartment;
     }
 
-    public Institution getServiceInstitution() {
-        return serviceInstitution;
+    public Institution getInstitution() {
+        return institution;
     }
 
-    public void setServiceInstitution(Institution serviceInstitution) {
-        this.serviceInstitution = serviceInstitution;
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public Institution getFromInstitution() {
@@ -234,11 +254,11 @@ public class Token implements Serializable {
     }
 
     public Date getCreatedAt() {
-        return CreatedAt;
+        return createdAt;
     }
 
     public void setCreatedAt(Date CreatedAt) {
-        this.CreatedAt = CreatedAt;
+        this.createdAt = CreatedAt;
     }
 
     public boolean isRetired() {
@@ -281,4 +301,40 @@ public class Token implements Serializable {
         this.toStaff = toStaff;
     }
     // </editor-fold> 
+
+    public boolean isCalled() {
+        return called;
+    }
+
+    public void setCalled(boolean called) {
+        this.called = called;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public TokenType getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(TokenType tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public Department getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Department counter) {
+        this.counter = counter;
+    }
+    
+    
+    
+    
 }

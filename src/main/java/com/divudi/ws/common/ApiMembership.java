@@ -804,9 +804,6 @@ public class ApiMembership {
         return billNumberGenerator;
     }
 
-    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
-        this.billNumberGenerator = billNumberGenerator;
-    }
 
     public BillBeanController getBillBean() {
         return billBean;

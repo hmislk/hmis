@@ -35,14 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Named
+//@Named
 @Singleton
 public class BillNumberGenerator {
 
