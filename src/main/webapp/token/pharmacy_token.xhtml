@@ -21,12 +21,18 @@
                     <p:selectOneMenu value="#{tokenController.counter}" >
                         <f:selectItem itemLabel="Any" ></f:selectItem>
                         <f:selectItems 
-                            value="#{sessionController.loggableDepartments}" 
+                            value="#{sessionController.loggableSubDepartments}" 
                             var="c" 
                             itemLabel="#{c.name}" 
                             itemValue="#{c}" >
                         </f:selectItems>
                     </p:selectOneMenu>
+                    
+                    <p:commandButton
+                        value="Create Token" 
+                        ajax="false" 
+                        action="#{tokenController}" >
+                    </p:commandButton>
                     
                     
                 </p:panel>

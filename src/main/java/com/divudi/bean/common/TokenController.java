@@ -80,6 +80,30 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_token";
     }
 
+    public String settlePharmacyToken(){
+        if(currentToken==null){
+            JsfUtil.addErrorMessage("No token");
+            return "";
+        }
+        if(currentToken.getTokenType()==null){
+            JsfUtil.addErrorMessage("Wrong Token");
+            return "";
+        }
+        if(getPatient()==null){
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }else{
+            currentToken.setPatient(patient);
+        }
+        if(currentToken.getToDepartment()==null){
+            currentToken.setToDepartment(sessionController.getDepartment());
+        }
+        if(currentToken.getToInstitution()==null){
+            currentToken.setToInstitution(sessionController.getInstitution());
+        }
+        currentToken.setTokenNumber(billNumberGenerator.generateDailyBillNumberForOpd(department));
+    }
+    
     public void createNewToken() {
         if (counter == null) {
             JsfUtil.addErrorMessage("Please select a counter");
