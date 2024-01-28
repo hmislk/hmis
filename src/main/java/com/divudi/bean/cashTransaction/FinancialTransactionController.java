@@ -370,7 +370,7 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
         }
-        return "/cashier/initial_fund_bill_print";
+        return "/cashier/initial_withdrawal_processing_bill_print";
     }
     
     
@@ -552,7 +552,7 @@ public class FinancialTransactionController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
