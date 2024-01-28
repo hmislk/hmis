@@ -1,301 +1,213 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
+import com.divudi.data.TokenType;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Staff;
+import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
  * @author acer
  */
-@Named(value = "tokenController")
+@Named
 @SessionScoped
-public class TokenController implements Serializable {
+public class TokenController implements Serializable, ControllerWithPatient {
 
-    /**
-     * Creates a new instance of TokenController
-     */
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    // </editor-fold> 
+
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
+    // </editor-fold> 
+
     // <editor-fold defaultstate="collapsed" desc="Class variables">
-    private String tokenId;
-    private String tokenNumber;
-    private Date issuedAt;
-    private boolean isCalled;
-    private Date calledAt;
-    private boolean isInProgress;
-    private Date startedAt;
-    private boolean isCompleted;
-    private Date completedAt;
+    private Token currentToken;
+    private Token removeingToken;
+    private List<Token> currentTokens;
+    private Department department;
+    private Institution institution;
+    private Department counter;
     private Patient patient;
-    private Department serviceDepartment;
-    private Department fromDepartment;
-    private Department toDepartment;
-    private Institution serviceInstitution;
-    private Institution fromInstitution;
-    private Institution toInstitution;
-    private Department serviceCounter;
-    private WebUser createdBy;
-    private Date CreatedAt;
-    private boolean retired;
-    private WebUser retiredBy;
-    private Staff staff;
-    private Staff fromStaff;
-    private Staff toStaff;
-// </editor-fold> 
 
+    private boolean patientDetailsEditable;
+
+    // </editor-fold> 
     public TokenController() {
-        
+
     }
 
-    public void createNewToken(){
-        
-    }
-    
-    public void listTokens(){
-        
-    }
-    
-    public void callToken(){
-    
-    }
-    
-    public void startTokenService(){
-    
-    }
-    
-    public void completeTokenService(){
-    
-    }
-    
-    public void reverseCallToken(){
-    
-    }
-    
-    public void recallToken(){
-    
-    }
-    
-    public void restartTokenService(){
-    
-    }
-    
-    public void reverseCompleteTokenService(){
-    
-    }
-    
-    public void fetchNextToken(){
-    
-    }
-    
-    public void fetchPreviousToken(){
-    
-    }
-    
-    public void searchToken(){
-    
+    private void resetClassVariables() {
+        currentToken = null;
+        removeingToken = null;
+        currentTokens = null;
     }
 
-    
+    public String navigateToTokenIndex() {
+        resetClassVariables();
+        return "/token/index?faces-redirect?";
+    }
+
+    public String navigateToCreateNewPharmacyToken() {
+        currentToken = new Token();
+
+        currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
+
+        currentToken.setDepartment(sessionController.getDepartment());
+        currentToken.setFromDepartment(sessionController.getDepartment());
+
+        currentToken.setInstitution(sessionController.getInstitution());
+        currentToken.setFromInstitution(sessionController.getInstitution());
+
+        currentToken.setCounter(counter);
+        currentToken.setToDepartment(counter.getSuperDepartment());
+        currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
+
+        return "/token/pharmacy_token";
+    }
+
+    public void createNewToken() {
+        if (counter == null) {
+            JsfUtil.addErrorMessage("Please select a counter");
+            return;
+        }
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("Token ");
+            return;
+        }
+    }
+
+    public void listTokens() {
+
+    }
+
+    public void callToken() {
+
+    }
+
+    public void startTokenService() {
+
+    }
+
+    public void completeTokenService() {
+
+    }
+
+    public void reverseCallToken() {
+
+    }
+
+    public void recallToken() {
+
+    }
+
+    public void restartTokenService() {
+
+    }
+
+    public void reverseCompleteTokenService() {
+
+    }
+
+    public void fetchNextToken() {
+
+    }
+
+    public void fetchPreviousToken() {
+
+    }
+
+    public void searchToken() {
+
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    public String getTokenId() {
-        return tokenId;
+    // </editor-fold> 
+    public Token getCurrentToken() {
+        return currentToken;
     }
 
-    public void setTokenId(String tokenId) {
-        this.tokenId = tokenId;
+    public void setCurrentToken(Token currentToken) {
+        this.currentToken = currentToken;
     }
 
-    public String getTokenNumber() {
-        return tokenNumber;
+    public Token getRemoveingToken() {
+        return removeingToken;
     }
 
-    public void setTokenNumber(String tokenNumber) {
-        this.tokenNumber = tokenNumber;
+    public void setRemoveingToken(Token removeingToken) {
+        this.removeingToken = removeingToken;
     }
 
-    public Date getIssuedAt() {
-        return issuedAt;
+    public List<Token> getCurrentTokens() {
+        return currentTokens;
     }
 
-    public void setIssuedAt(Date issuedAt) {
-        this.issuedAt = issuedAt;
+    public void setCurrentTokens(List<Token> currentTokens) {
+        this.currentTokens = currentTokens;
     }
 
-    public boolean isIsCalled() {
-        return isCalled;
+    public Department getDepartment() {
+        return department;
     }
 
-    public void setIsCalled(boolean isCalled) {
-        this.isCalled = isCalled;
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
-    public Date getCalledAt() {
-        return calledAt;
+    public Institution getInstitution() {
+        return institution;
     }
 
-    public void setCalledAt(Date calledAt) {
-        this.calledAt = calledAt;
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
-    public boolean isIsInProgress() {
-        return isInProgress;
+    public Department getCounter() {
+        return counter;
     }
 
-    public void setIsInProgress(boolean isInProgress) {
-        this.isInProgress = isInProgress;
+    public void setCounter(Department counter) {
+        this.counter = counter;
     }
 
-    public Date getStartedAt() {
-        return startedAt;
-    }
-
-    public void setStartedAt(Date startedAt) {
-        this.startedAt = startedAt;
-    }
-
-    public boolean isIsCompleted() {
-        return isCompleted;
-    }
-
-    public void setIsCompleted(boolean isCompleted) {
-        this.isCompleted = isCompleted;
-    }
-
-    public Date getCompletedAt() {
-        return completedAt;
-    }
-
-    public void setCompletedAt(Date completedAt) {
-        this.completedAt = completedAt;
-    }
-
+    @Override
     public Patient getPatient() {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
 
-    public Department getServiceDepartment() {
-        return serviceDepartment;
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
     }
 
-    public void setServiceDepartment(Department serviceDepartment) {
-        this.serviceDepartment = serviceDepartment;
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
-    public Department getFromDepartment() {
-        return fromDepartment;
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
-    public void setFromDepartment(Department fromDepartment) {
-        this.fromDepartment = fromDepartment;
-    }
-
-    public Department getToDepartment() {
-        return toDepartment;
-    }
-
-    public void setToDepartment(Department toDepartment) {
-        this.toDepartment = toDepartment;
-    }
-
-    public Institution getServiceInstitution() {
-        return serviceInstitution;
-    }
-
-    public void setServiceInstitution(Institution serviceInstitution) {
-        this.serviceInstitution = serviceInstitution;
-    }
-
-    public Institution getFromInstitution() {
-        return fromInstitution;
-    }
-
-    public void setFromInstitution(Institution fromInstitution) {
-        this.fromInstitution = fromInstitution;
-    }
-
-    public Institution getToInstitution() {
-        return toInstitution;
-    }
-
-    public void setToInstitution(Institution toInstitution) {
-        this.toInstitution = toInstitution;
-    }
-
-    public Department getServiceCounter() {
-        return serviceCounter;
-    }
-
-    public void setServiceCounter(Department serviceCounter) {
-        this.serviceCounter = serviceCounter;
-    }
-
-    public WebUser getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(WebUser createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedAt() {
-        return CreatedAt;
-    }
-
-    public void setCreatedAt(Date CreatedAt) {
-        this.CreatedAt = CreatedAt;
-    }
-
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
-    }
-
-    public WebUser getRetiredBy() {
-        return retiredBy;
-    }
-
-    public void setRetiredBy(WebUser retiredBy) {
-        this.retiredBy = retiredBy;
-    }
-
-    public Staff getStaff() {
-        return staff;
-    }
-
-    public void setStaff(Staff staff) {
-        this.staff = staff;
-    }
-
-    public Staff getFromStaff() {
-        return fromStaff;
-    }
-
-    public void setFromStaff(Staff fromStaff) {
-        this.fromStaff = fromStaff;
-    }
-
-    public Staff getToStaff() {
-        return toStaff;
-    }
-
-    public void setToStaff(Staff toStaff) {
-        this.toStaff = toStaff;
-    }
-    // </editor-fold> 
 }
