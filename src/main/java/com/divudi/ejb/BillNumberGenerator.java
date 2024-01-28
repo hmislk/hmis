@@ -715,6 +715,42 @@ public class BillNumberGenerator {
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
+    
+    
+    
+    public String generateDailyTokenNumber(Department department, Category cat, Staff fromStaff) {
+        String sql = "SELECT count(b) "
+                + " FROM Token b "
+                + " where (b.tokenType=:bTp1 or b.billType=:bTp2) "
+                + " and b.billDate=:bd "
+                + " and (type(b)=:class1 or type(b)=:class2) ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (fromStaff != null) {
+            sql += " and b.fromStaff=:staff ";
+            hm.put("staff", fromStaff);
+        }
+
+        hm.put("bTp1", BillType.OpdBill);
+        hm.put("bTp2", BillType.OpdPreBill);
+        hm.put("bd", new Date());
+        hm.put("class1", BilledBill.class);
+        hm.put("class2", PreBill.class);
+
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+    
 
 // Overloaded methods
     public String generateDailyBillNumberForOpd(Department department) {

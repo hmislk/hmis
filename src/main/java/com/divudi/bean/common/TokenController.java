@@ -102,18 +102,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
             currentToken.setToInstitution(sessionController.getInstitution());
         }
         currentToken.setTokenNumber(billNumberGenerator.generateDailyBillNumberForOpd(department));
+        return "";
     }
     
-    public void createNewToken() {
-        if (counter == null) {
-            JsfUtil.addErrorMessage("Please select a counter");
-            return;
-        }
-        if (currentToken == null) {
-            JsfUtil.addErrorMessage("Token ");
-            return;
-        }
-    }
+    
 
     public void listTokens() {
 
