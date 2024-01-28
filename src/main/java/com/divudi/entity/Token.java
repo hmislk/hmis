@@ -32,9 +32,9 @@ public class Token implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private String tokenId;
     private String tokenNumber;
-    @Enumerated(EnumType.ORDINAL)
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date tokenDate;
+    @Enumerated(EnumType.ORDINAL)
     private TokenType tokenType;
     @ManyToOne
     private Category caterory;
