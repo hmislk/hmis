@@ -810,16 +810,17 @@ public class PatientController implements Serializable {
     }
 
     public String navigateToOpdPatientEditFromId() {
-        if (patientId == null) {
-            JsfUtil.addErrorMessage("No patient selected");
-            return "";
-        }
-        current = getFacade().find(patientId);
+//        if (patientId == null) {
+//            JsfUtil.addErrorMessage("No patient selected");
+//            return "";
+//        }
+//        current = getFacade().find(patientId);
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/patient_edit?faces-redirect=true;";
+                
+        return "/opd/patient?faces-redirect=true;";
     }
 
     public String navigateToOpdBillFromOpdPatient() {
