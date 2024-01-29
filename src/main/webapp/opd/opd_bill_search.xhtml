@@ -191,8 +191,8 @@
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
                                                        value="#{bill.insId}" 
-                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                       action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">

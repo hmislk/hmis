@@ -746,4 +746,32 @@ public class CommonFunctions {
         return yearMonthDay;
     }
 
+    public static Long convertDoubleToLong(Double value) {
+        if (value == null) {
+            return null;
+        }
+
+        return Double.valueOf(value).longValue();
+    }
+
+    public static Long convertStringToLong(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+
+            return null;
+        }
+    }
+
+    public static String convertDoubleToString(Double value) {
+        if (value == null) {
+            return null; // or throw an IllegalArgumentException depending on your requirements
+        }
+
+        // Convert Double to String
+        return String.valueOf(value);
+    }
 }

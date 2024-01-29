@@ -16,6 +16,7 @@ public enum DepartmentType {
     Kitchen,
     Opd,
     Inventry,
+    Counter,
     Inward,
     Other;
     

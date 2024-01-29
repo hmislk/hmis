@@ -105,7 +105,6 @@ public class CategoryController implements Serializable {
     }
     
     public Category findAndCreateCategoryByName(String qry) {
-        System.out.println("qry = " + qry);
         Category c;
         String jpql;
         jpql = "select c from "

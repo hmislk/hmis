@@ -106,6 +106,7 @@
                             <p:column>
                                 <p:commandButton ajax="false" value="Recieve" action="pharmacy_grn" disabled="#{p.cancelled}">
                                     <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                    <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Recieve Wholesale" action="pharmacy_grn_wh" disabled="#{p.cancelled}">
                                     <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>

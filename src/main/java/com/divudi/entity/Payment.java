@@ -74,9 +74,9 @@ public class Payment implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
     private String creditCardRefNo;
-    
+
     double paidValue;
-    
+
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -289,6 +289,38 @@ public class Payment implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public Payment copyAttributes() {
+        Payment newPayment = new Payment();
+
+        // Copying attributes
+        newPayment.setBill(this.bill);
+        newPayment.setWrittenAt(this.writtenAt);
+        newPayment.setToRealizeAt(this.toRealizeAt);
+        newPayment.setPaymentMethod(this.paymentMethod);
+        newPayment.setRealized(this.realized);
+        newPayment.setRealizedAt(this.realizedAt);
+        newPayment.setRealiazer(this.realiazer);
+        newPayment.setRealizeComments(this.realizeComments);
+        newPayment.setBank(this.bank);
+        newPayment.setComments(this.comments);
+        newPayment.setCreater(this.creater);
+        newPayment.setCreatedAt(this.createdAt);
+        newPayment.setRetired(this.retired);
+        newPayment.setRetirer(this.retirer);
+        newPayment.setRetiredAt(this.retiredAt);
+        newPayment.setRetireComments(this.retireComments);
+        newPayment.setChequeRefNo(this.chequeRefNo);
+        newPayment.setChequeDate(this.chequeDate);
+        newPayment.setCreditCardRefNo(this.creditCardRefNo);
+        newPayment.setPaidValue(this.paidValue);
+        newPayment.setInstitution(this.institution);
+        newPayment.setDepartment(this.department);
+
+        // Note: ID is not copied to ensure the uniqueness of each entity
+        // newPayment.setId(this.id); // This line is intentionally commented out
+        return newPayment;
     }
 
 }

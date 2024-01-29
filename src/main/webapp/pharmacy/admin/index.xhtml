@@ -40,7 +40,11 @@
                                                 ajax="false" 
                                                 value="List Units" 
                                                 action="#{measurementUnitController.navigateToListAllMeasurementUnit()}"  ></p:commandButton>
-
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Manage Units" 
+                                                action="#{measurementUnitController.navigateToManageMeasurementUnit()}"  ></p:commandButton>
 
                                         </div>
                                     </p:tab>
@@ -165,15 +169,15 @@
                                     <p:tab title="Institutions">
 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="/pharmacy/pharmacy_manufacturer" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Importers" action="/pharmacy/pharmacy_importer" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="#{pharmacyController.navigateToManufacturers()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Importers" action="#{pharmacyController.navigateToImporters()}" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Supplier" action="/pharmacy/pharmacy_dealer" ></p:commandButton>                                
                                             <p:commandButton class="w-100" ajax="false" value="Item Suppliers" action="/pharmacy/pharmacy_items_distributors" ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Categories">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="/pharmacy/pharmacy_discard_category" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>

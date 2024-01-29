@@ -23,11 +23,11 @@
                     </f:facet>
                     <h:panelGrid columns="2" class="my-2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{commonReport.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
 
@@ -39,7 +39,7 @@
                         </p:selectOneMenu>
                     </h:panelGrid>
                     <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton class="ui-button-warning" icon="fas fa-refresh" id="btnRefresh" ajax="false" value="Refresh"
+                        <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process"
                                          actionListener="#{commonReport.createTableByBillType()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
