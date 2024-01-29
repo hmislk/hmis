@@ -81,6 +81,12 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bill";
     }
     
+    public String navigateToFundDepositBill() {
+        resetClassVariables();
+        prepareToAddNewFundDepositBill();
+        return "/cashier/deposit_funds";
+    }
+    
     public String navigateToReceiveNewFundTransferBill() {
         if(selectedBill==null){
             JsfUtil.addErrorMessage("Please select a bill");
@@ -112,6 +118,12 @@ public class FinancialTransactionController implements Serializable {
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+    
+    private void prepareToAddNewFundDepositBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.DepositFundBill);
         currentBill.setBillClassType(BillClassType.Bill);
     }
     
@@ -219,6 +231,28 @@ public class FinancialTransactionController implements Serializable {
         calculateShiftEndFundBillTotal();
         currentPayment = null;
     }
+    
+    public void addPaymentToWithdrawalFundBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillType() != BillType.WithdrawalFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateWithdrawalFundBillTotal();
+        currentPayment = null;
+    }
 
     public void removePayment() {
         getCurrentBillPayments().remove(removingPayment);
@@ -252,7 +286,16 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-
+    
+    private void calculateWithdrawalFundBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
     public String settleInitialFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -316,7 +359,31 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bill_print";
     }
     
-    
+    public String settleWithdrawalFundBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.WithdrawalFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+
+        billController.save(currentBill);
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            paymentController.save(p);
+        }
+        return "/cashier/initial_withdrawal_processing_bill_print";
+    }
     
     
     // </editor-fold>  
@@ -492,11 +559,67 @@ public class FinancialTransactionController implements Serializable {
 // </editor-fold>      
 // <editor-fold defaultstate="collapsed" desc="DepositFundBill">
     //Lawan
+    public void addPaymentToFundDepositBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillType() != BillType.DepositFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateFundDepositBillTotal();
+        currentPayment = null;
+    }
+    
+    private void calculateFundDepositBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
+    public String settleFundDepositBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.DepositFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+
+        billController.save(currentBill);
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            paymentController.save(p);
+        }
+        return "/cashier/deposit_funds_print";
+    }
 // </editor-fold>  
 // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
     public String navigateToCreateNewWithdrawalProcessingBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/initial_ithdrawal_processing_bill?faces-redirect=false;";
+        return "/cashier/initial_withdrawal_processing_bill?faces-redirect=false;";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {

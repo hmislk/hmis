@@ -908,6 +908,8 @@ public class PharmacyPreSettleController implements Serializable {
 
         this.bill = bill;
     }
+    
+    
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
