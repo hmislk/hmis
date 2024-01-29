@@ -42,6 +42,23 @@ public class CommonFunctions {
         return convertedPhoneNumber;
     }
 
+    public static Date convertDateToDbType(String argDate) {
+        if (argDate == null) {
+            return null; // Handle null input
+        }
+
+        SimpleDateFormat originalFormat = new SimpleDateFormat("MMMM d, yyyy, hh:mm a");
+        SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date date = originalFormat.parse(argDate);
+            String formattedDateString = desiredFormat.format(date); 
+            return desiredFormat.parse(formattedDateString); 
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public static String sanitizeStringForDatabase(String input) {
         if (input == null) {
             return null;
@@ -58,7 +75,7 @@ public class CommonFunctions {
             String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
             Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
             return convertedPhoneNumber;
-        } catch (Exception e)  {
+        } catch (Exception e) {
             return null;
         }
     }

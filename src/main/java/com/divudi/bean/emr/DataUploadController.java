@@ -1795,11 +1795,16 @@ public class DataUploadController implements Serializable {
                     patient.setCode(code);
                 }
             }
+            
+            
             Cell dateOfBirthCell = row.getCell(3);
-            if (dateOfBirthCell != null && DateUtil.isCellDateFormatted(dateOfBirthCell)) {
-                Date date = dateOfBirthCell.getDateCellValue();
-                patient.getPerson().setDob(date);
+            if (dateOfBirthCell != null ) {
+                Date dob=CommonFunctions.convertDateToDbType(dateOfBirthCell.getStringCellValue());
+                System.out.println("dateOfBirthCell :  = " + dob);
+                patient.getPerson().setDob(dob);
             }
+            
+            
 
 //            Cell dateOfBirthCell = row.getCell(3);
 //            if (dateOfBirthCell != null) {
