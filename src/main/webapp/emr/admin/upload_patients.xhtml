@@ -19,19 +19,20 @@
                                 <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
-                                <p:commandButton value="Upload"
-                                                 icon="fa fa-upload"
-                                                 action="#{dataUploadController.uploadPatients}"
-                                                 ajax="false"/>
                                 <p:commandButton 
-                            value="Download Template" 
-                            ajax="false" 
-                            style="float: right;"
-                            class="ui-button-warning"
-                            onclick="PrimeFaces.monitorDownload(start, stop);" 
-                            icon="fa fa-download">
+                                    value="Upload"
+                                    icon="fa fa-upload"
+                                    action="#{dataUploadController.uploadPatients}"
+                                    ajax="false"/>
+                                <p:commandButton 
+                                    value="Download Template" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                    icon="fa fa-download">
                                     <p:fileDownload value="#{dataUploadController.templateForPatientUpload}" />
-                        </p:commandButton>
+                                </p:commandButton>
                             </h:form>
 
                             <table class="table">
