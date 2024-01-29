@@ -16,14 +16,14 @@
 
                     <p:panel header="Deleted Distributors">
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{dealerController.deletedDealorList()}"  ></p:commandButton>
+                        <h:panelGrid columns="6">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{dealerController.deletedDealorList()}"  ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="deleted_dealors"  />
                             </p:commandButton>  
                         </h:panelGrid>
