@@ -33,6 +33,15 @@ import org.joda.time.PeriodType;
  */
 public class CommonFunctions {
 
+    public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        if (phonenumber == null) {
+            return null;
+        }
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
+    }
+
     public static String sanitizeStringForDatabase(String input) {
         if (input == null) {
             return null;

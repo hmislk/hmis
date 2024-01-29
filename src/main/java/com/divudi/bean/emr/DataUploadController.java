@@ -326,15 +326,15 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
-                int i=0;
+                int i = 0;
                 for (Patient p : patients) {
                     personFacade.create(p.getPerson());
                     patientFacade.create(p);
                     i++;
                 }
-        
+
                 JsfUtil.addSuccessMessage("Uploaded Successfully");
-                
+
                 // Persist patients to the database or perform other operations
                 // patientService.save(patients);
             } catch (IOException e) {
@@ -1743,7 +1743,6 @@ public class DataUploadController implements Serializable {
 
 //            patient.setPatientId((long) row.getCell(0).getNumericCellValue());
 //            patient.getPerson().setName(row.getCell(1).getStringCellValue());
-            
             Cell idCell = row.getCell(0);
             if (idCell != null) {
                 String idStr;
@@ -1775,7 +1774,7 @@ public class DataUploadController implements Serializable {
                     patient.getPerson().setName(name);
                 }
             }
-               
+
             Cell codeCell = row.getCell(2);
             if (codeCell != null) {
                 String code = null;
@@ -1794,6 +1793,7 @@ public class DataUploadController implements Serializable {
 
             Cell dateOfBirthCell = row.getCell(3);
             if (dateOfBirthCell != null) {
+                System.out.println("dateOfBirthCell = " + dateOfBirthCell.getCellType());
                 String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
                 LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
                 if (localDateOfBirth != null) {
@@ -1804,14 +1804,18 @@ public class DataUploadController implements Serializable {
             }
 
             Cell addressCell = row.getCell(4);
-            if (addressCell != null) {             
-                patient.getPerson().setAddress(addressCell.getStringCellValue());
+            if (addressCell != null) {
+                String addressCellValue = null;
+                if (addressCell.getCellType() == CellType.STRING) {
+                    addressCellValue = addressCell.getStringCellValue();
+                }
+                patient.getPerson().setAddress(addressCellValue);
             }
 
             Cell phoneCell = row.getCell(5);
             if (phoneCell != null) {
                 String phone = null;
-                
+                System.out.println("phone = " + phoneCell.getCellType());
                 if (phoneCell.getCellType() == CellType.STRING) {
                     phone = phoneCell.getStringCellValue();
                 }
@@ -1825,18 +1829,31 @@ public class DataUploadController implements Serializable {
 
             Cell mobileCell = row.getCell(6);
             if (mobileCell != null) {
+                System.out.println("patientPhoneNumber not null");
+                System.out.println("patientPhoneNumber type : "+mobileCell.getCellType());
                 String mobile = null;
+                
                 if (mobileCell.getCellType() == CellType.STRING) {
+                    System.out.println("mobile str = " + mobileCell.getNumericCellValue());
                     mobile = mobileCell.getStringCellValue();
+                }
+                
+                if (mobileCell.getCellType() == CellType.NUMERIC) {
+                    System.out.println("mobile = " + mobileCell.getNumericCellValue());
+                    double intCellValue=mobileCell.getNumericCellValue();
+                    mobile=String.valueOf(intCellValue);
                 }
 //                else if(mobileCell.getCellType() == CellType.NUMERIC) {
 //                    Double mobileLong;
 //                    mobileLong = mobileCell.getNumericCellValue();
 //                    mobile = CommonFunctions.convertDoubleToString(mobileLong);
 //                }
-                patient.getPerson().setMobile(mobile);
+                System.out.println("patientPhoneNumber " + mobile);
+                Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(mobile);
+                patient.setPatientPhoneNumber(patientPhoneNumber);
+                System.out.println("patientPhoneNumber " + patientPhoneNumber);
             }
-            
+
             Cell emailCell = row.getCell(7);
             if (emailCell != null) {
                 patient.getPerson().setEmail(emailCell.getStringCellValue());
