@@ -14,25 +14,25 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Department Report (#{dataAdministrationController.departmentType})" >
+                    <p:panel header="Department Report #{dataAdministrationController.departmentType}" >
 
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="2" class="my-2">
                             <h:outputText id="lblType" value="Department Type" ></h:outputText>
-                            <p:selectOneMenu value="#{dataAdministrationController.departmentType}">
+                            <p:selectOneMenu class="w-100 mx-4" autoWidth="false" value="#{dataAdministrationController.departmentType}">
                                 <f:selectItem itemLabel="Select Department Type"/>
                                 <f:selectItems value="#{departmentController.departmentType}"/>
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Fill" action="#{dataAdministrationController.fillDepartmentss()}"  ></p:commandButton>
-                            <h:panelGrid columns="2">
-                                <p:commandButton value="Print" ajax="false" action="#" >
+                            </p:selectOneMenu> 
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{dataAdministrationController.fillDepartmentss()}"  ></p:commandButton>
+                                 <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                                 <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                                     <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_#{dataAdministrationController.departmentType}_List"  />
                                 </p:commandButton>
                             </h:panelGrid>
-                        </h:panelGrid>
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder summeryBorder" value="#{dataAdministrationController.departments}" var="i"  >
