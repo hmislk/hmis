@@ -1925,6 +1925,26 @@ public class DataUploadController implements Serializable {
             patient.setCreatedAt(new Date());
             patient.setCreater(sessionController.getLoggedUser());
             patient.setCreatedInstitution(sessionController.getInstitution());
+            
+            
+            Cell AreaCell = row.getCell(16);
+            if (AreaCell != null) {
+                String strArea = AreaCell.getStringCellValue();
+                Area area = areaController.findAreaByName(strArea);
+                if (area==null) {
+                    Area areanew=new Area();
+                    areanew.setCreatedAt(new Date());
+                    areanew.setCreater(sessionController.getLoggedUser());
+                    areanew.setName(strArea);
+                    areaController.save(areanew);
+                    patient.getPerson().setArea(areanew);
+                }
+                patient.getPerson().setArea(area);
+            }
+
+            patient.setCreatedAt(new Date());
+            patient.setCreater(sessionController.getLoggedUser());
+            patient.setCreatedInstitution(sessionController.getInstitution());
 
             patients.add(patient);
 
@@ -2831,7 +2851,7 @@ public class DataUploadController implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation","Area"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
