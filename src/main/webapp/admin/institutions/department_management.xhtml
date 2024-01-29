@@ -109,14 +109,20 @@
                                                 value="#{departmentController.current.institution}" >
                                                 <p:ajax process="acIns" update="cmbSupDept"/>
                                             </p:autoComplete>
-                                            
+
                                             <h:outputText id="lblsupDept" value="Super Depatment" ></h:outputText>
-                                            
-                                            <p:selectOneMenu class="w-100" id="cmbSupDept" value="#{departmentController.current.superDepartment}">
-                                                <f:selectItem itemLabel="Select the Department" />
-                                                <f:selectItems value="#{departmentController.getInstitutionDepatrments(departmentController.current.institution)}"/>                                        
-                                            </p:selectOneMenu>
-                                            
+
+                                            <h:panelGroup id="cmbSupDept">
+                                                <p:selectOneMenu 
+                                                    rendered="#{departmentController.current.institution ne null}"
+                                                    class="w-100"  
+                                                    value="#{departmentController.current.superDepartment}">
+                                                    <f:selectItem itemLabel="Select the Department" />
+                                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(departmentController.current.institution)}"/>                                        
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+
+
                                         </h:panelGrid>
 
                                     </p:tab>
