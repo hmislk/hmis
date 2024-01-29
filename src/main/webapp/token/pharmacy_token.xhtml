@@ -17,22 +17,28 @@
                         editable="true"
                         controller="#{tokenController}"/>
 
-                    <p:outputLabel value="Counter" ></p:outputLabel>
-                    <p:selectOneMenu value="#{tokenController.counter}" >
-                        <f:selectItem itemLabel="Any" ></f:selectItem>
-                        <f:selectItems 
-                            value="#{sessionController.loggableSubDepartments}" 
-                            var="c" 
-                            itemLabel="#{c.name}" 
-                            itemValue="#{c}" >
-                        </f:selectItems>
-                    </p:selectOneMenu>
+                    <f:facet name="footer" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:outputLabel value="Counter" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" value="#{tokenController.counter}" >
+                            <f:selectItem itemLabel="Any" ></f:selectItem>
+                            <f:selectItems 
+                                value="#{sessionController.loggableSubDepartments}" 
+                                var="c" 
+                                itemLabel="#{c.name}" 
+                                itemValue="#{c}" >
+                            </f:selectItems>
+                        </p:selectOneMenu>
                     
-                    <p:commandButton
-                        value="Create Token" 
-                        ajax="false" 
-                        action="#{tokenController.settlePharmacyToken()}" >
-                    </p:commandButton>
+                        <p:commandButton
+                            class="ui-button-success"
+                            icon="fas fa-plus"
+                            value="Create Token" 
+                            ajax="false" 
+                            action="#{tokenController.settlePharmacyToken()}" >
+                        </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
                     
                     
                 </p:panel>

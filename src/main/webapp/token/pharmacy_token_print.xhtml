@@ -12,16 +12,19 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:commandButton 
+                    <h:panelGrid columns="2" class="my-2">
+                        <p:commandButton 
                         value="New Pharmacy Token"
-                        icon=""
+                        icon="fas fa-plus"
+                        class="ui-button-success"
                         ajax="false" 
                         action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
                     </p:commandButton>
 
-                    <p:commandButton ajax="false" value="Print" >
+                    <p:commandButton icon="fas fa-print" class="ui-button-info mx-2" ajax="false" value="Print" >
                         <p:printer target="token" ></p:printer>
                     </p:commandButton>
+                    </h:panelGrid>
 
                     <h:panelGroup id="token" >
                         <prints:pharmacy_token token="#{tokenController.currentToken}"/>
