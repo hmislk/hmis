@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.divudi.entity;
 
 import com.divudi.data.TokenType;
@@ -15,7 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import org.checkerframework.common.value.qual.EnumVal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -38,6 +34,7 @@ public class Token implements Serializable {
     private TokenType tokenType;
     @ManyToOne
     private Category caterory;
+    private Bill bill;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date issuedAt;
     private boolean called;
@@ -82,6 +79,8 @@ public class Token implements Serializable {
     private PatientEncounter patientEncounter;
     @ManyToOne
     private Department counter;
+    @Transient
+    private String idStr;
 // </editor-fold> 
 
     public Long getId() {
@@ -353,6 +352,21 @@ public class Token implements Serializable {
     public void setCaterory(Category caterory) {
         this.caterory = caterory;
     }
+
+    public String getIdStr() {
+        return id + "";
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+  
+    
     
     
     

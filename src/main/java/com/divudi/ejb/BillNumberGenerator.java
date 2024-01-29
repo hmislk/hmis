@@ -8,6 +8,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.TokenType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
@@ -718,10 +719,10 @@ public class BillNumberGenerator {
     
     
     
-    public String generateDailyTokenNumber(Department department, Category cat, Staff fromStaff) {
+    public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
         String sql = "SELECT count(b) "
                 + " FROM Token b "
-                + " where (b.tokenType=:bTp1) "
+                + " where b.tokenType=:tt "
                 + " and b.tokenDate=:bd ";
         HashMap hm = new HashMap();
 
@@ -735,18 +736,19 @@ public class BillNumberGenerator {
             hm.put("cat", cat);
         }
 
-        if (fromStaff != null) {
-            sql += " and b.fromStaff=:staff ";
-            hm.put("staff", fromStaff);
+        if (staff != null) {
+            sql += " and b.staff=:staff ";
+            hm.put("staff", staff);
         }
 
-        hm.put("bTp1", BillType.OpdBill);
-        hm.put("bTp2", BillType.OpdPreBill);
+        hm.put("tt", tokenType);
         hm.put("bd", new Date());
-        hm.put("class1", BilledBill.class);
-        hm.put("class2", PreBill.class);
-
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        if(dd==null){
+             dd=1l;
+        }else{
+            dd++;
+        }
         return (dd != null) ? String.valueOf(dd) : "0";
     }
     

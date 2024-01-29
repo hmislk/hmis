@@ -871,7 +871,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
-                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
                     userIcons = userIconController.fillUserIcons(u, department);
                     setLogged(Boolean.TRUE);
@@ -988,7 +988,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
-            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
@@ -1030,7 +1030,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
-            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
@@ -1081,7 +1081,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
-                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
                     loadDashboards();
@@ -1165,6 +1165,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         dashboards = webUserController.listWebUserDashboards(loggedUser);
 
         userPrivilages = fillUserPrivileges(loggedUser, department, false);
+        loggableSubDepartments = fillLoggableSubDepts(department);
 //        if (userPrivilages == null || userPrivilages.isEmpty()) {
 //            userPrivilages = fillUserPrivileges(loggedUser, null, true);
 //            createUserPrivilegesForAllDepartments(loggedUser, department, loggableDepartments);
@@ -1296,6 +1297,12 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
+    }
+    
+    private List<Department> fillLoggableSubDepts(Department loggableDept) {
+        List<Department> ds = new ArrayList<>();
+        ds.add(loggableDept);
+        return fillLoggableSubDepts(ds);
     }
 
     private List<Department> fillLoggableSubDepts(List<Department> loggableDepts) {
