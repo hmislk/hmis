@@ -41,33 +41,32 @@
                             </f:facet>
                             <div class="row" style="font-size: 16pt; font-weight: 600">
                             <h:panelGrid columns="6" >
-                               
-                           <div class="col-md-12">
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Staff" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel></div>
-                                </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Start Date " ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billDate}" >
+                                    <p:outputLabel value="Staff" ></p:outputLabel>
+                                    <p:outputLabel value=":" class="mx-2"/>
+                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    <p:spacer width="70" />
+                                    <p:spacer width="70" />
+                                    <p:spacer width="70" />
+                                   <p:outputLabel value="Start Date " ></p:outputLabel>
+                                   <p:outputLabel value=":" class="mx-2"/>
+                                   <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billDate}" >
                                         <f:convertDateTime pattern="MM/dd/yyyy" />
-                                        </p:outputLabel></div>
-                                </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Start Time" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billTime}" >
+                                   </p:outputLabel>
+                                    <p:spacer />
+                                    <p:spacer />
+                                    <p:spacer />
+                                    <p:outputLabel value="Start Time" ></p:outputLabel>
+                                    <p:outputLabel value=":" class="mx-2"/>
+                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.billTime}" >
                                          <f:convertDateTime pattern="hh:mm:ss a" />
-                                        </p:outputLabel></div>
-                                </div>
-                               <div class="row">
-                                    <div class="col-md-2"><p:outputLabel value="Total Value" ></p:outputLabel></div>
-                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel></div>
-                                </div>
-                            </div>
+                                        </p:outputLabel>
+                                    <p:spacer width="70" />
+                                    <p:spacer width="70" />
+                                    <p:spacer width="70" />
+                                    <p:outputLabel value="Total Value" ></p:outputLabel>
+                                    <p:outputLabel value=":" class="mx-2"/>
+                                    <p:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.netTotal}" ></p:outputLabel>
+
                          
                             </h:panelGrid>
                                   </div>

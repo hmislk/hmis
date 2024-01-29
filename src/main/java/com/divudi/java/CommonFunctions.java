@@ -41,6 +41,19 @@ public class CommonFunctions {
 
     }
 
+    public static Long convertStringToLongByRemoveSpecialChars(String phonenumber) {
+        if (phonenumber == null || phonenumber.trim().equals("")) {
+            return null;
+        }
+        try {
+            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+            return convertedPhoneNumber;
+        } catch (Exception e)  {
+            return null;
+        }
+    }
+
     public static String removeNonUnicodeChars(String input) {
         if (input == null) {
             return null;

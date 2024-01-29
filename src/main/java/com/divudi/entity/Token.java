@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.divudi.entity;
 
 import com.divudi.data.TokenType;
@@ -15,7 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import org.checkerframework.common.value.qual.EnumVal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -32,18 +28,23 @@ public class Token implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private String tokenId;
     private String tokenNumber;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date tokenDate;
     @Enumerated(EnumType.ORDINAL)
     private TokenType tokenType;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @ManyToOne
+    private Category caterory;
+    private Bill bill;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date issuedAt;
     private boolean called;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date calledAt;
     private boolean inProgress;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date startedAt;
     private boolean completed;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
     @ManyToOne
     private Patient patient;
@@ -63,7 +64,7 @@ public class Token implements Serializable {
     private Department serviceCounter;
     @ManyToOne
     private WebUser createdBy;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
     private boolean retired;
     @ManyToOne
@@ -78,6 +79,8 @@ public class Token implements Serializable {
     private PatientEncounter patientEncounter;
     @ManyToOne
     private Department counter;
+    @Transient
+    private String idStr;
 // </editor-fold> 
 
     public Long getId() {
@@ -333,6 +336,37 @@ public class Token implements Serializable {
     public void setCounter(Department counter) {
         this.counter = counter;
     }
+
+    public Date getTokenDate() {
+        return tokenDate;
+    }
+
+    public void setTokenDate(Date tokenDate) {
+        this.tokenDate = tokenDate;
+    }
+
+    public Category getCaterory() {
+        return caterory;
+    }
+
+    public void setCaterory(Category caterory) {
+        this.caterory = caterory;
+    }
+
+    public String getIdStr() {
+        return id + "";
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+  
+    
     
     
     
