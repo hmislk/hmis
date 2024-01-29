@@ -1795,36 +1795,47 @@ public class DataUploadController implements Serializable {
                     patient.setCode(code);
                 }
             }
-
             Cell dateOfBirthCell = row.getCell(3);
-            if (dateOfBirthCell != null) {
-                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
-                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
-                if (localDateOfBirth != null) {
-                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-                    Date dateOfBirth = Date.from(instant);
-                    patient.getPerson().setDob(dateOfBirth);
-                }
+            if (dateOfBirthCell != null && DateUtil.isCellDateFormatted(dateOfBirthCell)) {
+                Date date = dateOfBirthCell.getDateCellValue();
+                patient.getPerson().setDob(date);
             }
 
+//            Cell dateOfBirthCell = row.getCell(3);
+//            if (dateOfBirthCell != null) {
+//                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
+//                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+//                if (localDateOfBirth != null) {
+//                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+//                    Date dateOfBirth = Date.from(instant);
+//                    patient.getPerson().setDob(dateOfBirth);
+//                }
+//            }
             Cell addressCell = row.getCell(4);
             if (addressCell != null) {
                 patient.getPerson().setAddress(addressCell.getStringCellValue());
             }
-
             String phone = null;
             Long phoneLong = null;
 
             Cell phoneCell = row.getCell(5);
 
             if (phoneCell != null) {
-                if (phoneCell.getCellType() == CellType.STRING) {
-                    phone = phoneCell.getStringCellValue();
-                    phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
-                } else if (phoneCell.getCellType() == CellType.NUMERIC) {
-                    Double tmpDblPhone = phoneCell.getNumericCellValue();
-                    phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
-                    phone = CommonFunctions.convertDoubleToString(tmpDblPhone);
+                switch (phoneCell.getCellType()) {
+                    case STRING:
+                        phone = phoneCell.getStringCellValue();
+                        phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
+                        break;
+                    case NUMERIC:
+                        // Assuming the phone number is a whole number
+                        Double tmpDblPhone = phoneCell.getNumericCellValue();
+                        phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
+                        // Convert the numeric value to String and add leading '0'
+                        phone = "0" + phoneLong.toString();
+                        break;
+                    default:
+                        // Handle other cell types if needed
+                        break;
                 }
                 patient.getPerson().setPhone(phone);
                 patient.setPatientPhoneNumber(phoneLong);
@@ -1835,8 +1846,7 @@ public class DataUploadController implements Serializable {
                 String mobile = null;
                 if (mobileCell.getCellType() == CellType.STRING) {
                     mobile = mobileCell.getStringCellValue();
-                }
-                else if(mobileCell.getCellType() == CellType.NUMERIC) {
+                } else if (mobileCell.getCellType() == CellType.NUMERIC) {
                     Double mobileLong;
                     mobileLong = mobileCell.getNumericCellValue();
                     mobile = CommonFunctions.convertDoubleToString(mobileLong);
