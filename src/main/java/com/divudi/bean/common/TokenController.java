@@ -190,7 +190,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
 
-    public String navigateToSettlePharmacyPreBill(Bill preBill) {
+    public String navigateToSettlePharmacyPreBill() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
             return "";
@@ -203,11 +203,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Bill Type");
             return "";
         }
-        if (currentToken.getBill().getBillType() == BillType.PharmacyPre) {
-            JsfUtil.addErrorMessage("No Bill Type");
+        if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
+            System.out.println("currentToken.getBill().getBillType() = " + currentToken.getBill().getBillType());
+            JsfUtil.addErrorMessage("Wrong Bill Type");
             return "";
         }
-        pharmacyPreSettleController.setPreBill(preBill);
+        pharmacyPreSettleController.setPreBill(currentToken.getBill());
         pharmacyPreSettleController.setBillPreview(false);
         pharmacyPreSettleController.setToken(currentToken);
         return "/pharmacy/pharmacy_bill_pre_settle";
