@@ -1,8 +1,11 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.BillType;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -43,6 +46,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
     SessionController sessionController;
     @Inject
     PharmacySaleController pharmacySaleController;
+    @Inject
+    PharmacyPreSettleController pharmacyPreSettleController;
+    @Inject
+    PatientController patientController;
     // </editor-fold> 
 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -158,19 +165,53 @@ public class TokenController implements Serializable, ControllerWithPatient {
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
-    
-    public String startPharmacyBillForCashier(){
-        if(currentToken==null){
+
+    public Token findPharmacyTokens(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        String j = "Select t "
+                + " from Token t"
+                + " where t.bill=:bill"; // Add conditions to filter out tokens that are in progress or completed
+        Map<String, Object> m = new HashMap<>();
+        m.put("bill", bill);
+        return tokenFacade.findFirstByJpql(j, m);
+    }
+
+    public String navigateToNewPharmacyBillForCashier() {
+        if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-        
+
         pharmacySaleController.resetAll();
         pharmacySaleController.setPatient(currentToken.getPatient());
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
-    
+
+    public String navigateToSettlePharmacyPreBill(Bill preBill) {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (currentToken.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == BillType.PharmacyPre) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+        pharmacyPreSettleController.setPreBill(preBill);
+        pharmacyPreSettleController.setBillPreview(false);
+        pharmacyPreSettleController.setToken(currentToken);
+        return "/pharmacy/pharmacy_bill_pre_settle";
+    }
 
     public String settlePharmacyToken() {
         if (currentToken == null) {
@@ -182,10 +223,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
             return "";
         }
         if (getPatient() == null) {
-            JsfUtil.addErrorMessage("No Patient Selected");
-            return "";
+
+        } else if (getPatient().getPerson().getName() == null) {
+        } else if (getPatient().getPerson().getName().trim().equals("")) {
         } else {
-            currentToken.setPatient(patient);
+            patientController.save(patient);
+            currentToken.setPatient(getPatient());
         }
         if (currentToken.getToDepartment() == null) {
             currentToken.setToDepartment(sessionController.getDepartment());

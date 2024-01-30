@@ -12,6 +12,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TokenController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -45,6 +46,7 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.UserStock;
@@ -107,6 +109,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     CommonController commonController;
+
+    @Inject
+    TokenController tokenController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -730,7 +735,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         getBillItem();
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
+        if (pharmBillItem != null) {
+            Stock stock = pharmBillItem.getStock();
+            if (stock != null) {
+                ItemBatch itemBatch = stock.getItemBatch();
+                if (itemBatch != null) {
+                    // Ensure that each step in the chain is not null before accessing further.
+                    bi.setRate(itemBatch.getRetailsaleRate());
+                } else {
+                    System.out.println("ItemBatch is null");
+                }
+            } else {
+                System.out.println("Stock is null");
+            }
+        } else {
+            System.out.println("PharmaceuticalBillItem is null");
+        }
+
+//        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  ////System.err.println("Discount "+bi.getDiscount());
         bi.setNetRate(bi.getRate() - bi.getDiscount());
@@ -1338,9 +1361,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             tokenFacade.edit(getToken());
         }
 
+        markToken();
+
         resetAll();
 
         billPreview = true;
+    }
+
+    public void markToken() {
+        Token t = tokenController.findPharmacyTokens(getPreBill());
+        if (t == null) {
+            return;
+        }
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
     }
 
     @EJB

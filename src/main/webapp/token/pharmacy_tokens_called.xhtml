@@ -181,6 +181,19 @@
                                     <h:outputText value="#{token.tokenNumber}" />
                                 </div>
                             </div>
+                            <div class="col-4">
+                                <div class="token-circle element">
+                                    <h:panelGroup rendered="#{token.bill ne null}" >
+                                        <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
+                                            <h:outputText value="Pay" />
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
+                                            <h:outputText value="Collect" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                </div>
+                            </div>
                             <div class="col-4 ">
                                 <div class="patientDetails">
                                     <h:outputText value="#{token.patient.person.name}" /><br/>
