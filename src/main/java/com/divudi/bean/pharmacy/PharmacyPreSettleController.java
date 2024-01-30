@@ -135,6 +135,7 @@ public class PharmacyPreSettleController implements Serializable {
     double netTotal;
     double balance;
     Double editingQty;
+    private Token token;
 
     public String toSettleReturn(Bill args) {
         if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.RefundBill) {
@@ -975,5 +976,15 @@ public class PharmacyPreSettleController implements Serializable {
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
     }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
+    }
+    
+    
 
 }
