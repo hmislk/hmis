@@ -145,7 +145,7 @@
 
         <h:form>
 
-            <div class="navBar">
+            <div class="navBar p-2">
                 <div>
                     <div>
                         <h1>Queue Management &amp; Token System</h1> 
@@ -156,10 +156,13 @@
                     </div>
                 </div>
                 <div>
-                    <h3>#{sessionController.institution.name}</h3>
+                    <h4>#{sessionController.institution.name}</h4>
                     <h6>#{sessionController.institution.address}</h6>
-                    <h6>#{sessionController.institution.email}</h6>
-                    <h6>#{sessionController.institution.mobile}</h6>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <h6 class="mx-2">#{sessionController.institution.email} / </h6>
+                        <h6>#{sessionController.institution.phone}</h6>
+                    </div>
+                    <h6>#{sessionController.institution.web}</h6>
                 </div>
             </div>
 
