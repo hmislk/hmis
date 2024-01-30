@@ -1,7 +1,11 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.PharmacyPreSettleController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.BillType;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -40,6 +44,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
+    @Inject
+    PharmacyPreSettleController pharmacyPreSettleController;
+    @Inject
+    PatientController patientController;
     // </editor-fold> 
 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -62,6 +72,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         currentToken = null;
         removeingToken = null;
         currentTokens = null;
+        patient = null;
     }
 
     public String navigateToTokenIndex() {
@@ -70,16 +81,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToCreateNewPharmacyToken() {
+        resetClassVariables();
         currentToken = new Token();
-
         currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
-
         currentToken.setDepartment(sessionController.getDepartment());
         currentToken.setFromDepartment(sessionController.getDepartment());
         currentToken.setPatient(getPatient());
         currentToken.setInstitution(sessionController.getInstitution());
         currentToken.setFromInstitution(sessionController.getInstitution());
-
         if (getCounter() == null) {
             if (sessionController.getLoggableSubDepartments() != null
                     && !sessionController.getLoggableSubDepartments().isEmpty()) {
@@ -93,7 +102,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
             }
         }
-
         return "/token/pharmacy_token";
     }
 
@@ -116,6 +124,96 @@ public class TokenController implements Serializable, ControllerWithPatient {
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
+    public String navigateToManagePharmacyTokensCompleted() {
+        fillPharmacyTokensCompleted();
+        return "/token/pharmacy_tokens_completed";
+    }
+
+    public void fillPharmacyTokensCompleted() {
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.completed=:com";
+        Map m = new HashMap();
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("com", true);
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public String navigateToManagePharmacyTokensCalled() {
+        fillPharmacyTokensCalled();
+        return "/token/pharmacy_tokens_called"; // Adjust the navigation string as per your page structure
+    }
+
+    public void fillPharmacyTokensCalled() {
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        Map<String, Object> m = new HashMap<>();
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public Token findPharmacyTokens(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        String j = "Select t "
+                + " from Token t"
+                + " where t.bill=:bill"; // Add conditions to filter out tokens that are in progress or completed
+        Map<String, Object> m = new HashMap<>();
+        m.put("bill", bill);
+        return tokenFacade.findFirstByJpql(j, m);
+    }
+
+    public String navigateToNewPharmacyBillForCashier() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setToken(currentToken);
+        return pharmacySaleController.navigateToPharmacyBillForCashier();
+    }
+
+    public String navigateToSettlePharmacyPreBill() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (currentToken.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+        if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
+            System.out.println("currentToken.getBill().getBillType() = " + currentToken.getBill().getBillType());
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        pharmacyPreSettleController.setPreBill(currentToken.getBill());
+        pharmacyPreSettleController.setBillPreview(false);
+        pharmacyPreSettleController.setToken(currentToken);
+        return "/pharmacy/pharmacy_bill_pre_settle";
+    }
+
     public String settlePharmacyToken() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No token");
@@ -126,10 +224,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
             return "";
         }
         if (getPatient() == null) {
-            JsfUtil.addErrorMessage("No Patient Selected");
-            return "";
+
+        } else if (getPatient().getPerson().getName() == null) {
+        } else if (getPatient().getPerson().getName().trim().equals("")) {
         } else {
-            currentToken.setPatient(patient);
+            patientController.save(patient);
+            currentToken.setPatient(getPatient());
         }
         if (currentToken.getToDepartment() == null) {
             currentToken.setToDepartment(sessionController.getDepartment());
@@ -139,6 +239,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
         currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
         currentToken.setTokenDate(new Date());
+        currentToken.setTokenAt(new Date());
         tokenFacade.create(currentToken);
         return "/token/pharmacy_token_print";
     }

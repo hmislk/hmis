@@ -16,15 +16,25 @@
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
                                         value="New Pharmacy Token"
-                                        icon=""
                                         ajax="false" 
                                         action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
                                     </p:commandButton>
                                      <p:commandButton 
                                         value="Manage Pharmacy Tokens"
-                                        icon=""
                                         ajax="false" 
                                         action="#{tokenController.navigateToManagePharmacyTokens()}" >
+                                    </p:commandButton>
+                                      <p:commandButton 
+                                        value="Called Pharmacy Tokens"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{tokenController.navigateToManagePharmacyTokensCalled()}" >
+                                    </p:commandButton>
+                                      <p:commandButton 
+                                        value="Completed Pharmacy Tokens"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{tokenController.navigateToManagePharmacyTokensCompleted()}" >
                                     </p:commandButton>
                                    
                                 </div>

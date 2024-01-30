@@ -49,27 +49,6 @@
                                 <h:outputText value="#{token.patient.person.name}" />
                             </p:column>
 
-                            <!-- Patient Name Column -->
-                            <p:column headerText="Bill">
-                                <h:panelGrid rendered="#{token.bill ne null}" >
-                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                        <h:outputText value="PAYMENT DONE" />
-                                        <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" />
-                                        <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.deptId}" />
-                                    </h:panelGroup>
-
-
-                                </h:panelGrid>
-
-                            </p:column>
-
                             <!-- Status Column -->
                             <p:column headerText="Status">
     <!--                            <h:outputText value="#{tokenController.getTokenStatus(token)}" />-->
@@ -83,7 +62,7 @@
                                                    tokenController.getTokenStatus(token) == 'In Progress' ? 'info' :
                                                    tokenController.getTokenStatus(token) == 'Completed' ? 'success' : ''}"
                                        style="font-size: 14px;"/>
-                                #{token.bill.billType}
+
                             </p:column>
 
                             <!-- Actions Column -->
@@ -185,31 +164,6 @@
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                     <p:tooltip value="Reverse Complete Token Service" />
                                 </p:commandButton>
-
-
-
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-pills" 
-                                    rendered="#{token.bill eq null}"
-                                    title="Pharmacy Bill for Cashier" 
-                                    action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>
-
-                                <!-- Pay at Cashier Button -->
-                                <!-- Add icon="fa fa-money" to display a money icon -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-money-bill" 
-                                    rendered="#{token.bill ne null}"
-                                    title="Pay at Cashier" 
-                                    action="#{tokenController.navigateToSettlePharmacyPreBill}">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                </p:commandButton>
-
-
-
                             </p:column>
 
 
