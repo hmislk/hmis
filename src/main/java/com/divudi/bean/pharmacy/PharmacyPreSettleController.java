@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TokenController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -33,6 +34,7 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -76,6 +78,8 @@ public class PharmacyPreSettleController implements Serializable {
     SessionController sessionController;
     @Inject
     SearchController searchController;
+    @Inject
+    TokenController tokenController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -371,9 +375,7 @@ public class PharmacyPreSettleController implements Serializable {
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
-
         getBillFacade().edit(getPreBill());
-
     }
 
     private void saveSaleBillItems() {
@@ -538,10 +540,24 @@ public class PharmacyPreSettleController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
-
+        markToken();
         makeNull();
         //    billPreview = true;
 
+    }
+    
+    
+
+    public void markToken() {
+        Token t = tokenController.findPharmacyTokens(getPreBill());
+        if (t == null) {
+            return;
+        }
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
@@ -908,8 +924,6 @@ public class PharmacyPreSettleController implements Serializable {
 
         this.bill = bill;
     }
-    
-    
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {

@@ -12,6 +12,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TokenController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -107,6 +108,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     CommonController commonController;
+    
+    @Inject
+    TokenController tokenController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -1338,9 +1342,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             tokenFacade.edit(getToken());
         }
 
+        markToken();
+        
         resetAll();
 
         billPreview = true;
+    }
+    
+    public void markToken() {
+        Token t = tokenController.findPharmacyTokens(getPreBill());
+        if (t == null) {
+            return;
+        }
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
     }
 
     @EJB
