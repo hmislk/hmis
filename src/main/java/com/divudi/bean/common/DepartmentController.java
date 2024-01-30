@@ -190,6 +190,18 @@ public class DepartmentController implements Serializable {
         }
     }
 
+    public List<Department> fillAllItems() {
+        List<Department> newItems;
+        String sql = "Select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        newItems = getFacade().findByJpql(sql, m);
+        return newItems;
+    }
+
     public List<Department> getInstitutionDepatrments() {
         if (getInstitution() == null) {
             String sql = "Select d From Department d "

@@ -1056,6 +1056,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(passord, u.getWebUserPassword())) {
                     departments = listLoggableDepts(u);
+                    if (webUserController.testRun) {
+                        departments = departmentController.fillAllItems();
+                    }
                     if (departments.isEmpty()) {
                         UtilityController.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
                         return false;
@@ -1081,8 +1084,14 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
+                    if (webUserController.testRun) {
+                        loggableDepartments = departmentController.fillAllItems();
+                    }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
+                    if (webUserController.testRun) {
+                        loggableInstitutions = institutionController.fillAllItems();
+                    }
 
                     loadDashboards();
                     setLogged(true);
@@ -1298,7 +1307,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
     }
-    
+
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();
         ds.add(loggableDept);
@@ -1961,8 +1970,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return loggableDepartments;
     }
-    
-    
 
     public List<Institution> getLoggableInstitutions() {
         if (loggableInstitutions == null) {
