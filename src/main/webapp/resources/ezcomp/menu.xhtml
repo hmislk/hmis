@@ -342,6 +342,12 @@
                     <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Summeries"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                 </p:submenu>
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{tokenController.navigateToTokenIndex()}" 
+                        value="Token Management" 
+                        icon="fa fa-file-medical" 
+                        rendered="true" />
                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
 
                         <p:menuitem  
@@ -350,8 +356,12 @@
                             value="Sale" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem> 
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-                                     value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                        <p:menuitem  
+                            ajax="false" 
+                            action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"  
+                            value="Sale for cashier" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
                         <p:menuitem  ajax="false" 
                                      action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"  
                                      value="Sale without Stocks" 

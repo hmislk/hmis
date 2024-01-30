@@ -30,6 +30,8 @@ public class Token implements Serializable {
     private String tokenNumber;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date tokenDate;
+     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date tokenAt;
     @Enumerated(EnumType.ORDINAL)
     private TokenType tokenType;
     @ManyToOne
@@ -308,6 +310,8 @@ public class Token implements Serializable {
     public boolean isCalled() {
         return called;
     }
+    
+    
 
     public void setCalled(boolean called) {
         this.called = called;
@@ -363,6 +367,14 @@ public class Token implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Date getTokenAt() {
+        return tokenAt;
+    }
+
+    public void setTokenAt(Date tokenAt) {
+        this.tokenAt = tokenAt;
     }
 
   
