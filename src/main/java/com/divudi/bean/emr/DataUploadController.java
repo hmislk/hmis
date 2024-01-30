@@ -326,15 +326,15 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
-                int i=0;
+                int i = 0;
                 for (Patient p : patients) {
                     personFacade.create(p.getPerson());
                     patientFacade.create(p);
                     i++;
                 }
-        
+
                 JsfUtil.addSuccessMessage("Uploaded Successfully");
-                
+
                 // Persist patients to the database or perform other operations
                 // patientService.save(patients);
             } catch (IOException e) {
@@ -1743,7 +1743,6 @@ public class DataUploadController implements Serializable {
 
 //            patient.setPatientId((long) row.getCell(0).getNumericCellValue());
 //            patient.getPerson().setName(row.getCell(1).getStringCellValue());
-            
             Cell idCell = row.getCell(0);
             if (idCell != null) {
                 String idStr;
@@ -1764,9 +1763,10 @@ public class DataUploadController implements Serializable {
                 }
             }
 
+            String name = null;
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
-                String name = null;
+
                 if (nameCell.getCellType() == CellType.STRING) {
                     name = nameCell.getStringCellValue();
 
@@ -1775,7 +1775,11 @@ public class DataUploadController implements Serializable {
                     patient.getPerson().setName(name);
                 }
             }
-               
+
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+
             Cell codeCell = row.getCell(2);
             if (codeCell != null) {
                 String code = null;
@@ -1794,33 +1798,48 @@ public class DataUploadController implements Serializable {
 
             Cell dateOfBirthCell = row.getCell(3);
             if (dateOfBirthCell != null) {
-                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
-                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
-                if (localDateOfBirth != null) {
-                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-                    Date dateOfBirth = Date.from(instant);
-                    patient.getPerson().setDob(dateOfBirth);
-                }
+                Date dob = CommonFunctions.convertDateToDbType(dateOfBirthCell.getStringCellValue());
+                patient.getPerson().setDob(dob);
             }
 
+//            Cell dateOfBirthCell = row.getCell(3);
+//            if (dateOfBirthCell != null) {
+//                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
+//                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+//                if (localDateOfBirth != null) {
+//                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+//                    Date dateOfBirth = Date.from(instant);
+//                    patient.getPerson().setDob(dateOfBirth);
+//                }
+//            }
             Cell addressCell = row.getCell(4);
-            if (addressCell != null) {             
+            if (addressCell != null) {
                 patient.getPerson().setAddress(addressCell.getStringCellValue());
             }
+            String phone = null;
+            Long phoneLong = null;
 
             Cell phoneCell = row.getCell(5);
+
             if (phoneCell != null) {
-                String phone = null;
-                
-                if (phoneCell.getCellType() == CellType.STRING) {
-                    phone = phoneCell.getStringCellValue();
+                switch (phoneCell.getCellType()) {
+                    case STRING:
+                        phone = phoneCell.getStringCellValue();
+                        phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
+                        break;
+                    case NUMERIC:
+                        // Assuming the phone number is a whole number
+                        Double tmpDblPhone = phoneCell.getNumericCellValue();
+                        phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
+                        // Convert the numeric value to String and add leading '0'
+                        phone = "0" + phoneLong.toString();
+                        break;
+                    default:
+                        // Handle other cell types if needed
+                        break;
                 }
-//                else if(phoneCell.getCellType() == CellType.NUMERIC) {
-//                    Double phnoneLong;
-//                    phnoneLong = phoneCell.getNumericCellValue();
-//                    phone = CommonFunctions.convertDoubleToString(phnoneLong);
-//                }
                 patient.getPerson().setPhone(phone);
+                patient.setPatientPhoneNumber(phoneLong);
             }
 
             Cell mobileCell = row.getCell(6);
@@ -1828,15 +1847,15 @@ public class DataUploadController implements Serializable {
                 String mobile = null;
                 if (mobileCell.getCellType() == CellType.STRING) {
                     mobile = mobileCell.getStringCellValue();
+                } else if (mobileCell.getCellType() == CellType.NUMERIC) {
+                    Double mobileLong;
+                    mobileLong = mobileCell.getNumericCellValue();
+                    Long mobileNumber = CommonFunctions.convertDoubleToLong(mobileLong);
+                    mobile = "0"+String.valueOf(mobileNumber);
                 }
-//                else if(mobileCell.getCellType() == CellType.NUMERIC) {
-//                    Double mobileLong;
-//                    mobileLong = mobileCell.getNumericCellValue();
-//                    mobile = CommonFunctions.convertDoubleToString(mobileLong);
-//                }
                 patient.getPerson().setMobile(mobile);
             }
-            
+
             Cell emailCell = row.getCell(7);
             if (emailCell != null) {
                 patient.getPerson().setEmail(emailCell.getStringCellValue());
@@ -1901,6 +1920,26 @@ public class DataUploadController implements Serializable {
                 String strOccupation = occupationCell.getStringCellValue();
                 Item occupation = itemController.findItemByName(strOccupation, "occupations");
                 patient.getPerson().setOccupation(occupation);
+            }
+
+            patient.setCreatedAt(new Date());
+            patient.setCreater(sessionController.getLoggedUser());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            
+            
+            Cell AreaCell = row.getCell(16);
+            if (AreaCell != null) {
+                String strArea = AreaCell.getStringCellValue();
+                Area area = areaController.findAreaByName(strArea);
+                if (area==null) {
+                    Area areanew=new Area();
+                    areanew.setCreatedAt(new Date());
+                    areanew.setCreater(sessionController.getLoggedUser());
+                    areanew.setName(strArea);
+                    areaController.save(areanew);
+                    patient.getPerson().setArea(areanew);
+                }
+                patient.getPerson().setArea(area);
             }
 
             patient.setCreatedAt(new Date());
@@ -2812,7 +2851,7 @@ public class DataUploadController implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation","Area"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
