@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
@@ -158,19 +159,30 @@ public class TokenController implements Serializable, ControllerWithPatient {
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
-    
-    public String startPharmacyBillForCashier(){
-        if(currentToken==null){
+
+    public Token findPharmacyTokens(Bill bill) {
+        if(bill==null){
+            return null;
+        }
+        String j = "Select t "
+                + " from Token t"
+                + " where t.bill=:bill"; // Add conditions to filter out tokens that are in progress or completed
+        Map<String, Object> m = new HashMap<>();
+        m.put("bill", bill);
+        return tokenFacade.findFirstByJpql(j, m);
+    }
+
+    public String startPharmacyBillForCashier() {
+        if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
-        
+
         pharmacySaleController.resetAll();
         pharmacySaleController.setPatient(currentToken.getPatient());
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
-    
 
     public String settlePharmacyToken() {
         if (currentToken == null) {

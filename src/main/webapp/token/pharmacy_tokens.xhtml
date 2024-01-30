@@ -52,13 +52,13 @@
                             <!-- Patient Name Column -->
                             <p:column headerText="Bill">
                                 <h:panelGrid rendered="#{token.bill ne null}" >
-                                    <h:panelGroup rendered="#{token.bill.forwardReferenceBill ne null}" >
+                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
                                         <h:outputText value="PAYMENT DONE" />
                                         <br/>
                                         <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.forwardReferenceBill.deptId}" />
+                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{token.bill.forwardReferenceBill eq null}" >
+                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
                                         <h:outputText value="AWAITING PAYMENT" />
                                         <br/>
                                         <h:outputText value="Bill Number : " />
