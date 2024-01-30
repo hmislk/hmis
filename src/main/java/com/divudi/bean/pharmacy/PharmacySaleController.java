@@ -42,6 +42,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
+import com.divudi.entity.Token;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -59,6 +60,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.facade.UserStockContainerFacade;
 import com.divudi.facade.UserStockFacade;
 import java.io.Serializable;
@@ -136,6 +138,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    TokenFacade tokenFacade;
 /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -155,6 +159,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     int activeIndex;
 
+    private Token token;
     private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabPt";
@@ -187,6 +192,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
         return "/pharmacy/pharmacy_sale_without_stock";
+    }
+
+    public String navigateToPharmacyBillForCashier() {
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -1324,6 +1333,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
+        if (getToken() != null) {
+            getToken().setBill(getPreBill());
+            tokenFacade.edit(getToken());
+        }
+
         resetAll();
 
         billPreview = true;
@@ -1867,6 +1881,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patientSearchTab = 0;
         errorMessage = "";
         comment = null;
+        token = null;
     }
 
     private void clearBillItem() {
@@ -1952,7 +1967,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
         }
         return patient;
     }
@@ -2269,6 +2284,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
 
 }
