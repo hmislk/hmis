@@ -145,7 +145,7 @@
 
         <h:form>
 
-            <div class="navBar">
+            <div class="navBar p-2">
                 <div>
                     <div>
                         <h1>Queue Management &amp; Token System</h1> 
@@ -155,20 +155,24 @@
                         </div>
                     </div>
                 </div>
-                <div>
-                    <h3>#{sessionController.institution.name}</h3>
+                <div class="p-2">
+                    <h5>#{sessionController.institution.name}</h5>
                     <h6>#{sessionController.institution.address}</h6>
-                    <h6>#{sessionController.institution.email}</h6>
-                    <h6>#{sessionController.institution.mobile}</h6>
+                    <div class="d-flex align-items-center justify-content-center">
+                        <h6 class="mx-2">#{sessionController.institution.email} / </h6>
+                        <h6>#{sessionController.institution.phone}</h6>
+                    </div>
+                    <h6>#{sessionController.institution.web}</h6>
                 </div>
             </div>
 
 
-            <div class="container-fluid" style="margin-top: 15%">
+            <div class="container-fluid" style="margin-top: 180px">
+
                 <ui:repeat var="token" value="#{tokenController.currentTokens}" >
                     <div class="card shadow mb-2">
                         <div class="row d-flex align-items-center p-5" >
-                            <div class="col-4">
+                            <div class="col-3">
                                 <div>
                                     <div class="counter-name">
                                         <h:outputText value="#{token.counter.name}" />
@@ -176,25 +180,25 @@
                                     <h4>#{token.department.name}</h4>
                                 </div>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <div class="token-circle element">
                                     <h:outputText value="#{token.tokenNumber}" />
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="token-circle element">
+                            <div class="col-3">
+                                <div class="">
                                     <h:panelGroup rendered="#{token.bill ne null}" >
                                         <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                            <h:outputText value="Pay" />
+                                            <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                            <h:outputText value="Collect" />
+                                            <img width="250px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
 
                                 </div>
                             </div>
-                            <div class="col-4 ">
+                            <div class="col-3">
                                 <div class="patientDetails">
                                     <h:outputText value="#{token.patient.person.name}" /><br/>
                                 </div>
