@@ -544,7 +544,6 @@ public class PharmacyPreSettleController implements Serializable {
         markToken();
         makeNull();
         billPreview = true;
-
     }
 
     public void markToken() {
