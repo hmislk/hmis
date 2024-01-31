@@ -177,7 +177,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("bill", bill);
         return tokenFacade.findFirstByJpql(j, m);
     }
-    
+
     public Token findToken(Long id) {
         System.out.println("findToken");
         System.out.println("id = " + id);
@@ -186,12 +186,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
         String j = "Select t "
                 + " from Token t "
-                + " where t.id=:id"; 
+                + " where t.id=:id";
         Map<String, Object> m = new HashMap<>();
         m.put("id", id);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
-        Token st= tokenFacade.findFirstByJpql(j, m);
+        Token st = tokenFacade.findFirstByJpql(j, m);
         System.out.println("st = " + st);
         return st;
     }
@@ -303,67 +303,25 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public void startTokenService() {
+    public void toggleCalledStatus() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No token selected");
             return;
         }
-        currentToken.setInProgress(true);
-        currentToken.setStartedAt(new Date());
+        currentToken.setCalled(!currentToken.isCalled());
+        currentToken.setCalledAt(currentToken.isCalled() ? new Date() : null);
         tokenFacade.edit(currentToken);
     }
 
-    public void completeTokenService() {
+    public void toggleCompletedStatus() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No token selected");
             return;
         }
-        if (!currentToken.isCalled() || !currentToken.isInProgress()) {
-            JsfUtil.addErrorMessage("Token needs to be called and in progress to complete");
-            return;
-        }
-        currentToken.setCompleted(true);
-        currentToken.setCompletedAt(new Date());
-        tokenFacade.edit(currentToken);
-    }
-
-    public void reverseCallToken() {
-        if (currentToken == null) {
-            JsfUtil.addErrorMessage("No token selected");
-            return;
-        }
-        currentToken.setCalled(false);
-        currentToken.setCalledAt(null);
-        tokenFacade.edit(currentToken);
-    }
-
-    public void recallToken() {
-        if (currentToken == null) {
-            JsfUtil.addErrorMessage("No token selected");
-            return;
-        }
-        // Set called to true, but keep the original call time
-        currentToken.setCalled(true);
-        tokenFacade.edit(currentToken);
-    }
-
-    public void restartTokenService() {
-        if (currentToken == null) {
-            JsfUtil.addErrorMessage("No token selected");
-            return;
-        }
-        currentToken.setInProgress(false);
-        currentToken.setStartedAt(null);
-        tokenFacade.edit(currentToken);
-    }
-
-    public void reverseCompleteTokenService() {
-        if (currentToken == null) {
-            JsfUtil.addErrorMessage("No token selected");
-            return;
-        }
-        currentToken.setCompleted(false);
-        currentToken.setCompletedAt(null);
+        currentToken.setCompleted(!currentToken.isCompleted());
+        Date now = new Date();
+        currentToken.setCompletedAt(currentToken.isCompleted() ? now : null);
+        currentToken.setStartedAt(currentToken.isCompleted() ? (currentToken.getStartedAt() == null ? now : currentToken.getStartedAt()) : null);
         tokenFacade.edit(currentToken);
     }
 
