@@ -1369,10 +1369,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void markToken() {
-        Token t = tokenController.findPharmacyTokens(getPreBill());
+        Token t = getToken();
         if (t == null) {
             return;
         }
+        t.setBill(getPreBill());
         t.setCalled(true);
         t.setCalledAt(new Date());
         t.setInProgress(false);
