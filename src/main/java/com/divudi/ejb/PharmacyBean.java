@@ -52,7 +52,7 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1313,14 +1313,14 @@ public class PharmacyBean {
     @EJB
     VmpFacade vmpFacade;
     @EJB
-    VtmsVmpsFacade vtmsVmpsFacade;
+    VirtualProductIngredientFacade virtualProductIngredientFacade;
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
-        return vtmsVmpsFacade;
+    public VirtualProductIngredientFacade getVirtualProductIngredientFacade() {
+        return virtualProductIngredientFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmsVmpsFacade) {
-        this.vtmsVmpsFacade = vtmsVmpsFacade;
+    public void setVirtualProductIngredientFacade(VirtualProductIngredientFacade virtualProductIngredientFacade) {
+        this.virtualProductIngredientFacade = virtualProductIngredientFacade;
     }
 
     public VmpFacade getVmpFacade() {
@@ -1413,8 +1413,8 @@ public class PharmacyBean {
         m.put("s", strength);
         m.put("su", strengthUnit);
         m.put("c", cat);
-        sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
+        sql = "select v from VirtualProductIngredient v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
+        VirtualProductIngredient v = getVirtualProductIngredientFacade().findFirstByJpql(sql, m);
         ////System.out.println("m = " + m);
         Vmp vmp;
         if (v == null) {
@@ -1432,7 +1432,7 @@ public class PharmacyBean {
             v.setVtm(vtm);
             v.setVmp(vmp);
             v.setPharmaceuticalItemCategory(cat);
-            getVtmsVmpsFacade().create(v);
+            getVirtualProductIngredientFacade().create(v);
         }
         v.getVmp().setRetired(false);
         return v.getVmp();
