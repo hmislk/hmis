@@ -824,7 +824,7 @@ public class ReorderController implements Serializable {
             sessionController.setDepartment(department);
             return "";
         }
-        purchaseOrderRequestController.recreate();
+        purchaseOrderRequestController.resetBillValues();
         purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstitution());
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
