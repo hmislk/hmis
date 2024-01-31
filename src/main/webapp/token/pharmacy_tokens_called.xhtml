@@ -148,7 +148,7 @@
             <div class="navBar p-2">
                 <div>
                     <div>
-                        <h1>Queue Management &amp; Token System</h1> 
+                        <h1 onclick="toggleFullScreen(); return false;">Queue Management &amp; Token System</h1> 
                         <div style="font-size: 15pt; font-weight: bold;position: fixed;z-index: 0000">
                             <span id="date"></span>
                             <span id="time"></span>
@@ -239,6 +239,35 @@
                 document.getElementById('time').style.display = 'none';
             });
         </script>
+        <script type="text/javascript">
+    //<![CDATA[
+        function toggleFullScreen() {
+            var elem = document.documentElement;
+            if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+    //]]>
+    </script>
 
     </h:body>
 </html>
