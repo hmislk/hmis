@@ -91,11 +91,16 @@ public class PurchaseOrderRequestController implements Serializable {
         return pharmacyBillBean;
     }
 
+    public String navigateToCreateNewPurchaseOrder(){
+        resetBillValues();
+        return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
+    }
+    
     public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
         this.pharmacyBillBean = pharmacyBillBean;
     }
 
-    public void recreate() {
+    public void resetBillValues() {
         currentBill = null;
         currentBillItem = null;
         billItems = null;
@@ -159,12 +164,44 @@ public class PurchaseOrderRequestController implements Serializable {
         getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
+        getCurrentBill().setEditedAt(null);
+        getCurrentBill().setEditor(null);
+        
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
+        }else{
+            getBillFacade().edit(getCurrentBill());
         }
 
     }
 
+    
+    public void finalizeBill() {
+
+        getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
+        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
+
+        getCurrentBill().setCreater(getSessionController().getLoggedUser());
+        getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
+
+        getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+
+        getCurrentBill().setEditedAt(new Date());
+        getCurrentBill().setEditor(sessionController.getLoggedUser());
+        
+        if (getCurrentBill().getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        }else{
+            getBillFacade().edit(getCurrentBill());
+        }
+
+    }
+
+    
     public void generateBillComponent() {
         // int serialNo = 0;
         setBillItems(new ArrayList<BillItem>());
@@ -202,6 +239,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
+            }else{
+                getBillItemFacade().edit(b);
             }
 
             tmpPh.setBillItem(b);
@@ -251,12 +290,40 @@ public class PurchaseOrderRequestController implements Serializable {
 
         UtilityController.addSuccessMessage("Request Succesfully Created");
 
-        recreate();
+        resetBillValues();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
     }
 
+    
+       public void requestFinalize() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (getCurrentBill().getPaymentMethod() == null) {
+            UtilityController.addErrorMessage("Please Select Paymntmethod");
+            return;
+        }
+//
+//        if (checkItemPrice()) {
+//            UtilityController.addErrorMessage("Please enter purchase price for all");
+//            return;
+//        }
+
+        finalizeBill();
+        saveBillComponent();
+
+        UtilityController.addSuccessMessage("Request Succesfully Created");
+
+        resetBillValues();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
+
+    }
+
+    
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
