@@ -89,26 +89,26 @@
                             <p:column headerText="Actions" styleClass="text-center">
                                 <!-- Toggle Called Status Button -->
                                 <p:commandButton ajax="false"
-                                                 icon="#{tokenController.currentToken.called ? 'fa fa-times' : 'fa fa-phone'}"
-                                                 class="#{tokenController.currentToken.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                 class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
                                                  update="@form"
-                                                 title="#{tokenController.currentToken.called ? 'Cancel Call' : 'Call Token'}"
+                                                 title="#{token.called ? 'Cancel Call' : 'Call Token'}"
                                                  action="#{tokenController.toggleCalledStatus}"
                                                  process="@this">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="#{tokenController.currentToken.called ? 'Cancel Call' : 'Call Token'}" />
+                                    <p:tooltip value="#{token.called ? 'Cancel Call' : 'Call Token'}" />
                                 </p:commandButton>
 
                                 <!-- Toggle Completed Status Button -->
                                 <p:commandButton ajax="false"
-                                                 icon="#{tokenController.currentToken.completed ? 'fa fa-undo' : 'fa fa-check'}"
-                                                 class="#{tokenController.currentToken.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 icon="#{token.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
                                                  update="@form"
-                                                 title="#{tokenController.currentToken.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
                                                  action="#{tokenController.toggleCompletedStatus}"
                                                  process="@this">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="#{tokenController.currentToken.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
+                                    <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
                                 </p:commandButton>
 
 
