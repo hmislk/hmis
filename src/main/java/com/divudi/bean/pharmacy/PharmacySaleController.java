@@ -1362,9 +1362,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         markToken();
-
         resetAll();
-
         billPreview = true;
     }
 
