@@ -87,103 +87,30 @@
 
                             <!-- Actions Column -->
                             <p:column headerText="Actions" styleClass="text-center">
-                                <!-- Call Token Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-phone" 
-                                    class="ui-button-success" 
-                                    update=":#{p:resolveFirstComponentWithId('panel',view).clientId}" 
-                                    title="Call Token" 
-                                    rendered="#{not token.called}" 
-                                    action="#{tokenController.callToken}"
-                                    process="@this">
+                                <!-- Toggle Called Status Button -->
+                                <p:commandButton ajax="false"
+                                                 icon="#{tokenController.currentToken.called ? 'fa fa-times' : 'fa fa-phone'}"
+                                                 class="#{tokenController.currentToken.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{tokenController.currentToken.called ? 'Cancel Call' : 'Call Token'}"
+                                                 action="#{tokenController.toggleCalledStatus}"
+                                                 process="@this">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Call Token" />
+                                    <p:tooltip value="#{tokenController.currentToken.called ? 'Cancel Call' : 'Call Token'}" />
                                 </p:commandButton>
 
-                                <!-- Start Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    id="btnStart"
-                                    icon="fa fa-play" 
-                                    class="ui-button-success mx-2" 
-                                    update="@form" 
-                                    title="Start Service" 
-                                    rendered="#{token.called and not token.inProgress}" 
-                                    action="#{tokenController.startTokenService}"
-                                    process="@this">
+                                <!-- Toggle Completed Status Button -->
+                                <p:commandButton ajax="false"
+                                                 icon="#{tokenController.currentToken.completed ? 'fa fa-undo' : 'fa fa-check'}"
+                                                 class="#{tokenController.currentToken.completed ? 'ui-button-danger' : 'ui-button-success'}"
+                                                 update="@form"
+                                                 title="#{tokenController.currentToken.completed ? 'Reverse Complete Service' : 'Complete Service'}"
+                                                 action="#{tokenController.toggleCompletedStatus}"
+                                                 process="@this">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="#{tokenController.currentToken.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
                                 </p:commandButton>
 
-                                <!-- Complete Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-check" 
-                                    class="ui-button-success" 
-                                    update="@form" 
-                                    title="Complete Service" 
-                                    rendered="#{token.inProgress}" 
-                                    action="#{tokenController.completeTokenService}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Complete Token Service" />
-                                </p:commandButton>
-
-                                <!-- Reverse Call Token Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-undo" 
-                                    class="ui-button-warning" 
-                                    update="@form" 
-                                    title="Reverse Call" 
-                                    rendered="#{token.called and not token.inProgress}" 
-                                    action="#{tokenController.reverseCallToken}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Reverse Call Token" />
-                                </p:commandButton>
-
-                                <!-- Recall Token Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-refresh" 
-                                    class="ui-button-info mx-2" 
-                                    update="@form" 
-                                    title="Recall Token" 
-                                    rendered="#{token.called}" 
-                                    action="#{tokenController.recallToken}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Recall Token" />
-                                </p:commandButton>
-
-                                <!-- Restart Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-repeat" 
-                                    class="ui-button-warning" 
-                                    update="@form" 
-                                    title="Restart Service" 
-                                    rendered="#{token.inProgress}" 
-                                    action="#{tokenController.restartTokenService}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Restart Token Service" />
-                                </p:commandButton>
-
-                                <!-- Reverse Complete Token Service Button -->
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-undo" 
-                                    class="ui-button-danger mx-2" 
-                                    update="@form" 
-                                    title="Reverse Complete Service" 
-                                    rendered="#{token.completed}" 
-                                    action="#{tokenController.reverseCompleteTokenService}"
-                                    process="@this">
-                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
-                                    <p:tooltip value="Reverse Complete Token Service" />
-                                </p:commandButton>
 
 
 

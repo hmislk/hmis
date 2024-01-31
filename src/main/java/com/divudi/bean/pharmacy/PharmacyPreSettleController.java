@@ -543,11 +543,9 @@ public class PharmacyPreSettleController implements Serializable {
         setBill(getBillFacade().find(getSaleBill().getId()));
         markToken();
         makeNull();
-        //    billPreview = true;
+        billPreview = true;
 
     }
-    
-    
 
     public void markToken() {
         Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -984,7 +982,5 @@ public class PharmacyPreSettleController implements Serializable {
     public void setToken(Token token) {
         this.token = token;
     }
-    
-    
 
 }
