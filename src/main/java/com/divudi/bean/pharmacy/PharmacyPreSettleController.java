@@ -541,13 +541,10 @@ public class PharmacyPreSettleController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
-        markToken();
-        makeNull();
-        //    billPreview = true;
-
+//        markToken();
+//        makeNull();
+        billPreview = true;
     }
-    
-    
 
     public void markToken() {
         Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -984,7 +981,5 @@ public class PharmacyPreSettleController implements Serializable {
     public void setToken(Token token) {
         this.token = token;
     }
-    
-    
 
 }
