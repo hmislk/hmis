@@ -28,7 +28,7 @@ import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -80,7 +80,7 @@ public class AmpController implements Serializable {
     @EJB
     private VmpFacade vmpFacade;
     @EJB
-    private VtmsVmpsFacade vivFacade;
+    private VirtualProductIngredientFacade vivFacade;
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
@@ -925,11 +925,11 @@ public class AmpController implements Serializable {
         this.vmpFacade = vmpFacade;
     }
 
-    public VtmsVmpsFacade getVivFacade() {
+    public VirtualProductIngredientFacade getVivFacade() {
         return vivFacade;
     }
 
-    public void setVivFacade(VtmsVmpsFacade vivFacade) {
+    public void setVivFacade(VirtualProductIngredientFacade vivFacade) {
         this.vivFacade = vivFacade;
     }
 
