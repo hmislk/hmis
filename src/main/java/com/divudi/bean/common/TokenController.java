@@ -177,6 +177,24 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("bill", bill);
         return tokenFacade.findFirstByJpql(j, m);
     }
+    
+    public Token findToken(Long id) {
+        System.out.println("findToken");
+        System.out.println("id = " + id);
+        if (id == null) {
+            return null;
+        }
+        String j = "Select t "
+                + " from Token t "
+                + " where t.id=:id"; 
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", id);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        Token st= tokenFacade.findFirstByJpql(j, m);
+        System.out.println("st = " + st);
+        return st;
+    }
 
     public String navigateToNewPharmacyBillForCashier() {
         if (currentToken == null) {
