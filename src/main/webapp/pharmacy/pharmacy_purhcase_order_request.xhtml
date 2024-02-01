@@ -16,16 +16,23 @@
                 <f:facet name="header">
 
                     <p:outputLabel value="Purchase order Request Order"/>
-                    <p:commandButton ajax="false" value="Request" action="#{purchaseOrderRequestController.request}"/>
-                    <p:commandButton ajax="false"  value="New Order" action="#{purchaseOrderRequestController.recreate}"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Request" 
+                        action="#{purchaseOrderRequestController.request}"/>
+                    <p:commandButton 
+                        ajax="false"  
+                        value="New Order" 
+                        action="#{purchaseOrderRequestController.resetBillValues}"/>
                 </f:facet>
-                #{purchaseOrderRequestController.currentBill}
                 <p:tabView>
                     <p:tab title=" Distributor">                                               
-                        <p:autoComplete converter="deal" value="#{purchaseOrderRequestController.currentBill.toInstitution}"  
-                                        forceSelection="true"
-                                        completeMethod="#{dealerController.completeDealor}"
-                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        <p:autoComplete 
+                            converter="deal" 
+                            value="#{purchaseOrderRequestController.currentBill.toInstitution}"  
+                            forceSelection="true"
+                            completeMethod="#{dealerController.completeDealor}"
+                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('itemList',view).clientId}" listener="#{purchaseOrderRequestController.setInsListener}"/>
                         </p:autoComplete>
                         <h:panelGroup>                            
@@ -85,7 +92,7 @@
 
                 </p:tabView>
 
-                
+
                 <p:dataTable styleClass="noBorder" rowIndexVar="i" var="bi" scrollable="true"
                              rowKey="#{bi.searialNo}"
                              scrollHeight="250" value="#{purchaseOrderRequestController.billItems}" 

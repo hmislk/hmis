@@ -67,7 +67,7 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -119,7 +119,7 @@ public class PharmacyItemExcelManager implements Serializable {
     @EJB
     VmppFacade vmppFacade;
     @EJB
-    VtmsVmpsFacade vtmInAmpFacade;
+    VirtualProductIngredientFacade vtmInAmpFacade;
     @EJB
     MeasurementUnitFacade muFacade;
     @EJB
@@ -1316,7 +1316,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Vtm
                 cell = sheet.getCell(vtmCol, i);
                 strGenericName = cell.getContents();
-                //System.out.println("strGenericName = " + strGenericName);
+                System.out.println("strGenericName = " + strGenericName);
                 if (!strGenericName.equals("")) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
@@ -1331,17 +1331,17 @@ public class PharmacyItemExcelManager implements Serializable {
                     vmp.setCategory(phType);
                     getVmpFacade().edit(vmp);
                 }
-                //System.out.println("vmp = " + vmp.getName());
+                System.out.println("vmp = " + vmp.getName());
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                //System.out.println("strCode = " + strCode);
+                System.out.println("strCode = " + strCode);
 
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
-                //System.out.println("strBarCode = " + strBarcode);
+                System.out.println("strBarCode = " + strBarcode);
 
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
@@ -1349,7 +1349,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                //System.out.println("strAmp = " + strAmp);
+                System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
@@ -1376,21 +1376,21 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (amp == null) {
                     continue;
                 }
-                //System.out.println("amp = " + amp.getName());
+                System.out.println("amp = " + amp.getName());
                 //Ampp
                 ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
 
                 //Code
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
-                //System.out.println("strCode = " + strCode);
+                System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
-                //System.out.println("Code = " + amp.getCode());
+                System.out.println("Code = " + amp.getCode());
                 getAmpFacade().edit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
-                //System.out.println("strBarCode = " + strBarcode);
+                System.out.println("strBarCode = " + strBarcode);
                 amp.setCode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
@@ -1454,11 +1454,11 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
 
                 getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
-                //System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getPharmacyPurchaseController().getCurrentBillItem().getItem());
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setItem(amp) = " + getPharmacyPurchaseController().getCurrentBillItem().getItem());
                 getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
-                //System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty) = " + getPharmacyPurchaseController().getCurrentBillItem().getTmpQty());
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty) = " + getPharmacyPurchaseController().getCurrentBillItem().getTmpQty());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
-                //System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
+                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
                 if (batch == null || batch.trim().equals("")) {
@@ -2982,11 +2982,11 @@ public class PharmacyItemExcelManager implements Serializable {
         this.catCol = catCol;
     }
 
-    public VtmsVmpsFacade getVtmInAmpFacade() {
+    public VirtualProductIngredientFacade getVtmInAmpFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmInAmpFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmInAmpFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 
@@ -3086,11 +3086,11 @@ public class PharmacyItemExcelManager implements Serializable {
         this.vtmFacade = vtmFacade;
     }
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
+    public VirtualProductIngredientFacade getVtmsVmpsFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmsVmpsFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 

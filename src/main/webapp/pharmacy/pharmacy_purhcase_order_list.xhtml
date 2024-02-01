@@ -122,15 +122,11 @@
                                     ajax="false" 
                                     value="Edit PO" 
                                     class="ui-button-warning"
-                                    action="/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true" 
+                                    action="#{purchaseOrderRequestController.navigatToEdiPurchaseOrder}" 
                                     disabled="#{b.referenceBill.creater ne null}">
                                     <f:setPropertyActionListener target="#{purchaseOrderRequestController.currentBill}" value="#{b}"/>
-                                    <f:setPropertyActionListener target="#{purchaseOrderRequestController.billItems}" value="#{b.billItems}"/>
-                                
+                                   
                                 </p:commandButton>
-                                #{purchaseOrderRequestController.currentBill}
-                                datatable bill entity - #{b}
-                                datatabale bill items - #{b.billItems[0].pharmaceuticalBillItem}
                             </p:column>
                         </p:dataTable>
                     </div>
