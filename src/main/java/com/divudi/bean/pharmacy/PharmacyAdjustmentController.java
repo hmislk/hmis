@@ -35,6 +35,8 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -107,6 +109,7 @@ public class PharmacyAdjustmentController implements Serializable {
     Department toDepartment;
 
     private Double qty;
+    private double newQty;
     private Double pr;
     private Double rsr;
     private Double wsr;
@@ -953,16 +956,36 @@ public class PharmacyAdjustmentController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
     }
 
+
     public void adjustExDate() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        if (getNewQty() == 0) {
+            newQty = stock.getStock();
+        }
+        if (stock.getStock() == getNewQty()) {
+            saveDeptAdjustmentBill();
+            saveExDateAdjustmentBillItems();
+            getStock().getItemBatch().setDateOfExpire(exDate);
+            getItemBatchFacade().edit(getStock().getItemBatch());
+            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
+        } else {
+            saveDeptAdjustmentBill();
+            saveExDateAdjustmentBillItems();
+            getStock().setStock(getStock().getStock() - getNewQty());
+            getStock().getItemBatch().setDateOfExpire(stock.getItemBatch().getDateOfExpire());
+            getItemBatchFacade().edit(getStock().getItemBatch());
+            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
-        saveDeptAdjustmentBill();
-        saveExDateAdjustmentBillItems();
-        getStock().getItemBatch().setDateOfExpire(exDate);
-        getItemBatchFacade().edit(getStock().getItemBatch());
-        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
+            saveDeptAdjustmentBill();
+            saveExDateAdjustmentBillItems();
+            getStock().setStock(getNewQty());
+            getStock().getItemBatch().setDateOfExpire(exDate);
+            getItemBatchFacade().edit(getStock().getItemBatch());
+            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
+        }
+
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
@@ -1357,6 +1380,14 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public double getNewQty() {
+        return newQty;
+    }
+
+    public void setNewQty(double newQty) {
+        this.newQty = newQty;
     }
 
 }

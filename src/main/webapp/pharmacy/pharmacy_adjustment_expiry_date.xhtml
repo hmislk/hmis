@@ -65,7 +65,8 @@
                                             </p:column>
                                             <f:ajax event="itemSelect" execute="@this" render="det"/>
                                         </p:autoComplete>
-                                        
+<!--                                        <h:outputLabel value="Quantity" ></h:outputLabel>
+                                        <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.newQty}" class="w-100"></p:inputText>-->
                                         <h:outputLabel value="New Expiry Date" ></h:outputLabel>
                                         <p:calendar autocomplete="off" value="#{pharmacyAdjustmentController.exDate}" class="w-100" inputStyleClass="w-100"></p:calendar>
                                         <h:outputLabel value="Comment" ></h:outputLabel>
