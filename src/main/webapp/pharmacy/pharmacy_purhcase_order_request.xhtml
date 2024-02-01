@@ -19,7 +19,7 @@
                     <p:commandButton ajax="false" value="Request" action="#{purchaseOrderRequestController.request}"/>
                     <p:commandButton ajax="false"  value="New Order" action="#{purchaseOrderRequestController.recreate}"/>
                 </f:facet>
-
+                #{purchaseOrderRequestController.currentBill}
                 <p:tabView>
                     <p:tab title=" Distributor">                                               
                         <p:autoComplete converter="deal" value="#{purchaseOrderRequestController.currentBill.toInstitution}"  

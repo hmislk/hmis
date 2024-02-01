@@ -144,7 +144,18 @@ public class PurchaseOrderRequestController implements Serializable {
 
         calTotal();
     }
-
+    public void makeListNull() {
+        currentBill = null;
+        billItems = null;
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+        currentBillItem = null;
+    }
+    public String navigatToNewPurchaseOrder(){
+        makeListNull();
+        return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
+    }
     public void saveBill() {
 
         getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
@@ -161,6 +172,9 @@ public class PurchaseOrderRequestController implements Serializable {
 
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
+        }
+        else{
+            getBillFacade().edit(getCurrentBill());
         }
 
     }
@@ -190,7 +204,11 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveBillComponent() {
+        
         for (BillItem b : getBillItems()) {
+            if(b==null){
+            UtilityController.addSuccessMessage("Null");
+        }
             b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setBill(getCurrentBill());
