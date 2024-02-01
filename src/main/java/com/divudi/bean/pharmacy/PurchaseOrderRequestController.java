@@ -91,11 +91,11 @@ public class PurchaseOrderRequestController implements Serializable {
         return pharmacyBillBean;
     }
 
-    public String navigateToCreateNewPurchaseOrder(){
+    public String navigateToCreateNewPurchaseOrder() {
         resetBillValues();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
     }
-    
+
     public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
         this.pharmacyBillBean = pharmacyBillBean;
     }
@@ -150,6 +150,30 @@ public class PurchaseOrderRequestController implements Serializable {
         calTotal();
     }
 
+    public void makeListNull() {
+        currentBill = null;
+        billItems = null;
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+        currentBillItem = null;
+    }
+
+    public String navigatToNewPurchaseOrder() {
+        makeListNull();
+        return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
+    }
+
+    public String navigatToEdiPurchaseOrder() {
+        billItems = null;
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+        getCurrentBill().setBillItems(billItems);
+        generateBillItems();
+        return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
+    }
+
     public void saveBill() {
 
         getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
@@ -166,16 +190,15 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setEditedAt(null);
         getCurrentBill().setEditor(null);
-        
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
-        }else{
+        } else {
             getBillFacade().edit(getCurrentBill());
         }
 
     }
 
-    
     public void finalizeBill() {
 
         getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
@@ -192,16 +215,15 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
-        
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
-        }else{
+        } else {
             getBillFacade().edit(getCurrentBill());
         }
 
     }
 
-    
     public void generateBillComponent() {
         // int serialNo = 0;
         setBillItems(new ArrayList<BillItem>());
@@ -226,8 +248,33 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
+    public void generateBillItems() {
+        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getCurrentBill())) {
+            
+            BillItem bi = new BillItem();
+            bi.copy(i.getBillItem());
+
+            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+            ph.setBillItem(bi);
+            ////// // System.out.println("i.getFreeQty() = " + i.getFreeQty());
+            ph.setFreeQty(i.getFreeQty());
+            ph.setQtyInUnit(i.getQtyInUnit());
+            ph.setPurchaseRateInUnit(i.getPurchaseRateInUnit());
+            ph.setRetailRateInUnit(i.getRetailRateInUnit());
+            bi.setPharmaceuticalBillItem(ph);
+
+            bi.setTmpQty(ph.getQtyInUnit());
+            getBillItems().add(bi);
+        }
+
+        calTotal();
+
+    }
+
     public void saveBillComponent() {
+        
         for (BillItem b : getBillItems()) {
+             
             b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setBill(getCurrentBill());
@@ -235,15 +282,17 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreater(getSessionController().getLoggedUser());
 
             PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+            System.out.println("billItem before= " + tmpPh.getBillItem().getItem().getName());
             b.setPharmaceuticalBillItem(null);
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
-            }else{
+            } else {
                 getBillItemFacade().edit(b);
             }
-
+//            System.out.println("b= " + tmpPh.getBillItem().getItem().getName());
             tmpPh.setBillItem(b);
+//            System.out.println("c " + tmpPh.getBillItem().getItem().getName());
 
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
@@ -251,6 +300,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
+//            System.out.println("billItem after= " + tmpPh.getBillItem().getItem().getName());
         }
     }
 
@@ -265,7 +315,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         generateBillComponent();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(Fill with Item)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
     }
@@ -287,17 +337,16 @@ public class PurchaseOrderRequestController implements Serializable {
 
         saveBill();
         saveBillComponent();
-
+        
         UtilityController.addSuccessMessage("Request Succesfully Created");
 
         resetBillValues();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
-
+        
     }
 
-    
-       public void requestFinalize() {
+    public void requestFinalize() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
@@ -323,7 +372,6 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
-    
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
@@ -344,7 +392,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private ItemController itemController;
 
     public void setInsListener() {
-        
+
         getItemController().setInstitution(getCurrentBill().getToInstitution());
     }
 
