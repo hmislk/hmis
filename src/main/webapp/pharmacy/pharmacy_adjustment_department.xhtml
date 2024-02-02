@@ -48,6 +48,7 @@
                                             <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                                    
                                                 </h:outputLabel>
                                             </p:column>
                                             <f:ajax event="itemSelect" execute="@this"  render="det"/>
