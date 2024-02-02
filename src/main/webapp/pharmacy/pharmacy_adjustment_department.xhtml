@@ -58,7 +58,7 @@
                                         <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
                                         <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
-                                                         action="#{pharmacyAdjustmentController.adjustDepartmentStock()}" ></p:commandButton>
+                                                         action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
                                         <p:defaultCommand target="btnAdjust"/>
                                     </h:panelGrid>
                                 </p:panel>

@@ -35,8 +35,6 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -109,7 +107,6 @@ public class PharmacyAdjustmentController implements Serializable {
     Department toDepartment;
 
     private Double qty;
-    private double newQty;
     private Double pr;
     private Double rsr;
     private Double wsr;
@@ -316,6 +313,160 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustment);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveDeptStockAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentStock);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveDeptSingleStockAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentSingleStock);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveStaffStockAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentStaffStock);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void savePurchaseRateAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentPurchaseRate);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveSaleRateAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentSaleRate);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveWholeSaleRateAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentWholeSaleRate);
+        getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+    
+    private void saveExpiryDateAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentExpiryDate);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -891,6 +1042,48 @@ public class PharmacyAdjustmentController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
+    
+    public void adjustStockForDepartment() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (errorCheck()) {
+            return;
+        }
+
+        saveDeptStockAdjustmentBill();
+        PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
+        setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+        getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
+
+        printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
+    }
+    
+    public void adjustStaffStock() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (errorCheck()) {
+            return;
+        }
+
+        saveStaffStockAdjustmentBill();
+        PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
+        setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+        getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
+
+        printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
+    }
 
     public void adjustDepartmentStockAll() {
         if (errorCheckAll()) {
@@ -900,7 +1093,7 @@ public class PharmacyAdjustmentController implements Serializable {
         for (Stock s : stocks) {
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
-                saveDeptAdjustmentBill();
+                saveDeptSingleStockAdjustmentBill();
                 PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
                 bills.add(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
                 getPharmacyBean().resetStock(ph, s, s.getCalculated(), getSessionController().getDepartment());
@@ -943,7 +1136,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        saveDeptAdjustmentBill();
+        savePurchaseRateAdjustmentBill();
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -956,36 +1149,16 @@ public class PharmacyAdjustmentController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
     }
 
-
     public void adjustExDate() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        if (getNewQty() == 0) {
-            newQty = stock.getStock();
-        }
-        if (stock.getStock() == getNewQty()) {
-            saveDeptAdjustmentBill();
-            saveExDateAdjustmentBillItems();
-            getStock().getItemBatch().setDateOfExpire(exDate);
-            getItemBatchFacade().edit(getStock().getItemBatch());
-            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
-        } else {
-            saveDeptAdjustmentBill();
-            saveExDateAdjustmentBillItems();
-            getStock().setStock(getStock().getStock() - getNewQty());
-            getStock().getItemBatch().setDateOfExpire(stock.getItemBatch().getDateOfExpire());
-            getItemBatchFacade().edit(getStock().getItemBatch());
-            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
-            saveDeptAdjustmentBill();
-            saveExDateAdjustmentBillItems();
-            getStock().setStock(getNewQty());
-            getStock().getItemBatch().setDateOfExpire(exDate);
-            getItemBatchFacade().edit(getStock().getItemBatch());
-            bill = billFacade.find(getDeptAdjustmentPreBill().getId());
-        }
-
+        saveExpiryDateAdjustmentBill();
+        saveExDateAdjustmentBillItems();
+        getStock().getItemBatch().setDateOfExpire(exDate);
+        getItemBatchFacade().edit(getStock().getItemBatch());
+        bill = billFacade.find(getDeptAdjustmentPreBill().getId());
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
@@ -998,7 +1171,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        saveDeptAdjustmentBill();
+        saveSaleRateAdjustmentBill();
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -1015,7 +1188,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        saveDeptAdjustmentBill();
+        saveWholeSaleRateAdjustmentBill();
         saveWsrAdjustmentBillItems();
         getStock().getItemBatch().setWholesaleRate(wsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -1380,14 +1553,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public double getNewQty() {
-        return newQty;
-    }
-
-    public void setNewQty(double newQty) {
-        this.newQty = newQty;
     }
 
 }
