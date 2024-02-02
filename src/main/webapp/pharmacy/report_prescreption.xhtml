@@ -13,30 +13,24 @@
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                          
                             <h:outputLabel value="PHARMACY BILL SEARCH SALE BILL  "/>                         
-                            <h:panelGrid columns="2" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                                </p:calendar>
-                                <h:outputLabel value="Department"/>
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                        </f:facet>
+                        
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="form-control" completeMethod="#{departmentController.completeDept}" 
                                                 var="dept" itemLabel="#{dept.name}" 
                                                 itemValue="#{dept}" 
                                                 forceSelection="true" 
                                                 value="#{searchController.department}" 
                                                  ></p:autoComplete>
-                                
-                                <p:commandButton id="btnSearch" ajax="false" 
-                                                 value="Search" 
-                                                action="#{searchController.createPharmacyPrescriptionBillTable}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                            </h:panelGrid>
-
-
-                        </f:facet>
+                            <h:outputLabel value="From Date" ></h:outputLabel>
+                            <p:calendar  styleClass="dateTimePicker" id="fromDate" class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To Date" ></h:outputLabel>
+                            <p:calendar id="toDate" class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  > </p:calendar>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton id="btnSearch" class="ui-button-warning" icon="fa-solid fa-magnifying-glass" ajax="false" value="Search" action="#{searchController.createPharmacyPrescriptionBillTable}"/>
+                        </h:panelGrid>
 
                         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.prescreptionBills}" var="bill">
 

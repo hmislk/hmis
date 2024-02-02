@@ -6,7 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.StaffShift;
@@ -15,6 +15,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.TransferFormFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +45,6 @@ public class StaffTransferFormController implements Serializable {
     @EJB
     StaffShiftFacade staffShiftFacade;
 
-    @EJB
     CommonFunctions commonFunctions;
     List<TransferForm> transferForms;
     Department department;

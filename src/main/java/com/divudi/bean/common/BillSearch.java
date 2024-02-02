@@ -17,7 +17,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
@@ -49,6 +49,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -97,7 +98,7 @@ public class BillSearch implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -1112,7 +1113,7 @@ public class BillSearch implements Serializable {
                     }
                 }
 
-                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferralNumber());
+                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferenceNumber());
             }
 
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -1617,7 +1618,7 @@ public class BillSearch implements Serializable {
 
                 getBillFacade().create(cb);
                 Payment p = getOpdPreSettleController().createPayment(cb, paymentMethod);
-                List<BillItem> list = cancelBillItems(cb, p);
+                List<BillItem> list = cancelBillItems(getBill(), cb, p);
                 cb.setBillItems(list);
                 billFacade.edit(cb);
                 getBill().setCancelled(true);
@@ -1639,7 +1640,7 @@ public class BillSearch implements Serializable {
                         }
                     }
 
-                    collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getCancelledBill(), getBill().getReferralNumber());
+                    collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getCancelledBill(), getBill().getReferenceNumber());
                 }
 
                 if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -1964,6 +1965,57 @@ public class BillSearch implements Serializable {
         return list;
     }
 
+    private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, Payment p) {
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem nB : originalBill.getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(cancellationBill);
+
+            if (cancellationBill.getBillType() != BillType.PaymentBill) {
+                b.setItem(nB.getItem());
+            } else {
+                b.setReferanceBillItem(nB.getReferanceBillItem());
+            }
+
+            b.setNetValue(0 - nB.getNetValue());
+            b.setGrossValue(0 - nB.getGrossValue());
+            b.setRate(0 - nB.getRate());
+            b.setVat(0 - nB.getVat());
+            b.setVatPlusNetValue(0 - nB.getVatPlusNetValue());
+
+            b.setCatId(nB.getCatId());
+            b.setDeptId(nB.getDeptId());
+            b.setInsId(nB.getInsId());
+            b.setDiscount(0 - nB.getDiscount());
+            b.setQty(1.0);
+            b.setRate(nB.getRate());
+
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            b.setPaidForBillFee(nB.getPaidForBillFee());
+
+            getBillItemFacede().create(b);
+
+            cancelBillComponents(cancellationBill, b);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+            cancelBillFee(cancellationBill, b, tmp);
+
+            //create BillFeePayments For cancel
+            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
+            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
+            //
+
+            list.add(b);
+
+        }
+
+        return list;
+    }
+
     public void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
@@ -2172,10 +2224,25 @@ public class BillSearch implements Serializable {
         createBillItems();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
-        printPreview=false;
+        printPreview = false;
         return "/opd/bill_cancel";
     }
-    
+
+    public String navigateToViewOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        billBean.checkBillItemFeesInitiated(bill);
+        
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview = false;
+        return "/opd/bill_reprint";
+    }
+
     public String navigateToRefundOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -2185,7 +2252,7 @@ public class BillSearch implements Serializable {
         createBillItems();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
-        printPreview=false;
+        printPreview = false;
         return "/opd/bill_refund";
     }
 

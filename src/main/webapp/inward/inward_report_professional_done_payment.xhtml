@@ -19,21 +19,21 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Discharge From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <p:calendar class="w-100" inputStyleClass="w-100" value="#{inwardReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Discharge To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>                            
+                            <p:calendar class="w-100" inputStyleClass="w-100" value="#{inwardReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>                            
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController.admissionType}" >
+                            <p:selectOneMenu class="w-100"  id="lstAdmissionType"   value="#{inwardReportController.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT Type : " ></h:outputLabel>
-                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController.paymentMethod}"  >
+                            <p:selectOneMenu class="w-100"  id="cmbBhtType" value="#{inwardReportController.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController.institution}" >
+                            <p:selectOneMenu class="w-100"  id="lstCc"   value="#{inwardReportController.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
@@ -42,17 +42,17 @@
 
 
                         </h:panelGrid>
-                        <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}"   ></p:commandButton>
-                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}"   ></p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton icon="fas fa-cogs" class="ui-button-warning" ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}"   ></p:commandButton>
+                            <p:commandButton icon="fas fa-cogs" class="ui-button-warning" ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}"   ></p:commandButton>
+                            <p:commandButton icon="fas fa-file-excel" class="ui-button-success" ajax="false" value="Excel"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3" fileName="bht_income_by_categories"  />
                             </p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton icon="fas fa-print" class="ui-button-info" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                        </p:panelGrid>
+                        </h:panelGrid>
                         <p:panel id="gpBillPreview">
                             <f:facet name="header" >
                                 <h:outputLabel value="Inward Doctor Payment Done Report - " ></h:outputLabel>

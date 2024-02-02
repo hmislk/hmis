@@ -16,7 +16,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
@@ -44,6 +44,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public class Api {
     @EJB
     private PersonFacade personFacade;
 
-    @EJB
+    
     private CommonFunctions commonFunctions;
     @EJB
     private ChannelBean channelBean;
@@ -1685,7 +1686,7 @@ public class Api {
         agentHistory.setBillSession(billSession);
         agentHistory.setBeforeBallance(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setReferenceNo(refNo);
+        agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
@@ -1714,7 +1715,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(long agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;
@@ -1722,7 +1723,7 @@ public class Api {
     }
 
     private boolean checkAgentRefNo(String agent_ref, Institution institution) {
-        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+        if (getAgentReferenceBookController().agentReferenceNumberIsAlredyUsed(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;

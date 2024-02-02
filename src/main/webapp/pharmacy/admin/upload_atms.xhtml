@@ -16,15 +16,25 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadAtms()}"
+                                                 icon="fa fa-upload"
+                                                 action="#{dataUploadController.uploadAtms()}"
                                                  ajax="false"/>
+                                <p:commandButton 
+                                    value="Download Template" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                    icon="fa fa-download">
+                                    <p:fileDownload value="#{dataUploadController.templateForAtmUpload}" />
+                                </p:commandButton>
                             </h:form>
 
-                            <p>#{dataUploadBean.outputString}</p>
+                            <p>#{dataUploadController.outputString}</p>
                             
                             <table class="table">
                                 <thead>

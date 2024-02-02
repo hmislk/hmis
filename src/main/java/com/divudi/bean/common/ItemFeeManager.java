@@ -65,6 +65,10 @@ public class ItemFeeManager implements Serializable {
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
+    
+    public String navigateToCollectingCentreItemFeeList() {
+        return "/admin/pricing/item_fee_list_collecting_centre?faces-redirect=true";
+    }
 
     public String navigateToCorrectItemFees() {
         return "/dataAdmin/bulk_update_itemsFees?faces-redirect=true";
@@ -73,19 +77,20 @@ public class ItemFeeManager implements Serializable {
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
     }
+    
+    public String navigateToUploadCollectingCentreItemFees() {
+        return "/admin/pricing/item_fee_upload_collecting_centre?faces-redirect=true";
+    }
 
     public String navigateItemViseFeeList() {
         return "/admin/pricing/manage_item_fees_bulk?faces-redirect=true";
     }
 
     public void createItemFessForSelectedItems() {
-        System.out.println("createItemFessForSelectedItems" + this);
-        System.out.println("selectedList = " + selectedList);
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
             return;
         }
-        System.out.println("itemFee = " + itemFee);
         if (itemFee == null) {
             JsfUtil.addErrorMessage("No Item Fee");
             return;
@@ -276,9 +281,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void addNewFeeForItem(Item inputItem, ItemFee inputFee) {
-        System.out.println("addNewFeeForItem");
-        System.out.println("inputItem = " + inputItem);
-        System.out.println("inputFee = " + inputFee);
         if (inputItem == null) {
             JsfUtil.addErrorMessage("Select Item ?");
             return;
@@ -336,9 +338,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateTotal(Item inputItem, List<ItemFee> inputItemFees) {
-        System.out.println("updateTotal");
-        System.out.println("inputItemFees = " + inputItemFees);
-        System.out.println("inputItem = " + inputItem);
         if (inputItem == null) {
             return;
         }

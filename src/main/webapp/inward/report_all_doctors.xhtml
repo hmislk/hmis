@@ -11,17 +11,17 @@
     <h:body>
 
         <ui:composition template="/inward/inward_reports.xhtml">
-
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Doctor Payment" >
+                        <h:panelGrid columns="2" class="my-4">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-list" ajax="false" value="List" action="#{doctorController.listDoctors()}">
+                            </p:commandButton>
 
-
-                        <p:commandButton ajax="false" value="List" action="#{doctorController.listDoctors()}"></p:commandButton>
-                        
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
+                            <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">

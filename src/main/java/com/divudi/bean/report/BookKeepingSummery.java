@@ -19,7 +19,7 @@ import com.divudi.data.dataStructure.DepartmentPayment;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String1Value3;
 import com.divudi.data.table.String3Value2;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -35,6 +35,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -67,7 +68,7 @@ public class BookKeepingSummery implements Serializable {
     Department department;
     Institution loggediInstitution;
     private Institution incomeInstitution;
-    @EJB
+
     CommonFunctions commonFunctions;
     @Inject
     BillBeanController billBean;

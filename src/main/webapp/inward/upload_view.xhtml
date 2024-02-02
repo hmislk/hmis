@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:body>
+        <ui:composition  template="/inward/inward_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form enctype="multipart/form-data">
+                    <div class="row" >
+                        <div class="col form" >
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Diagnosis Card Template" ></h:outputLabel>
+                                </f:facet>
+                                <h:panelGrid columns="3">
+                                    <h:outputLabel class="form form-label" for="txtName" value="Name" ></h:outputLabel>
+                                    <h:outputLabel class=""  value=":" style="width: 50px; text-align: center"></h:outputLabel>
+                                    <h:inputText class="form form-control" id="txtName" style="width: 500px;" value="#{uploadController.selected.webContent.name}"></h:inputText>
+
+                                    <h:outputLabel class="form form-label" for="txtContents" value="Contents" ></h:outputLabel>
+                                    <h:outputLabel class=""  value=":" style="width: 50px; text-align: center"></h:outputLabel>
+                                    <h:inputTextarea class="form form-control" style="width: 500px;height: 500px" rows="5" id="txtContents" value="#{uploadController.selected.comments}"></h:inputTextarea>
+                                </h:panelGrid>
+                                
+                                <p:commandButton 
+                                    value="Save" 
+                                    ajax="false"
+                                    icon="fa fa-save"
+                                    
+                                    action="#{uploadController.save()}" 
+                                    class="ui-button-warning"/>
+                            </p:panel>
+                        </div>
+                    </div>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

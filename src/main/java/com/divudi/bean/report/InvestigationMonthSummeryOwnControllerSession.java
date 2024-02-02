@@ -14,7 +14,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.BillEjb;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -34,6 +34,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     /**
      * EJBs
      */
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -292,6 +293,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
             progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCountReportedIns(w, reportedInstitution);
+            if(temp.getCount() == 0){
+                continue;
+            }
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
                 items.add(temp);
@@ -375,6 +379,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             billTypes=new BillType[]{BillType.OpdBill, BillType.InwardBill,};
         }
         boolean flag=true;
+        if(item == null){
+            UtilityController.addSuccessMessage("Please Select Investigation");
+            return ;
+        }
         if (department!=null) {
             flag=false;
         }

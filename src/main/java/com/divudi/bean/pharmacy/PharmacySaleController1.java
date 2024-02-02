@@ -96,12 +96,11 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     UserStockController userStockController;
     @Inject
     PaymentSchemeController PaymentSchemeController;
-
     @Inject
     SessionController sessionController;
-
     @Inject
     CommonController commonController;
+
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -134,6 +133,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
 /////////////////////////
+    PaymentMethod paymentMethod;
     Item selectedAvailableAmp;
     Item selectedAlternative;
     private PreBill preBill;
@@ -179,6 +179,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    private boolean patientDetailsEditable;
 
     public String pharmacyRetailSale() {
         return "/pharmacy/pharmacy_bill_retail_sale_1";
@@ -906,9 +907,10 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 //        return false;
 //
 //    }
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-    PaymentMethod paymentMethod;
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -1795,6 +1797,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     public Patient gePatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
             Person p = new Person();
 
             patient.setPerson(p);
@@ -2093,6 +2096,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable=true;
         }
         return patient;
     }
@@ -2100,6 +2104,16 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
     }
 
 }

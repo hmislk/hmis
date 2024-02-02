@@ -31,7 +31,10 @@ package com.divudi.data;
 public enum UploadType {
     User_Signature("User Signature"),
     Web_Image("Web Image"),
-    Background_Image("Background Image");
+    Report_background_image("Report Background Image"),
+    Background_Image("Background Image"),
+    Diagnosis_Card_Template("Diagnosis Card Template"),
+    ;
     
     private final String label;
     

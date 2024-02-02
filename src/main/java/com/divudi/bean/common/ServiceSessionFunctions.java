@@ -6,13 +6,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.SessionNumberType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;

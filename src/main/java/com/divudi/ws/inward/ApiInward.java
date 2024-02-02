@@ -575,10 +575,6 @@ public class ApiInward {
         return billNumberGenerator;
     }
 
-    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
-        this.billNumberGenerator = billNumberGenerator;
-    }
-
     public BilledBillFacade getBilledBillFacade() {
         return billedBillFacade;
     }

@@ -126,6 +126,8 @@ public class WebUserController implements Serializable {
     private int manageUsersIndex;
 
     private List<Department> departmentsOfSelectedUsersInstitution;
+    
+    boolean testRun = false;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";
@@ -258,6 +260,9 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
+        if(testRun){
+            return true;
+        }
         if (getSessionController().getLoggedUser() == null) {
             return hasPri;
         }
@@ -778,6 +783,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_icons";
     }
 
@@ -808,6 +814,15 @@ public class WebUserController implements Serializable {
         current = selected;
         listWebUserDashboards();
         return "/admin_manage_dashboards";
+    }
+    
+    public String toManageUserPreferences() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        return sessionController.navigateToManageWebUserPreferences(current);
     }
 
     public void addWebUserDashboard() {

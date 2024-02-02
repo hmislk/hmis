@@ -9,7 +9,8 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="medicines" />
-        <cc:attribute name="editable" type="boolean" default="false" />
+        <cc:attribute name="editable" type="java.lang.Boolean" default="false" />
+        <cc:attribute name="forInpatients" type="java.lang.Boolean" default="false" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -22,13 +23,24 @@
                 <p:outputLabel value="#{rx.prescription.formattedPrescription}">
                 </p:outputLabel>
                 <p:spacer height="1" width="20" ></p:spacer>
-                <p:commandButton rendered="#{cc.attrs.editable}" icon="pi pi-times" 
-                                 styleClass="ui-button-danger float-right" 
-                                 process="@this" update="tblRxx"
-                                 onclick="if (!confirm('Are you sure you want to delete this prescription?'))
-                                             return false;"
-                                 action="#{patientEncounterController.removeClinicalFindingValueForComposite(cc.attrs.medicines, rx)}">
-                </p:commandButton>
+                <h:panelGroup rendered="#{cc.attrs.forInpatients}" >
+                    <p:commandButton rendered="#{cc.attrs.editable}" icon="pi pi-times" 
+                                     styleClass="ui-button-danger float-right" 
+                                     process="@this" update="tblRxx"
+                                     onclick="if (!confirm('Are you sure you want to delete this prescription?'))
+                                                 return false;"
+                                     action="#{patientEncounterController.removeClinicalFindingValueForComposite(cc.attrs.medicines, rx)}">
+                    </p:commandButton>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not cc.attrs.forInpatients}" >
+                    <p:commandButton rendered="#{cc.attrs.editable}" icon="pi pi-times" 
+                                     styleClass="ui-button-danger float-right" 
+                                     process="@this" update="tblRxx"
+                                     onclick="if (!confirm('Are you sure you want to delete this prescription?'))
+                                                 return false;"
+                                     action="#{patientEncounterController.removeClinicalFindingValueForComposite(cc.attrs.medicines, rx)}">
+                    </p:commandButton>
+                </h:panelGroup>
             </p:column>
         </p:dataTable>
     </cc:implementation>

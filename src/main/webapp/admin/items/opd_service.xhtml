@@ -59,8 +59,6 @@
                                 </div>
                             </p:panel>
                         </div>
-
-
                         <div class="col-md-8">
                             <p:panel  class="w-100">
                                 <f:facet name="header" >
@@ -69,12 +67,13 @@
                                     <p:commandButton 
                                         style="float: right"
                                         class="ui-button-warning"
-                                        update="lstSelect selectFocus msg"
+                                        update="lstSelect selectFocus msg gpDetail"
                                         process="btnSave gpDetail" 
                                         id="btnSave" 
                                         value="Save"          
                                         action="#{serviceController.saveSelected()}">
                                     </p:commandButton>
+
                                     <p:defaultCommand target="btnSave"/>
                                 </f:facet>
                                 <h:panelGrid id="gpDetail" columns="1" class="w-100">
@@ -90,26 +89,14 @@
                                                     required="true" 
                                                     requiredMessage="Please enter a name to register"
                                                     class="w-100 mx-2"></p:inputText>
-                                                    
+
                                                 <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
                                                 <p:inputText autocomplete="off" id="txtAddress"   
                                                              value="#{serviceController.current.printName}" 
                                                              class="w-100 mx-2" ></p:inputText>
                                                 <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                                 <p:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}" class="w-100 mx-2" ></p:inputText>
-                                                <p:outputLabel value="Item Code"/>
-                                                <p:inputText id="ServiceCode" autocomplete="off" value="#{serviceController.current.code}" class="form-control mx-2"/>
-                                                 <h:outputText></h:outputText>
-                                                <p:commandButton 
-                                                    class="ui-button-warning my-2 mx-2"
-                                                    id="btnGenarate" 
-                                                    icon="fas fa-redo-alt"
-                                                    update="ServiceCode"
-                                                    process="btnGenarate" 
-                                                    value="Genarate Item Code"          
-                                                    action="#{serviceController.genarateServiceCode()}">
-                                                </p:commandButton> 
-                                           
+
                                                 <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                                 <p:autoComplete 
                                                     completeMethod="#{categoryController.completeServiceCategory}" 
@@ -120,6 +107,7 @@
                                                     value="#{serviceController.current.category}"
                                                     size="45"
                                                     class="mx-2"
+                                                    id="cat"
                                                     >                                    
                                                     <p:column>#{pta.name}</p:column>
                                                     <p:column>#{pta.parentCategory}</p:column>                                        
@@ -147,6 +135,9 @@
                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
+                                                <p:outputLabel value="Item Code"/>
+                                                <p:inputText id="ServiceCode" value="#{serviceController.current.code}" class="form-control mx-2"/>
+                                                <h:outputText></h:outputText>
                                             </h:panelGrid>
                                         </p:tab>
                                         <p:tab title="Additional Details" >
@@ -182,6 +173,8 @@
                                                 <h:outputText value="#{serviceController.current.creater.webUserPerson.nameWithTitle}"/>
                                                 <h:outputText value="Item Id"/>
                                                 <h:outputText value="#{serviceController.current.id}"/>
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{serviceController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
 
                                             </h:panelGrid>
                                         </p:tab>
@@ -210,6 +203,18 @@
                                         </p:tab>
                                     </p:tabView>
                                 </h:panelGrid>
+
+                                <div class="d-flex justify-content-end align-items-center">
+                                    <p:commandButton 
+                                        class="ui-button-warning my-2 mx-2"
+                                        id="btnGenarate" 
+                                        icon="fas fa-redo-alt"
+                                        update="gpDetail"
+                                        process="btnGenarate gpDetail" 
+                                        value="Genarate Item Code"          
+                                        action="#{serviceController.setServiceCode}">
+                                    </p:commandButton> 
+                                </div>
                             </p:panel>
                         </div>
                     </div>

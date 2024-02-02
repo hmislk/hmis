@@ -18,16 +18,17 @@
                 <p:outputLabel value="#{sessionController.institution.name}"/> &nbsp;<h:outputLabel/>
                     <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
                     <h:outputLabel/><h:outputLabel/>
-                    <h:outputLabel value="  From : "  />
+                    <h:outputLabel value="&emsp;  From : &nbsp;"  />
                     <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                     </h:outputLabel>
-                    <h:outputLabel value="  To : "/> 
+                    <h:outputLabel value="&emsp;  To : &nbsp;"/> 
                     <h:outputLabel  value="#{bookKeepingSummery.toDate}">
                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                     </h:outputLabel>
                     <h:outputLabel value=""><br/>
                     </h:outputLabel>
+                    <p:spacer width="100%" height="30" />
                     <h:outputLabel value="OPD Service"/>     
                 </f:facet>
             <p:column  headerText="Category" >

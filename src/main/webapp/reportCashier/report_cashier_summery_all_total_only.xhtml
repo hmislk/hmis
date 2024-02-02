@@ -10,25 +10,28 @@
     <ui:define name="subcontent">    
         <h:panelGroup rendered="true" >
             <h:form>
+                <div class="d-flex justify-content-end">
+                    <h:panelGrid columns="12" class="my-2">
+                        <p:commandButton id="btnRefresh" ajax="false" value="Total Income" icon="fas fa-dollar-sign" class="ui-button-warning"
+                                         actionListener="#{cashierReportController.calculateCashierSummeryTotals()}" />  
+                        <p:commandButton id="btnRefresh1" class="mx-1 ui-button-warning" ajax="false" value="Channel Income" icon="fas fa-dollar-sign"
+                                          actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
+                        <p:commandButton id="btnRefresh2" class="ui-button-warning" icon="fas fa-dollar-sign" ajax="false" value="Cashier Income" 
+                                          actionListener="#{cashierReportController.calCashierDataTotalOnlyCashier()}" />  
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" class="mx-1 ui-button-info" icon="fas fa-print" value="Print" >
+                            <p:printer target="reportPrint" />
+                        </p:commandButton>  
+                        <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{cashierReportController.calCashierDataTotalOnly()}" ajax="false" value="Excel" >
+                            <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" />
+                        </p:commandButton>  
+                    </h:panelGrid>
+                </div>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                     <f:facet name="header">
 
-                        <p:commandButton id="btnRefresh" ajax="false" value="Total Income" 
-                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calculateCashierSummeryTotals()}" />  
-                        <p:commandButton id="btnRefresh1" ajax="false" value="Channel Income" 
-                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
-                        <p:commandButton id="btnRefresh2" ajax="false" value="Cashier Income" 
-                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyCashier()}" />  
-                        <p:defaultCommand target="btnRefresh"/>
-
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="reportPrint" />
-                        </p:commandButton>  
-
-                        <p:commandButton actionListener="#{cashierReportController.calCashierDataTotalOnly()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
-                            <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" />
-                        </p:commandButton>  
                         <br/>
                         <h:outputLabel value="All #{cashierReportController.header} Summary (#{sessionController.institution.name})"/>
                         <br/>

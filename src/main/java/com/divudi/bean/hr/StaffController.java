@@ -127,6 +127,16 @@ public class StaffController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
+    
+    public void deleteStaff() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return ;
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        fillItems() ;
+    }
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
@@ -891,19 +901,19 @@ public class StaffController implements Serializable {
         if (selectText.trim().equals("")) {
             sql = "select c from Staff c "
                     + " where c.retired=false "
-                    + " and type(c)!=:class"
+//                    + " and type(c)!=:class"
                     + " order by c.person.name";
         } else {
             sql = "select c from Staff c"
                     + " where c.retired=false "
-                    + " and type(c)!=:class"
+//                    + " and type(c)!=:class"
                     + " and ((c.person.name) like :q or (c.code) like :p) "
                     + " order by c.person.name";
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
             hm.put("p", "%" + getSelectText().toUpperCase() + "%");
         }
 
-        hm.put("class", Consultant.class);
+//        hm.put("class", Consultant.class);
         selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
@@ -1305,9 +1315,9 @@ public class StaffController implements Serializable {
         this.staffes = staffes;
     }
 
-    public String admin_staff_view_signature() {
+    public String navigateToAdminStaffViewSignature() {
         fillStaffes();
-        return "/admin/institutions/admin_staff_signature";
+        return "/admin/staff/admin_staff_view_signature?faces-redirect=true";
     }
 
     public String admin_edit_staff_balance() {
@@ -1345,6 +1355,23 @@ public class StaffController implements Serializable {
             items = getFacade().findByJpql(temSql);
         }
         return items;
+    }
+    
+    public void fillItems() {
+            String temSql;
+            temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+            items = getFacade().findByJpql(temSql);
+    }
+    
+    public Staff findStaffByName(String name) {
+        String jpql = "select c "
+                + " from Staff c "
+                + " where c.retired=:ret "
+                + " and c.person.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
     }
 
     public PersonFacade getPersonFacade() {
@@ -1491,9 +1518,7 @@ public class StaffController implements Serializable {
     public String navigateToManageStaff(){
         return "/admin/staff/admin_manage_staff_index.xhtml";
     }
-
-   
-
+  
     public CommonController getCommonController() {
         return commonController;
     }

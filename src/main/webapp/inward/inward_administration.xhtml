@@ -38,7 +38,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton value="Time-based Service Categories" class="w-100" action="inward_timed_item_category"   style="alignment-adjust: auto"></p:commandButton>
                                             <p:commandButton value="Time-based Services" class="w-100" action="inward_timed_item"  actionListener="#{timedItemController.prepareAdd()}" ></p:commandButton>
-                                            
+
                                             <p:commandButton value="Time-based Services Charges" class="w-100" action="inward_timed_item_fee"  ></p:commandButton>
                                             <p:commandButton value="Surgeries" class="w-100" action="/clinical/clinical_procedures"  ></p:commandButton>
                                         </div>
@@ -56,6 +56,23 @@
                                     <p:tab title="Analytics">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/inward_fee_list" ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Diagnosis Cards">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Add Diagnosis Card Template"
+                                                class="w-100" 
+                                                action="#{uploadController.toAddNewDiagnosisCardTemplateUpload()}" >
+                                            </p:commandButton> 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Uploaded Diagnosis Card Templates"
+                                                class="w-100" 
+                                                action="#{uploadController.toListDiagnosisCardUploads()}" >
+                                             </p:commandButton>
+                                            
                                         </div>
                                     </p:tab>
 

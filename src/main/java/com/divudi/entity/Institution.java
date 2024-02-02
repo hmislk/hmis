@@ -9,7 +9,6 @@ import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.java.CommonFunctions;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,15 +38,15 @@ import javax.xml.bind.annotation.XmlTransient;
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
+    
     Institution institution;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JsonIgnore
+    
     private Person contactPerson;
 
     static final long serialVersionUID = 1L;
     @Id
-    @JsonIgnore
+    
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
@@ -63,6 +62,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String ownerName;
 
     @Lob
     String labBillHeading;
@@ -82,19 +82,19 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     private Route route;
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+    
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+    
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+    
     boolean retired;
     @ManyToOne
-    @JsonIgnore
+    
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
+    
     Date retiredAt;
     String retireComments;
     double labBillDiscount;
@@ -103,8 +103,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    private double allowedCreditLimit;
     double maxCreditLimit;
     double standardCreditLimit;
+    private double percentage;
     @Transient
     String transAddress1;
     @Transient
@@ -120,17 +122,16 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @Transient
     private String transAddress7;
     @Transient
-    @JsonIgnore
     List<AgentReferenceBook> agentReferenceBooks;
     String pointOfIssueNo;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
+    
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
     String accountNo;
-    @JsonIgnore
+    
     Institution bankBranch;
 
     String emailSendingUsername;
@@ -142,6 +143,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     //Inactive Status
     private boolean inactive;
+    private Institution parentInstitution;
 
     public String getEmailSendingUsername() {
         return emailSendingUsername;
@@ -480,6 +482,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getChequePrintingName() {
+        if (chequePrintingName == null || chequePrintingName.trim().equals("")){
+            chequePrintingName = name;
+        }
         return chequePrintingName;
     }
 
@@ -653,6 +658,38 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod CollectingCentrePaymentMethod) {
         this.CollectingCentrePaymentMethod = CollectingCentrePaymentMethod;
+    }
+
+    public double getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(double percentage) {
+        this.percentage = percentage;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public double getAllowedCreditLimit() {
+        return allowedCreditLimit;
+    }
+
+    public void setAllowedCreditLimit(double allowedCreditLimit) {
+        this.allowedCreditLimit = allowedCreditLimit;
+    }
+
+    public Institution getParentInstitution() {
+        return parentInstitution;
+    }
+
+    public void setParentInstitution(Institution parentInstitution) {
+        this.parentInstitution = parentInstitution;
     }
     
     

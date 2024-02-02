@@ -9,11 +9,12 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.facade.BillFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.apache.commons.codec.binary.Base64;
@@ -318,8 +319,8 @@ public class Finance {
                 jSONObject.put("referred_by_id", bill.getReferredBy().getId());
                 jSONObject.put("referred_by", bill.getReferredBy().getPerson().getNameWithTitle());
             }
-            if (bill.getReferralNumber() != null) {
-                jSONObject.put("referral_number", bill.getReferralNumber());
+            if (bill.getReferenceNumber() != null) {
+                jSONObject.put("referral_number", bill.getReferenceNumber());
             }
 
             if (bill.getStaff() != null) {

@@ -20,7 +20,7 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
-                            <p:panel class="m-2 p-2">
+                            <p:panel >
                                 <f:facet name="header" >
                                     <div class=" d-flex justify-content-between">
                                         <div class="m-2  align-items-center">
@@ -133,28 +133,25 @@
                                     </div>
                                     <div class="row form-group mb-1">
                                         <div class="col-md-3">
-                                            <p:outputLabel value="Phone:"  class="form-label" />
+                                            <p:outputLabel value="Phone for Quick Search:"  class="form-label" />
                                             <p:inputText 
-                                                value="#{patientController.current.person.phone}" 
+                                                required="true"
+                                                value="#{patientController.current.phoneNumberStringTransient}" 
                                                 class="form-control" 
                                                 validatorMessage="Please enter Valid Phone Number."
+                                                validator="#{patientController.validateMobile}"
                                                 >
-                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                                </c:if>
                                             </p:inputText>
 
                                         </div>
                                         <div class="col-md-3">
-                                            <p:outputLabel value="Mobile:"  class="form-label" />
+                                            <p:outputLabel value="Other Contact Number:"  class="form-label" />
                                             <p:inputText 
                                                 value="#{patientController.current.person.mobile}" 
                                                 class="form-control" 
-                                                validatorMessage="Please enter Valid Mobile Number."
+                                                validatorMessage="Please enter Valid other contact Number."
+                                                validator="#{patientController.validateMobile}"
                                                 >
-                                                <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
-                                                    <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
-                                                </c:if>
                                             </p:inputText>
 
                                         </div>
@@ -178,9 +175,30 @@
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
-                                        <div class="col-md-12">
+                                        <div class="col-md-8">
                                             <p:outputLabel value="Address:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.person.address}" style="width: 100%;" class="form-control" />
+
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p:outputLabel value="Area"  class="form-label" />
+                                            <p:autoComplete 
+                                                id="area" 
+                                                class="w-100 -mx-2"
+                                                inputStyleClass="form-control"
+                                                forceSelection="true"
+                                                value="#{patientController.current.person.area}"  
+                                                completeMethod="#{areaController.completeArea}" 
+                                                var="pa"
+                                                placeholder="Area"
+                                                itemLabel="#{pa.name}" 
+                                                itemValue="#{pa}" 
+                                                size="10"  
+                                                required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
+                                                requiredMessage="Need an Area"
+                                                >
+                                                
+                                            </p:autoComplete> 
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">

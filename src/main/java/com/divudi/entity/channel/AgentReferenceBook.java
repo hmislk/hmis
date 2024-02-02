@@ -35,6 +35,7 @@ public class AgentReferenceBook implements Serializable {
     private double bookNumber=0.0;
     private String strbookNumber;
     private boolean deactivate=false;
+    private boolean fullyUtilized=false;
 
     @ManyToOne
     private Institution institution;
@@ -234,6 +235,14 @@ public class AgentReferenceBook implements Serializable {
 
     public void setStrbookNumber(String StrbookNumber) {
         this.strbookNumber = StrbookNumber;
+    }
+
+    public boolean isFullyUtilized() {
+        return fullyUtilized;
+    }
+
+    public void setFullyUtilized(boolean fullyUtilized) {
+        this.fullyUtilized = fullyUtilized;
     }
     
     

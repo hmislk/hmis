@@ -397,6 +397,11 @@ public class VtmController implements Serializable {
     }
 
     public List<Vtm> getItems() {
+        String sql = " select c from Vtm c where "
+                + " c.retired=false "
+                + " order by c.name ";
+
+        items = getFacade().findByJpql(sql);
         return items;
     }
 

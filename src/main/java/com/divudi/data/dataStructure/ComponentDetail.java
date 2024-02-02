@@ -33,7 +33,6 @@ public class ComponentDetail {
     private PaymentMethodData paymentMethodData;
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
-        System.out.println("getMultiplePaymentMethod");
         if (multiplePaymentMethodComponentDetails == null) {
             multiplePaymentMethodComponentDetails = new ArrayList<>();
         }

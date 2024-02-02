@@ -53,30 +53,35 @@ public class Upload implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    //Main Properties
     Long id;
 
-    @ManyToOne
-    private WebContent webContent;
-    @ManyToOne
-    Institution institution;
-    @ManyToOne
-    WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
-    //Retairing properties
-    boolean retired;
-    @ManyToOne
-    WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
-    String retireComments;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     @Basic(fetch = FetchType.LAZY)
     byte[] baImage;
     String fileName;
     String fileType;
+    
+    @ManyToOne
+    private Category category;
+    @ManyToOne
+    private WebContent webContent;
+    @ManyToOne
+    Institution institution;
+    @ManyToOne
+    WebUser creater;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date createdAt;
+    //Retairing properties
+    boolean retired;
+    @ManyToOne
+    WebUser retirer;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date retiredAt;
+    String retireComments;
+    
     @Lob
     String comments;
     @Enumerated(EnumType.STRING)
@@ -258,6 +263,14 @@ public class Upload implements Serializable {
             }
         }
         return pdf;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }

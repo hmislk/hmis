@@ -41,6 +41,7 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
+import com.divudi.java.CommonFunctions;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +82,7 @@ public class HumanResourceBean {
     @EJB
     ShiftFacade shiftFacade;
     ///////////////////
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private FinalVariables finalVariables;
@@ -1525,10 +1526,10 @@ public class HumanResourceBean {
         Calendar frm = Calendar.getInstance();
         Calendar to = Calendar.getInstance();
 
-        frm.setTime(getCommonFunctions().getStartOfDay(sst.getShiftDate()));
+        frm.setTime(commonFunctions.getStartOfDay(sst.getShiftDate()));
         frm.add(Calendar.DATE, -1);
 
-        to.setTime(getCommonFunctions().getEndOfDay(sst.getShiftDate()));
+        to.setTime(commonFunctions.getEndOfDay(sst.getShiftDate()));
         to.add(Calendar.DATE, 1);
 
         ////////////////
@@ -2383,7 +2384,7 @@ public class HumanResourceBean {
     }
 
 //    public double calOt(Date date) {
-//        DateRange dateRange = getCommonFunctions().getDateRangeForOT(date);
+//        DateRange dateRange = commonFunctions.getDateRangeForOT(date);
 //        //System.err.println("From : " + dateRange.getFromDate());
 //        //System.err.println("To : " + dateRange.getToDate());
 //
@@ -2404,7 +2405,7 @@ public class HumanResourceBean {
     }
 
     private StaffShift createNewStaffShift(StaffShift ss, Calendar date) {
-        Date tmp = getCommonFunctions().getEndOfDay(date.getTime());
+        Date tmp = commonFunctions.getEndOfDay(date.getTime());
         Calendar time = Calendar.getInstance();
         time.setTime(tmp);
         time.add(Calendar.MILLISECOND, 1);
@@ -2505,10 +2506,10 @@ public class HumanResourceBean {
                 //create new Staffshft Record
                 createNewStaffShift(ss, lastDate);
                 //Update EndRecord Time
-                endRecord.setRecordTimeStamp(getCommonFunctions().getEndOfDay(toDate));
+                endRecord.setRecordTimeStamp(commonFunctions.getEndOfDay(toDate));
                 getFingerPrintRecordFacade().edit(endRecord);
                 //Update Staff shift
-//                ss.setShiftEndTime(getCommonFunctions().getEndOfDay(dateRange.getToDate()));               
+//                ss.setShiftEndTime(commonFunctions.getEndOfDay(dateRange.getToDate()));               
                 getStaffShiftFacade().edit(ss);
             }
         }
@@ -2518,7 +2519,7 @@ public class HumanResourceBean {
 //    public OtNormalSpecial calOt(Date date, Staff staff) {
 //        OtNormalSpecial otNormalSpecial = new OtNormalSpecial();
 //
-//        DateRange dateRange = getCommonFunctions().getDateRangeForOT(date);
+//        DateRange dateRange = commonFunctions.getDateRangeForOT(date);
 //
 //        otNormalSpecial.setDateRange(dateRange);
 //
@@ -3555,8 +3556,8 @@ public class HumanResourceBean {
 //                + " and s.salaryCycle.salaryToDate>=:td";
 //
 //        HashMap hm = new HashMap<>();
-//        hm.put("fd", getCommonFunctions().getStartOfMonth(date));
-//        hm.put("td", getCommonFunctions().getEndOfMonth(date));
+//        hm.put("fd", commonFunctions.getStartOfMonth(date));
+//        hm.put("td", commonFunctions.getEndOfMonth(date));
 //        hm.put("s", s);
 //
 //        StaffSalary tmp = getStaffSalaryFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
@@ -3621,13 +3622,7 @@ public class HumanResourceBean {
         this.staffFacade = staffFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
+   
 
     public StaffShiftFacade getStaffShiftFacade() {
         return staffShiftFacade;

@@ -20,10 +20,15 @@
 
                 <p:panel header="Manage Credit Companies" >
                     <div class="row">
-                        <div class="col-md-6">
-                            <p:commandButton id="btnAdd" value="Add" action="#{creditCompanyController.prepareAdd()}" class=" m-1 ui-button-success w-25" process="btnAdd" update="gpDetail lstSelect">
+                        <div class="col-md-5">
+                            <p:commandButton id="btnAdd" 
+                                             value="Add New"
+                                             icon="fas fa-plus"
+                                             action="#{creditCompanyController.prepareAdd()}" class="ui-button-success" process="btnAdd" update="gpDetail lstSelect">
                             </p:commandButton>
-                            <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                            <p:commandButton id="btnDelete" 
+                                             icon="fas fa-trash"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{creditCompanyController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25"  process="btnDelete" update="gpDetail lstSelect">
                             </p:commandButton>
                             <p:selectOneListbox   id="lstSelect"  class="w-100" value="#{creditCompanyController.current}" filter="true">
@@ -32,60 +37,63 @@
                                 </p:ajax>
                             </p:selectOneListbox>
                         </div>
-                        <div class="col-md-6">
-                            <p:panelGrid id="gpDetail" columns="1">
+                        <div class="col-md-7">
+                            <p:panel id="gpDetail" class="w-100" header="Details of the Credit Company">
                                 <p:tabView>
                                     <p:tab title="Institution Detail"> 
                                         <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                             <h:outputText id="lblName" value="Name" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtName" class="w-100" value="#{creditCompanyController.current.name}"  ></h:inputText>
+                                            <p:inputText autocomplete="off" id="txtName" class="w-100" value="#{creditCompanyController.current.name}"  ></p:inputText>
 
                                             <h:outputText id="lblAddress" value="Address" ></h:outputText>
-                                            <h:inputText  id="txtAddress" class="w-100" value="#{creditCompanyController.current.address}"  >
-                                            </h:inputText>
+                                            <p:inputText  id="txtAddress" class="w-100" value="#{creditCompanyController.current.address}"  >
+                                            </p:inputText>
 
                                             <h:outputText id="lblTel" value="Tel" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off" id="txtTel" value="#{creditCompanyController.current.mobile}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off" id="txtTel" value="#{creditCompanyController.current.mobile}"  ></p:inputText>
 
                                             <h:outputText id="lblFax" value="Fax" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off" id="txtFax" value="#{creditCompanyController.current.fax}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off" id="txtFax" value="#{creditCompanyController.current.fax}"  ></p:inputText>
 
                                             <h:outputText id="lblEmail" value="Email" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off" id="txtEmail" value="#{creditCompanyController.current.email}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off" id="txtEmail" value="#{creditCompanyController.current.email}"  ></p:inputText>
 
                                             <h:outputText  value="Discount for Lab Bill" ></h:outputText>
-                                            <h:inputText  class="w-100" autocomplete="off"  value="#{creditCompanyController.current.labBillDiscount}"  ></h:inputText>
+                                            <p:inputText  class="w-100" autocomplete="off"  value="#{creditCompanyController.current.labBillDiscount}"  ></p:inputText>
                                             <h:outputText  value="Discount for OPD Bill" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.opdBillDiscount}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.opdBillDiscount}"  ></p:inputText>
                                             <h:outputText  value="Discount for Inward Bill" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.inwardDiscount}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.inwardDiscount}"  ></p:inputText>
 
                                             <h:outputText  value="Discount for Pharmacy Bill" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.pharmacyDiscount}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.pharmacyDiscount}"  ></p:inputText>
 
 
                                         </h:panelGrid>
                                     </p:tab>
 
-                                    <p:tab title="Contact Person Detail">
-                                        <h:panelGrid id="gpContactPerson" columns="2">
+                                    <p:tab title="Contact Person Details">
+                                        <h:panelGrid id="gpContactPerson" columns="2" class="w-100">
                                             <h:outputText value="Contact Person Name" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.contactPerson.name}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off"  value="#{creditCompanyController.current.contactPerson.name}"  ></p:inputText>
 
                                             <h:outputText value="Contact Person Tel" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off" value="#{creditCompanyController.current.contactPerson.mobile}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off" value="#{creditCompanyController.current.contactPerson.mobile}"  ></p:inputText>
 
                                             <h:outputText value="Contact Person Email" ></h:outputText>
-                                            <h:inputText class="w-100" autocomplete="off" value="#{creditCompanyController.current.contactPerson.email}"  ></h:inputText>
+                                            <p:inputText class="w-100" autocomplete="off" value="#{creditCompanyController.current.contactPerson.email}"  ></p:inputText>
                                         </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
+                                <p:commandButton id="btnSave" 
+                                                 icon="fas fa-save"
+                                                 value="Save" 
+                                                 action="#{creditCompanyController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect">
 
-                            </p:panelGrid>
-                            <p:commandButton id="btnSave" value="Save" action="#{creditCompanyController.saveSelected()}" class=" m-1 ui-button-warning w-25" process="btnSave gpDetail" update="lstSelect">
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </p:panel>
 
-                            </p:commandButton>
-                            <p:defaultCommand target="btnSave"/>
                         </div>
                     </div>
 

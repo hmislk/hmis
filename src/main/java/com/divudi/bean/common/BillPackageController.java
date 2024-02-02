@@ -12,6 +12,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -19,7 +20,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -47,6 +48,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -79,7 +81,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -145,53 +146,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     Institution referredByInstitution;
     String referralId;
 
+    private ItemLight itemLight;
+    private List<ItemLight> opdPackages;
+    private boolean patientDetailsEditable;
+
     //</editor-fold>
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
-        return paymentMethodData;
-    }
-
-    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        this.paymentMethodData = paymentMethodData;
-    }
-
-    public Title[] getTitle() {
-        return Title.values();
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
-    }
-
-    public List<Bill> getBills() {
-        if (bills == null) {
-            bills = new ArrayList<Bill>();
-        }
-        return bills;
-    }
-
-    public void setBills(List<Bill> bills) {
-        this.bills = bills;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     private void savePatient() {
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient to save");
@@ -215,6 +174,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         } else {
             getPatientFacade().edit(getPatient());
         }
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public void putToBills() {
@@ -245,30 +209,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBillBean().calculateBillItems(myBill, tmp);
             bills.add(myBill);
         }
-    }
-
-    public BillSessionFacade getBillSessionFacade() {
-        return billSessionFacade;
-    }
-
-    public void setBillSessionFacade(BillSessionFacade billSessionFacade) {
-        this.billSessionFacade = billSessionFacade;
-    }
-
-    public ServiceSessionBean getServiceSessionBean() {
-        return serviceSessionBean;
-    }
-
-    public void setServiceSessionBean(ServiceSessionBean serviceSessionBean) {
-        this.serviceSessionBean = serviceSessionBean;
-    }
-
-    public CashTransactionBean getCashTransactionBean() {
-        return cashTransactionBean;
-    }
-
-    public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
-        this.cashTransactionBean = cashTransactionBean;
     }
 
     private void saveBatchBill() {
@@ -340,7 +280,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
         savePatient();
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 //            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
@@ -363,16 +303,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         UtilityController.addSuccessMessage(
                 "Bill Saved");
         printPreview = true;
-    }
-
-    private List<Packege> opdPackages;
-
-    public List<Packege> getOpdPackege() {
-        if (opdPackages == null) {
-            opdPackages = itemApplicationController.getPackages();
-        }
-        //System.out.println("Packege : " + opdPackages);
-        return opdPackages;
     }
 
     private Bill saveBill(Department bt, BilledBill temp) {
@@ -417,14 +347,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         return temp;
 
-    }
-
-    public PaymentSchemeController getPaymentSchemeController() {
-        return paymentSchemeController;
-    }
-
-    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
-        this.paymentSchemeController = paymentSchemeController;
     }
 
     private boolean errorCheck() {
@@ -560,16 +482,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         calTotals();
     }
 
-    public String navigateToMedicalPakageBillingFromMenu() {
-        clearBillValues();
-        setPatient(getPatient());
-//        appointmentController.prepereForInwardAppointPatient();
-//        appointmentController.setSearchedPatient(getCurrent());
-//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
-//        appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/opd_bill_package_medical";
-    }
-
     public void clearBillValues() {
         setPatient(null);
         setReferredBy(null);
@@ -627,12 +539,80 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
     }
 
-    private BillFacade getEjbFacade() {
-        return billFacade;
+    @Override
+    public Patient getPatient() {
+        if(patient==null){
+            patient = new Patient();
+            patientDetailsEditable=true;
+        }
+        return patient;
     }
 
-    private void setEjbFacade(BillFacade ejbFacade) {
-        this.billFacade = ejbFacade;
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="navigater">
+    String navigateToNewOpdPackageBill(Patient patient) {
+        clearBillItemValues();
+        clearBillValues();
+        printPreview = false;
+        this.patient = patient;
+        return "/opd_bill_package?faces-redirect=true";
+    }
+
+    public String navigateToMedicalPakageBillingFromMenu() {
+        clearBillValues();
+        setPatient(getPatient());
+//        appointmentController.prepereForInwardAppointPatient();
+//        appointmentController.setSearchedPatient(getCurrent());
+//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+//        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/opd_bill_package_medical?faces-redirect=true";
+    }
+    //</editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getter and Setter">
+    public List<ItemLight> getOpdPackages() {
+        if (opdPackages == null) {
+            opdPackages = itemApplicationController.getPackages();
+        }
+        //System.out.println("Packege : " + opdPackages);
+
+        return opdPackages;
+    }
+
+    public void setOpdPackages(List<ItemLight> opdPackages) {
+        this.opdPackages = opdPackages;
+    }
+
+    public BillSessionFacade getBillSessionFacade() {
+        return billSessionFacade;
+    }
+
+    public void setBillSessionFacade(BillSessionFacade billSessionFacade) {
+        this.billSessionFacade = billSessionFacade;
+    }
+
+    public ServiceSessionBean getServiceSessionBean() {
+        return serviceSessionBean;
+    }
+
+    public void setServiceSessionBean(ServiceSessionBean serviceSessionBean) {
+        this.serviceSessionBean = serviceSessionBean;
+    }
+
+    public CashTransactionBean getCashTransactionBean() {
+        return cashTransactionBean;
+    }
+
+    public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
+        this.cashTransactionBean = cashTransactionBean;
+    }
+
+    private BillFacade getEjbFacade() {
+        return billFacade;
     }
 
     private SessionController getSessionController() {
@@ -669,16 +649,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
         calTotals();
-    }
-
-    @Override
-    public Patient getPatient() {
-        return patient;
-    }
-
-    @Override
-    public void setPatient(Patient patient) {
-        this.patient = patient;
     }
 
     public Doctor getReferredBy() {
@@ -747,6 +717,52 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             lstBillEntries = new ArrayList<BillEntry>();
         }
         return lstBillEntries;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public Title[] getTitle() {
+        return Title.values();
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
+    }
+
+    public List<Bill> getBills() {
+        if (bills == null) {
+            bills = new ArrayList<Bill>();
+        }
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {
@@ -925,14 +941,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.referralId = referralId;
     }
 
-    String navigateToNewOpdPackageBill(Patient patient) {
-        clearBillItemValues();
-        clearBillValues();
-        printPreview = false;
-        this.patient = patient;
-        return "/opd/opd_bill_package";
-    }
-
     public Institution getCollectingCentre() {
         return collectingCentre;
     }
@@ -941,54 +949,30 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.collectingCentre = collectingCentre;
     }
 
-    public List<Packege> getOpdPackages() {
-        return opdPackages;
+    public ItemLight getItemLight() {
+
+        return itemLight;
     }
 
-    public void setOpdPackages(List<Packege> opdPackages) {
-        this.opdPackages = opdPackages;
+    public void setItemLight(ItemLight itemLight) {
+
+        this.itemLight = itemLight;
     }
 
-    /**
-     *
-     */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillPackageController controller = (BillPackageController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billPackageController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillPackageController.class.getName());
-            }
-        }
+    public PaymentSchemeController getPaymentSchemeController() {
+        return paymentSchemeController;
     }
+
+    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
+        this.paymentSchemeController = paymentSchemeController;
+    }
+
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
 }

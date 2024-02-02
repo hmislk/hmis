@@ -9,13 +9,14 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -29,6 +30,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +44,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.entity.EncounterCreditCompany;
+import com.divudi.entity.Institution;
+import com.divudi.facade.EncounterCreditCompanyFacade;
 
 /**
  *
@@ -50,7 +55,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class BhtEditController implements Serializable {
+public class BhtEditController implements Serializable, ControllerWithPatient  {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -68,6 +73,10 @@ public class BhtEditController implements Serializable {
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB 
+    EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+  
+    
     ////////////////
     private List<PatientRoom> patientRoom;
     List<Admission> selectedItems;
@@ -76,6 +85,8 @@ public class BhtEditController implements Serializable {
     private Patient newPatient;
     /////////////
     private Admission current;
+    private Patient patient;
+    private boolean patientDetailsEditable;
     String selectText = "";
     @EJB
     private BillFacade billFacade;
@@ -84,13 +95,42 @@ public class BhtEditController implements Serializable {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
-    @Inject
+
     CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
     
     private Speciality referringSpeciality;
     private Speciality opdSpeciality;
+    private List<EncounterCreditCompany> encounterCreditCompanys;
+    EncounterCreditCompany encounterCreditCompany;
+    
+    public void setSelectedCompany(EncounterCreditCompany ecc){
+        current.setCreditCompany(ecc.getInstitution());
+    }
+    
+    public void removeCreditCompany(EncounterCreditCompany ecc){
+        for(EncounterCreditCompany e:encounterCreditCompanys){
+            if (e == ecc) {
+                e.setRetired(true);
+                encounterCreditCompanyFacade.edit(e);
+            }
+        }
+        current.setCreditCompany(null);
+        fillCreditCompaniesByPatient();
+//        current.setCreditCompany(encounterCreditCompanys.get(0).getInstitution());
+    }
+    
+    public void fillCreditCompaniesByPatient(){
+        encounterCreditCompanys=new ArrayList<>();
+        String sql = "select ecc from EncounterCreditCompany ecc"
+                + "  where ecc.retired=false "
+                + " and ecc.patientEncounter=:pEnc ";
+        HashMap hm = new HashMap();
+        hm.put("pEnc", current);
+        encounterCreditCompanys= encounterCreditCompanyFacade.findByJpql(sql, hm);
+        
+    }
 
     public void resetSpecialities() {
         if (current == null) {
@@ -470,6 +510,7 @@ public class BhtEditController implements Serializable {
         this.roomFacade = roomFacade;
     }
 
+    
     private void createPatientRoom() {
 
         HashMap hm = new HashMap();
@@ -537,6 +578,48 @@ public class BhtEditController implements Serializable {
 
     public void setOpdSpeciality(Speciality opdSpeciality) {
         this.opdSpeciality = opdSpeciality;
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        return encounterCreditCompanys;
+    }
+
+    public void setEncounterCreditCompanys(List<EncounterCreditCompany> encounterCreditCompanys) {
+        this.encounterCreditCompanys = encounterCreditCompanys;
+    }
+
+    @Override
+    public Patient getPatient() {
+        if (current != null) {
+            patient = getCurrent().getPatient();
+        }
+        if (patient == null) {
+            Person p = new Person();
+            patient = new Patient();
+            patientDetailsEditable = true;
+            patient.setPerson(p);
+        }
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+   @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     /**

@@ -420,7 +420,7 @@ public class ApiMembership {
 //        temp.setStaff(staff);
 //        temp.setToStaff(toStaff);
 //        temp.setReferredBy(referredBy);
-//        temp.setReferralNumber(referralId);
+//        temp.setReferenceNumber(referralId);
 //        temp.setReferredByInstitution(referredByInstitution);
 //        temp.setCreditCompany(creditCompany);
 //        temp.setComments(comment);
@@ -804,9 +804,6 @@ public class ApiMembership {
         return billNumberGenerator;
     }
 
-    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
-        this.billNumberGenerator = billNumberGenerator;
-    }
 
     public BillBeanController getBillBean() {
         return billBean;

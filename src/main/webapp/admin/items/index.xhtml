@@ -41,6 +41,27 @@
                                         ajax="false" 
                                         value="Service Subcategories" 
                                         action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Services and Investigations by Institution" 
+                                        action="#{investigationCategoryController.navigateToItemsAndServiceCountsByInstitution()}" />
+
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Services and Investigations by Department" 
+                                        action="#{investigationCategoryController.navigateToItemsAndServiceCountsByDepartment()}" />
+
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Services and Investigations" 
+                                        action="#{investigationCategoryController.navigateToItemsAndServices}" />
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -62,7 +83,10 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Item List"
-                                                       action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
+                                                       action="#{itemController.navigateToListAllItemsForAdmin()}" ></p:commandButton>
+
+                                    <p:commandButton   class="w-100"  ajax="false" value="Reload List"
+                                                       action="#{itemApplicationController.reloadItems()}" ></p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Metadata">
@@ -87,16 +111,28 @@
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
-                                        value="Item Upload" 
-                                        action="/admin/items/opd_service_upload" />
+                                        value="Item &amp; Hospital Fee Upload" 
+                                        action="#{dataUploadController.navigateToUploadOpdItemsAndFees()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Upload and Add Professional Fees" 
+                                        action="#{dataUploadController.navigateToUploadAndAddProfessionalFees()}" />
                                     
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Item &amp; Fee Upload for Collecting Centres" 
+                                        action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
+
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Investigations Upload" 
                                         action="/admin/items/investigation_upload" />
-                                    
-                                    
+
+
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />

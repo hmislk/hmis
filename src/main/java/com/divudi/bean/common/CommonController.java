@@ -27,7 +27,7 @@ import org.joda.time.LocalDate;
  *
  * @author buddhika
  */
-@Named(value = "commonController")
+@Named
 @SessionScoped
 public class CommonController implements Serializable {
 
@@ -67,7 +67,6 @@ public class CommonController implements Serializable {
      * @return The formatted double value.
      */
     public static double formatDouble(Double number, String format) {
-        System.out.println("formatDouble");
         if (number == null) {
             return 0.0; // Handle null input gracefully by returning 0.0
         }
@@ -133,6 +132,9 @@ public class CommonController implements Serializable {
     }
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
+        if (fromDate==null||toDate==null){
+            return 0;
+        }
         long timeInMs = toDate.getTime() - fromDate.getTime();
         return timeInMs / (1000 * 60);
     }
@@ -201,6 +203,14 @@ public class CommonController implements Serializable {
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);
         return s;
+    }
+
+    public static Long convertStringToLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 
     public static double extractDoubleValue(String input) {

@@ -21,6 +21,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -368,16 +369,9 @@ public class PatientReportBean {
         this.antibioticFacade = antibioticFacade;
     }
 
-    @EJB
+
     CommonFunctions commonFunctions;
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 

@@ -17,7 +17,7 @@ import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.ItemReorders;
 import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -31,6 +31,7 @@ import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.ReorderFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -654,14 +655,14 @@ public class ReorderController implements Serializable {
         List<Item> iss = null;
 
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
             iss = itemController.getDealorItem();
         } else if (autoOrderMethod == AutoOrderMethod.ByRol) {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         } else {
-            itemController.setInstituion(institution);
+            itemController.setInstitution(institution);
 //            generateUserSelectedItemsFromUserSelectedReorders();
             iss = userSelectedItems;
         }
@@ -823,8 +824,8 @@ public class ReorderController implements Serializable {
             sessionController.setDepartment(department);
             return "";
         }
-        purchaseOrderRequestController.recreate();
-        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstituion());
+        purchaseOrderRequestController.resetBillValues();
+        purchaseOrderRequestController.getCurrentBill().setToInstitution(itemController.getInstitution());
         pharmacyController.setFromDate(fromDate);
         pharmacyController.setToDate(toDate);
         generatePharmacyOrderBillComponents();

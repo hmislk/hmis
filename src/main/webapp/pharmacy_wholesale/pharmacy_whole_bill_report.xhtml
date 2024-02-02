@@ -16,7 +16,11 @@
 
                     <p:panel header="Pharmacy Whole Sale Report" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="4" class="w-100" >
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{billController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{billController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <p:autoComplete 
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
@@ -28,22 +32,33 @@
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{billController.department}"  >
                             </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{billController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{billController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{billController.getPharmacyWholeBills}" ></p:commandButton>
-
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill" 
+                                icon="fas fa-fill"
+                        class="ui-button-warning"
+                                action="#{billController.getPharmacyWholeBills}" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" icon="fas fa-file-excel"
+                                class="ui-button-success mx-2" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="opd_bills"  />
+                            </p:commandButton> 
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="opd_bills"  />
-                            </p:commandButton>  
+                             
                         </h:panelGrid>
 
 
@@ -51,18 +66,20 @@
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                          value="#{billController.bills}" var="bill"  rows="20"
                                          paginator="true"
+                                         paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="20, 50, 100"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Whole Sale Report : "/>
+                                    <h:outputLabel value="Pharmacy Whole Sale Report : "/>&nbsp;
                                     <h:outputLabel value="#{billController.department.name}"/> &#13;&nbsp;
-                                        <h:outputLabel value="From : "/>
-                                        <h:outputLabel value="#{billController.fromDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                        </h:outputLabel>&#13;&nbsp;
-                                        <h:outputLabel value="To : "/>
+                                    <br/>
+                                    <h:outputLabel value="From : "/>&nbsp;
+                                    <h:outputLabel value="#{billController.fromDate}">&nbsp;
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    <h:outputLabel value="To : "/>&nbsp;
                                         <h:outputLabel value="#{billController.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                 </f:facet>
 

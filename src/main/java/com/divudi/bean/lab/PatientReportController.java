@@ -237,7 +237,6 @@ public class PatientReportController implements Serializable {
     }
 
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
-        System.out.println("preparePatientReportByIdForRequestsWithoutExpiary");
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
             return;
@@ -285,13 +284,13 @@ public class PatientReportController implements Serializable {
             return;
         }
         String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if(securityKey==null||securityKey.trim().equals("")){
+        if (securityKey == null || securityKey.trim().equals("")) {
             sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
             sessionController.savePreferences(sessionController.getApplicationPreference());
         }
 
-        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId,securityKey);
-        
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId, securityKey);
+
         if (idStr == null || idStr.trim().isEmpty()) {
             // Handle the situation where decryption returns null or an empty string
             return;
@@ -1156,13 +1155,13 @@ public class PatientReportController implements Serializable {
 
     public String smsBody(PatientReport r) {
         String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if(securityKey==null||securityKey.trim().equals("")){
+        if (securityKey == null || securityKey.trim().equals("")) {
             sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
             sessionController.savePreferences(sessionController.getApplicationPreference());
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(),securityKey);
+        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
         String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
@@ -1170,7 +1169,7 @@ public class PatientReportController implements Serializable {
                 + url;
         return b;
     }
-    
+
     public String smsBody(PatientReport r, String old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -1478,25 +1477,45 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
-
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
-            Sms e = new Sms();
-            e.setPending(true);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(currentPtIx.getBillItem().getBill());
-            e.setPatientReport(currentPatientReport);
-            e.setPatientInvestigation(currentPtIx);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
-            e.setSendingMessage(smsBody(currentPatientReport));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSentSuccessfully(false);
-            getSmsFacade().create(e);
+        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
+                if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+                    Sms e = new Sms();
+                    e.setPending(true);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setBill(currentPtIx.getBillItem().getBill());
+                    e.setPatientReport(currentPatientReport);
+                    e.setPatientInvestigation(currentPtIx);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+                    e.setSendingMessage(smsBody(currentPatientReport));
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    e.setSentSuccessfully(false);
+                    getSmsFacade().create(e);
+                }
+            }
+        }else{
+            if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
+                Sms e = new Sms();
+                e.setPending(true);
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setBill(currentPtIx.getBillItem().getBill());
+                e.setPatientReport(currentPatientReport);
+                e.setPatientInvestigation(currentPtIx);
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
+                e.setSendingMessage(smsBody(currentPatientReport));
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setSentSuccessfully(false);
+                getSmsFacade().create(e);
+            }
         }
-
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
 
             if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {

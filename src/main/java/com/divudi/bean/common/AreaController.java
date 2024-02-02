@@ -9,12 +9,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.Area;
+import com.divudi.entity.Institution;
 import com.divudi.facade.AreaFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -40,6 +42,39 @@ public class AreaController implements Serializable {
     private AreaFacade ejbFacade;
     private Area current;
     private List<Area> items = null;
+    
+      public void save(Area area) {
+        if (area == null) {
+            return;
+        }
+        if (area.getId() != null) {
+            getFacade().edit(area);
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            area.setCreatedAt(new Date());
+            area.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(area);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
+     public Area findAreaByName(String name) {
+         
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select a "
+                + " from Area a "
+                + " where a.retired=:ret "
+                + " and a.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
     public List<Area> completeArea(String qry) {
         List<Area> list;
@@ -62,7 +97,7 @@ public class AreaController implements Serializable {
         current = new Area();
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 

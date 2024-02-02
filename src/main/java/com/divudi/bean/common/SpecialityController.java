@@ -26,12 +26,17 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DualListModel;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -51,7 +56,7 @@ public class SpecialityController implements Serializable {
     DualListModel<Speciality> specialities;
 
     public String convertSpecialities() {
-        List<Speciality> speNoDoc = specialities.getSource() ;
+        List<Speciality> speNoDoc = specialities.getSource();
         List<Speciality> speDoc = specialities.getTarget();
         Map m;
         String jpql = "";
@@ -68,13 +73,13 @@ public class SpecialityController implements Serializable {
                 ds.setOrderNo(s.getOrderNo());
                 ds.setParentCategory(s.getParentCategory());
                 getFacade().create(ds);
-                
+
                 s.setRetired(true);
                 s.setRetireComments("As a conversion");
                 s.setRetiredAt(new Date());
                 s.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(s);
-                
+
                 jpql = "select s from Staff s where s.speciality=:sp";
                 m = new HashMap();
                 m.put("sp", s);
@@ -98,13 +103,13 @@ public class SpecialityController implements Serializable {
                 ds.setOrderNo(s.getOrderNo());
                 ds.setParentCategory(s.getParentCategory());
                 getFacade().create(ds);
-                
+
                 s.setRetired(true);
                 s.setRetireComments("As a conversion");
                 s.setRetiredAt(new Date());
                 s.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(s);
-                
+
                 jpql = "select s from Staff s where s.speciality=:sp";
                 m = new HashMap();
                 m.put("sp", s);
@@ -140,12 +145,32 @@ public class SpecialityController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
-    
+
     public List<Speciality> completeDoctorSpeciality(String qry) {
-        Map m=new HashMap();
+        Map m = new HashMap();
         m.put("class", DoctorSpeciality.class);
-        selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and type(c)=:class and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name",m);
+        selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and type(c)=:class and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", m);
         return selectedItems;
+    }
+
+    public Speciality findSpeciality(String name, boolean createNewIfNotExists) {
+        String j;
+        j = "select s "
+                + " from Speciality s "
+                + " where s.retired=:ret "
+                + " and s.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        Speciality ds = getFacade().findFirstByJpql(j, m);
+        if (ds == null && createNewIfNotExists) {
+            ds = new Speciality();
+            ds.setName(name);
+            ds.setCreatedAt(new Date());
+            ds.setCreater(sessionController.getLoggedUser());
+            getFacade().create(ds);
+        }
+        return ds;
     }
 
     public List<Speciality> getSelectedItems() {
@@ -172,6 +197,44 @@ public class SpecialityController implements Serializable {
 
     public void recreateModel() {
         items = null;
+    }
+
+    // Method to generate the Excel file and initiate the download
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("All Speciality Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Speciality Name");
+            headerRow.createCell(1).setCellValue("Income Name");
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (Speciality speciality : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(speciality.getName());
+                row.createCell(1).setCellValue(speciality.getDescription());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"all_speciality_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
     public void saveSelected() {

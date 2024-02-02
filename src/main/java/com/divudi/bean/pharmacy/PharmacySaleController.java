@@ -12,6 +12,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TokenController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -42,8 +43,10 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
+import com.divudi.entity.Token;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.UserStock;
@@ -59,6 +62,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import com.divudi.facade.TokenFacade;
 import com.divudi.facade.UserStockContainerFacade;
 import com.divudi.facade.UserStockFacade;
 import java.io.Serializable;
@@ -105,6 +109,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     CommonController commonController;
+
+    @Inject
+    TokenController tokenController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -136,6 +143,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     PaymentFacade paymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    TokenFacade tokenFacade;
 /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
@@ -155,7 +164,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     int activeIndex;
 
-   
+    private Token token;
     private Patient patient;
     private YearMonthDay yearMonthDay;
     private String patientTabId = "tabPt";
@@ -183,10 +192,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    private boolean patientDetailsEditable;
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
         return "/pharmacy/pharmacy_sale_without_stock";
+    }
+
+    public String navigateToPharmacyBillForCashier() {
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -214,6 +228,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void prepareNewPharmacyBillForMembers() {
         clearNewBillForMembers();
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
     }
 
     public void clearForNewBill() {
@@ -716,7 +735,25 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         getBillItem();
-        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
+        PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
+        if (pharmBillItem != null) {
+            Stock stock = pharmBillItem.getStock();
+            if (stock != null) {
+                ItemBatch itemBatch = stock.getItemBatch();
+                if (itemBatch != null) {
+                    // Ensure that each step in the chain is not null before accessing further.
+                    bi.setRate(itemBatch.getRetailsaleRate());
+                } else {
+                    System.out.println("ItemBatch is null");
+                }
+            } else {
+                System.out.println("Stock is null");
+            }
+        } else {
+            System.out.println("PharmaceuticalBillItem is null");
+        }
+
+//        bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  ////System.err.println("Discount "+bi.getDiscount());
         bi.setNetRate(bi.getRate() - bi.getDiscount());
@@ -1319,9 +1356,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
-        resetAll();
+        if (getToken() != null) {
+            getToken().setBill(getPreBill());
+            tokenFacade.edit(getToken());
+        }
 
+        markToken();
+        resetAll();
         billPreview = true;
+    }
+
+    public void markToken() {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
     }
 
     @EJB
@@ -1862,6 +1917,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patientSearchTab = 0;
         errorMessage = "";
         comment = null;
+        token = null;
     }
 
     private void clearBillItem() {
@@ -1947,6 +2003,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
+            patientDetailsEditable = true;
         }
         return patient;
     }
@@ -2253,6 +2310,24 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
 
 }

@@ -2,13 +2,13 @@
 <!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/admin/items/index.xhtml"
+                template="/admin/pricing/index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-    <ui:define name="item">
-
+    
+    <ui:define name="subcontent">
         <div class="container-fluid" >
             <div class="card" >
                 <div class="card-header" >
@@ -17,15 +17,14 @@
 
                 <div class="card-body" >
                     <h:form enctype="multipart/form-data">
-                        <p:fileUpload value="#{dataUploadBean.file}"
+                        <p:fileUpload value="#{dataUploadController.file}"
                                       mode="simple"
                                       label="Choose File"/>
                         <p:commandButton value="Upload"
-                                         action="#{dataUploadBean.uploadItemFeesToUpdateFees()}"
+                                         action="#{dataUploadController.uploadItemFeesToUpdateFees()}"
                                          ajax="false"/>
 
                     </h:form>
-
                     <p>Please use xlsx file format. the xls format is NOT supported.</p>
                     <p>Please use the first row as the header. Do not put any data in the first row. They will be ignored.</p>
                     <p>We consider only the columns which contain the ID, Fee and Foreigner Fee. All other columsn will be ignored.</p>
@@ -88,7 +87,7 @@
         <p:poll update="tblExport" interval="30"></p:poll>
        
 
-        <p:dataTable  value="#{dataUploadBean.itemFees}"
+        <p:dataTable  value="#{dataUploadController.itemFees}"
                       id="tblExport"
                       var="i"   
                       rowKey="#{i.id}" 
