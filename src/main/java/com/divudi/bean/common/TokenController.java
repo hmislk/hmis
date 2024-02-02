@@ -55,6 +55,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
     private Token removeingToken;
+    private Token settledToken;
     private List<Token> currentTokens;
     private Department department;
     private Institution institution;
@@ -120,7 +121,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", false);
-        j += " order by t.id";
+        j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
@@ -387,6 +388,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
         this.counter = counter;
     }
 
+    
+    
     @Override
     public Patient getPatient() {
         if (patient == null) {
@@ -417,6 +420,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public Token getSettledToken() {
+        return settledToken;
+    }
+
+    public void setSettledToken(Token settledToken) {
+        this.settledToken = settledToken;
     }
 
 }

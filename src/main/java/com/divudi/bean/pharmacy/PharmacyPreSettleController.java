@@ -128,6 +128,7 @@ public class PharmacyPreSettleController implements Serializable {
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
+    List<Token> settledToken;
     /////////////////////////
     //   PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
@@ -543,6 +544,7 @@ public class PharmacyPreSettleController implements Serializable {
         setBill(getBillFacade().find(getSaleBill().getId()));
 //        markToken();
 //        makeNull();
+        removeSettledToken();
         billPreview = true;
     }
 
@@ -554,6 +556,29 @@ public class PharmacyPreSettleController implements Serializable {
         t.setCalled(true);
         t.setCalledAt(new Date());
         t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
+    }
+
+    public void removeSettledToken() {
+        Token t = tokenController.findPharmacyTokens(getPreBill());
+        System.out.println("t = " + t.getTokenNumber());
+        if (t == null) {
+            return;
+        }
+        settledToken.add(t);
+        if (settledToken.size() > 3) {
+            saveSettledToken(settledToken.get(0)); 
+            settledToken.remove(0);
+        }
+    }
+
+    public void saveSettledToken(Token t) {
+        if (t == null) {
+            return;
+        }
+        t.setInProgress(false);
+        t.setCompletedAt(new Date());
         t.setCompleted(false);
         tokenController.save(t);
     }
