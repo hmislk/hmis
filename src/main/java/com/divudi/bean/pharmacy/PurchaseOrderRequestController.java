@@ -193,7 +193,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
-        } else {
+        } else if(getCurrentBill().getId() != null && getCurrentBill().getId() >0){
             getBillFacade().edit(getCurrentBill());
         }
 
@@ -287,9 +287,10 @@ public class PurchaseOrderRequestController implements Serializable {
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
-            } else {
-                getBillItemFacade().edit(b);
-            }
+            } 
+//            else {
+//                getBillItemFacade().edit(b);
+//            }
 //            System.out.println("b= " + tmpPh.getBillItem().getItem().getName());
             tmpPh.setBillItem(b);
 //            System.out.println("c " + tmpPh.getBillItem().getItem().getName());
@@ -300,8 +301,10 @@ public class PurchaseOrderRequestController implements Serializable {
 
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
+            
 //            System.out.println("billItem after= " + tmpPh.getBillItem().getItem().getName());
         }
+        getBillFacade().edit(getCurrentBill());
     }
 
     public void createOrderWithItems() {
