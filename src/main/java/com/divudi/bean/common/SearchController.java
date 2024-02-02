@@ -3547,7 +3547,7 @@ public class SearchController implements Serializable {
         hm.put("btp", bt);
         return getBillFacade().findByJpql(sql, hm);
     }
-
+   
     public void createPoTablePharmacy() {
         Date startTime = new Date();
 
