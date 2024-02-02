@@ -116,7 +116,7 @@
                                     <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                 </p:commandButton>
                             </p:column>
-                            <p:column headerText="GRNS">                   
+                            <p:column headerText="GRNS" width="30%">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">                        
                                     <p:column  >
                                         <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}" >                                
