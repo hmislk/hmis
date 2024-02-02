@@ -133,15 +133,19 @@ public enum BillType {
     Channel,
     XrayScan,
     // Cash Handling and Transfer Processes
-    InitialFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
-    ShiftClosureSummaryBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
-    ShiftBalanceTransferBill, // For transferring the total balance from one shift to another
-    ShiftBalanceTransferReceiveBill, // For receiving the transferred balance from one shift to another
+    ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
+    ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
+    FundTransferBill, // For transferring the total balance from one shift to another
+    FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
+    WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
+    @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
+    @Deprecated
     TransactionVerificationBill, // For the incoming cashier to verify all transaction types
-    DepositProcessingBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
-    WithdrawalProcessingBill, // For handling withdrawal transactions from the bank for operational purposes
+    @Deprecated
     FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
+    @Deprecated
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
     ;
 
@@ -250,22 +254,24 @@ public enum BillType {
                 return "X-Ray and Scan";
             case InwardFinalBill:
                 return "Inward Final Bill";
-            case InitialFundBill:
+            case ShiftStartFundBill:
                 return "Initial Fund Bill";
-            case ShiftBalanceTransferBill:
+            case FundTransferBill:
                 return "Shift Balance Transfer Bill";
             case TransactionHandoverBill:
                 return "Transaction Handover Bill";
             case TransactionVerificationBill:
                 return "Transaction Verification Bill";
-            case DepositProcessingBill:
+            case DepositFundBill:
                 return "Deposit Processing Bill";
-            case WithdrawalProcessingBill:
+            case WithdrawalFundBill:
                 return "Withdrawal Processing Bill";
             case FinancialReconciliationBill:
                 return "Financial Reconciliation Bill";
             case FinancialAuditingBill:
                 return "Financial Auditing Bill";
+            case FundTransferReceivedBill:
+                return "Fund Transfer Received Bill";
             default:
                 return this.toString();
         }

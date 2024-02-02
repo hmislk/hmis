@@ -8,6 +8,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.TokenType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
@@ -35,14 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Named
+//@Named
 @Singleton
 public class BillNumberGenerator {
 
@@ -715,6 +715,42 @@ public class BillNumberGenerator {
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
+    
+    
+    
+    public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
+        String sql = "SELECT count(b) "
+                + " FROM Token b "
+                + " where b.tokenType=:tt "
+                + " and b.tokenDate=:bd ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (staff != null) {
+            sql += " and b.staff=:staff ";
+            hm.put("staff", staff);
+        }
+
+        hm.put("tt", tokenType);
+        hm.put("bd", new Date());
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        if(dd==null){
+             dd=1l;
+        }else{
+            dd++;
+        }
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+    
 
 // Overloaded methods
     public String generateDailyBillNumberForOpd(Department department) {

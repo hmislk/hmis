@@ -44,9 +44,9 @@
                                 <p:panel header="Pharmacy" >
                                     <h:panelGrid columns="2" styleClass="alignTop" >
                                         <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.pharmacyWholesaleBillTemplate}" />
+                                        <p:inputTextarea value="#{sessionController.departmentPreference.pharmacyWholesaleBillTemplate}" />
                                         <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
-                                        <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" >
                                             <f:selectItem itemLabel="Please Select Paper Type" />
                                             <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>

@@ -157,17 +157,17 @@
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.nursingCharge}" class="w-100 mt-2 mb-2"/>
                                     
-                                    <h:outputLabel value="Duration Days For Mo Charge for a Block" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}" ></p:outputLabel>
-                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:outputLabel value="Duration Days For Mo Charge for a Block" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.timedItemFee.durationDaysForMoCharge}" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
                                     
                                     <h:outputLabel value="MO Charge for a Block" />
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.moCharge}" class="w-100  mt-2 mb-2"/>
                                     
-                                    <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"></p:outputLabel>
-                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <h:outputLabel value="Charge for After Duration Days" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"></p:outputLabel>
+                                    <p:inputText autocomplete="off" class="w-100 ml-2" value="#{roomFacilityChargeController.current.moChargeForAfterDuration}" rendered="#{sessionController.departmentPreference.inwardMoChargeCalculateInitialTime}"/>
                                     
                                     <h:outputLabel value="Linen Charge Per Day" />
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>

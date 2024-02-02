@@ -52,9 +52,8 @@
                                     value="Excel" 
                                     icon="fa fa-file-excel"
                                     class="ui-button-success"
-                                    ajax="false">
-                                    <p:dataExporter target="tbl" type="xlsx" fileName="user_logins" ></p:dataExporter>
-                                </p:commandButton>
+                                    ajax="false"
+                                    action="#{loginController.downloadAsExcel}" />
                             </h:panelGrid>
                         </div>
 
@@ -63,7 +62,7 @@
                             <h:outputLabel value="#{labels.topic}" styleClass="rh1" style="font-size: 18px;" /> 
                             <br/>
 
-                            <h:outputLabel value="User Login Details Report"/>
+                            <h:outputLabel value="Login Details Report"/>
                             <br/><br/>
 
                             <h:panelGrid columns="3">
@@ -80,12 +79,7 @@
                                 </h:outputLabel>
                             </h:panelGrid>
 
-                            <p:dataTable
-                                paginator="true"
-                                rows="10"
-                                rowKey="#{b.id}"
-                                id="tbl"
-                                value="#{loginController.logins}" var="b" rowIndexVar="index">
+                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
                                 <p:column headerText="No" width="30px" >
                                     <h:outputLabel value="#{index +1}" ></h:outputLabel>
                                 </p:column>
@@ -103,12 +97,12 @@
                                     <h:outputLabel value="#{b.webUser.webUserPerson.name}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Login At">
+                                <p:column headerText="Login At"  sortBy="#{b.logedAt}">
                                     <h:outputLabel value="#{b.logedAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Log out at">
+                                <p:column headerText="Log out at" sortBy="#{b.logoutAt}" >
                                     <h:outputLabel value="#{b.logoutAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>

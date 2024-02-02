@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/token/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <h:panelGrid columns="2" class="my-2">
+                        <p:commandButton 
+                        value="New Pharmacy Token"
+                        icon="fas fa-plus"
+                        class="ui-button-success"
+                        ajax="false" 
+                        action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
+                    </p:commandButton>
+
+                    <p:commandButton icon="fas fa-print" class="ui-button-info mx-2" ajax="false" value="Print" >
+                        <p:printer target="token" ></p:printer>
+                    </p:commandButton>
+                    </h:panelGrid>
+
+                    <h:panelGroup id="token" >
+                        <prints:pharmacy_token token="#{tokenController.currentToken}"/>
+                    </h:panelGroup>
+
+
+                </h:form>
+
+
+
+
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

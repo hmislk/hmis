@@ -15,23 +15,45 @@
                             <p:panel header="Financial Transaction Manager" rendered="true">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
-                                        value="New Initial Fund Bill"
+                                        value="Shift Start Funds"
                                         icon=""
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
-                                        value="Shift Balance Transfer Receive"
+                                        value="Shift End Funds"
                                         icon=""
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateShiftBalanceTransferReceiveBill()}" >
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                    </p:commandButton>
+                                    
+                                    
+                                    <p:commandButton 
+                                        value="Fund Transfer"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToFundTransferBill()}" >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        value="To List Fund Transfers for me to Receive"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="New Initial Fund Bill"
+                                        value="Fund Withdrawal"
                                         icon=""
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewWithdrawalProcessingBill()}" >
+                                    </p:commandButton>
+                                     <p:commandButton 
+                                        value="Fund Deposit"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToFundDepositBill()}" >
                                     </p:commandButton>
                                 </div>
                             </p:panel>
