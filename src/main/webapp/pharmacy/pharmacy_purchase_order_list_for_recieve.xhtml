@@ -16,27 +16,39 @@
 
                 <div class="row">
                     <div class="col-2">
-                        <h:panelGrid columns="1" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <h:outputLabel value="Po Number"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                            <h:outputLabel value="Distributor"/>   
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" />  
-                            <h:outputLabel value="Po Value"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" />
-                            <p:commandButton 
-                                class="w-100 my-1 ui-button-warning" 
-                                icon="fas fa-search"
-                                id="btnSearch" 
-                                ajax="false" 
-                                value="Search" 
-                                action="#{searchController.createPoTablePharmacy}"/>  
-                        </h:panelGrid>
+
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar 
+                            id="fromDate" 
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            value="#{searchController.fromDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar 
+                            id="toDate"
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            value="#{searchController.toDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                        </p:calendar>
+                        <h:outputLabel value="Po Number" class="mt-2"/>
+                        <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.billNo}" />
+                        <h:outputLabel value="Distributor"/>   
+                        <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.toInstitution}" />  
+                        <h:outputLabel value="Po Value"/>
+                        <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}" />
+                        <p:commandButton 
+                            class="w-100 mt-3 ui-button-warning" 
+                            icon="fas fa-search"
+                            id="btnSearch" 
+                            ajax="false" 
+                            value="Search" 
+                            action="#{searchController.createPoTablePharmacy}"/>  
+
                     </div>
                     <div class="col-10">
                         <p:dataTable 
@@ -107,22 +119,22 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <p:commandButton 
-                                            ajax="false"
-                                            value="Recieve" 
-                                            action="#{grnController.navigateToResive()}" 
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                            <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="Recieve All" 
-                                            class="mx-1"
-                                            action="#{grnController.navigateToResiveAll()}" 
-                                            disabled="#{p.cancelled}">
-                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                            <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
-                                        </p:commandButton>
+                                                ajax="false"
+                                                value="Recieve" 
+                                                action="#{grnController.navigateToResive()}" 
+                                                disabled="#{p.cancelled}">
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                                <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Recieve All" 
+                                                class="mx-1"
+                                                action="#{grnController.navigateToResiveAll()}" 
+                                                disabled="#{p.cancelled}">
+                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                                <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
+                                            </p:commandButton>
                                     </div>
                                     <div class="mt-1 col-md-12">
                                         <p:commandButton 

@@ -125,8 +125,6 @@
                                 </f:facet>
                             </p:cellEditor>                       
                         </p:column>  
-
-
                         <p:column headerText="Sale Price"  > 
                             <p:cellEditor>
                                 <f:facet name="output">
@@ -180,10 +178,7 @@
                                     </p:inputText>
                                 </f:facet>
                             </p:cellEditor>
-
                         </p:column>  
-
-
                         <p:column width="6%">
                             <p:commandButton 
                                 ajax="false"
@@ -191,15 +186,10 @@
                                 icon="fas fa-trash"
                                 class="ui-button-danger"
                                 action="#{grnController.removeItem(bi)}"/>
-
                             <p:rowEditor />  
-
-
                         </p:column>
-
-
+                        
                     </p:dataTable>  
-
                     <p:panel>
                         <p:panelGrid columns="3" style="min-width: 100%" id="tot">
 
@@ -243,31 +233,30 @@
                         </p:panelGrid>
                     </p:panel>
 
-
-
                 </h:panelGroup>
-                
-                <p:panel rendered="#{grnController.printPreview}" style="border: none;">
-                    <p:commandButton 
-                        ajax="false" 
-                        action="pharmacy_purchase_order_list_for_recieve"
-                        actionListener="#{grnController.viewPoList()}" 
-                        value="PO List"> 
-                    </p:commandButton>                   
-                    <p:commandButton 
-                        value="Print" 
-                        ajax="false" 
-                        action="#" >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
-                    
-                    <p:panel   id="gpBillPreview"   style="border: none;">
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                            <ph:grn bill="#{grnController.grnBill}"/>
-                        </h:panelGroup>
+            </p:panel>
 
-                    </p:panel>
+            <p:panel rendered="#{grnController.printPreview}" style="border: none;">
+                <p:commandButton 
+                    ajax="false" 
+                    action="pharmacy_purchase_order_list_for_recieve"
+                    actionListener="#{grnController.viewPoList()}" 
+                    value="PO List"> 
+                </p:commandButton>                   
+                <p:commandButton 
+                    value="Print" 
+                    ajax="false" 
+                    action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+
+                <p:panel   id="gpBillPreview"   style="border: none;">
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                        <ph:grn bill="#{grnController.grnBill}"/>
+                    </h:panelGroup>
+
                 </p:panel>
             </p:panel>
         </h:form>
