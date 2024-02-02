@@ -104,7 +104,11 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column>
-                                <p:commandButton ajax="false" value="Recieve" action="pharmacy_grn" disabled="#{p.cancelled}">
+                                <p:commandButton ajax="false" value="Recieve" action="#{grnController.navigateToResive()}" disabled="#{p.cancelled}">
+                                    <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                    <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
+                                </p:commandButton>
+                                <p:commandButton ajax="false" value="Recieve All" action="#{grnController.navigateToResiveAll()}" disabled="#{p.cancelled}">
                                     <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
                                     <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
                                 </p:commandButton>

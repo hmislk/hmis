@@ -10,235 +10,266 @@
 
     <ui:define name="content">
         <h:form>
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputLabel value="GRN Receive" class="mt-2"/>
+                    <p:commandButton  
+                        value="Settle" 
+                        action="#{grnController.settle}"
+                        class="ui-button-success"
+                        icon="fas fa-check"
+                        ajax="false"  
+                        style="float: right;">
+                    </p:commandButton> 
+                </f:facet>
+                <h:panelGroup rendered="#{!grnController.printPreview}">
 
-            <h:panelGroup rendered="#{!grnController.printPreview}">
+                    <h:panelGrid columns="7" style="min-width: 100%;">
+                        <h:outputLabel value="DEALOR"/>
 
-                <h:panelGrid columns="7" style="min-width: 100%;">
-                    <h:outputLabel value="DEALOR"/>
+                        <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
+                                        completeMethod="#{dealerController.completeDealor}" 
+                                        forceSelection="true"
+                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                        <h:outputLabel value="GRN Institution"/>
+                        <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
+                                         completeMethod="#{institutionController.completeCompany}" 
+                                         forceSelection="true"
+                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                        <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
+                            <f:selectItem itemLabel="SelectPayment method"/>
+                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
+                        </p:selectOneMenu>
 
-                    <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
-                                    completeMethod="#{dealerController.completeDealor}" 
-                                    forceSelection="true"
-                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                    <h:outputLabel value="GRN Institution"/>
-                    <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
-                                     completeMethod="#{institutionController.completeCompany}" 
-                                     forceSelection="true"
-                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                    <p:selectOneMenu   id="cmbPs" value="#{grnController.grnBill.paymentMethod}">    
-                        <f:selectItem itemLabel="SelectPayment method"/>
-                        <f:selectItems value="#{enumController.paymentMethodsForPo}"/>                     
-                    </p:selectOneMenu>
-                    <p:commandButton  value="Settle" action="#{grnController.settle}"
-                                      class="ui-button-success"
-                                      icon="fas fa-check"
-                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                    </p:commandButton>      
-                </h:panelGrid>
+                    </h:panelGrid>
 
 
-                <p:dataTable var="bi" styleClass="noBorder" 
-                             rowKey="#{bi.searialNo}"
-                             selection="#{grnController.selectedBillItems}"
-                             value="#{grnController.billItems}" 
-                             scrollable="true" scrollHeight="250"
-                             id="itemList" editable="true">  
+                    <p:dataTable 
+                        var="bi" 
+                        styleClass="noBorder" 
+                        rowKey="#{bi.searialNo}"
+                        selection="#{grnController.selectedBillItems}"
+                        value="#{grnController.billItems}" 
+                        scrollable="true" 
+                        rows="8"
+                        id="itemList" 
+                        editable="true">  
 
-                    <f:facet name="header">  
-                        <h:outputLabel  value="Ordered Bill Item"/>   
-                        <p:commandButton ajax="false" value="Remove All"
-                                         style="float: right;"
-                                         class="ui-button-danger"
-                                         icon="fas fa-trash"
-                                         action="#{grnController.removeSelected()}"/>
-                    </f:facet>  
+                        <f:facet name="header">  
+                            <h:outputLabel  value="Ordered Bill Item"/>   
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Remove All"
+                                style="float: right;"
+                                class="ui-button-danger"
+                                icon="fas fa-trash"
+                                action="#{grnController.removeSelected()}"/>
+                        </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
-                    <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
+                        <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
+                        <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
-                    <p:column style="width:6%">  
-                        <p:rowEditor />  
-                    </p:column>
+                        <p:column selectionMode="multiple" style="width: 10px;"/>
 
-                    <p:column selectionMode="multiple" style="width: 10px;"/>
+                        <p:column headerText="Item Name" style="width: 250px!important;"  > 
 
-                    <p:column headerText="Item Name" style="width: 250px!important;"  > 
+                            <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
 
-                        <h:outputText id="item" value="#{bi.item.name}" >                                   
-                        </h:outputText>
+                        </p:column>  
+                        <p:column headerText="Code"> 
 
-                    </p:column>  
-                    <p:column headerText="Code"> 
+                            <h:outputText id="code" value="#{bi.item.code}" >                                   
+                            </h:outputText>
 
-                        <h:outputText id="code" value="#{bi.item.code}" >                                   
-                        </h:outputText>
+                        </p:column> 
 
-                    </p:column> 
+                        <p:column headerText="Ordered Qty" >  
+                            <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
+                        </p:column>  
 
-                    <p:column headerText="Ordered Qty" >  
-                        <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
-                    </p:column>  
+                        <p:column headerText="Receiving Qty"  >
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                </f:facet>                        
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>  
 
-                    <p:column headerText="Receiving Qty"  >
-                        <p:cellEditor>  
-                            <f:facet name="output">  
-                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
-                            </f:facet>                        
-                            <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>  
+                        <p:column headerText="Free">   
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                                </f:facet>                      
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                </f:facet>
+                            </p:cellEditor>                        
+                        </p:column> 
 
-                    <p:column headerText="Free">   
-                        <p:cellEditor>  
-                            <f:facet name="output">  
-                                <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
-                            </f:facet>                      
-                            <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
-                            </f:facet>
-                        </p:cellEditor>                        
-                    </p:column> 
+                        <p:column headerText="Purchase Rate">  
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:panelGroup id="purchase">
+                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" X #{bi.item.dblValue}" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>                       
+                        </p:column>  
 
-                    <p:column headerText="Purchase Rate">  
-                        <p:cellEditor>  
-                            <f:facet name="output">  
-                                <h:panelGroup id="purchase">
-                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+
+                        <p:column headerText="Sale Price"  > 
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:panelGroup id="retail">
+                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
+                                    </h:panelGroup>
+                                </f:facet>  
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-                                    <p:outputLabel value=" X #{bi.item.dblValue}" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                </h:panelGroup>
-                            </f:facet>                       
-                            <f:facet name="input">  
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>                      
+                        </p:column>  
+
+                        <p:column headerText="Total"  >  
+                            <h:panelGroup id="total">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </h:panelGroup>
+                        </p:column>  
+
+                        <p:column headerText="Date of Expiry" >  
+                            <p:cellEditor >
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
+                                                 id="doeDateOnlyShort"
+                                                 navigator="true" pattern="dd MM yy"    > 
+                                    </p:calendar>  
+                                </f:facet>
+                            </p:cellEditor>                     
+                        </p:column> 
+
+
+                        <p:column headerText="Bathch No" >  
+                            <p:cellEditor >
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>  
+
+
+                        <p:column width="6%">
+                            <p:commandButton 
+                                ajax="false"
+                                style="float: right;"
+                                icon="fas fa-trash"
+                                class="ui-button-danger"
+                                action="#{grnController.removeItem(bi)}"/>
+
+                            <p:rowEditor />  
+
+
+                        </p:column>
+
+
+                    </p:dataTable>  
+
+                    <p:panel>
+                        <p:panelGrid columns="3" style="min-width: 100%" id="tot">
+
+                            <h:panelGrid columns="2">
+                                <p:outputLabel value="Invoice No : "/>
+                                <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
+                                <p:outputLabel value="Invoice Date"/>
+                                <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                            </h:panelGrid>                    
+
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Gross Total"/>
+                                <p:outputLabel id="gro"  value="#{0-grnController.grnBill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="Discount"/>
+                                <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
+                                    <p:ajax process="@this" update="net ins" event="keyup"
+                                            listener="#{grnController.netDiscount()}"/>
                                 </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>                       
-                    </p:column>  
+                                <p:outputLabel value="Net Total"/>
+                                <p:outputLabel id="net"  value="#{grnController.grnBill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:panelGrid>
 
-
-                    <p:column headerText="Sale Price"  > 
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:panelGroup id="retail">
-                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-                                    <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
-                                </h:panelGroup>
-                            </f:facet>  
-                            <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                            <p:panelGrid columns="2" id="ins">
+                                <p:outputLabel value="invoice Total"/>
+                                <p:inputText id="insv"  value="#{grnController.insTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                    <p:ajax process="@this" update="diff" event="keyup"
+                                            listener="#{grnController.calDifference()}"/>
+                                </p:inputText>
+                                <p:outputLabel value="Difference"/>
+                                <p:inputText autocomplete="off" id="diff" value="#{grnController.difference}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>                      
-                    </p:column>  
 
-                    <p:column headerText="Total"  >  
-                        <h:panelGroup id="total">
-                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </h:panelGroup>
-                    </p:column>  
+                            </p:panelGrid>
 
-                    <p:column headerText="Date of Expiry" >  
-                        <p:cellEditor >
-                            <f:facet name="output">
-                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
-                                             id="doeDateOnlyShort"
-                                             navigator="true" pattern="dd MM yy"    > 
-                                </p:calendar>  
-                            </f:facet>
-                        </p:cellEditor>                     
-                    </p:column> 
-
-
-                    <p:column headerText="Bathch No" >  
-                        <p:cellEditor >
-                            <f:facet name="output">
-                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
-                                </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>
-
-                    </p:column>  
-
-
-                    <p:column width="6%">
-                        <p:commandButton value="Remove" ajax="false"
-                                         style="float: right;"
-                                         icon="fas fa-trash"
-                                         class="ui-button-danger"
-                                         action="#{grnController.removeItem(bi)}"/>
-                    </p:column>
-
-                </p:dataTable>  
-
-                <p:panel>
-                    <p:panelGrid columns="2" style="min-width: 100%">
-
-                        <h:panelGrid columns="2">
-                            <p:outputLabel value="Invoice No : "/>
-                            <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
-                            <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
-                        </h:panelGrid>                    
-
-                        <p:panelGrid columns="2" id="tot">
-                            <p:outputLabel value="Gross Total"/>
-                            <p:outputLabel id="gro"  value="#{0-grnController.grnBill.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            <p:outputLabel value="Discount"/>
-                            <p:inputText autocomplete="off" id="dis" value="#{grnController.grnBill.discount}" >
-                                <p:ajax process="@this" update="net" event="keyup"
-                                        listener="#{grnController.netDiscount()}"/>
-                            </p:inputText>
-                            <p:outputLabel value="Net Total"/>
-                            <p:outputLabel id="net"  value="#{grnController.grnBill.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
                         </p:panelGrid>
-
-                    </p:panelGrid>
-                </p:panel>
+                    </p:panel>
 
 
 
-            </h:panelGroup>
-            <p:panel rendered="#{grnController.printPreview}" style="border: none;">
-                <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
+                </h:panelGroup>
+                
+                <p:panel rendered="#{grnController.printPreview}" style="border: none;">
+                    <p:commandButton 
+                        ajax="false" 
+                        action="pharmacy_purchase_order_list_for_recieve"
+                        actionListener="#{grnController.viewPoList()}" 
+                        value="PO List"> 
+                    </p:commandButton>                   
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false" 
+                        action="#" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                    
+                    <p:panel   id="gpBillPreview"   style="border: none;">
 
-                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
-                <p:commandButton value="Print" ajax="false" action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
-                <p:panel   id="gpBillPreview"   style="border: none;">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                            <ph:grn bill="#{grnController.grnBill}"/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                        <ph:grn bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>
-
-<!--                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-    <ph:grn_detail bill="#{grnController.grnBill}"/>
-</h:panelGroup>-->
-
-
+                    </p:panel>
                 </p:panel>
             </p:panel>
-
         </h:form>
     </ui:define>  
 
