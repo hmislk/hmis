@@ -55,7 +55,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
     private Token removeingToken;
-    private Token settledToken;
+   
     private List<Token> currentTokens;
     private Department department;
     private Institution institution;
@@ -422,12 +422,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         patientDetailsEditable = !patientDetailsEditable;
     }
 
-    public Token getSettledToken() {
-        return settledToken;
-    }
-
-    public void setSettledToken(Token settledToken) {
-        this.settledToken = settledToken;
-    }
+   
 
 }

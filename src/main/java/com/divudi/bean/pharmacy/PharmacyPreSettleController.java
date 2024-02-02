@@ -128,7 +128,7 @@ public class PharmacyPreSettleController implements Serializable {
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    List<Token> settledToken;
+    private List<Token> settledToken;
     /////////////////////////
     //   PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
@@ -544,7 +544,7 @@ public class PharmacyPreSettleController implements Serializable {
         setBill(getBillFacade().find(getSaleBill().getId()));
 //        markToken();
 //        makeNull();
-        removeSettledToken();
+    //    removeSettledToken();
         billPreview = true;
     }
 
@@ -560,28 +560,29 @@ public class PharmacyPreSettleController implements Serializable {
         tokenController.save(t);
     }
 
-    public void removeSettledToken() {
-        Token t = tokenController.findPharmacyTokens(getPreBill());
-        System.out.println("t = " + t.getTokenNumber());
-        if (t == null) {
-            return;
-        }
-        settledToken.add(t);
-        if (settledToken.size() > 3) {
-            saveSettledToken(settledToken.get(0)); 
-            settledToken.remove(0);
-        }
-    }
+//    public void removeSettledToken() {
+//        Token t = tokenController.findPharmacyTokens(getPreBill());
+//        System.out.println("t = " + t.getTokenNumber());
+//        if (t == null) {
+//            return;
+//        }
+//        settledToken.add(t);
+//        if (settledToken.size() > 3) {
+//            saveSettledToken(settledToken.get(0));
+//            settledToken.remove(0);
+//        }
+//    }
 
-    public void saveSettledToken(Token t) {
-        if (t == null) {
-            return;
-        }
-        t.setInProgress(false);
-        t.setCompletedAt(new Date());
-        t.setCompleted(false);
-        tokenController.save(t);
-    }
+//    public void saveSettledToken(Token t) {
+//        if (t == null) {
+//            return;
+//        }
+//        t.setInProgress(false);
+//        t.setCompletedAt(new Date());
+//        t.setCompleted(true);
+//        tokenController.save(t);
+//        tokenController.fillPharmacyTokens();
+//    }
 
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
@@ -1006,5 +1007,15 @@ public class PharmacyPreSettleController implements Serializable {
     public void setToken(Token token) {
         this.token = token;
     }
+
+    public List<Token> getSettledToken() {
+        return settledToken;
+    }
+
+    public void setSettledToken(List<Token> settledToken) {
+        this.settledToken = settledToken;
+    }
+    
+    
 
 }
