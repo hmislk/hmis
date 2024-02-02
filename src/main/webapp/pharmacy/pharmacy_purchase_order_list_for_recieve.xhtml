@@ -103,18 +103,40 @@
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column>
-                                <p:commandButton ajax="false" value="Recieve" action="#{grnController.navigateToResive()}" disabled="#{p.cancelled}">
-                                    <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                    <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
-                                </p:commandButton>
-                                <p:commandButton ajax="false" value="Recieve All" action="#{grnController.navigateToResiveAll()}" disabled="#{p.cancelled}">
-                                    <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                    <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
-                                </p:commandButton>
-                                <p:commandButton ajax="false" value="Recieve Wholesale" action="pharmacy_grn_wh" disabled="#{p.cancelled}">
-                                    <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                </p:commandButton>
+                            <p:column width="15%">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Recieve" 
+                                            action="#{grnController.navigateToResive()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                            <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Recieve All" 
+                                            class="mx-1"
+                                            action="#{grnController.navigateToResiveAll()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                            <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="mt-1 col-md-12">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            class="w-100"
+                                            value="Recieve Wholesale" 
+                                            action="pharmacy_grn_wh" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+
+
                             </p:column>
                             <p:column headerText="GRNS" width="30%">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">                        
