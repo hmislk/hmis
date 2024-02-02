@@ -8,10 +8,12 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <h:form>
-            <ui:composition template="/resources/template/template.xhtml">
 
-                <ui:define name="content">
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
                     <p:panel style="height: 100vh">
                         <f:facet name="header">
                             <i class="fas fa-barcode-scan mt-2"/>
@@ -46,8 +48,11 @@
                             </div>
                         </div>
                     </p:panel>
-                </ui:define>
-            </ui:composition>
-        </h:form>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
     </h:body>
 </html>
