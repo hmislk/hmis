@@ -228,13 +228,13 @@ public class SearchController implements Serializable {
             if (t != null) {
                 System.out.println("t.getBill() = " + t.getBill());
                 if (t.getBill() != null) {
-                    
+
                     currentBill = t.getBill();
                 }
             }
         }
         System.out.println("currentBill = " + currentBill);
-        if(currentBill==null){
+        if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
         }
@@ -2885,43 +2885,57 @@ public class SearchController implements Serializable {
 
     public void createPharmacyAdjustmentBillItemTable() {
         Date startTime = new Date();
-
-        //  searchBillItems = null;
         String sql;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
+
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("bType", BillType.PharmacyAdjustment);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", PreBill.class);
 
+        // Set bill types individually
+        m.put("bType1", BillType.PharmacyAdjustment);
+        m.put("bType2", BillType.PharmacyAdjustmentDepartmentStock);
+        m.put("bType3", BillType.PharmacyAdjustmentDepartmentSingleStock);
+        m.put("bType4", BillType.PharmacyAdjustmentStaffStock);
+        m.put("bType5", BillType.PharmacyAdjustmentSaleRate);
+        m.put("bType6", BillType.PharmacyAdjustmentWholeSaleRate);
+        m.put("bType7", BillType.PharmacyAdjustmentPurchaseRate);
+        m.put("bType8", BillType.PharmacyAdjustmentExpiryDate);
+
         sql = "select bi from BillItem bi"
-                + " where  type(bi.bill)=:class "
-                + " and bi.bill.institution=:ins"
-                + " and bi.bill.billType=:bType  "
+                + " where type(bi.bill) = :class "
+                + " and bi.bill.institution = :ins"
+                + " and (bi.bill.billType = :bType1"
+                + " or bi.bill.billType = :bType2"
+                + " or bi.bill.billType = :bType3"
+                + " or bi.bill.billType = :bType4"
+                + " or bi.bill.billType = :bType5"
+                + " or bi.bill.billType = :bType6"
+                + " or bi.bill.billType = :bType7"
+                + " or bi.bill.billType = :bType8)"
                 + " and bi.createdAt between :fromDate and :toDate ";
 
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((bi.bill.deptId) like :billNo )";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " and (bi.bill.deptId) like :billNo ";
             m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((bi.item.name) like :itm )";
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
+            sql += " and (bi.item.name) like :itm ";
             m.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  ((bi.item.code) like :cde )";
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().isEmpty()) {
+            sql += " and (bi.item.code) like :cde ";
             m.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        sql += " order by bi.id desc  ";
+        sql += " order by bi.id desc";
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Search adjustment bills(/faces/pharmacy/pharmacy_search_adjustment_bill_item.xhtml)");
-
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
@@ -3547,7 +3561,7 @@ public class SearchController implements Serializable {
         hm.put("btp", bt);
         return getBillFacade().findByJpql(sql, hm);
     }
-   
+
     public void createPoTablePharmacy() {
         Date startTime = new Date();
 
