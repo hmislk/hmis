@@ -76,8 +76,14 @@
                         <h:outputLabel value="#{pb.bill.class.simpleName}" >
                         </h:outputLabel>
                         
-                        <h:commandLink value="#{pb.bill.id}"  >
-                            <f:setPropertyActionListener value="#{pb.bill}" target="" ></f:setPropertyActionListener>
+                        <h:commandLink value="#{pb.bill.id}" rendered="#{pb.bill.billType eq 'PharmacyGrnBill'}" action="/pharmacy/pharmacy_grn">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
+                        </h:commandLink>
+                        
+                        <h:commandLink value="#{pb.bill.id}" rendered="#{pb.bill.billType eq 'PharmacySale'}" action="/pharmacy/pharmacy_bill_retail_sale">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacySaleController.printBill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{pharmacySaleController.billPreview}" ></f:setPropertyActionListener>
                         </h:commandLink>
 
                     </p:column>
