@@ -42,6 +42,7 @@ import com.divudi.entity.Relation;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.inward.Admission;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.membership.MembershipScheme;
@@ -777,6 +778,15 @@ public class PatientController implements Serializable {
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission?faces-redirect=true;";
+    }
+    
+    public String navigatePatientAdmit(){
+        Admission ad=new Admission();
+        admissionController.setCurrent(ad);
+        admissionController.setPrintPreview(false);
+        return "/inward/inward_admission?faces-redirect=true;";
+    
+
     }
 
     public String navigateToInwardAppointmentFromPatientProfile() {

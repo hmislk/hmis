@@ -104,6 +104,7 @@ public class UserPreference implements Serializable {
     private boolean checkPaymentSchemeValidation;
     private boolean grnBillDetailed;
     private boolean bhtNumberWithYear;
+    private boolean bhtNumberWithOutAdmissionType;
     private boolean depNumGenFromToDepartment;
     private boolean tranferNetTotalbyRetailRate;
     private boolean allowtoChangePaymentMethodDuringPayment;
@@ -1127,6 +1128,14 @@ public class UserPreference implements Serializable {
 
     public void setPrintOpdTokenNumber(boolean printOpdTokenNumber) {
         this.printOpdTokenNumber = printOpdTokenNumber;
+    }
+
+    public boolean isBhtNumberWithOutAdmissionType() {
+        return bhtNumberWithOutAdmissionType;
+    }
+
+    public void setBhtNumberWithOutAdmissionType(boolean bhtNumberWithOutAdmissionType) {
+        this.bhtNumberWithOutAdmissionType = bhtNumberWithOutAdmissionType;
     }
     
     
