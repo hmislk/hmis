@@ -282,12 +282,16 @@ public class PatientController implements Serializable {
     }
 
     public Long removeSpecialCharsInPhonenumber(String phonenumber) {
-        if (phonenumber == null || phonenumber.trim().equals("")) {
+        try {
+            if (phonenumber == null || phonenumber.trim().equals("")) {
+                return null;
+            }
+            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+            return convertedPhoneNumber;
+        } catch (Exception e) {
             return null;
         }
-        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
-        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
-        return convertedPhoneNumber;
     }
 
     public void validateMobile(FacesContext context, UIComponent component, Object value) throws ValidatorException {
@@ -299,15 +303,18 @@ public class PatientController implements Serializable {
         }
     }
 
-    public void convertOldPersonPhoneToPatientPhoneLong() {
+    @Deprecated
+    public void convertOldPersonPhoneToPatientPhoneLongOld() {
 
         String j = "select p "
                 + " from Patient p "
                 + " where p.retired=:ret "
-                + " order by p.id";
+                + " and p.patientPhoneNumber is null "
+                + " and (p.person.phone is not null or p.person.mobile is not null) "
+                + " order by p.id desc";
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        allPatientList = getFacade().findByJpql(j, m);
+        allPatientList = getFacade().findByJpql(j, m, 1000);
 
         String s = "select p "
                 + " from Person p "
@@ -332,6 +339,37 @@ public class PatientController implements Serializable {
                 }
 
             }
+        }
+    }
+
+    public void convertOldPersonPhoneToPatientPhoneLong() {
+
+        String j = "select p "
+                + " from Patient p "
+                + " where p.retired=:ret "
+                + " and p.patientPhoneNumber is null "
+                + " and (p.person.phone is not null or p.person.mobile is not null) "
+                + " order by p.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        allPatientList = getFacade().findByJpql(j, m,100000);
+
+        for (Patient pt : allPatientList) {
+            System.out.println("pt = " + pt);
+            if (pt.getPerson() == null) {
+                continue;
+            }
+            if (pt.getPerson().getPhone() != null) {
+                Long personPhone = removeSpecialCharsInPhonenumber(pt.getPerson().getPhone());
+                pt.setPatientPhoneNumber(personPhone);
+                getFacade().edit(pt);
+            }
+            if (pt.getPerson().getMobile() != null) {
+                Long personPhone = removeSpecialCharsInPhonenumber(pt.getPerson().getMobile());
+                pt.setPatientPhoneNumber(personPhone);
+                getFacade().edit(pt);
+            }
+
         }
     }
 

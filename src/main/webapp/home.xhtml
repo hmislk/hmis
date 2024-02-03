@@ -13,6 +13,29 @@
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
 
+
+
+
+
+                <h:panelGroup 
+                    id="panelScanToPay" 
+                    rendered="#{ui.icon eq 'Scan_to_pay'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            value="Scan Bills"
+                            icon=""
+                            ajax="false" 
+                            action="#{opdPreSettleController.navigateToScanBills()}" 
+                            >
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
                 <h:panelGroup 
                     id="panelBillingForCashier" 
                     rendered="#{ui.icon eq 'Billing_For_Cashier'}"
@@ -47,7 +70,7 @@
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <h:panelGroup 
                     rendered="#{ui.icon eq 'Manage_Shift_Fund_Bills'}"
                     layout="block"
@@ -63,7 +86,7 @@
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <h:panelGroup 
                     rendered="#{ui.icon eq 'Manage_Token'}"
                     layout="block"

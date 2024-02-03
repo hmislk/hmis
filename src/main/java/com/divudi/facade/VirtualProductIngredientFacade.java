@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  * @author safrin
  */
 @Stateless
-public class VtmsVmpsFacade extends AbstractFacade<VirtualProductIngredient> {
+public class VirtualProductIngredientFacade extends AbstractFacade<VirtualProductIngredient> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -23,7 +23,7 @@ public class VtmsVmpsFacade extends AbstractFacade<VirtualProductIngredient> {
         if(em == null){}return em;
     }
 
-    public VtmsVmpsFacade() {
+    public VirtualProductIngredientFacade() {
         super(VirtualProductIngredient.class);
     }
     

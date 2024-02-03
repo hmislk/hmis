@@ -53,7 +53,7 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class StoreItemExcelManager implements Serializable {
     @EJB
     VmppFacade vmppFacade;
     @EJB
-    VtmsVmpsFacade vtmInAmpFacade;
+    VirtualProductIngredientFacade vtmInAmpFacade;
     @EJB
     MeasurementUnitFacade muFacade;
     @EJB
@@ -1788,11 +1788,11 @@ public class StoreItemExcelManager implements Serializable {
         this.catCol = catCol;
     }
 
-    public VtmsVmpsFacade getVtmInAmpFacade() {
+    public VirtualProductIngredientFacade getVtmInAmpFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmInAmpFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmInAmpFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 
@@ -1892,11 +1892,11 @@ public class StoreItemExcelManager implements Serializable {
         this.vtmFacade = vtmFacade;
     }
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
+    public VirtualProductIngredientFacade getVtmsVmpsFacade() {
         return vtmInAmpFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmInAmpFacade) {
+    public void setVtmsVmpsFacade(VirtualProductIngredientFacade vtmInAmpFacade) {
         this.vtmInAmpFacade = vtmInAmpFacade;
     }
 

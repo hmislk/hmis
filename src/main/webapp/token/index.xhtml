@@ -19,24 +19,30 @@
                                         ajax="false" 
                                         action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
                                     </p:commandButton>
-                                     <p:commandButton 
+                                    <p:commandButton 
                                         value="Manage Pharmacy Tokens"
                                         ajax="false" 
                                         action="#{tokenController.navigateToManagePharmacyTokens()}" >
                                     </p:commandButton>
-                                      <p:commandButton 
+                                    <p:commandButton 
                                         value="Called Pharmacy Tokens"
                                         icon=""
                                         ajax="false" 
                                         action="#{tokenController.navigateToManagePharmacyTokensCalled()}" >
                                     </p:commandButton>
-                                      <p:commandButton 
+                                    <p:commandButton 
                                         value="Completed Pharmacy Tokens"
                                         icon=""
                                         ajax="false" 
                                         action="#{tokenController.navigateToManagePharmacyTokensCompleted()}" >
                                     </p:commandButton>
-                                   
+                                    <p:commandButton 
+                                        value="Scan Bills"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{opdPreSettleController.navigateToScanBills()}" 
+                                        >
+                                    </p:commandButton>
                                 </div>
                             </p:panel>
 

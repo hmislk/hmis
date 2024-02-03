@@ -476,8 +476,15 @@
                     </p:submenu>
 
                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
+                        <p:menuitem  ajax="false" 
+                                     action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
+                                     value="New Purchase Orders" 
+                                     rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
+<!--                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list?faces-redirect=true"  
+                                     value="Purchase Orders List" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>-->
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true"  
-                                     value="Purchase Orders" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
+                                     value="Update Purchase Orders" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
+
                         <p:menuitem  ajax="false" action="#{reorderController.autoOrderByDistributor()}"  value="By Distributor" 
                                      rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
