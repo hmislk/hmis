@@ -25,11 +25,14 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -91,11 +94,50 @@ public class PurchaseOrderRequestController implements Serializable {
         return pharmacyBillBean;
     }
 
-    public String navigateToCreateNewPurchaseOrder(){
+    public String navigateToCreateNewPurchaseOrder() {
         resetBillValues();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
     }
+
+    public String navigateToUpdatePurchaseOrder() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        Bill tmpBill = currentBill;
+        resetBillValues();
+        setCurrentBill(tmpBill);
+        setBillItems(generateBillItems(currentBill));
+//        for(BillItem bi: getBillItems()){
+//            System.out.println("bi = " + bi.getPharmaceuticalBillItem());
+//            if(bi.getPharmaceuticalBillItem()==null){
+//                bi.setPharmaceuticalBillItem(generatePharmaceuticalBillItem(bi));
+//            }
+//        }
+        calTotal();
+        return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
+    }
     
+    public List<BillItem> generateBillItems(Bill bill) {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill=:bill";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bill", bill);
+        return billItemFacade.findByJpql(jpql, m);
+    }
+    
+    public PharmaceuticalBillItem generatePharmaceuticalBillItem(BillItem billItem) {
+        String jpql = "select pbi "
+                + " from PharmaceuticalBillItem pbi "
+                + " where bi.billItem=:bi";
+        Map m = new HashMap();
+        m.put("bi", billItem);
+        return pharmaceuticalBillItemFacade.findFirstByJpql(jpql, m);
+    }
+
     public void setPharmacyBillBean(PharmacyCalculation pharmacyBillBean) {
         this.pharmacyBillBean = pharmacyBillBean;
     }
@@ -166,16 +208,15 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setEditedAt(null);
         getCurrentBill().setEditor(null);
-        
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
-        }else{
+        } else {
             getBillFacade().edit(getCurrentBill());
         }
 
     }
 
-    
     public void finalizeBill() {
 
         getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
@@ -192,16 +233,15 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
-        
+
         if (getCurrentBill().getId() == null) {
             getBillFacade().create(getCurrentBill());
-        }else{
+        } else {
             getBillFacade().edit(getCurrentBill());
         }
 
     }
 
-    
     public void generateBillComponent() {
         // int serialNo = 0;
         setBillItems(new ArrayList<BillItem>());
@@ -239,7 +279,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
-            }else{
+            } else {
                 getBillItemFacade().edit(b);
             }
 
@@ -265,7 +305,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         generateBillComponent();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(Fill with Item)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
     }
@@ -296,8 +336,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
-    
-       public void requestFinalize() {
+    public void requestFinalize() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
@@ -323,7 +362,6 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
-    
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
@@ -344,7 +382,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private ItemController itemController;
 
     public void setInsListener() {
-        
+
         getItemController().setInstitution(getCurrentBill().getToInstitution());
     }
 
