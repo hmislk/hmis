@@ -104,7 +104,7 @@
 
 
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-5">
                             <common:patient_details editable="true" controller="#{admissionController}"/>
                             <p:panel header="Payment Detail" style="margin-top: 10px;">
                                 <p:panel class="my-2">
@@ -129,7 +129,7 @@
 
                         </div>
 
-                        <div class="col-6">
+                        <div class="col-7">
                             <div class="row">
                                 <div class="col-6">
                                     <p:panel >
@@ -252,11 +252,19 @@
                                                 <p:outputLabel value="NIC"/>
                                                 <p:inputText class="mx-4" id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
                                                 <p:outputLabel value="Address" />
-                                                <p:inputText class="mx-4" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                <h:panelGrid columns="2">
+                                                    <p:inputText class="mx-4" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                    <p:commandButton value="Copy From Patient" ajax="false" action="#{admissionController.copyPatientAddressToGurdian}"/>
+                                                </h:panelGrid>
+                                                
                                                 <p:outputLabel value="Mobile No" />
                                                 <p:inputText class="mx-4" id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
                                                 <p:outputLabel value="Home Phone No" />
-                                                <p:inputText class="mx-4" id="ghno"   value="#{admissionController.current.guardian.phone}"  />
+                                                <h:panelGrid columns="2">
+                                                    <p:inputText class="mx-4" id="ghno" value="#{admissionController.current.guardian.phone}"  />
+                                                    <p:commandButton value="Copy From Patient" ajax="false" action="#{admissionController.copyPatientPhoneNumberToGurdian}"/>
+                                                </h:panelGrid>
+                                                
 
                                                 <p:watermark value="Guardian Name" for="gname" />
                                                 <p:watermark value="Guardian NIC" for="gnic" />

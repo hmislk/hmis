@@ -107,9 +107,6 @@
                     <p:commandButton value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    <p:commandButton value="Inpatient dashbord" ajax="false" action="#{inwardPaymentController.navigateToInpationDashbord}"  >
-                        
-                    </p:commandButton>
                     <h:panelGroup id="gpBillPreview">
                         <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution ne 'Cooperative'}"/>
                         <bill:payment_coop bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution eq 'Cooperative'}"/>
