@@ -68,6 +68,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
+    private boolean printPreview;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
@@ -117,7 +118,7 @@ public class PurchaseOrderRequestController implements Serializable {
         calTotal();
         return "/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true";
     }
-    
+
     public List<BillItem> generateBillItems(Bill bill) {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -128,7 +129,7 @@ public class PurchaseOrderRequestController implements Serializable {
         m.put("bill", bill);
         return billItemFacade.findByJpql(jpql, m);
     }
-    
+
     public PharmaceuticalBillItem generatePharmaceuticalBillItem(BillItem billItem) {
         String jpql = "select pbi "
                 + " from PharmaceuticalBillItem pbi "
@@ -146,6 +147,7 @@ public class PurchaseOrderRequestController implements Serializable {
         currentBill = null;
         currentBillItem = null;
         billItems = null;
+        printPreview = false;
     }
 
     public void addItem() {
@@ -184,11 +186,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void onEdit(BillItem bi) {
-
+        bi.getPharmaceuticalBillItem().setQty(bi.getQty());
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
-
         getPharmacyController().setPharmacyItem(bi.getItem());
-
         calTotal();
     }
 
@@ -218,27 +218,19 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void finalizeBill() {
-
-        getCurrentBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
-        getCurrentBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyOrder, BillClassType.BilledBill, BillNumberSuffix.POR));
-
-        getCurrentBill().setCreater(getSessionController().getLoggedUser());
-        getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
-
-        getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (currentBill.getId() == null) {
+            request();
+        }
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
+        getCurrentBill().setCheckeAt(new Date());
+        getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
 
-        if (getCurrentBill().getId() == null) {
-            getBillFacade().create(getCurrentBill());
-        } else {
-            getBillFacade().edit(getCurrentBill());
-        }
+        getBillFacade().edit(getCurrentBill());
 
     }
 
@@ -274,23 +266,20 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
                 getBillItemFacade().edit(b);
             }
 
-            tmpPh.setBillItem(b);
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
 
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
         }
     }
 
@@ -328,9 +317,9 @@ public class PurchaseOrderRequestController implements Serializable {
         saveBill();
         saveBillComponent();
 
-        UtilityController.addSuccessMessage("Request Succesfully Created");
-
-        resetBillValues();
+        UtilityController.addSuccessMessage("Request Saved");
+//
+//        resetBillValues();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
@@ -353,13 +342,9 @@ public class PurchaseOrderRequestController implements Serializable {
 
         finalizeBill();
         saveBillComponent();
-
         UtilityController.addSuccessMessage("Request Succesfully Created");
-
-        resetBillValues();
-
+        printPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
-
     }
 
     public void calTotal() {
@@ -518,6 +503,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
