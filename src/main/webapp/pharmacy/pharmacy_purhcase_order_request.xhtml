@@ -18,13 +18,18 @@
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton 
                         ajax="false" 
-                        value="Request" 
+                        value="Save Request" 
                         action="#{purchaseOrderRequestController.request}"/>
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Finalize Request" 
+                        action="#{purchaseOrderRequestController.requestFinalize()}"/>
                     <p:commandButton 
                         ajax="false"  
                         value="New Order" 
                         action="#{purchaseOrderRequestController.resetBillValues}"/>
                 </f:facet>
+
                 <p:tabView>
                     <p:tab title=" Distributor">                                               
                         <p:autoComplete 
