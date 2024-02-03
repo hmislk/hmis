@@ -1223,6 +1223,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        if(current!=null){
+            current.setPatient(patient);
+        }
     }
 
     public YearMonthDay getYearMonthDay() {

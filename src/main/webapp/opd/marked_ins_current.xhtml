@@ -16,14 +16,34 @@
                     You are NOT authorized
                 </h:panelGroup>
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
-                    
+
                     <h:form class="container-fluid" >
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputText value="Currently Working" >
                                 </h:outputText>
                             </f:facet>
-                            
+
+                            <p:panel>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Doctor/Staff" ></p:outputLabel>
+                                    <p:autoComplete 
+                                        forceSelection="true" 
+                                        value="#{workingTimeController.current.staffShift.staff}" 
+                                        id="scStaff"
+                                        completeMethod="#{staffController.completeConsultant}" var="mys" 
+                                        itemLabel="#{mys.person.nameWithTitle}" 
+                                        itemValue="#{mys}"/>
+
+
+
+                                    <p:outputLabel value="Start Time" ></p:outputLabel>
+                                    <p:calendar pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                value="#{workingTimeController.current.startRecord.recordTimeStamp}" ></p:calendar>
+                                    <p:commandButton value="Mark In" ajax="false" action="#{workingTimeController.markIn()}" ></p:commandButton>
+                                </p:panelGrid>
+                            </p:panel>
+
                             <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
                                          rowKey="#{w.id}" >
                                 <p:column headerText="Name">
@@ -49,13 +69,13 @@
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
-                          
-                            
+
+
                         </p:panel>
-                        
+
                     </h:form>
-                    
-                    
+
+
                 </h:panelGroup>
 
 
