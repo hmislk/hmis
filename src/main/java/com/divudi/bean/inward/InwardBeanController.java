@@ -1630,22 +1630,36 @@ public class InwardBeanController implements Serializable {
 
     public String getBhtText(AdmissionType admissionType) {
         String bhtText;
-        String sql = "SELECT count(a.id) FROM Admission a "
-                + " where a.admissionType.admissionTypeEnum=:adType ";
-
         HashMap hm = new HashMap();
-        hm.put("adType", admissionType.getAdmissionTypeEnum());
-        long temp = getAdmissionFacade().countByJpql(sql, hm);
+        Long temp = 0l;
+        String sql;
 
-        temp = temp + admissionType.getAdditionToCount();
+        if (admissionType != null) {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType.getAdmissionTypeEnum());
+            temp += admissionType.getAdditionToCount();
+            temp += admissionFacade.countByJpql(sql, hm);
+        } else {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType);
+            temp += admissionFacade.countByJpql(sql);
+        }
 
-        bhtText = admissionType.getCode().trim() + Long.toString(temp);
+        if (getSessionController().getLoggedPreference().isBhtNumberWithOutAdmissionType()) {
+            bhtText = "BHT" + Long.toString(temp);
+        } else {
+            bhtText = admissionType.getCode().trim();
+        }
 
         if (getSessionController().getLoggedPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
 
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
+
+        bhtText += "/" + Long.toString(temp);
         return bhtText;
     }
 
@@ -1891,7 +1905,7 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
-        if (consumeTime==0){
+        if (consumeTime == 0) {
             return 0;
         }
         double count = 0;
