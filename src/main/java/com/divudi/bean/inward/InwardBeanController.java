@@ -93,7 +93,7 @@ public class InwardBeanController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    private CommonFunctions commonFunctions;
+    
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -107,6 +107,8 @@ public class InwardBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
+    private CommonFunctions commonFunctions;
+    
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
         Map<String, String> replaceables = CommonFunctions.getReplaceables(b);
@@ -1844,8 +1846,18 @@ public class InwardBeanController implements Serializable {
 
         double duration = tif.getDurationHours() * 60;
         double consumeTimeM = 0L;
+        
+        if(admittedAt==null){
+            admittedAt = new Date();
+        }
 
-        consumeTimeM = getCommonFunctions().calculateDurationMin(admittedAt, dischargedAt);
+        if(dischargedAt==null){
+            dischargedAt=new Date();
+        }
+        
+        
+        
+        consumeTimeM = CommonFunctions.calculateDurationMin(admittedAt, dischargedAt);
 
         double count = 0;
 

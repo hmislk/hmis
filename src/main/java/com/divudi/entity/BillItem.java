@@ -44,8 +44,9 @@ public class BillItem implements Serializable {
     @ManyToOne
     private BillItem parentBillItem;
 
-    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    PharmaceuticalBillItem pharmaceuticalBillItem;
+     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private PharmaceuticalBillItem pharmaceuticalBillItem;
+
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
