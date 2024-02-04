@@ -72,7 +72,7 @@
                                         <p:outputLabel class="px-2 py-2 " id="bht" value="BHT :"/>
                                         <div class="border mx-4">
                                             <p:outputLabel class="px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
-                                        </div>
+                                        </div> 
                                     </div>
                                 </h:panelGroup>
 
@@ -104,7 +104,7 @@
 
 
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-5">
                             <common:patient_details editable="true" controller="#{admissionController}"/>
                             <p:panel header="Payment Detail" style="margin-top: 10px;">
                                 <p:panel class="my-2">
@@ -129,7 +129,7 @@
 
                         </div>
 
-                        <div class="col-6">
+                        <div class="col-7">
                             <div class="row">
                                 <div class="col-6">
                                     <p:panel >
@@ -185,7 +185,7 @@
                                             <p:autoComplete forceSelection="true" 
                                                             value="#{admissionController.current.referringConsultant}" 
                                                             id="refCon"
-                                                            completeMethod="#{doctorController.doctors}" 
+                                                            completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                             class="mx-4"></p:autoComplete>
 
@@ -193,7 +193,7 @@
                                             <p:autoComplete forceSelection="true" 
                                                             value="#{admissionController.current.referringPerson}" 
                                                             id="refPer"
-                                                            completeMethod="#{staffController.staffes}" 
+                                                            completeMethod="#{staffController.completeStaff}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                             class="mx-4"></p:autoComplete>
 
@@ -201,7 +201,7 @@
                                             <p:autoComplete forceSelection="true" 
                                                             value="#{admissionController.current.workplace}" 
                                                             id="work"
-                                                            completeMethod="#{institutionController.institution}" 
+                                                            completeMethod="#{institutionController.completeIns}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                             class="mx-4"></p:autoComplete>
 
@@ -242,21 +242,33 @@
                                                 <p:outputLabel value="Title"/>
                                                 <p:selectOneMenu id="cmbTitle" 
                                                                  placeholder="Title"
-                                                                 class="form-control w-100"
+                                                                 class="form-control mx-2 w-100"
+                                                                 autoWidth="false"
                                                                  value="#{admissionController.current.guardian.title}">
                                                     <f:selectItem itemLabel="Select Title" />
                                                     <f:selectItems value="#{enumController.title}" />
                                                 </p:selectOneMenu>
                                                 <p:outputLabel  value="Name" />
-                                                <p:inputText class="mx-4" id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
+                                                <p:inputText class="mx-2 w-100" id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
                                                 <p:outputLabel value="NIC"/>
-                                                <p:inputText class="mx-4" id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
+                                                <p:inputText class="mx-2 w-100" id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
                                                 <p:outputLabel value="Address" />
-                                                <p:inputText class="mx-4" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                <h:panelGrid columns="2">
+                                                    <p:inputText class="mx-2 w-100" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
+                                                    <p:commandButton class="ui-button-warning mx-2" icon="fas fa-paste" ajax="false" action="#{admissionController.copyPatientAddressToGurdian}"/>
+                                                </h:panelGrid>
+                                                
                                                 <p:outputLabel value="Mobile No" />
-                                                <p:inputText class="mx-4" id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
+                                                <h:panelGrid columns="2">
+                                                    <p:inputText class="mx-2 w-100" id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
+                                                    <p:spacer />
+                                                </h:panelGrid>
                                                 <p:outputLabel value="Home Phone No" />
-                                                <p:inputText class="mx-4" id="ghno"   value="#{admissionController.current.guardian.phone}"  />
+                                                <h:panelGrid columns="2">
+                                                    <p:inputText class="mx-2 w-100" id="ghno" value="#{admissionController.current.guardian.phone}"  />
+                                                    <p:commandButton class="ui-button-warning mx-2" icon="fas fa-paste" ajax="false" action="#{admissionController.copyPatientPhoneNumberToGurdian}"/>
+                                                </h:panelGrid>
+                                                
 
                                                 <p:watermark value="Guardian Name" for="gname" />
                                                 <p:watermark value="Guardian NIC" for="gnic" />
