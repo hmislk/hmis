@@ -846,7 +846,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getReferringDoctor() == null) {
+        if (getCurrent().getReferringConsultant() == null) {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
