@@ -6,10 +6,11 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill/cc_bill"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:pat="http://java.sun.com/jsf/composite/patient"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                >
 
     <ui:define name="content">
         <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier'))}" >
@@ -562,198 +563,96 @@
                         </div>
                     </h:panelGroup>
 
-
-
-
                     <h:panelGroup rendered="#{collectingCentreBillController.printPreview}" >
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <div class="d-flex justify-content-between">
+                            <div class="">
+                                <p:commandButton 
+                                    value="New Bill"
+                                    class="ui-button-success m-1"
+                                    icon="fa fa-plus-circle"
+                                    ajax="false" 
+                                    action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Batch Cancel" 
+                                    icon="fa-solid fa-ban" class="ui-button-danger m-1"
+                                    action="#{collectingCentreBillController.cancellAll}" 
+                                    style="float: right;"
+                                    onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                return false;">
+                                </p:commandButton>
+                            </div>
 
-                            <h:panelGroup >
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" 
-                                                     process="@this" 
-                                                     update="@all" 
-                                                     type="button"  
-                                                     class="ui-button-info m-1"
-                                                     icon="fa fa-print"
-                                                     ajax="false">
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
-                                    <p:commandButton value="Print Patient" 
-                                                     class="ui-button-info m-1"
-                                                     icon="fa fa-print"
-                                                     process="@this" 
-                                                     update="@all" 
-                                                     type="button"  
-                                                     ajax="false">
-                                        <p:printer target="gpBillPreview2" ></p:printer>
-                                    </p:commandButton>
+                            <div class="d-flex m-2">
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            </div>
+                        </div>
 
-                                    <p:commandButton 
-                                        value="New Bill"
-                                        class="ui-button-success m-1"
-                                        icon="fa fa-plus-circle"
-                                        ajax="false" 
-                                        action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Batch Cancel" 
-                                        icon="fa-solid fa-ban" class="ui-button-danger m-1"
-                                        action="#{collectingCentreBillController.cancellAll}" 
-                                        style="float: right;"
-                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                    return false;"/>
-                                </div>
-                                <h:panelGroup id="gpBillPreview">
-                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">
-                                        <bi:opdCCBillPrintRuhunu bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-                                <h:panelGroup id="gpBillPreview2">
-                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">
-                                        <bi:opdCCBillPrintRuhunu_1 bill="#{bill}" dup="false"/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-                            </h:panelGroup>
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            process="@this" 
+                                            update="@all" 
+                                            type="button"  
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
 
-                            <h:panelGroup >
-
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info m-1"
-                                                     icon="fa fa-print" >
-                                        <p:printer target="gpBillPreviewCoop" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton value="New Bill" class="ui-button-success m-1"
-                                                     icon="fa fa-plus-circle" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton ajax="false" value="Batch Cancel"
-                                                     class="ui-button-danger m-1"
-                                                     icon="fa-solid fa-ban"
-                                                     action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
-                                </div>
-                                <h:panelGroup id="gpBillPreviewCoop">
-                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                        <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
-                                    </ui:repeat>
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.fiveFivePaperWithHeadings eq true}">
-
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
-                                </div>
-                                <h:panelGroup id="fiveFivePaperWithHeadings">
-                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
-                                    </ui:repeat>
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Rmh'}">
-
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="gpBillPreviewRmh" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
-                                </div>
-                                <h:panelGroup id="gpBillPreviewRmh">
-                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                        <bi:opdBillPrintRmh bill="#{b}" dup="false"/>                        
-                                    </ui:repeat>
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq false}">
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  class="ui-button-info m-1"
-                                                     icon="fa fa-print">
-                                        <p:printer target="gpPosBill" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton value="New Bill" ajax="false" class="ui-button-success m-1"
-                                                     icon="fa fa-plus-circle" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
-                                </div>
-                                <h:panelGroup id="gpPosBill">
-                                    <div style="page-break-after: always;">
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                            <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                            <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                         </ui:repeat>
-                                    </div>
-                                    <div></div>
-                                    <div style="page-break-after: always;">
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                            <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patinet " class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print Patient" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            process="@this" 
+                                            update="@all" 
+                                            style="float: right;"
+                                            type="button"  
+                                            ajax="false">
+                                            <p:printer target="" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                            <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
                                         </ui:repeat>
-                                    </div>
-                                </h:panelGroup>
-                            </h:panelGrid>
+                                    </h:panelGroup>
+
+                                </p:panel>
 
 
 
-
-                            <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq true}">
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="gpPosBillWithoutLogo" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBillKeepingCollectingCenter()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton ajax="false" value="Batch Cancel" action="#{collectingCentreBillController.cancellAll}" style="float: right;"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                                 return false;"/>
-                                </div>
-                                <h:panelGroup id="gpPosBillWithoutLogo">
-                                    <div style="page-break-after: always;">
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="b">
-                                            <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </div>                                
-                                </h:panelGroup>
-                            </h:panelGrid>
-
-                        </h:panelGroup>
+                            </div>                            
+                        </div>
 
                     </h:panelGroup>
-
                 </p:panel>
             </h:form>
-
         </h:panelGroup>
-
-
-
-
     </ui:define>
 </ui:composition>
