@@ -286,12 +286,24 @@
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
-                                <h:outputLabel    value="#{bip.transWithOutCCFee}"    >
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.id}"  value="#{bip.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
-                                <h:outputLabel    value="#{bip.transCCFee}"    >
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.id}"  value="#{bip.transCCFee}"  style="font-size: 11px!important;float: right;float: right;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip.transCCFee}"  style="font-size: 11px!important;float: right;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel  rendered="#{bip.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip.transCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
