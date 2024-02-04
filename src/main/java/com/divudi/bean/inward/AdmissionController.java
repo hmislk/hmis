@@ -130,6 +130,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
 
+    public void copyPatientAddressToGurdian(){
+        current.getGuardian().setAddress(current.getPatient().getPerson().getAddress());
+    }
+    
+    public void copyPatientPhoneNumberToGurdian(){
+        current.getGuardian().setPhone(current.getPatient().getPerson().getPhone());
+    }
+    
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
     }
@@ -838,7 +846,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getReferringDoctor() == null) {
+        if (getCurrent().getReferringConsultant() == null) {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
