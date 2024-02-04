@@ -68,6 +68,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1174,6 +1175,14 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcelWithStock() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
         String strCat;
         String strAmp;
         String strCode;
@@ -1217,7 +1226,7 @@ public class PharmacyItemExcelManager implements Serializable {
         Cell cell;
         InputStream in;
         UtilityController.addSuccessMessage(file.getFileName());
-        System.out.println("file input  = " + "file input" );
+        System.out.println("file input  = " + "file input");
         try {
             UtilityController.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
@@ -1234,7 +1243,7 @@ public class PharmacyItemExcelManager implements Serializable {
             out.close();
 
             inputWorkbook = new File(f.getAbsolutePath());
-            System.out.println("file input  = " + "file open excel" );
+            System.out.println("file input  = " + "file open excel");
             UtilityController.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
@@ -1242,7 +1251,7 @@ public class PharmacyItemExcelManager implements Serializable {
             getPharmacyPurchaseController().makeNull();
 
             for (int i = startRow; i < sheet.getRows(); i++) {
-                System.out.println("for loop  = " +i );
+                System.out.println("for loop  = " + i);
                 Map m = new HashMap();
 
                 //Category
@@ -1408,7 +1417,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 } else {
                 }
                 //Manufacture
-                
+
                 cell = sheet.getCell(manufacturerCol, i);
                 strManufacturer = cell.getContents();
                 manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
@@ -1810,11 +1819,11 @@ public class PharmacyItemExcelManager implements Serializable {
             return "";
         }
     }
-    
+
     public void tnametoName() {
         List<Amp> amps = getAmpFacade().findAll();
-        for(Amp a:amps){
-            if(a.getSname()!=null && !a.getSname().trim().equals("")){
+        for (Amp a : amps) {
+            if (a.getSname() != null && !a.getSname().trim().equals("")) {
                 a.setTname(a.getName());
                 a.setName(a.getSname());
                 getAmpFacade().edit(a);
@@ -1894,10 +1903,9 @@ public class PharmacyItemExcelManager implements Serializable {
         }
     }
 
-    
     private List<Amp> updatingAmps;
     private List<Amp> allAmps;
-    
+
 //    public String importCorrectNameFromSnapshot() {
 //        //System.out.println("importing to excel");
 //        String strId;
@@ -1998,7 +2006,6 @@ public class PharmacyItemExcelManager implements Serializable {
 //            getAmpFacade().edit(a);
 //        }
 //    }
-    
     public String importFindMissingNames() {
         String name;
         String code;
@@ -2075,8 +2082,7 @@ public class PharmacyItemExcelManager implements Serializable {
             return "";
         }
     }
-    
-    
+
     public String importVtmFromExcel() {
         String strCat;
         String strAmp;
@@ -3320,6 +3326,4 @@ public class PharmacyItemExcelManager implements Serializable {
         this.allAmps = allAmps;
     }
 
-    
-    
 }
