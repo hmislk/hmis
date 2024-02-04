@@ -88,7 +88,7 @@ public class DealerController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        //     getItems();
+             getItems();
     }
 
     public InstitutionFacade getEjbFacade() {

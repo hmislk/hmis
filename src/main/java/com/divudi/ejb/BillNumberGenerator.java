@@ -8,16 +8,19 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.TokenType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -33,14 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Named
+//@Named
 @Singleton
 public class BillNumberGenerator {
 
@@ -92,13 +94,13 @@ public class BillNumberGenerator {
         String sql = "SELECT count(b) FROM PreBill b "
                 + "  where  b.retired=false "
                 + " and b.institution=:ins "
-                + " and b.billType = :bt "
-                + " and b.createdAt between :f and :t";
+                + " and b.billType = :bt ";
+                
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
-        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
-        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
+//        hm.put("f", commonFunctions.getFirstDayOfYear(new Date()));
+//        hm.put("t", commonFunctions.getLastDayOfYear(new Date()));
         Long i = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
 
         return (i + 1) + "";
@@ -683,27 +685,97 @@ public class BillNumberGenerator {
 
     }
 
-    public String generateDailyBillNumberForOpd(Department department) {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "SELECT count(b) FROM Bill b "
+    public String generateDailyBillNumberForOpd(Department department, Category cat, Staff fromStaff) {
+        String sql = "SELECT count(b) FROM Bill b "
                 + " where (b.billType=:bTp1 or b.billType=:bTp2) "
                 + " and b.billDate=:bd "
-                + " and (type(b)=:class1 or type(b)=:class2) "
-                + " and b.department=:dep ";
-        hm = new HashMap();
+                + " and (type(b)=:class1 or type(b)=:class2) ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
+        }
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (fromStaff != null) {
+            sql += " and b.fromStaff=:staff ";
+            hm.put("staff", fromStaff);
+        }
+
         hm.put("bTp1", BillType.OpdBill);
         hm.put("bTp2", BillType.OpdPreBill);
-        hm.put("dep", department);
         hm.put("bd", new Date());
         hm.put("class1", BilledBill.class);
         hm.put("class2", PreBill.class);
+
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        if (dd == null) {
-            dd = 0l;
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+    
+    
+    
+    public String generateDailyTokenNumber(Department department, Category cat, Staff staff, TokenType tokenType) {
+        String sql = "SELECT count(b) "
+                + " FROM Token b "
+                + " where b.tokenType=:tt "
+                + " and b.tokenDate=:bd ";
+        HashMap hm = new HashMap();
+
+        if (department != null) {
+            sql += " and b.department=:dep ";
+            hm.put("dep", department);
         }
-//        dd++;
-        return dd + "";
+
+        if (cat != null) {
+            sql += " and b.category=:cat ";
+            hm.put("cat", cat);
+        }
+
+        if (staff != null) {
+            sql += " and b.staff=:staff ";
+            hm.put("staff", staff);
+        }
+
+        hm.put("tt", tokenType);
+        hm.put("bd", new Date());
+        Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        if(dd==null){
+             dd=1l;
+        }else{
+            dd++;
+        }
+        return (dd != null) ? String.valueOf(dd) : "0";
+    }
+    
+
+// Overloaded methods
+    public String generateDailyBillNumberForOpd(Department department) {
+        return generateDailyBillNumberForOpd(department, null, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Department department, Category cat) {
+        return generateDailyBillNumberForOpd(department, cat, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Department department, Staff fromStaff) {
+        return generateDailyBillNumberForOpd(department, null, fromStaff);
+    }
+
+    public String generateDailyBillNumberForOpd(Category cat, Staff fromStaff) {
+        return generateDailyBillNumberForOpd(null, cat, fromStaff);
+    }
+
+    public String generateDailyBillNumberForOpd(Category cat) {
+        return generateDailyBillNumberForOpd(null, cat, null);
+    }
+
+    public String generateDailyBillNumberForOpd(Staff fromStaff) {
+        return generateDailyBillNumberForOpd(null, null, fromStaff);
     }
 
     private BillNumber fetchLastBillNumber(Department department, BillType billType, BillClassType billClassType) {

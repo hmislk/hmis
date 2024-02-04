@@ -11,6 +11,7 @@ import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.membership.PaymentSchemeController;
+import com.divudi.bean.store.StoreIssueController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -81,6 +82,10 @@ public class PharmacyIssueController implements Serializable {
 
     @Inject
     SessionController sessionController;
+   
+    @Inject
+    StoreIssueController storeIssueController;
+    
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -843,6 +848,11 @@ public class PharmacyIssueController implements Serializable {
         cashPaid = 0;
         netTotal = 0;
         balance = 0;
+        
+        PreBill bill = new PreBill();
+        
+        storeIssueController.setPreBill(bill);
+        
         userStockContainer = null;
         toDepartment = null;
     }

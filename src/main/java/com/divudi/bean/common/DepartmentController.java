@@ -51,6 +51,8 @@ public class DepartmentController implements Serializable {
     private Boolean codeDisabled = false;
     private Institution institution;
 
+    private Department superDepartment;
+
     List<Department> itemsToRemove;
 
     public Department findAndSaveDepartmentByName(String name) {
@@ -76,8 +78,6 @@ public class DepartmentController implements Serializable {
         }
         return i;
     }
-    
-   
 
     public void fillItems() {
         String j;
@@ -188,6 +188,18 @@ public class DepartmentController implements Serializable {
                 current = null;
             }
         }
+    }
+
+    public List<Department> fillAllItems() {
+        List<Department> newItems;
+        String sql = "Select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        newItems = getFacade().findByJpql(sql, m);
+        return newItems;
     }
 
     public List<Department> getInstitutionDepatrments() {
@@ -582,9 +594,17 @@ public class DepartmentController implements Serializable {
             getFacade().edit(dep);
         }
     }
-    
-    public Department findDepartment(Long id){
+
+    public Department findDepartment(Long id) {
         return getFacade().find(id);
+    }
+
+    public Department getSuperDepartment() {
+        return superDepartment;
+    }
+
+    public void setSuperDepartment(Department superDepartment) {
+        this.superDepartment = superDepartment;
     }
 
     /**

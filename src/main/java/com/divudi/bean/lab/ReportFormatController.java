@@ -125,7 +125,6 @@ public class ReportFormatController implements Serializable {
         try {
             uploadedFile = event.getFile();
             fileBytes = uploadedFile.getContent();
-            System.out.println("com.divudi.bean.lab.ReportFormatController.fileBytes()" + fileBytes);
             getUpload().setBaImage(fileBytes);
 
             // Extracting the file extension and setting the file name
@@ -135,7 +134,23 @@ public class ReportFormatController implements Serializable {
 
             getUpload().setFileType(event.getFile().getContentType());
             uploadController.saveUpload(getUpload());
-            System.out.println("com.divudi.bean.lab.ReportFormatController.getBaImage()" + getUpload().getBaImage());
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+    }
+    
+    public void removeUploadedFile(){
+        if (getUpload() == null || getUpload().getId() == null) {
+            JsfUtil.addErrorMessage("Select Category");
+            return;
+        }
+        byte[] fileBytes;
+        try {
+            getUpload().setBaImage(null);
+            uploadController.saveUpload(getUpload());
+            
         } catch (Exception ex) {
             Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage("Error");

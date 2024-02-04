@@ -130,6 +130,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
 
+    public void copyPatientAddressToGurdian(){
+        current.getGuardian().setAddress(current.getPatient().getPerson().getAddress());
+    }
+    
+    public void copyPatientPhoneNumberToGurdian(){
+        current.getGuardian().setPhone(current.getPatient().getPerson().getPhone());
+    }
+    
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
     }
@@ -838,7 +846,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getReferringDoctor() == null) {
+        if (getCurrent().getReferringConsultant() == null) {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
@@ -1001,7 +1009,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     
     public void saveEncounterCreditCompanies(PatientEncounter current){
          if (!encounterCreditCompanies.isEmpty() && current != null) {
-             System.out.println("current : "+ current.getName());
             for(EncounterCreditCompany ecc:encounterCreditCompanies){
                 ecc.setPatientEncounter(current);
                 ecc.setCreatedAt(new Date());
@@ -1224,6 +1231,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        if(current!=null){
+            current.setPatient(patient);
+        }
     }
 
     public YearMonthDay getYearMonthDay() {

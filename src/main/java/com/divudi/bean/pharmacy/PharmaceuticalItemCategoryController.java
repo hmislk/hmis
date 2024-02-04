@@ -79,7 +79,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"dosage_forms.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"item_categories.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());

@@ -17,19 +17,19 @@
                 <p:outputLabel value="#{bookKeepingSummery.institution.name}"/> &nbsp;<h:outputLabel/>
                 <p:outputLabel value="Book Keeping Summary "/><h:outputLabel/>   
                 <h:outputLabel/><h:outputLabel/>
-                <h:outputLabel value="  From : "  />
+                <p:spacer height="1" width="100%" />
+                <h:outputLabel value="  From : &nbsp;"  />
                 <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
                     <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                 </h:outputLabel>
-                <h:outputLabel value="  To : "/> 
+                <h:outputLabel value="&emsp;  To : &nbsp;"/> 
                 <h:outputLabel  value="#{bookKeepingSummery.toDate}">
                     <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                 </h:outputLabel>
-                <h:outputLabel value=""><br/>
-                </h:outputLabel>
+                <p:spacer height="1" width="100%" />
                 <h:outputLabel value="#{bookKeepingSummery.creditCompany.name}"><br/>
                 </h:outputLabel>
-                <h:outputLabel value="Credit Company OPD#{bookKeepingSummery.header}"/>     
+                <h:outputLabel value="&nbsp;Credit Company OPD#{bookKeepingSummery.header}"/>     
             </f:facet>
             <p:column  headerText="Category" >
                 <f:facet name="header">

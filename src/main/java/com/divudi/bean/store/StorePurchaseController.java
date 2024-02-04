@@ -732,10 +732,6 @@ public class StorePurchaseController implements Serializable {
         return billNumberGenerator;
     }
 
-    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
-        this.billNumberGenerator = billNumberGenerator;
-    }
-
     public StockFacade getStockFacade() {
         return stockFacade;
     }

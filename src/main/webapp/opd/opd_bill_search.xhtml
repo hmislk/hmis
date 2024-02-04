@@ -4,6 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -70,7 +71,8 @@
                                                     class="w-100"
                                                     inputStyleClass="form-control">                                                                              
                                         </p:calendar>
-                                        <p:spacer height="10" width="5" ></p:spacer>
+                                        <h:outputLabel value="SameDate" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}"/>
+                                        <!--<p:spacer height="10" width="5" ></p:spacer>-->
 
                                         <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
                                                      value="#{searchController.searchKeyword.billNo}" />
@@ -189,8 +191,8 @@
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
                                                        value="#{bill.insId}" 
-                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
+                                                       action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
@@ -198,9 +200,12 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
-                                    <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
-                                        <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >
+                                        <p:outputLabel id="billTime1" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:outputLabel id="billTime2" value="#{bill.createdAt}" rendered="#{fn:substring(searchController.fromDate, 0, 10) ne fn:substring(searchController.toDate, 0, 10)}">
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
@@ -218,7 +223,7 @@
                                               filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
                                             <h:commandLink  value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                                <f:setPropertyActionListener value="#{bill.patient.person.name}" target="#{patientController.patientId}"/>
+                                                <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>

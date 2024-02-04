@@ -67,7 +67,7 @@ public class TransferReceiveController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @Inject
     private PharmacyCalculation pharmacyCalculation;

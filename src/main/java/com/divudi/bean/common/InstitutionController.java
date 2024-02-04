@@ -181,6 +181,15 @@ public class InstitutionController implements Serializable {
         }
     }
 
+    public List<Institution> fillAllItems() {
+        List<Institution> ins;
+        String sql = "Select i from Institution i where i.retired=:ret order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        ins = getFacade().findByJpql(sql, m);
+        return ins;
+    }
+
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
         String sql;
         HashMap hm = new HashMap();

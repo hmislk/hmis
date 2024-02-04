@@ -33,12 +33,51 @@ import org.joda.time.PeriodType;
  */
 public class CommonFunctions {
 
+    public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
+        if (phonenumber == null) {
+            return null;
+        }
+        String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+        Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+        return convertedPhoneNumber;
+    }
+
+    public static Date convertDateToDbType(String argDate) {
+        if (argDate == null) {
+            return null; // Handle null input
+        }
+
+        SimpleDateFormat originalFormat = new SimpleDateFormat("MMMM d, yyyy, hh:mm a");
+        SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date date = originalFormat.parse(argDate);
+            String formattedDateString = desiredFormat.format(date); 
+            return desiredFormat.parse(formattedDateString); 
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public static String sanitizeStringForDatabase(String input) {
         if (input == null) {
             return null;
         }
         return input.replaceAll("[\"'/\\\\]", "");
 
+    }
+
+    public static Long convertStringToLongByRemoveSpecialChars(String phonenumber) {
+        if (phonenumber == null || phonenumber.trim().equals("")) {
+            return null;
+        }
+        try {
+            String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
+            Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
+            return convertedPhoneNumber;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String removeNonUnicodeChars(String input) {
@@ -508,7 +547,7 @@ public class CommonFunctions {
         return date;
     }
 
-    public boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
+    public static boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
 
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
@@ -545,7 +584,7 @@ public class CommonFunctions {
 
     }
 
-    public Long getDayCount(Date frm, Date to) {
+    public static Long getDayCount(Date frm, Date to) {
         if (frm == null) {
             return 0l;
         }
@@ -669,7 +708,7 @@ public class CommonFunctions {
         return durationHours;
     }
 
-    public long calculateDurationMin(Date dob, Date toDate) {
+    public static long calculateDurationMin(Date dob, Date toDate) {
         if (dob == null || toDate == null || dob.getTime() > toDate.getTime()) {
             return 0;
         }
@@ -746,4 +785,32 @@ public class CommonFunctions {
         return yearMonthDay;
     }
 
+    public static Long convertDoubleToLong(Double value) {
+        if (value == null) {
+            return null;
+        }
+
+        return Double.valueOf(value).longValue();
+    }
+
+    public static Long convertStringToLong(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+
+            return null;
+        }
+    }
+
+    public static String convertDoubleToString(Double value) {
+        if (value == null) {
+            return null; // or throw an IllegalArgumentException depending on your requirements
+        }
+
+        // Convert Double to String
+        return String.valueOf(value);
+    }
 }

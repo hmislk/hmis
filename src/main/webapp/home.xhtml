@@ -13,6 +13,29 @@
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
 
 
+
+
+
+
+                <h:panelGroup 
+                    id="panelScanToPay" 
+                    rendered="#{ui.icon eq 'Scan_to_pay'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            value="Scan Bills"
+                            icon=""
+                            ajax="false" 
+                            action="#{opdPreSettleController.navigateToScanBills()}" 
+                            >
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
                 <h:panelGroup 
                     id="panelBillingForCashier" 
                     rendered="#{ui.icon eq 'Billing_For_Cashier'}"
@@ -44,6 +67,38 @@
                             class="m-1 ui-button-success"
                             action="opd/patient_search.xhtml"   
                             value="Patient Lookup"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Manage_Shift_Fund_Bills'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"   
+                            value="Manage Shift Fund Bills"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Manage_Token'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{tokenController.navigateToTokenIndex()}"   
+                            value="Token Management"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
                     </h:form>
                 </h:panelGroup>

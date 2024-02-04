@@ -74,8 +74,9 @@
                                 <h:outputLabel value="#{sms.receipientNumber}"/>
                             </p:column>
                             <p:column headerText="Success"  sortBy="#{sms.sentSuccessfully}" >
-                                <h:outputLabel value="#{sms.sentSuccessfully?'Success':'failed'}"
-                                               class="#{sms.sentSuccessfully?'':'text-danger'}"/>
+                                <p:tag class="ui-tag" value="#{sms.sentSuccessfully ? 'Success' : 'Failed'}"
+                                       severity="#{sms.sentSuccessfully ? 'success' : 'danger'}" 
+                                       style="align-items: center; width: 60px;text-align: center; font-size: 14px;"/>
                             </p:column>
                         </p:dataTable>
 

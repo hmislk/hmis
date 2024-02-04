@@ -192,6 +192,11 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForDiagnosisUpload;
     private StreamedContent templateForPatientUpload;
     private StreamedContent templateForVisitUpload;
+    private StreamedContent templateForVtmUpload;
+    private StreamedContent templateForAtmUpload;
+    private StreamedContent templateForVmpUpload;
+    private StreamedContent templateForAmpUpload;
+    private StreamedContent templateForAmpMinimalUpload;
 
     List<Item> itemsToSave;
     List<Item> itemsSkipped;
@@ -207,14 +212,12 @@ public class DataUploadController implements Serializable {
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
-            System.out.println("area file = " + "true");
             try (InputStream inputStream = file.getInputStream()) {
                 areas = readAreasFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println(" file = " + "null");
     }
 
     public List<Area> readAreasFromExcel(InputStream inputStream) throws IOException {
@@ -234,13 +237,12 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
 
             area = null;
-            String name=null;
+            String name = null;
             Cell nameCell = row.getCell(0);
-            
+
             if (nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
             }
-            System.out.println("name = " + name);
             if (name == null || name.trim().equals("")) {
                 continue;
             }
@@ -324,11 +326,15 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
-
+                int i = 0;
                 for (Patient p : patients) {
                     personFacade.create(p.getPerson());
                     patientFacade.create(p);
+                    i++;
                 }
+
+                JsfUtil.addSuccessMessage("Uploaded Successfully");
+
                 // Persist patients to the database or perform other operations
                 // patientService.save(patients);
             } catch (IOException e) {
@@ -409,6 +415,7 @@ public class DataUploadController implements Serializable {
     }
 
     public void uploadCollectingCentreItemsAndFees() {
+        System.out.println("uploadCollectingCentreItemsAndFees");
         pollActive = true;
         items = new ArrayList<>();
         if (file != null) {
@@ -691,11 +698,9 @@ public class DataUploadController implements Serializable {
             }
 
             Cell categoryCell = row.getCell(4);
-            System.out.println("categoryCell = " + categoryCell);
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
             }
-            System.out.println("categoryName = " + categoryName);
             if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
@@ -887,20 +892,13 @@ public class DataUploadController implements Serializable {
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
                 if (name == null || name.trim().equals("")) {
-                    System.err.println("Item Name empty");
                     continue;
                 }
             }
 
-            System.out.println("name = " + name);
-            System.out.println("sessionController.getDepartment() = " + sessionController.getDepartment());
-
             item = itemController.findItemByName(name, sessionController.getDepartment());
 
-            System.out.println("item = " + item);
-
             if (item == null) {
-                System.err.println("Item NOT found");
                 continue;
             }
 
@@ -910,7 +908,6 @@ public class DataUploadController implements Serializable {
             }
 
             if (specialityName == null || specialityName.trim().equals("")) {
-                System.err.println("Speciality NOT found");
                 continue;
             }
 
@@ -978,6 +975,7 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Item> readCollectingCentreItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
+        System.out.println("readCollectingCentreItemsAndFeesFromExcel");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -995,13 +993,15 @@ public class DataUploadController implements Serializable {
         Department runningDept = null;
         Category runningCategory = null;
 
-        // Assuming the first row contains headers, skip it
+        System.out.println("1");
         if (rowIterator.hasNext()) {
             rowIterator.next();
         }
 
+        System.out.println("2");
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
+            System.out.println("row = " + row);
 
             Category category;
             Institution institution;
@@ -1029,7 +1029,7 @@ public class DataUploadController implements Serializable {
             if (institutionName == null || institutionName.trim().equals("")) {
                 institutionName = "Other";
             }
-
+            System.out.println("institutionName = " + institutionName);
             if (runningIns == null) {
                 institution = institutionController.findAndSaveInstitutionByName(institutionName);
                 institutionsSaved.add(institution);
@@ -1041,7 +1041,7 @@ public class DataUploadController implements Serializable {
                 institutionsSaved.add(institution);
                 runningIns = institution;
             }
-
+            System.out.println("runningIns = " + runningIns);
             Cell deptCell = row.getCell(6);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
@@ -1049,7 +1049,7 @@ public class DataUploadController implements Serializable {
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = institutionName;
             }
-
+            System.out.println("departmentName = " + departmentName);
             if (runningDept == null) {
                 department = departmentController.findAndSaveDepartmentByName(departmentName);
                 runningDept = department;
@@ -1071,15 +1071,21 @@ public class DataUploadController implements Serializable {
             }
 
             comments = name;
+            System.out.println("1 name = " + name);
             name = CommonFunctions.sanitizeStringForDatabase(name);
+            System.out.println("2 name = " + name);
 
-            item = itemController.findItemByName(name, department);
+            System.out.println("department = " + department);
+            item = itemController.findItemByName(name, code, department);
+            System.out.println("item = " + item);
             if (item != null) {
+                System.out.println("skipping 1");
                 itemsSkipped.add(item);
                 continue;
             }
 
             Item masterItem = itemController.findMasterItemByName(name);
+            System.out.println("masterItem = " + masterItem);
 
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {
@@ -1107,11 +1113,9 @@ public class DataUploadController implements Serializable {
             }
 
             Cell categoryCell = row.getCell(4);
-            System.out.println("categoryCell = " + categoryCell);
             if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
                 categoryName = categoryCell.getStringCellValue();
             }
-            System.out.println("categoryName = " + categoryName);
             if (categoryName == null || categoryName.trim().equals("")) {
                 continue;
             }
@@ -1737,38 +1741,119 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
             Patient patient = new Patient();
 
-            patient.setPatientId((long) row.getCell(0).getNumericCellValue());
-            patient.getPerson().setName(row.getCell(1).getStringCellValue());
+//            patient.setPatientId((long) row.getCell(0).getNumericCellValue());
+//            patient.getPerson().setName(row.getCell(1).getStringCellValue());
+            Cell idCell = row.getCell(0);
+            if (idCell != null) {
+                String idStr;
+                Long id = null;
+                if (idCell.getCellType() == CellType.STRING) {
+                    idStr = idCell.getStringCellValue();
+
+                    id = CommonFunctions.convertStringToLong(idStr);
+
+                } else if (idCell.getCellType() == CellType.NUMERIC) {
+                    Double tmp;
+                    tmp = idCell.getNumericCellValue();
+                    id = CommonFunctions.convertDoubleToLong(tmp);
+
+                }
+                if (id != null) {
+                    patient.setId(id);
+                }
+            }
+
+            String name = null;
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null) {
+
+                if (nameCell.getCellType() == CellType.STRING) {
+                    name = nameCell.getStringCellValue();
+
+                }
+                if (name != null) {
+                    patient.getPerson().setName(name);
+                }
+            }
+
+            if (name == null || name.trim().equals("")) {
+                continue;
+            }
+
             Cell codeCell = row.getCell(2);
             if (codeCell != null) {
-                String code = codeCell.getStringCellValue();
-                patient.setCode(code);
+                String code = null;
+                if (codeCell.getCellType() == CellType.STRING) {
+                    code = codeCell.getStringCellValue();
+
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    Double tmp;
+                    tmp = codeCell.getNumericCellValue();
+                    code = CommonFunctions.convertDoubleToString(tmp);
+                }
+                if (code != null) {
+                    patient.setCode(code);
+                }
             }
 
             Cell dateOfBirthCell = row.getCell(3);
             if (dateOfBirthCell != null) {
-                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
-                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
-                if (localDateOfBirth != null) {
-                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-                    Date dateOfBirth = Date.from(instant);
-                    patient.getPerson().setDob(dateOfBirth);
-                }
+                Date dob = CommonFunctions.convertDateToDbType(dateOfBirthCell.getStringCellValue());
+                patient.getPerson().setDob(dob);
             }
 
+//            Cell dateOfBirthCell = row.getCell(3);
+//            if (dateOfBirthCell != null) {
+//                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
+//                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+//                if (localDateOfBirth != null) {
+//                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+//                    Date dateOfBirth = Date.from(instant);
+//                    patient.getPerson().setDob(dateOfBirth);
+//                }
+//            }
             Cell addressCell = row.getCell(4);
             if (addressCell != null) {
                 patient.getPerson().setAddress(addressCell.getStringCellValue());
             }
+            String phone = null;
+            Long phoneLong = null;
 
             Cell phoneCell = row.getCell(5);
+
             if (phoneCell != null) {
-                patient.getPerson().setPhone(phoneCell.getStringCellValue());
+                switch (phoneCell.getCellType()) {
+                    case STRING:
+                        phone = phoneCell.getStringCellValue();
+                        phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
+                        break;
+                    case NUMERIC:
+                        // Assuming the phone number is a whole number
+                        Double tmpDblPhone = phoneCell.getNumericCellValue();
+                        phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
+                        // Convert the numeric value to String and add leading '0'
+                        phone = "0" + phoneLong.toString();
+                        break;
+                    default:
+                        // Handle other cell types if needed
+                        break;
+                }
+                patient.getPerson().setPhone(phone);
+                patient.setPatientPhoneNumber(phoneLong);
             }
 
             Cell mobileCell = row.getCell(6);
             if (mobileCell != null) {
-                patient.getPerson().setMobile(mobileCell.getStringCellValue());
+                String mobile = null;
+                if (mobileCell.getCellType() == CellType.STRING) {
+                    mobile = mobileCell.getStringCellValue();
+                } else if (mobileCell.getCellType() == CellType.NUMERIC) {
+                    Double mobileLong;
+                    mobileLong = mobileCell.getNumericCellValue();
+                    Long mobileNumber = CommonFunctions.convertDoubleToLong(mobileLong);
+                    mobile = "0"+String.valueOf(mobileNumber);
+                }
+                patient.getPerson().setMobile(mobile);
             }
 
             Cell emailCell = row.getCell(7);
@@ -1835,6 +1920,26 @@ public class DataUploadController implements Serializable {
                 String strOccupation = occupationCell.getStringCellValue();
                 Item occupation = itemController.findItemByName(strOccupation, "occupations");
                 patient.getPerson().setOccupation(occupation);
+            }
+
+            patient.setCreatedAt(new Date());
+            patient.setCreater(sessionController.getLoggedUser());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            
+            
+            Cell AreaCell = row.getCell(16);
+            if (AreaCell != null) {
+                String strArea = AreaCell.getStringCellValue();
+                Area area = areaController.findAreaByName(strArea);
+                if (area==null) {
+                    Area areanew=new Area();
+                    areanew.setCreatedAt(new Date());
+                    areanew.setCreater(sessionController.getLoggedUser());
+                    areanew.setName(strArea);
+                    areaController.save(areanew);
+                    patient.getPerson().setArea(areanew);
+                }
+                patient.getPerson().setArea(area);
             }
 
             patient.setCreatedAt(new Date());
@@ -2556,6 +2661,186 @@ public class DataUploadController implements Serializable {
                 .build();
     }
 
+    public void createTemplateForVtmUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Vtm Name"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForVtmUpload = DefaultStreamedContent.builder()
+                .name("template_for_Vtm_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForAtmUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Atm Name", "Vtm Name"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForAtmUpload = DefaultStreamedContent.builder()
+                .name("template_for_Atm_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForVmpUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Vmp Name", "Vtm Name", "Dosage Form", "Dosage Unit", "Strngth Unit", "Issue Unit", "Strength Units per Issue Unit", "Min Issue Quantity", "Issue Multiplies Quantity"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForVmpUpload = DefaultStreamedContent.builder()
+                .name("template_for_Vmp_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForAmpUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"ID", "Amp Name", "Code", "Bar code", "Vmp Name", "Manufacturer", "Importer"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForAmpUpload = DefaultStreamedContent.builder()
+                .name("template_for_Amp_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForAmpMinimalUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Hiding the institution sheet
+//        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Category", "Vmp Name", "Amp Name", "Code", "Bar code"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForAmpMinimalUpload = DefaultStreamedContent.builder()
+                .name("template_for_Amp_Minimal_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
     public void createTemplateForPatientUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -2566,7 +2851,7 @@ public class DataUploadController implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation","Area"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);
@@ -2608,6 +2893,51 @@ public class DataUploadController implements Serializable {
             // Handle IOException
         }
         return templateForVisitUpload;
+    }
+
+    public StreamedContent getTemplateForVtmUpload() {
+        try {
+            createTemplateForVtmUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForVtmUpload;
+    }
+
+    public StreamedContent getTemplateForAmpUpload() {
+        try {
+            createTemplateForAmpUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForAmpUpload;
+    }
+
+    public StreamedContent getTemplateForAtmUpload() {
+        try {
+            createTemplateForAtmUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForAtmUpload;
+    }
+
+    public StreamedContent getTemplateForAmpMinimalUpload() {
+        try {
+            createTemplateForAmpMinimalUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForAmpMinimalUpload;
+    }
+
+    public StreamedContent getTemplateForVmpUpload() {
+        try {
+            createTemplateForVmpUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForVmpUpload;
     }
 
     public StreamedContent getTemplateForPatientUpload() {

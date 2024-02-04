@@ -44,8 +44,9 @@ public class BillItem implements Serializable {
     @ManyToOne
     private BillItem parentBillItem;
 
-    @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-    PharmaceuticalBillItem pharmaceuticalBillItem;
+     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private PharmaceuticalBillItem pharmaceuticalBillItem;
+
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -205,7 +206,6 @@ public class BillItem implements Serializable {
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
         qty = billItem.getQty();
-        System.out.println("qty = " + qty);
         descreption = billItem.getDescreption();
         billTime = billItem.getBillTime();
         grossValue = billItem.getGrossValue();
@@ -323,10 +323,10 @@ public class BillItem implements Serializable {
     }
 
     public PharmaceuticalBillItem getPharmaceuticalBillItem() {
-//        if (pharmaceuticalBillItem == null) {
-//            pharmaceuticalBillItem = new PharmaceuticalBillItem();
-//            pharmaceuticalBillItem.setBillItem(this);
-//        }
+        if (pharmaceuticalBillItem == null) {
+            pharmaceuticalBillItem = new PharmaceuticalBillItem();
+            pharmaceuticalBillItem.setBillItem(this);
+        }
         return pharmaceuticalBillItem;
     }
 
