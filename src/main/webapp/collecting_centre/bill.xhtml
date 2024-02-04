@@ -61,9 +61,9 @@
 
                 <p:panel rendered="#{collectingCentreBillController.collectingCentre ne null}" >
                     <f:facet name="header" >
-                        <h:outputText styleClass="pi pi-search-plus" />
-                        <h:outputLabel  class="mx-4" value="Collecting Centre Billing"/>
-                        <h:outputLabel  class="mx-4" value="#{collectingCentreBillController.collectingCentre.name}"/>
+                        <h:outputText class="fa-solid fa-warehouse mt-2"  />
+                        <h:outputLabel  class="mx-2 mt-2" value="Collecting Centre Billing"/>
+                        <h:outputLabel  class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.name}"/>
                         <p:commandButton 
                             ajax="false" 
                             value="Change Collecting Centre" 
@@ -275,8 +275,6 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
 
-
-
                                             </f:facet>
                                             <p:column headerText="No">
                                                 <h:outputLabel value="#{bs.serialNo}" />
@@ -286,9 +284,6 @@
                                             </p:column>
                                         </p:dataTable>
                                     </div> 
-
-
-
 
                                 </p:panel>
 
@@ -303,8 +298,6 @@
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fas fa-bullseye" /> <!-- FontAwesome Icon -->
                                     <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
-
-
 
                                     <p:commandButton  
                                         style="float: right;"
@@ -608,16 +601,18 @@
                                             icon="fa fa-print"
                                             style="float: right;"
                                             ajax="false">
-                                            <p:printer target="" ></p:printer>
+                                            <p:printer target="centerBillPriview" ></p:printer>
                                         </p:commandButton>
                                     </f:facet>
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
+                                    <h:panelGroup id="centerBillPriview">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
                                     </h:panelGroup>
-
+                                    
                                 </p:panel>
                             </div>
                             <div class="col-md-6">
@@ -633,21 +628,22 @@
                                             style="float: right;"
                                             type="button"  
                                             ajax="false">
-                                            <p:printer target="" ></p:printer>
+                                            <p:printer target="parinetBillPriview" ></p:printer>
                                         </p:commandButton>
                                     </f:facet>
-
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
+                                    <h:panelGroup id="parinetBillPriview">
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
                                     </h:panelGroup>
 
                                 </p:panel>
-
                             </div>                            
                         </div>
-
                     </h:panelGroup>
                 </p:panel>
             </h:form>
