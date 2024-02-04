@@ -45,24 +45,33 @@
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
-
+            
+            <div class="d-flex justify-content-center">
+                <h:outputLabel value="VAT Reg. No : 114103438-7000"/>
+            </div>
+                
             <div class="billline">
-                 <h:outputLabel value="-------------------------------------------------------------"   />                           
+                <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
 
             <div >
                 <table style="width: 100%; margin-left:0.5cm;" >
                     <tr>
                         <td style="width: 20%; text-align: left;" >
-                            <h:outputLabel value="Date" style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                            <h:outputLabel 
+                                value="Date" 
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
                         </td>
                         <td style="width: 10%;">:</td>
                         <td style="width: 70%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: left!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.createdAt}" 
+                                style="text-align: left!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
                                 <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -70,15 +79,20 @@
 
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="Time" style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                            <h:outputLabel 
+                                value="Time" 
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.createdAt}"  
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
@@ -87,30 +101,41 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Inv.No" style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                            <h:outputLabel 
+                                value="Inv.No" 
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
+
+                            </h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.insId}"  style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.insId}"  
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
                         </td>
                     </tr>
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Method" style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                            <h:outputLabel 
+                                value="Method" 
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  style="text-align: center!important;   
-                                           font-size: 12px!important;
-                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            <h:outputLabel 
+                                value="#{cc.attrs.bill.paymentMethod}"  
+                                style="text-align: center!important;
+                                font-size: 12px!important;
+                                font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -118,15 +143,20 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                                <h:outputLabel 
+                                    value="Name" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="#{cc.attrs.bill.patient.person.nameWithTitle}"  
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -135,32 +165,20 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Phone" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
-                            </td>
-                            <td>:</td>
-                            <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"  style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="Phone" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
-                        </tr>
-                    </h:panelGroup>
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
-                        <tr>
-                            <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Age" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
-                            </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"  style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="#{cc.attrs.bill.patient.person.phone}"  
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -169,51 +187,64 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Ref. Doctor" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                                <h:outputLabel 
+                                    value="Ref. Doctor" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.name}"  style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="#{cc.attrs.bill.referredBy.person.name}"  
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
-
                         </tr>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="CC Name" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                                <h:outputLabel 
+                                    value="CC Name" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.institution.name}"  style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="#{cc.attrs.bill.institution.name}"  
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
-
                         </tr>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.creater.staff.code ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Ref. No" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                                <h:outputLabel 
+                                    value="Ref. No" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.referenceNumber}" style="text-align: center!important;   
-                                               font-size: 12px!important;
-                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                <h:outputLabel 
+                                    value="#{cc.attrs.bill.referenceNumber}" 
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -221,133 +252,112 @@
                 </table>
             </div>
 
-
-
-
-
             <div>
-
                 <table width="100%" style="width: 90%; margin-left: 20px; margin-right: 20px;">
                     <tr>
-                        <td colspan="3" class="billline">
+                        <td colspan="5" class="billline">
                             <hr/>                          
                         </td>
                     </tr>
+
                     <tr>
                         <td style="text-align: left;">
                             <h:outputLabel value="" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
-                        <td style="text-align: right;">
-                            <h:outputLabel value="Hos Fee"  styleClass="itemHeadings" ></h:outputLabel>
+                        <td style="text-align: right;" colspan="2">
+                            <h:outputLabel value="Hos Fee"  styleClass="itemHeadings"  ></h:outputLabel>
                         </td>
-                        <td style="text-align: right;">
-                            <h:outputLabel value="CC Fee"  styleClass="itemHeadings" ></h:outputLabel>
+                        <td style="text-align: right;" colspan="2">
+                            <h:outputLabel value="CC Fee"  styleClass="itemHeadings"  ></h:outputLabel>
                         </td>
                     </tr>
 
                     <tr>
-                        <td colspan="3" class="billline">
+                        <td colspan="5" class="billline">
                             <hr/>                       
                         </td>
                     </tr>
 
-
-
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
-
                         <tr>
                             <td style="text-align: left">
                                 <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
-                                <h:outputLabel    value="#{bip.grossValue}"    >
+                                <h:outputLabel    value="#{bip.transWithOutCCFee}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right;" colspan="2">
-                                <h:outputLabel    value="#{bip.grossValue}"    >
+                                <h:outputLabel    value="#{bip.transCCFee}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-
                         </tr>
-
-
-
-
                     </ui:repeat>
 
-
-
-
                 </table>
-
-
             </div>
-
 
             <div class="billline">
                 <h:outputLabel value="-------------------------------------------------------------"   />                           
             </div>
 
-
-
             <div  >
-
                 <table style="width: 100%; margin-left:0.5cm; ">
-
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.balance gt 4.0 }" >
-
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;" >
-                                <h:outputLabel value="Value" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Paid" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.cashPaid}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="To be Paid" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.balance}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                    </h:panelGroup>
-
                     <h:panelGroup rendered="#{cc.attrs.bill.balance lt 5.0 }" >
-
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel value="Total Hospital Fee " style="font-weight: bolder!important;"/>
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
-                        </tr>                        
+                        </tr>
+
+                        <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel value="Total CC Fee " style="font-weight: bolder!important;"/>
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Current Balance" style="font-weight: bolder!important;"/>
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" style="font-size: 13px!important; font-weight: bolder!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.cancelledBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.refundedBill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.refundedBill ne null}" style="font-size: 13px!important; font-weight: bolder!important;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>   
 
                         <tr>
                             <td  class="totalsBlock" style="text-align: left;">
@@ -359,53 +369,51 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                          
-                            </td>                        
-                        </tr>
 
-                        <tr>
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                          
-                            </td>                        
-                        </tr>
-
-                        <tr>
-
-                            <td  class="totalsBlock" style="text-align: left;">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
-                            </td>
-
-                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                                <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
-                                    <f:convertNumber pattern="#,##0.0" />
-                                </h:outputLabel>
-
-
-                            </td>
-                        </tr>
-
+                        <!--                        <tr>
+                                                    <td  class="totalsBlock" style="text-align: left;">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                                                    </td>
+                                                    <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>                          
+                                                    </td>                        
+                                                </tr>
+                                                <tr>
+                                                    <td  class="totalsBlock" style="text-align: left;">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
+                                                    </td>
+                                                    <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>                          
+                                                    </td>                        
+                                                </tr>
+                                                <tr>
+                                                    <td  class="totalsBlock" style="text-align: left;">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
+                                                    </td>
+                        
+                                                    <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                                        <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
+                                                            <f:convertNumber pattern="#,##0.0" />
+                                                        </h:outputLabel>
+                        
+                        
+                                                    </td>
+                                                </tr>-->
 
                     </h:panelGroup>
-
                 </table>
-
             </div>
 
-            <div class="billDetails">
-                <h:outputLabel value="Signature :"> </h:outputLabel>  
-                
+            <br/>
+            
+            <div class=" d-flex justify-content-center">
+                <h:outputLabel 
+                    value="Cashier : #{cc.attrs.bill.creater.staff.name}">
+                </h:outputLabel>
             </div>
 
             <div class="footer">
