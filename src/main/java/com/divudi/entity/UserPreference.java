@@ -220,6 +220,10 @@ public class UserPreference implements Serializable {
     
     private boolean autodisplayMenu = true;
     
+    
+    private boolean canSettleCollectingCentreBillsWithoutReferenceNumber;
+    
+    
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1136,6 +1140,14 @@ public class UserPreference implements Serializable {
 
     public void setBhtNumberWithOutAdmissionType(boolean bhtNumberWithOutAdmissionType) {
         this.bhtNumberWithOutAdmissionType = bhtNumberWithOutAdmissionType;
+    }
+
+    public boolean isCanSettleCollectingCentreBillsWithoutReferenceNumber() {
+        return canSettleCollectingCentreBillsWithoutReferenceNumber;
+    }
+
+    public void setCanSettleCollectingCentreBillsWithoutReferenceNumber(boolean canSettleCollectingCentreBillsWithoutReferenceNumber) {
+        this.canSettleCollectingCentreBillsWithoutReferenceNumber = canSettleCollectingCentreBillsWithoutReferenceNumber;
     }
     
     
