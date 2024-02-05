@@ -172,6 +172,7 @@ public class PatientReportController implements Serializable {
     private List<PatientReport> recentReportsOrderedByDoctor;
     private String smsNumber;
     private String smsMessage;
+    private boolean showBackground=false;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -2065,6 +2066,14 @@ public class PatientReportController implements Serializable {
         this.smsMessage = smsMessage;
     }
 
+    public boolean isShowBackground() {
+        return showBackground;
+    }
+
+    public void setShowBackground(boolean showBackground) {
+        this.showBackground = showBackground;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -2132,5 +2141,7 @@ public class PatientReportController implements Serializable {
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
     }
+    
+    
 
 }

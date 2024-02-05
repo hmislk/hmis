@@ -13,7 +13,7 @@
         <f:viewParam name="id" value="#{patientReportController.encryptedPatientReportId}" />
         <f:viewAction action="#{patientReportController.preparePatientReportForReportLink()}" />
     </f:metadata>
-    
+
     <head>
 
     </head>
@@ -38,8 +38,10 @@
                         <div id="divReport" style="position: absolute; height: 26cm; width: 18cm; margin: 0.1cm auto; border: 1px solid gray;">
 
 
-                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
-                                              patientReport="#{patientReportController.currentPatientReport}"/>
+                            <ez:common_report 
+                                showBackground="true"
+                                commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                patientReport="#{patientReportController.currentPatientReport}"/>
 
 
                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
