@@ -162,6 +162,11 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
+                                <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
+                                    <p:column >
+                                        <h:outputText value="#{s}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
@@ -169,7 +174,7 @@
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
                                         />
                                 </p:commandButton>
                                 <p:commandButton 
@@ -194,7 +199,7 @@
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
                                         />
                                 </p:commandButton>
                                 <p:commandButton 

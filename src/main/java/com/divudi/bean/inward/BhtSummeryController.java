@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -42,6 +43,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
@@ -132,6 +134,8 @@ public class BhtSummeryController implements Serializable {
     private InwardTimedItemController inwardTimedItemController;
     @Inject
     private DischargeController dischargeController;
+    @Inject
+    BillController billController;
     ////////////////////////    
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -140,6 +144,7 @@ public class BhtSummeryController implements Serializable {
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
     List<Bill> storeIssues;
+    private List<Bill> surgeryBills;
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
@@ -149,7 +154,7 @@ public class BhtSummeryController implements Serializable {
     private double due;
     private double paid;
     private PatientItem tmpPI;
-    private Admission patientEncounter;
+    private PatientEncounter patientEncounter;
     private Bill current;
     private Date currentTime;
     private Date toTime;
@@ -168,7 +173,16 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToInpatientProfile() {
+        if(patientEncounter==null){
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        fillSurgeryBills();
         return "/inward/admission_profile.xhtml?faces-redirect=true";
+    }
+    
+    private void fillSurgeryBills(){
+        surgeryBills = billController.fillPatientSurgeryBills(patientEncounter);
     }
     
     
@@ -1788,11 +1802,11 @@ public class BhtSummeryController implements Serializable {
         createTables();
     }
 
-    public Admission getPatientEncounter() {
+    public PatientEncounter getPatientEncounter() {
         return patientEncounter;
     }
 
-    public void setPatientEncounter(Admission patientEncounter) {
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
     }
@@ -2502,4 +2516,14 @@ public class BhtSummeryController implements Serializable {
         this.webUserController = webUserController;
     }
 
+    public List<Bill> getSurgeryBills() {
+        return surgeryBills;
+    }
+
+    public void setSurgeryBills(List<Bill> surgeryBills) {
+        this.surgeryBills = surgeryBills;
+    }
+
+    
+    
 }

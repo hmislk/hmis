@@ -14,7 +14,8 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
 
             <h:form id="form">
-                <p:panel rendered="#{surgeryBillController.batchBill.patientEncounter eq null}" > 
+
+                <p:panel rendered="#{surgeryBillController.surgeryBill.patientEncounter eq null}" > 
                     <f:facet name="header">
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
                         <p:outputLabel value="Patient Details" class="m-2"/>
@@ -22,11 +23,11 @@
 
                     <h:outputLabel value="Type Patient Name or BHT : " class="mx-2"/> 
                     <p:autoComplete  forceSelection="true" 
-                                     value="#{surgeryBillController.batchBill.patientEncounter}" 
+                                     value="#{surgeryBillController.surgeryBill.patientEncounter}" 
                                      completeMethod="#{admissionController.completePatient}"
                                      var="apt2" itemLabel="#{apt2.patient.person.name}"
                                      itemValue="#{apt2}" size="40"  required="true" class="m-2" requiredMessage="Please enter patient details">
-                        
+
                         <p:column >
                             #{apt2.bhtNo} 
                         </p:column>
@@ -44,20 +45,18 @@
 
                 </p:panel>
 
+            </h:form>
+            <h:form >
 
-                <p:panel id="panThe" rendered="#{surgeryBillController.batchBill.patientEncounter ne null}">
+                <p:panel id="panThe" rendered="#{surgeryBillController.surgeryBill.patientEncounter ne null}">
 
                     <f:facet name="header" >
                         <h:outputText styleClass="fa-solid fa-bars-progress fa-lg" />
                         <h:outputLabel value="Manage Surgeries" class="m-2"/>                            
+                        <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
 
-                    </f:facet>
-
-                    
-                    <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                        <h:panelGrid columns="4">
                             <p:commandButton value="Clear All" ajax="false" class="ui-button-danger mx-1" icon="fa fa-ban"
-                                             action="#{surgeryBillController.makeNull}" />
+                                             action="#{surgeryBillController.resetSurgeryBillValues}" />
 
                             <p:commandButton value="Print" ajax="false" class="ui-button-primary mx-1" action="#" icon="fa-solid fa-print" >
                                 <p:printer target="panThe" ></p:printer>
@@ -84,8 +83,12 @@
                                     target="#{patientController.current}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
-                        </h:panelGrid>
-                    </div>
+
+                        </div>
+                    </f:facet>
+
+
+
 
                     <div class="row">
                         <div class="col-6">
@@ -94,7 +97,7 @@
                                     <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                     <h:outputLabel value="Pateient Details" class="mx-4"></h:outputLabel>
                                 </f:facet>
-                                <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
+                                <in:bhtDetail admission="#{surgeryBillController.surgeryBill.patientEncounter}"/>
                             </p:panel>
                         </div>
                         <div class="col-6">
@@ -111,20 +114,22 @@
                                             </h:outputLabel>
                                         </div>
                                         <div class="col-4">
-                                            <p:autoComplete forceSelection="true"
-                                                            value="#{surgeryBillController.batchBill.procedure.item}" 
-                                                            completeMethod="#{procedureController.completeProcedures}"
-                                                            var="apt2" itemLabel="#{apt2.name}"
-                                                            itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                            <p:autoComplete 
+                                                forceSelection="true"
+                                                value="#{surgeryBillController.surgeryBill.procedure.item}" 
+                                                completeMethod="#{procedureController.completeProcedures}"
+                                                var="apt2" itemLabel="#{apt2.name}"
+                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-3">
-                                            <p:commandButton value="Save" ajax="false" class="w-100 ui-button-success m-2 "
-                                                             style="float: right"
-                                                             action="#{surgeryBillController.save()}" 
-                                                             disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" />
+                                            <p:commandButton 
+                                                value="Add New Surgery" ajax="false" class="w-100 ui-button-success m-2 "
+                                                style="float: right"
+                                                action="#{surgeryBillController.save()}" 
+                                                disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}" />
                                         </div>
                                     </div>
 
@@ -134,21 +139,21 @@
 
 
                             </p:panel>
-                            
-                            
-                                    <p:panel id="pBillDetails"  >
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-file-invoice" />
-                                            <h:outputLabel class="mx-4" value="Bill Details"/>
-                                        </f:facet>
 
-                                        <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                            <h:outputLabel value="Total" ></h:outputLabel>
-                                           <h:outputLabel value="#{surgeryBillController.batchBill.total}" class="m-2" />                                     
-                                        </p:panelGrid>
 
-                                    </p:panel>
-                              
+                            <p:panel id="pBillDetails"  >
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-file-invoice" />
+                                    <h:outputLabel class="mx-4" value="Bill Details"/>
+                                </f:facet>
+
+                                <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
+                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                    <h:outputLabel value="#{surgeryBillController.surgeryBill.total}" class="m-2" />                                     
+                                </p:panelGrid>
+
+                            </p:panel>
+
                         </div>
                     </div>
 
@@ -322,6 +327,7 @@
                         </p:panel>
                     </p:panelGrid>
                 </p:panel>
+
             </h:form>
         </h:panelGroup>
     </ui:define>

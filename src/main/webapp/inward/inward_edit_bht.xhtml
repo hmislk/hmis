@@ -15,14 +15,7 @@
 
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
-
-            <h:form >
-
-            </h:form>
-
-
             <h:form>
-
                 <h:panelGroup  class="row" rendered="#{bhtEditController.current.bhtNo eq null}"> 
                     <div class="col-12">
                         <h:panelGroup>
@@ -91,7 +84,7 @@
                             <p:commandButton 
                                 ajax="false" 
                                 icon="fa fa-id-card"
-                                value="Inpatient Care Dashboard" 
+                                value="Inpatient Dashboard" 
                                 class="m-1 ui-button-primary  w-100"
                                 action="#{admissionController.navigateToAdmissionProfilePage}" >
                                 <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>

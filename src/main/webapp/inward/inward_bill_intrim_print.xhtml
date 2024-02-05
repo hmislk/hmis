@@ -16,17 +16,38 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel >
-                    <f:facet name="header" >
-                        <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Inward Final Bill" />                          
-                            <p:commandButton  value="Save Interim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
-                            </p:commandButton>
-                            <p:commandButton value="Print Interim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
-                                <p:printer target="Interim" ></p:printer>
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </f:facet>       
+                    <f:facet name="header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h:outputLabel value="Inward Final Bill" />
+                            <div>
+                                <p:commandButton value="Save Interim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
+                                                 icon="pi pi-save" styleClass="ui-button-info  mx-1">
+                                </p:commandButton>
+                                <p:commandButton value="Print Interim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}"
+                                                 icon="pi pi-print" styleClass="ui-button-info  mx-1">
+                                    <p:printer target="Interim"></p:printer>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning  mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    class="ui-button-secondary  mx-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                    />
+                            </div>
+                        </div>
+                    </f:facet>  
 
                     <h:panelGrid columns="3">
                         <h:panelGroup id="panSearch2">

@@ -73,19 +73,43 @@
 
                 <p:panel rendered="#{billBhtController.batchBill ne null}">
                     <f:facet name="header">
-                        Surgery Service(Theatre)
-                    </f:facet>
-                    <p:panel>
-                        <div class="d-flex justify-content-end align-items-center" >
-                            <h:panelGrid columns="3" class="m-2" >
-                                <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="float: right" class="w-100 ui-button-success m-2" icon="fa fa-check" >
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h:outputText value="Surgery Service(Theatre)" style="margin-right: auto;"/>
+                            <div>
+                                <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"
+                                                 styleClass="ui-button-success mx-1" icon="fa fa-check">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
 
-                                <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" 
-                                                 style="float: right"
-                                                 class="w-100 ui-button-warning m-1" 
+                                <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill"
+                                                 styleClass="ui-button-warning mx-1" 
                                                  icon="fa fa-plus"/>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    styleClass="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}" 
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    styleClass="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    />
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    styleClass="ui-button-secondary mx-1" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    />
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <p:panel>
+                        <div class="d-flex justify-content-end align-items-center" >
+                            <h:panelGrid columns="3" class="m-2" >
+
                             </h:panelGrid>
                         </div>
 
@@ -123,7 +147,7 @@
                                         <p:focus  context="acIx"/>
                                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                                         value="#{billBhtController.currentBillItem.item}"
-                                                        completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                                                        completeMethod="#{itemController.completeTheatreItems}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
                                                         size="30"  style="width: 400px; padding-bottom: 5px">
                                             <p:column>
