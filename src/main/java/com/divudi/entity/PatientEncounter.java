@@ -157,10 +157,16 @@ public class PatientEncounter implements Serializable {
 
     // Transient method for BP
     public String getBp() {
-        if (sbp != null && dbp != null) {
+        if (getSbp() != null && getDbp() != null) {
             return sbp + "/" + dbp + " mmHg";
         }
         return ""; // or some default value
+    }
+    
+    public void setBp(Long sdp, Long dbp) {
+        this.sbp = sdp;
+        this.dbp = dbp;
+        
     }
 
     // Transient method for BMI
