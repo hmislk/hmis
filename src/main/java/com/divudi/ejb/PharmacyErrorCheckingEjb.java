@@ -174,12 +174,22 @@ public class PharmacyErrorCheckingEjb {
     }
 
     public List<BillItem> allBillItems(Item item, Department department) {
+        List<BillItem> temp;
+        temp = allBillItemsForBinCard(item, department);
+        return temp;
+    }
+
+    public List<BillItem> allBillItemsForBinCard(Item item, Department department) {
         String sql;
         Map m = new HashMap();
         m.put("d", department);
         m.put("i", item);
-        sql = "select bi from BillItem bi where bi.item=:i  "
-                + " and bi.bill.department=:d order by  bi.createdAt";
+        m.put("po", BillType.PharmacyOrder);
+        m.put("poa", BillType.PharmacyOrderApprove);
+        sql = "select bi from BillItem bi where bi.item = :i "
+                + " and bi.bill.department = :d"
+                + " and bi.bill.billType != :po and bi.bill.billType != :poa"
+                + " order by bi.createdAt desc";
         return getBillItemFacade().findByJpql(sql, m);
     }
 

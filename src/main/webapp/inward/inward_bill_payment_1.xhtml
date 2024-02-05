@@ -17,9 +17,8 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
-                    <div class="row">
-                        <div class="col-6">
-                             <p:panel header="BHT">
+                    <h:panelGrid columns="2">
+                        <p:panel header="BHT">
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardPaymentController.current.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
@@ -47,39 +46,41 @@
                                 <in:bhtDetail admission="#{inwardPaymentController.current.patientEncounter}"/>
                             </h:panelGroup>
                         </p:panel>
-                        </div>
-                        <div class="col-6">
-                            <p:panel>
-                            <f:facet name="header">
-                                <h:outputText class="mx-4" styleClass="fas fa-money-bill-wave" />
-                                <p:outputLabel value="&nbsp; Payment Detail" />
-                            </f:facet>
-                            
-                            <h:panelGrid columns="1" class="my-2">
-                         <h:panelGrid class="my-2" id="due1" rendered="#{!inwardPaymentController.current.patientEncounter.paymentFinalized}" columns="2">
-                            <h:outputLabel value="Paying Amount &nbsp;&nbsp;"/>
-                            <p:inputText class="mx-2 w-100" autocomplete="off" value="#{inwardPaymentController.current.total}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                            </p:inputText>
-                        </h:panelGrid>
-                            <h:panelGrid class="my-2" columns="2" id="due2" rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized}">
-                                <h:outputLabel value="Due "/>
-                                <h:outputLabel class="mx-2 w-100 my-2" value="#{inwardPaymentController.due}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Paying Amount &nbsp;&nbsp;"/>
-                                <p:inputText class="mx-2 w-100" autocomplete="off" value="#{inwardPaymentController.current.total}">
+
+                        <p:panel id="due1" rendered="#{!inwardPaymentController.current.patientEncounter.paymentFinalized}">
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Paying Amount"/>
+                                <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:inputText>
                             </h:panelGrid>
-                            <h:panelGrid columns="2" class="my-2">
-                                <h:outputLabel value="Payment Method"/>
-                                <p:selectOneMenu class="mx-2 w-100" autoWidth="false"  id="cmbPs" value="#{inwardPaymentController.current.paymentMethod}"  >
+                        </p:panel>
+
+                        <p:panel id="due2" rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized}">
+                            <h:panelGrid columns="2">
+                                <h:outputLabel value="Due"/>
+                                <h:outputLabel value="#{inwardPaymentController.due}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <h:outputLabel value="Paying Amount"/>
+                                <p:inputText autocomplete="off" value="#{inwardPaymentController.current.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+                            </h:panelGrid>
+                        </p:panel>
+
+
+                        <p:panel header="Payment Detail">
+                            <h:panelGrid columns="7">
+                                <p:selectOneMenu   id="cmbPs" value="#{inwardPaymentController.current.paymentMethod}"  >
                                     
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                     <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                                 </p:selectOneMenu>
-                            </h:panelGrid>               
+                                
+                                <p:inputText value="#{inwardPaymentController.comment}" id="comment"/>
+                                            <p:watermark value="Comment" for="comment"/>
+                                
                                 <h:panelGroup id="creditCard" style="display: #{inwardPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                 </h:panelGroup>
@@ -91,31 +92,20 @@
                                 <h:panelGroup id="slip" style="display: #{inwardPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
                                     <pa:slip paymentMethodData="#{inwardPaymentController.paymentMethodData}"/>
                                 </h:panelGroup>
-                                <h:panelGrid columns="2" class="my-2">
-                                    <h:outputLabel value="Comments &emsp;&emsp;&nbsp;"/>
-                                <p:inputText class="mx-2 w-100"  value="#{inwardPaymentController.comment}" id="comment"/>
-                                </h:panelGrid>
+
+
                             </h:panelGrid>
-                            
-                            <h:panelGrid columns="6" >
-                                <p:commandButton class="ui-button-success" icon="fas fa-money-bill" id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" />
-                                <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" />
+                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" />
+                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" />
                             <p:defaultCommand target="btnPay"/>
-                            </h:panelGrid>
                         </p:panel>
-                        </div>
-                    </div>
-                        
-                                        
+                    </h:panelGrid>
                 </p:panel>
 
                 <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
                     <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" />
                     <p:commandButton value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
-                    <p:commandButton value="Inpatient dashbord" ajax="false" action="#{inwardPaymentController.navigateToInpationDashbord}"  >
-                        
                     </p:commandButton>
                     <h:panelGroup id="gpBillPreview">
                         <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution ne 'Cooperative'}"/>

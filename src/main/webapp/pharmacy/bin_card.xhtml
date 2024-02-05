@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/pharmacy/admin/index.xhtml"
+                template="/pharmacy/pharmacy_reports_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -49,7 +49,7 @@
                     <p:spacer ></p:spacer>
 
                     <h:panelGroup >
-                        <p:commandButton class="m-1" ajax="false" value="Process" action="#{pharmacyErrorChecking.listPharmacyMovement() }" >
+                        <p:commandButton class="m-1" ajax="false" value="Process" action="#{pharmacyErrorChecking.processBinCard()}" >
                         </p:commandButton>
                         <p:commandButton class="m-1" ajax="false" value="Download" >
                             <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
@@ -61,6 +61,92 @@
                 <p:dataTable value="#{pharmacyErrorChecking.billItems}" var="pb"  rowIndexVar="i"
                              rows="100"
                              id="tbl"
+                             rendered="true"
+                             rowKey="#{pb.id}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20,50,100,500,1000"
+                             sortBy="#{pb.id}" >
+                    <p:column headerText="Bill Type" sortBy="#{pb.bill.billType}" filterBy="#{pb.bill.billType}" filterMatchMode="contains" >
+                        <h:commandLink value="#{pb.bill.billType} #{pb.bill.class.simpleName}" rendered="#{pb.bill.billType eq 'PharmacyGrnBill'}" action="/pharmacy/pharmacy_grn">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{grnController.grnBill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{grnController.printPreview}" ></f:setPropertyActionListener>
+                        </h:commandLink>
+
+                        <h:commandLink value="#{pb.bill.billType} #{pb.bill.class.simpleName}" rendered="#{pb.bill.billType eq 'PharmacySale'}" action="/pharmacy/pharmacy_bill_retail_sale">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacySaleController.printBill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{pharmacySaleController.billPreview}" ></f:setPropertyActionListener>
+                        </h:commandLink>
+
+                        <h:commandLink value="#{pb.bill.billType} #{pb.bill.class.simpleName}" rendered="#{pb.bill.billType eq 'PharmacyPurchaseBill'}" action="/pharmacy/pharmacy_purchase">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacyPurchaseController.bill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{pharmacyPurchaseController.printPreview}" ></f:setPropertyActionListener>
+                        </h:commandLink>
+
+                        <h:commandLink value="#{pb.bill.billType} #{pb.bill.class.simpleName}" rendered="#{pb.bill.billType eq 'PharmacyPre'}" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier">
+                            <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacySaleController.printBill}" ></f:setPropertyActionListener>
+                            <f:setPropertyActionListener value="true" target="#{pharmacySaleController.billPreview}" ></f:setPropertyActionListener>
+                        </h:commandLink>
+
+                        <h:outputLabel value="#{pb.bill.billType}" rendered="#{pb.bill.billType eq 'PharmacyAdjustment' or pb.bill.billType eq 'PharmacyIssue'}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="#{pb.bill.class.simpleName}" rendered="#{pb.bill.billType eq 'PharmacyAdjustment' or pb.bill.billType eq 'PharmacyIssue'}">
+                        </h:outputLabel>
+                    </p:column>
+
+<!--                    <p:column headerText="Bill Type" sortBy="#{pb.bill.billType} " width="25%" filterBy="#{pb.bill.billType}" filterMatchMode="contains" >
+                        <h:outputLabel value="#{pb.bill.billType}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="#{pb.bill.class.simpleName}" >
+                        </h:outputLabel>
+
+
+
+                    </p:column>-->
+
+                    <p:column headerText="Date"  sortBy="#{pb.createdAt}" >
+                        <h:outputLabel value="#{pb.createdAt}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column 
+                        headerText="Expiary"  
+                        sortBy="#{pb.pharmaceuticalBillItem.itemBatch.dateOfExpire}"
+                        filterBy="#{pb.pharmaceuticalBillItem.itemBatch.dateOfExpire}" 
+                        filterMatchMode="contains" >
+                        <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Stock In"  sortBy="#{pb.qty}" filterBy="#{pb.qty}" filterMatchMode="contains" >
+                        <h:outputLabel value="#{pb.pharmaceuticalBillItem.qtyInUnit + pb.pharmaceuticalBillItem.freeQtyInUnit}"  
+                                       rendered="#{(pb.pharmaceuticalBillItem.qtyInUnit + pb.pharmaceuticalBillItem.freeQtyInUnit) gt 0.0}">
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Stock Out"  sortBy="#{pb.qty}" filterBy="#{pb.qty}" filterMatchMode="contains" >
+                        <h:outputLabel value="#{pb.qty}" 
+                                       rendered="#{(pb.pharmaceuticalBillItem.qtyInUnit + pb.pharmaceuticalBillItem.freeQtyInUnit) lt 0.0}" >
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Balance" >
+                        <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty + pb.pharmaceuticalBillItem.qtyInUnit + pb.pharmaceuticalBillItem.freeQtyInUnit}"  >
+                        </h:outputLabel>
+                    </p:column>
+
+
+
+
+
+                </p:dataTable>
+
+                <p:dataTable value="#{pharmacyErrorChecking.billItems}" var="pb"  rowIndexVar="i"
+                             rows="100"
+                             id="tbl1"
+                             rendered="false"
                              rowKey="#{pb.id}"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

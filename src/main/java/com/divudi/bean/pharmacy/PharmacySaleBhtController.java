@@ -547,7 +547,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
         }
-
+        
     }
 
     private void savePreBillFinallyRequest(Patient pt, Department matrixDepartment, BillType billType, BillNumberSuffix billNumberSuffix) {

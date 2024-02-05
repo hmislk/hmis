@@ -440,9 +440,17 @@ public class PharmacyPurchaseController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getBill());
-            getBillItemFacade().create(i);
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            } else {
+                getBillItemFacade().edit(i);
+            }
 
-            getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            } else {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            }
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);

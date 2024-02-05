@@ -410,7 +410,10 @@
                                         <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
                                         <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                     </f:facet>
-                                    <p:commandButton value="Reload" ajax="false" action="#{opdPreBillController.reloadCurrentlyWorkingStaff()}" ></p:commandButton>
+                                    <div class="d-flex justify-content-end my-1">
+                                        <p:commandButton icon="fas fa-refresh" ajax="false" action="#{opdPreBillController.reloadCurrentlyWorkingStaff()}" >
+                                        </p:commandButton>
+                                    </div>
                                     <p:selectOneListbox value="#{opdPreBillController.selectedCurrentlyWorkingStaff}" var="d" >
                                         <f:selectItems value="#{opdPreBillController.currentlyWorkingStaff}" var="s" itemLabel="#{s.name}" itemValue="#{s}" >
                                         </f:selectItems>

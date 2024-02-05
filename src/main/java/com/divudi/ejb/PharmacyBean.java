@@ -1193,7 +1193,7 @@ public class PharmacyBean {
         name = name.replaceAll("\'", "");
         name = name.replaceAll("\"", "");
         String j = "SELECT c FROM PharmaceuticalItemCategory c Where (c.name)=:name ";
-        
+
         try {
             cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql(j, m);
         } catch (Exception e) {
@@ -1231,16 +1231,14 @@ public class PharmacyBean {
         String j = "SELECT c FROM PharmaceuticalItemType c Where (c.name) = :n";
         Map m = new HashMap();
         m.put("n", name.trim().toUpperCase());
-        try{
-             cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j,m);
-        
-        }catch(Exception e){
+        try {
+            cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j, m);
+
+        } catch (Exception e) {
             return null;
         }
-        
-        
-        
-       if (cat == null && createNew == true) {
+
+        if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1405,37 +1403,42 @@ public class PharmacyBean {
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         String sql;
-        if (strength == 0 || strengthUnit == null || cat == null) {
-            return null;
+        String vmpName = "";
+
+        if (vtm != null && vtm.getName() != null) {
+            vmpName += vtm.getName();
         }
+
+        if (strength < 0.00000001) {
+            vmpName += " " + strength;
+        }
+
+        if (strengthUnit != null && strengthUnit.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + strengthUnit.getName();
+        }
+
+        if (cat != null && cat.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + cat.getName();
+        }
+
+        vmpName = vmpName.trim();
+
         Map m = new HashMap();
-        m.put("vtm", vtm);
-        m.put("s", strength);
-        m.put("su", strengthUnit);
-        m.put("c", cat);
-        sql = "select v from VirtualProductIngredient v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VirtualProductIngredient v = getVirtualProductIngredientFacade().findFirstByJpql(sql, m);
-        ////System.out.println("m = " + m);
-        Vmp vmp;
-        if (v == null) {
-            ////System.out.println("new created");
+        m.put("n", vmpName);
+        m.put("v", vtm);
+        sql = "select v "
+                + "from Vmp v "
+                + "where v.name=:n "
+                + " and v.vtm=:v";
+        Vmp vmp=vmpFacade.findFirstByJpql(sql, m);
+        if (vmp == null) {
             vmp = new Vmp();
-
-            vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
-
+            vmp.setName(vmpName);
+            vmp.setVtm(vtm);
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
-
-            v = new VirtualProductIngredient();
-            v.setStrength(strength);
-            v.setStrengthUnit(strengthUnit);
-            v.setVtm(vtm);
-            v.setVmp(vmp);
-            v.setPharmaceuticalItemCategory(cat);
-            getVirtualProductIngredientFacade().create(v);
         }
-        v.getVmp().setRetired(false);
-        return v.getVmp();
+        return vmp;
     }
 
     public Vtm getVtmByName(String name, boolean createNew) {
