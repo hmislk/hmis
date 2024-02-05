@@ -1,0 +1,47 @@
+.print-preview {
+    font-family: Arial, sans-serif;
+    margin: auto;
+    width: 210mm;
+    height: 297mm;
+    padding: 20mm;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: #fff;
+}
+
+.print-preview h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.buttons {
+    text-align: right;
+}
+
+.bill-header, .purchase-order {
+    margin-bottom: 20px;
+}
+
+.bill-header > div, .purchase-order > div {
+    margin-bottom: 5px;
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-table th, .order-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.order-table th {
+    background-color: #f2f2f2;
+}
+
+@media print {
+    .buttons {
+        display: none;
+    }
+}

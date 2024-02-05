@@ -28,7 +28,16 @@
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Retail Bill" />
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputLabel value="Pharmacy Retail Bill" />
+                                <p:commandButton 
+                                    value="Back"
+                                    class="ui-button-secondary"
+                                    icon="fas fa-arrow-left"
+                                    ajax="false" 
+                                    action="#{tokenController.navigateToManagePharmacyTokens()}" >
+                                </p:commandButton>
+                            </div>
                         </f:facet>
 
                         <div class="row">
@@ -86,7 +95,7 @@
                                                     </p:column>
                                                     <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
@@ -341,7 +350,7 @@
 
                                     <div class="d-flex justify-content-between ">
                                         <div>
-                                            <p:selectOneMenu style="width: 10em;"  id="pay" value="#{pharmacySaleController.paymentMethod}">    
+                                            <p:selectOneMenu style="width: 10em;" class="mx-2 my-1" id="pay" value="#{pharmacySaleController.paymentMethod}">    
                                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                                 <p:ajax process="@this cmbPs " 
                                                         update="pBillDetails creditCard cheque slip" 
@@ -365,7 +374,7 @@
                                                 value="Settle Bill for Paying at the Cashier"
                                                 icon="fas fa-file-invoice"
                                                 action="#{pharmacySaleController.settlePreBill()}"
-                                                class=" mx-1" 
+                                                class="mx-1 my-1" 
                                                 >
                                             </p:commandButton>
                                             <p:commandButton 
@@ -451,7 +460,7 @@
                                 <common:patient_details  
                                     editable="true"
                                     controller="#{pharmacySaleController}"/>
-                                
+
                             </div>
                         </div>
                     </p:panel>
@@ -463,40 +472,52 @@
                         <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
-                        <div class="nonPrintBlock mb-5" >
-                            <p:commandButton 
-                                accesskey="p" 
-                                id="btnPrint" 
-                                value="Print" 
-                                ajax="false"
-                                icon="fa fa-print"
-                                class="ui-button-info"
-                                action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            
-                            <p:commandButton 
-                                accesskey="n" 
-                                value="New Bill" 
-                                icon="fa fa-plus"
-                                class="ui-button-warning mx-2"
-                                ajax="false" 
-                                action="#{pharmacySaleController.resetAll()}" >
-                            </p:commandButton>
-                            
-                            <p:commandButton 
-                                accesskey="a" 
-                                id="btnPrintToken" 
-                                value="Print Token" 
-                                ajax="false"
-                                icon="fa fa-print"
-                                class="ui-button-info mx-2"
-                                action="#" >
-                                <p:printer target="TokenPreview" ></p:printer>
-                            </p:commandButton>
+                        <div class="nonPrintBlock mb-5 d-flex justify-content-between" >
+                            <div>
+                                <p:commandButton 
+                                    accesskey="p" 
+                                    id="btnPrint" 
+                                    value="Print" 
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
 
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="New Bill" 
+                                    icon="fa fa-plus"
+                                    class="ui-button-warning mx-1"
+                                    ajax="false" 
+                                    action="#{pharmacySaleController.resetAll()}" >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    accesskey="a" 
+                                    id="btnPrintToken" 
+                                    value="Print Token" 
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    action="#" >
+                                    <p:printer target="TokenPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <p:commandButton 
+                                    value="Manage Pharmacy Tokens"
+                                    ajax="false" 
+                                    class="ui-button-secondary"
+                                    icon="fas fa-arrow-left"
+                                    action="#{tokenController.navigateToManagePharmacyTokens()}" >
+                                </p:commandButton>
+                            </div>
                         </div>
-                        
+
+
                         <h:panelGroup   id="TokenPreview" class="m-2">
                             <phi:saleBillToken id="saleBillToken" bill="#{pharmacySaleController.printBill}"></phi:saleBillToken>
                         </h:panelGroup>

@@ -154,10 +154,21 @@
 
 
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                                <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                                    <p:printer target="gpBillPreview" />
+                                </p:commandButton>
+                            </div>
+                            <div>
+                                <p:commandButton 
+                                    value="New Pharmacy Token"
+                                    ajax="false" 
+                                    action="#{tokenController.navigateToCreateNewPharmacyToken()}" >
+                                </p:commandButton>
+                            </div>
+                        </div>
                         <h:panelGroup id="gpBillPreview" >
                             <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>
                         </h:panelGroup>

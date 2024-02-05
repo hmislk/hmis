@@ -60,7 +60,7 @@
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="@this" render="det"/>
+                                            <f:ajax event="itemSelect" execute="@this" render="itemDetails"/>
                                         </p:autoComplete>
                                         <h:outputLabel value="New Expiry Date" ></h:outputLabel>
                                         <p:calendar autocomplete="off" value="#{pharmacyAdjustmentController.exDate}" class="w-100" inputStyleClass="w-100"></p:calendar>
@@ -145,26 +145,13 @@
                                             <div class="col-md-5">
                                                 <h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel>
                                             </div>
                                         </div>
                                     </div>
-                                    <h:panelGrid columns="2" id="det">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                    </h:panelGrid>
                                 </p:panel>
                             </div>
                         </div>

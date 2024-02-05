@@ -119,7 +119,7 @@
                             </p:column>
 
 
-                            <p:column headerText="Approve">
+                            <p:column headerText="Actions">
                                 <p:commandButton ajax="false" 
                                                  value="Approve" 
                                                  class="ui-button-success"
@@ -127,8 +127,16 @@
                                                  disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
-                            </p:column>
-                            <p:column headerText="View PO">
+                                <p:commandButton ajax="false" 
+                                                 value="Edit" 
+                                                 class="ui-button-success"
+                                                 action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                                 disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                                    <f:setPropertyActionListener 
+                                        target="#{purchaseOrderRequestController.currentBill}"
+                                        value="#{b}"/>
+                                </p:commandButton>
+
                                 <p:commandButton 
                                     ajax="false" 
                                     value="View PO" 

@@ -221,6 +221,10 @@
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
                     <p:submenu label="Admissions" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">                                    
                         <p:menuitem ajax="false" 
+                                    action="#{patientController.navigatePatientAdmit()}" 
+                                    value="Patient Admit"
+                                    rendered="true" />
+                        <p:menuitem ajax="false" 
                                     action="#{opdBillController.navigateToSearchPatients()}" 
                                     value="Patient Lookup &amp; Registration"
                                     rendered="true" />
@@ -478,17 +482,16 @@
                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}">
                         <p:menuitem  ajax="false" 
                                      action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
-                                     value="New Purchase Orders" 
+                                     value="New Purchase Order" 
                                      rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
-<!--                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list?faces-redirect=true"  
-                                     value="Purchase Orders List" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>-->
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_request?faces-redirect=true"  
-                                     value="Update Purchase Orders" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
-
                         <p:menuitem  ajax="false" action="#{reorderController.autoOrderByDistributor()}"  value="By Distributor" 
                                      rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
-                                     value="PO Approval" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('Pharmacy')}" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
+                            value="Purchase Orders"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('Pharmacy')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"  
                                      value="GRN Receive"  actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
