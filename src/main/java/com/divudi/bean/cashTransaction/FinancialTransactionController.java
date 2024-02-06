@@ -404,35 +404,52 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill";
     }
 
-    public void fillPaymentsFromShiftStartToNow() {
-        allBillsShiftStartToNow=new ArrayList<>();
+    public fillPaymentsFromShiftStartToNow() {
+        currentBillPayments= new ArrayList<>();
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.staff=:staff "
                 + " and b.retired=:ret "
                 + " and b.id > :ssbi";
+        Map<String, Object> m = new HashMap<>();
+        m.put("staff", sessionController.getLoggedUser().getStaff());
+        m.put("ret", false);
+        m.put("ssbi", shiftStartBillId);
+        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
+        if (allBillsShiftStartToNow != null) {
+            System.out.println("allBillsAfterShiftStart2 = " + allBillsShiftStartToNow.size());
+            for (Bill b:allBillsShiftStartToNow) {
+                System.out.println("cb = " + b);
+                System.out.println("Payments list size " + b.getPayments().size());
+                for (Payment p : b.getPayments()) {
+                    currentBillPayments.add(p);
+                    System.out.println("p = " + "..........ADDED............");
+                }
+              System.out.println("current bill payments = " + currentBillPayments.size());
+            }
+        }
+        
+
+    }
+
+    public void copyPaymentFromBills(Bill b) {
+        
+    }
+
+    public void fillPaymentsFromOpdBills() {
+        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.staff=:staff "
+                + " and b.retired=:ret "
+                + " and b.id > :ssbi"
+                + " and b.billType=:bt";
         Map m = new HashMap();
         m.put("staff", sessionController.getLoggedUser().getStaff());
         m.put("ret", false);
         m.put("ssbi", shiftStartBillId);
-        allBillsShiftStartToNow = billFacade.findByJpql(jpql, m);
-        System.out.println("allBillsAfterShiftStart = " + allBillsShiftStartToNow.size());
-
-        for (Bill b : allBillsShiftStartToNow) {
-            if (b.getPayments() != null) {
-                for (Payment p : b.getPayments()) {
-                    Payment pp = p.copyAttributes();
-                    getPaymentsFromShiftSratToNow().add(pp);
-                }
-            }else{
-                System.out.println("bill payments is empty ");
-            }
-        }
-        if (paymentsFromShiftSratToNow != null) {
-            System.out.println("current bill payments = " + paymentsFromShiftSratToNow.size());
-        }
-
+        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -725,7 +742,7 @@ public class FinancialTransactionController implements Serializable {
 
     public List<Payment> getPaymentsFromShiftSratToNow() {
         if (paymentsFromShiftSratToNow == null) {
-            paymentsFromShiftSratToNow =new ArrayList<>();
+            paymentsFromShiftSratToNow = new ArrayList<>();
         }
         return paymentsFromShiftSratToNow;
     }
@@ -735,13 +752,14 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public List<Bill> getAllBillsShiftStartToNow() {
+        if (allBillsShiftStartToNow == null) {
+            allBillsShiftStartToNow = new ArrayList<>();
+        }
         return allBillsShiftStartToNow;
     }
 
     public void setAllBillsShiftStartToNow(List<Bill> allBillsShiftStartToNow) {
         this.allBillsShiftStartToNow = allBillsShiftStartToNow;
     }
-    
-    
 
 }
