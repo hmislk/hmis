@@ -1540,7 +1540,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-
         saveBatchBill();
         saveBillItemSessions();
 
