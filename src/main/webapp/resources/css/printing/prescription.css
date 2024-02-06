@@ -1,0 +1,17 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 5 Feb 2024, 21:59:22
+    Author     : Dr M H B Ariyaratne <buddhika.ari at gmail.com>
+*/
+@media print {
+    .textEditer .ui-editor-container,
+    .textEditer .ui-editor-toolbar {
+        border: none !important;
+        /* Add other styles you want to remove or modify for print */
+    }
+}
+
+
