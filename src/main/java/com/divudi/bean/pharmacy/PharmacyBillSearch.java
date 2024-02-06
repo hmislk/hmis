@@ -2477,10 +2477,13 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setBill(Bill bb) {
         recreateModel();
-        this.bill = bb;
-        if (bb.getPaymentMethod() != null) {
-            paymentMethod = bb.getPaymentMethod();
+        if(bb==null){
+            bb=this.bill;
         }
+        this.bill = bb;
+//        if (bb.getPaymentMethod() != null) {
+//            paymentMethod = bb.getPaymentMethod();
+//        }
 
     }
 

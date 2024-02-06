@@ -154,13 +154,30 @@ public class PatientEncounter implements Serializable {
     private Double bmi = null;
     private Long pr = null;
     private Double height;
-
+    @ManyToOne
+    private Institution workplace;
+    @ManyToOne
+    private Person referringPerson;
+    @ManyToOne
+    private Staff referringConsultant;
+    @ManyToOne
+    private Staff referringStaff;
+    
+    
+    
+    
     // Transient method for BP
     public String getBp() {
-        if (sbp != null && dbp != null) {
+        if (getSbp() != null && getDbp() != null) {
             return sbp + "/" + dbp + " mmHg";
         }
         return ""; // or some default value
+    }
+    
+    public void setBp(Long sdp, Long dbp) {
+        this.sbp = sdp;
+        this.dbp = dbp;
+        
     }
 
     // Transient method for BMI
@@ -935,6 +952,8 @@ public class PatientEncounter implements Serializable {
         this.weight = weight;
         calculateBmi();
     }
+    
+    
 
     private void calculateBmi() {
         if (this.height == null || this.weight == null) {
@@ -945,6 +964,38 @@ public class PatientEncounter implements Serializable {
         if (heightInMeters > 0) {
             this.bmi = this.weight / Math.pow(heightInMeters, 2);
         }
+    }
+
+    public Institution getWorkplace() {
+        return workplace;
+    }
+
+    public void setWorkplace(Institution workplace) {
+        this.workplace = workplace;
+    }
+
+    public Person getReferringPerson() {
+        return referringPerson;
+    }
+
+    public void setReferringPerson(Person referringPerson) {
+        this.referringPerson = referringPerson;
+    }
+
+    public Staff getReferringConsultant() {
+        return referringConsultant;
+    }
+
+    public void setReferringConsultant(Staff referringConsultant) {
+        this.referringConsultant = referringConsultant;
+    }
+
+    public Staff getReferringStaff() {
+        return referringStaff;
+    }
+
+    public void setReferringStaff(Staff referringStaff) {
+        this.referringStaff = referringStaff;
     }
 
 }

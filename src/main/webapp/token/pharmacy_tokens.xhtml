@@ -90,7 +90,7 @@
                                 <!-- Toggle Called Status Button -->
                                 <p:commandButton ajax="false"
                                                  icon="#{token.called ? 'fa fa-times' : 'fa fa-phone'}"
-                                                 class="#{token.called ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 class="#{token.called ? 'ui-button-warning mx-2' : 'ui-button-success mx-2'}"
                                                  update="@form"
                                                  title="#{token.called ? 'Cancel Call' : 'Call Token'}"
                                                  action="#{tokenController.toggleCalledStatus}"
@@ -113,9 +113,9 @@
 
 
 
-
                                 <p:commandButton 
                                     ajax="false"
+                                    class="ui-button-primary mx-2"
                                     icon="fa fa-pills" 
                                     rendered="#{token.bill eq null}"
                                     title="Pharmacy Bill for Cashier" 
@@ -127,6 +127,7 @@
                                 <!-- Add icon="fa fa-money" to display a money icon -->
                                 <p:commandButton 
                                     ajax="false"
+                                    class="ui-button-success mx-2"
                                     icon="fa fa-money-bill" 
                                     rendered="#{token.bill ne null}"
                                     title="Pay at Cashier" 

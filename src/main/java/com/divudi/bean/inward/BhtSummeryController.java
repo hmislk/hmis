@@ -205,7 +205,7 @@ public class BhtSummeryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -216,7 +216,7 @@ public class BhtSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1878,7 +1878,7 @@ public class BhtSummeryController implements Serializable {
 
         double extra = p.getAddedLinenCharge();
         ////System.out.println("extra = " + extra);
-        if (getCommonFunctions().checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
+        if (CommonFunctions.checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
             if (p.getAdmittedAt().equals(dischargedAt)) {
                 p.setCalculatedLinenCharge(0 + extra);
                 ////System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
@@ -1887,7 +1887,7 @@ public class BhtSummeryController implements Serializable {
                 ////System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
             }
         } else {
-            p.setCalculatedLinenCharge((linen * getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
+            p.setCalculatedLinenCharge((linen * CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
             ////System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
         }
     }
@@ -1905,7 +1905,7 @@ public class BhtSummeryController implements Serializable {
             p.setCalculatedMoCharge(calculated);
         } else {
             Date dischargedAt = p.getDischargedAt();
-            long dCount = getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt);
+            long dCount = CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt);
 
             if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
                 double calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
@@ -2066,13 +2066,6 @@ public class BhtSummeryController implements Serializable {
         this.paid = paid;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
 
     public void calFinalValue() {
         grantTotal = 0;
