@@ -31,13 +31,13 @@
                             selectionMode="single"
                             selection="#{financialTransactionController.selectedBill}">
                             <p:column headerText="Staff" >
-                                <h:outputText value="#{bp.staff.person.nameWithInitials}" ></h:outputText>
+                                <h:outputText value="#{bp.staff.person.nameWithTitle}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Created At" >
                                 <h:outputText value="#{bp.createdAt}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Payment Method" >
-                                <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                <h:outputText value="#{bp.paymentMethod.label}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Total" >
                                 <h:outputText value="#{bp.total}" ></h:outputText>
