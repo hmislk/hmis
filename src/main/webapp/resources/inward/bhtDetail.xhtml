@@ -50,18 +50,14 @@
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Admission Date"  /></div>
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
+                    <div class="col-md-8">
+                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                        </h:outputLabel></div>
+                        </h:outputLabel>
+                    </div>
                 </div>
                 
-                <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
-                </div>
-
-
+                
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
                     <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
 

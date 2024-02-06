@@ -5,7 +5,8 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
 
     <ui:define name="content">
@@ -52,46 +53,39 @@
                 <f:facet name="header" >
                     <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
                     <p:outputLabel value="Admitted Patient Room" class="m-2"/>
+                    <div class="d-flex" style="float: right">
+                        <p:commandButton
+                            ajax="false"
+                            value="Patient Lookup"
+                            icon="fa fa-search"
+                            class="ui-button-warning " 
+                            action="#{patientController.navigateToSearchPatients()}" 
+                            >
+                        </p:commandButton>
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-user"
+                            value="Patient Profile"
+                            class="ui-button-warning mx-1" 
+                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                            >
+                            <f:setPropertyActionListener 
+                                value="#{admissionController.current.patient}" 
+                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa-solid fa-address-card"
+                            class="ui-button-secondary " 
+                            value="Inpatient Dashboard"
+                            action="#{admissionController.navigateToAdmissionProfilePage}" 
+                            >
+                        </p:commandButton>
+                    </div>
                 </f:facet>
 
 
                 <h:form>
-
-                    <div class="d-flex justify-content-end align-items-center mx-4 mb-3 mt-3">
-                        <h:panelGrid columns="3">
-
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                value="Patient Lookup"
-                                icon="fa fa-search"
-                                class="ui-button-warning " 
-                                action="#{patientController.navigateToSearchPatients()}" 
-                                >
-                            </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa fa-user"
-                                value="Patient Profile"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    value="#{admissionController.current.patient}" 
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                            <p:commandButton 
-                                style="float: right;"
-                                ajax="false"
-                                icon="fa-solid fa-address-card"
-                                class="ui-button-secondary " 
-                                value="Inpatient Dashboard"
-                                action="#{admissionController.navigateToAdmissionProfilePage}" 
-                                >
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </div>
 
                     <div class="row w-100 ">
                         <div class="col-6">
@@ -102,33 +96,21 @@
                                 </f:facet>
                                 <p:tabView >
                                     <p:tab title="Patient Details">                            
-                                        <p:panelGrid columns="2">
-                                            <h:outputText  value="Name" ></h:outputText>
-                                            <h:outputText value="#{roomChangeController.current.patient.person.nameWithTitle}"/>
-
-                                            <h:outputText value="NIC" ></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.patient.person.nic}"  />
-                                            <h:outputLabel value="Age"/>
-                                            <h:outputLabel value="#{roomChangeController.current.patient.age}"/>
-                                            <h:outputText value="Address" ></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.patient.person.address}" />
-                                            <h:outputText value="Phone No" ></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.patient.person.mobile}"  />
-                                        </p:panelGrid>
+                                        <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
                                     </p:tab>
                                     <p:tab title="Guardian Details">
-                                        <p:panelGrid columns="2">
+                                        <h:panelGrid columns="2" class="w-50">
                                             <h:outputText  value="Name" ></h:outputText>
                                             <h:outputText value="#{roomChangeController.current.guardian.name}"  />
                                             <h:outputText value="Address" ></h:outputText>
                                             <h:outputText  value="#{roomChangeController.current.guardian.address}"  />
                                             <h:outputText value="Phone No" ></h:outputText>
                                             <h:outputText  value="#{roomChangeController.current.guardian.mobile}"  />
-                                        </p:panelGrid>
+                                        </h:panelGrid>
                                     </p:tab>
 
                                     <p:tab title="Current Room Details">
-                                        <p:panelGrid columns="2">
+                                        <h:panelGrid columns="2" class="w-50">
 
                                             <h:outputText value="Room Name"></h:outputText>
                                             <h:outputText value=" #{roomChangeController.current.currentPatientRoom.roomFacilityCharge.name}"></h:outputText>
@@ -138,7 +120,7 @@
                                                 <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
                                             </h:outputText>
 
-                                        </p:panelGrid>
+                                        </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>
@@ -150,7 +132,7 @@
                                     <h:outputLabel value="Room Details" class="mx-4"></h:outputLabel>
                                 </f:facet>
                                 <p:tabView class="mt-3" >
-                                    <p:tab title="New Room Detail">
+                                    <p:tab title="New Room Details">
                                         <h:panelGrid columns="2">
                                             <h:outputLabel value="Type Room Number or Facility"/>
                                             <p:autoComplete forceSelection="true"
@@ -167,17 +149,21 @@
                                                          pattern="dd MMM yyyy HH:mm:ss" class="m-2" >                                                               
                                             </p:calendar>
                                             <p:commandButton  value="Change"  
+                                                              icon="fas fa-arrow-right-arrow-left"
+                                                              class="ui-button-success "
                                                               action="#{roomChangeController.change()}"
-                                                              ajax="false" styleClass="buttons"  class="m-2"/>
+                                                              ajax="false" />
                                             <p:commandButton  value="Add New Room"  
+                                                              icon="fas fa-plus"
+                                                              class="ui-button-warning m-2"
                                                               action="#{roomChangeController.addNewRoom()}"
-                                                              ajax="false" styleClass="buttons"  disabled="#{roomChangeController.patientRoom.size() ne 0}" class="m-2" />
+                                                              ajax="false"   disabled="#{roomChangeController.patientRoom.size() ne 0}"  />
 
                                         </h:panelGrid>                                    
                                     </p:tab>
 
 
-                                    <p:tab title="Room Detail">
+                                    <p:tab title="Room Details">
                                         <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >
                                             <p:column headerText="Admitted At" width="200px;">                                          
                                                 <p:calendar navigator="true"  
@@ -214,16 +200,16 @@
                                             </p:column>
                                             <p:column class="text-center">
                                                 <p:commandButton ajax="false" value="Discharge" onclick="if (!confirm('Are you sure you want to Discharge this record?'))
-                                                                return false;" action="#{roomChangeController.discharge(rm)}"/>
+                                                            return false;" action="#{roomChangeController.discharge(rm)}"/>
                                             </p:column> 
                                             <p:column class="text-center">
                                                 <p:commandButton ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                                return false;" action="#{roomChangeController.remove(rm)}"/>
+                                                            return false;" action="#{roomChangeController.remove(rm)}"/>
                                             </p:column>                         
                                         </p:dataTable>
                                     </p:tab>
 
-                                    <p:tab title="Add Extra Charge Detail">
+                                    <p:tab title="Add Extra Charge Details">
                                         <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >                        
                                             <p:column headerText="Room">
                                                 <h:outputLabel value="#{rm.roomFacilityCharge.name}" />                                                                 
