@@ -48,6 +48,7 @@
                                             <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                                    
                                                 </h:outputLabel>
                                             </p:column>
                                             <f:ajax event="itemSelect" execute="@this"  render="det"/>
@@ -58,7 +59,7 @@
                                         <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
                                         <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
-                                                         action="#{pharmacyAdjustmentController.adjustDepartmentStock()}" ></p:commandButton>
+                                                         action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
                                         <p:defaultCommand target="btnAdjust"/>
                                     </h:panelGrid>
                                 </p:panel>

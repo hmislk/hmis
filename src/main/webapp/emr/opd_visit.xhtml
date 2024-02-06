@@ -124,7 +124,7 @@
                                                                         </div>-->
                                 </p:tab>
 
-                                <p:tab title="Visit Details" class="m-0">
+                                <p:tab title="Visit Details" class="m-0" id="visit">
                                     <div class="ui-g">
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-1">
@@ -546,21 +546,82 @@
 
                                         </div>
 
+
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel id="docPrescreption" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
                                                     <h:outputText class="mx-4" value="Prescription"/>
                                                 </f:facet>
-                                                <p:commandButton  class="ui-button-info" ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="Print" 
+                                                    icon="pi pi-print">
+                                                    <p:printer target="txtPrescriptionDoc" />
                                                 </p:commandButton>
-                                                <p:commandButton icon="fas fa-refresh" class="mx-2 ui-button-warning" id="btnRefresh" process="btnRefresh" update="txtPrescriptionDoc" value="refresh" action="#{patientEncounterController.refreshPrescription}"/>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="To Print" 
+                                                    action="opd_visit_print"
+                                                    icon="pi pi-print">
+                                                </p:commandButton>
 
-                                                <p:textEditor class="my-2" id="txtPrescriptionDoc" 
-                                                              toolbarVisible="false"
-                                                              secure='false' widgetVar="textEditorWidget" 
-                                                              value="#{patientEncounterController.encounterPrescreption.lobValue}">
+
+                                                <p:commandButton
+                                                    icon="fas fa-refresh"
+                                                    class="mx-1 ui-button-warning"
+                                                    id="btnRefresh"
+                                                    ajax="false" 
+                                                    value="refresh" 
+                                                    action="#{patientEncounterController.refreshPrescription}"/>
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                        }
+                                                    }
+                                                </style>
+
+
+
+                                                <p:textEditor 
+                                                    styleClass="textEditer"
+                                                    class="my-2" 
+                                                    id="txtPrescriptionDoc" 
+                                                    toolbarVisible="false"
+                                                    secure='false' 
+                                                    widgetVar="textEditorWidget" 
+                                                    value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                    >
                                                 </p:textEditor>
                                             </p:panel>
                                         </div>
@@ -831,29 +892,12 @@
                             <div class="col-4 p-1" >
 
 
-
-
-
-
-
-
-
-
-
-
                             </div>
                             <div class="col-4 p-1" >
-
-
-
-
 
                             </div>
                         </div>
                     </div>
-
-
-
 
                     <div class="container-fluid" >
                         <div class="row"   >
@@ -864,59 +908,19 @@
 
                                     </div>
 
-
-
                                     <div class="col-md-6"  >
-
-
-
-
-
-
-
-
-
 
 
                                     </div>
 
-
-
-
-
-
                                 </div>
-
-
-
-
 
                             </div>
                             <div class="col-md-4 m-0 p-1" >
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             </div>
                         </div>
                     </div>
-
-
-
-
-
 
                 </h:form>
 

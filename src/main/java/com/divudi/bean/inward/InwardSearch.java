@@ -257,6 +257,10 @@ public class InwardSearch implements Serializable {
         }
         return "/inward/inward_reprint_bill_final";
     }
+    
+    public String navigateDoctorPayment(){
+        return "/inward/inward_bill_payment";
+    }
 
     public boolean calculateRefundTotal() {
         Double d = 0.0;

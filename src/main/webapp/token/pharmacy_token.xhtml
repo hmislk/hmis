@@ -17,24 +17,70 @@
                         editable="true"
                         controller="#{tokenController}"/>
 
-                    <p:outputLabel value="Counter" ></p:outputLabel>
-                    <p:selectOneMenu value="#{tokenController.counter}" >
-                        <f:selectItem itemLabel="Any" ></f:selectItem>
-                        <f:selectItems 
-                            value="#{sessionController.loggableSubDepartments}" 
-                            var="c" 
-                            itemLabel="#{c.name}" 
-                            itemValue="#{c}" >
-                        </f:selectItems>
-                    </p:selectOneMenu>
-                    
-                    <p:commandButton
-                        value="Create Token" 
-                        ajax="false" 
-                        action="#{tokenController.settlePharmacyToken()}" >
-                    </p:commandButton>
-                    
-                    
+                    <f:facet name="footer" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:outputLabel value="Counter" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" value="#{tokenController.counter}" >
+                                <f:selectItem itemLabel="Any" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{sessionController.loggableSubDepartments}" 
+                                    var="c" 
+                                    itemLabel="#{c.name}" 
+                                    itemValue="#{c}" >
+                                </f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:commandButton
+                                class="ui-button-success"
+                                icon="fas fa-plus"
+                                value="Create Token" 
+                                ajax="false" 
+                                action="#{tokenController.settlePharmacyToken()}" >
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+                </p:panel>
+
+                <p:panel>
+                    <f:facet name="header">
+                        <i class="fas fa-barcode-scan mt-2"/>
+                        <p:outputLabel value="Bill Scanner" class="mx-2 mt-2"></p:outputLabel>
+                    </f:facet>
+                    <h:form>
+
+
+
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="w-25" >
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <img src="https://media.tenor.com/8E3SIU76kHgAAAAM/barcode-scan.gif"/>
+                                </div>
+                                <div>
+                                    <p:inputText 
+                                        id="billID"
+                                        class="w-100"
+                                        value="#{searchController.currentBillId}"
+                                        placeholder="Enter Bill ID or Click here to Scan"
+                                        >
+                                    </p:inputText>
+                                    <p:defaultCommand target="btnAddbill" />
+                                </div>
+                                <div >
+                                    <p:commandButton
+                                        id="btnAddbill"
+                                        style="float: right;"
+                                        value="Search For Settle"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning w-100 my-1"
+                                        ajax="false"
+                                        action="#{searchController.settleBillByBarcode}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </h:form>
                 </p:panel>
 
 

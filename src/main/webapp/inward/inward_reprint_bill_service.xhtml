@@ -168,12 +168,12 @@
                     <div class="printingOnly" >
 
                        <p:panel id="gpBillPreview" class="m-3">
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="bill">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
@@ -181,7 +181,7 @@
                         </p:panel>
                         
                         <p:panel id="gpBillPreview2" class="m-3">
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
@@ -190,7 +190,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>

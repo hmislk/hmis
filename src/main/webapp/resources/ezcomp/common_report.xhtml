@@ -11,8 +11,8 @@
     <cc:interface>
         <cc:attribute  name="commonReportFormat" type="com.divudi.entity.Category" />
         <cc:attribute  name="patientReport" type="com.divudi.entity.lab.PatientReport" />
-        <cc:attribute  name="showBorders" type="boolean" />
-
+        <cc:attribute  name="showBorders" type="java.lang.Boolean" />
+        <cc:attribute  name="showBackground" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -21,6 +21,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
         <p:graphicImage  
+            rendered="#{cc.attrs.showBackground}"
             value="#{uploadViewController.categoryUploadById}" 
             cache="false" 
             style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; ">

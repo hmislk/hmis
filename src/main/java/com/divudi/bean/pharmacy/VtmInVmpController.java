@@ -11,7 +11,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
@@ -36,7 +36,7 @@ public class VtmInVmpController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private VtmsVmpsFacade ejbFacade;
+    private VirtualProductIngredientFacade ejbFacade;
     List<VirtualProductIngredient> selectedItems;
     private VirtualProductIngredient current;
     private List<VirtualProductIngredient> items = null;
@@ -83,11 +83,11 @@ public class VtmInVmpController implements Serializable {
         this.selectText = selectText;
     }
 
-    public VtmsVmpsFacade getEjbFacade() {
+    public VirtualProductIngredientFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(VtmsVmpsFacade ejbFacade) {
+    public void setEjbFacade(VirtualProductIngredientFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -125,7 +125,7 @@ public class VtmInVmpController implements Serializable {
         getCurrent();
     }
 
-    private VtmsVmpsFacade getFacade() {
+    private VirtualProductIngredientFacade getFacade() {
         return ejbFacade;
     }
 

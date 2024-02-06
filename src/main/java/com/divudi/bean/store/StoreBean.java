@@ -55,7 +55,7 @@ import com.divudi.facade.UserStockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1493,13 +1493,13 @@ public class StoreBean {
     @EJB
     VmpFacade vmpFacade;
     @EJB
-    VtmsVmpsFacade vtmsVmpsFacade;
+    VirtualProductIngredientFacade vtmsVmpsFacade;
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
+    public VirtualProductIngredientFacade getVtmsVmpsFacade() {
         return vtmsVmpsFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmsVmpsFacade) {
+    public void setVtmsVmpsFacade(VirtualProductIngredientFacade vtmsVmpsFacade) {
         this.vtmsVmpsFacade = vtmsVmpsFacade;
     }
 

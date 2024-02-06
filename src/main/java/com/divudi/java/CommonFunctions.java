@@ -42,6 +42,23 @@ public class CommonFunctions {
         return convertedPhoneNumber;
     }
 
+    public static Date convertDateToDbType(String argDate) {
+        if (argDate == null) {
+            return null; // Handle null input
+        }
+
+        SimpleDateFormat originalFormat = new SimpleDateFormat("MMMM d, yyyy, hh:mm a");
+        SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            Date date = originalFormat.parse(argDate);
+            String formattedDateString = desiredFormat.format(date); 
+            return desiredFormat.parse(formattedDateString); 
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
     public static String sanitizeStringForDatabase(String input) {
         if (input == null) {
             return null;
@@ -58,7 +75,7 @@ public class CommonFunctions {
             String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
             Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
             return convertedPhoneNumber;
-        } catch (Exception e)  {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -530,7 +547,7 @@ public class CommonFunctions {
         return date;
     }
 
-    public boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
+    public static boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
 
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
@@ -567,7 +584,7 @@ public class CommonFunctions {
 
     }
 
-    public Long getDayCount(Date frm, Date to) {
+    public static Long getDayCount(Date frm, Date to) {
         if (frm == null) {
             return 0l;
         }
@@ -691,7 +708,7 @@ public class CommonFunctions {
         return durationHours;
     }
 
-    public long calculateDurationMin(Date dob, Date toDate) {
+    public static long calculateDurationMin(Date dob, Date toDate) {
         if (dob == null || toDate == null || dob.getTime() > toDate.getTime()) {
             return 0;
         }

@@ -212,7 +212,7 @@ public class DataUploadController implements Serializable {
     public void uploadPatientAreas() {
         areas = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 areas = readAreasFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -324,7 +324,7 @@ public class DataUploadController implements Serializable {
         List<Patient> patients;
 
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 patients = readPatientDataFromExcel(inputStream);
                 int i = 0;
                 for (Patient p : patients) {
@@ -345,7 +345,7 @@ public class DataUploadController implements Serializable {
 
     public void uploadVisits() {
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -356,7 +356,7 @@ public class DataUploadController implements Serializable {
     public void uploadVtms() {
         List<Vtm> vtms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vtms = readVtmsFromExcel(inputStream);
                 for (Vtm v : vtms) {
                     vtmController.findAndSaveVtmByNameAndCode(v);
@@ -370,7 +370,7 @@ public class DataUploadController implements Serializable {
     public void uploadAtms() {
         List<Atm> atms;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 atms = readAtmsFromExcel(inputStream);
                 for (Atm v : atms) {
                     atmController.findAndSaveAtmByNameAndCode(v, v.getVtm());
@@ -384,7 +384,7 @@ public class DataUploadController implements Serializable {
     public void uploadAmps() {
         List<Amp> amps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -395,7 +395,7 @@ public class DataUploadController implements Serializable {
     public void uploadItemsAndFees() {
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 items = readOpdItemsAndFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -406,7 +406,7 @@ public class DataUploadController implements Serializable {
     public void uploadAddProfessionalFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 itemFees = addProfessionalFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -419,7 +419,7 @@ public class DataUploadController implements Serializable {
         pollActive = true;
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 items = readCollectingCentreItemsAndFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -432,7 +432,7 @@ public class DataUploadController implements Serializable {
         pollActive = true;
         items = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 consultantsToSave = readConsultantsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1318,7 +1318,7 @@ public class DataUploadController implements Serializable {
     public void uploadCollectingCentres() {
         collectingCentres = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 collectingCentres = readCollectingCentresFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1565,7 +1565,7 @@ public class DataUploadController implements Serializable {
     public void uploadItemFeesToUpdateFees() {
         itemFees = new ArrayList<>();
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 itemFees = replaceItemFeesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1576,7 +1576,7 @@ public class DataUploadController implements Serializable {
     public void uploadInvestigations() {
         List<Investigation> investigations;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 readInvestigationsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1601,7 +1601,7 @@ public class DataUploadController implements Serializable {
         outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
-            try ( InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = file.getInputStream()) {
                 vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1798,33 +1798,45 @@ public class DataUploadController implements Serializable {
 
             Cell dateOfBirthCell = row.getCell(3);
             if (dateOfBirthCell != null) {
-                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
-                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
-                if (localDateOfBirth != null) {
-                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-                    Date dateOfBirth = Date.from(instant);
-                    patient.getPerson().setDob(dateOfBirth);
-                }
+                Date dob = CommonFunctions.convertDateToDbType(dateOfBirthCell.getStringCellValue());
+                patient.getPerson().setDob(dob);
             }
 
+//            Cell dateOfBirthCell = row.getCell(3);
+//            if (dateOfBirthCell != null) {
+//                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
+//                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+//                if (localDateOfBirth != null) {
+//                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+//                    Date dateOfBirth = Date.from(instant);
+//                    patient.getPerson().setDob(dateOfBirth);
+//                }
+//            }
             Cell addressCell = row.getCell(4);
             if (addressCell != null) {
                 patient.getPerson().setAddress(addressCell.getStringCellValue());
             }
-
             String phone = null;
             Long phoneLong = null;
 
             Cell phoneCell = row.getCell(5);
 
             if (phoneCell != null) {
-                if (phoneCell.getCellType() == CellType.STRING) {
-                    phone = phoneCell.getStringCellValue();
-                    phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
-                } else if (phoneCell.getCellType() == CellType.NUMERIC) {
-                    Double tmpDblPhone = phoneCell.getNumericCellValue();
-                    phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
-                    phone = CommonFunctions.convertDoubleToString(tmpDblPhone);
+                switch (phoneCell.getCellType()) {
+                    case STRING:
+                        phone = phoneCell.getStringCellValue();
+                        phoneLong = CommonFunctions.convertStringToLongByRemoveSpecialChars(phone);
+                        break;
+                    case NUMERIC:
+                        // Assuming the phone number is a whole number
+                        Double tmpDblPhone = phoneCell.getNumericCellValue();
+                        phoneLong = CommonFunctions.convertDoubleToLong(tmpDblPhone);
+                        // Convert the numeric value to String and add leading '0'
+                        phone = "0" + phoneLong.toString();
+                        break;
+                    default:
+                        // Handle other cell types if needed
+                        break;
                 }
                 patient.getPerson().setPhone(phone);
                 patient.setPatientPhoneNumber(phoneLong);
@@ -1835,11 +1847,11 @@ public class DataUploadController implements Serializable {
                 String mobile = null;
                 if (mobileCell.getCellType() == CellType.STRING) {
                     mobile = mobileCell.getStringCellValue();
-                }
-                else if(mobileCell.getCellType() == CellType.NUMERIC) {
+                } else if (mobileCell.getCellType() == CellType.NUMERIC) {
                     Double mobileLong;
                     mobileLong = mobileCell.getNumericCellValue();
-                    mobile = CommonFunctions.convertDoubleToString(mobileLong);
+                    Long mobileNumber = CommonFunctions.convertDoubleToLong(mobileLong);
+                    mobile = "0"+String.valueOf(mobileNumber);
                 }
                 patient.getPerson().setMobile(mobile);
             }
@@ -1908,6 +1920,26 @@ public class DataUploadController implements Serializable {
                 String strOccupation = occupationCell.getStringCellValue();
                 Item occupation = itemController.findItemByName(strOccupation, "occupations");
                 patient.getPerson().setOccupation(occupation);
+            }
+
+            patient.setCreatedAt(new Date());
+            patient.setCreater(sessionController.getLoggedUser());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            
+            
+            Cell AreaCell = row.getCell(16);
+            if (AreaCell != null) {
+                String strArea = AreaCell.getStringCellValue();
+                Area area = areaController.findAreaByName(strArea);
+                if (area==null) {
+                    Area areanew=new Area();
+                    areanew.setCreatedAt(new Date());
+                    areanew.setCreater(sessionController.getLoggedUser());
+                    areanew.setName(strArea);
+                    areaController.save(areanew);
+                    patient.getPerson().setArea(areanew);
+                }
+                patient.getPerson().setArea(area);
             }
 
             patient.setCreatedAt(new Date());
@@ -2819,7 +2851,7 @@ public class DataUploadController implements Serializable {
 //        workbook.setSheetHidden(workbook.getSheetIndex("Institutions"), true);
         // Create header row in data sheet
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation"};
+        String[] columnHeaders = {"Patient ID", "Patient Name", "Patient Code", "Date of Birth", "Address", "Telephone", "Mobile", "Email", "Title", "Sex", "Civil Status", "Race", "Blood Group", "Comments", "Full Name", "Occupation","Area"};
         for (int i = 0; i < columnHeaders.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(columnHeaders[i]);

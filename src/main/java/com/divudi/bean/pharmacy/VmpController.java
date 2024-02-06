@@ -24,7 +24,7 @@ import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +75,7 @@ public class VmpController implements Serializable {
     @Inject
     VtmInVmpController vtmInVmpController;
     @EJB
-    VtmsVmpsFacade vivFacade;
+    VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
@@ -472,11 +472,11 @@ public class VmpController implements Serializable {
         this.removingVtmInVmp = removingVtmInVmp;
     }
 
-    public VtmsVmpsFacade getVivFacade() {
+    public VirtualProductIngredientFacade getVivFacade() {
         return vivFacade;
     }
 
-    public void setVivFacade(VtmsVmpsFacade vivFacade) {
+    public void setVivFacade(VirtualProductIngredientFacade vivFacade) {
         this.vivFacade = vivFacade;
     }
 
