@@ -547,7 +547,7 @@ public class CommonFunctions {
         return date;
     }
 
-    public boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
+    public static boolean checkToDateAreInSameDay(Date firstDate, Date secondDate) {
 
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
@@ -584,7 +584,7 @@ public class CommonFunctions {
 
     }
 
-    public Long getDayCount(Date frm, Date to) {
+    public static Long getDayCount(Date frm, Date to) {
         if (frm == null) {
             return 0l;
         }
@@ -708,7 +708,7 @@ public class CommonFunctions {
         return durationHours;
     }
 
-    public long calculateDurationMin(Date dob, Date toDate) {
+    public static long calculateDurationMin(Date dob, Date toDate) {
         if (dob == null || toDate == null || dob.getTime() > toDate.getTime()) {
             return 0;
         }

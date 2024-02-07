@@ -167,48 +167,51 @@
             </div>
 
 
-            <div class="container-fluid" style="margin-top: 180px">
-
-                <ui:repeat var="token" value="#{tokenController.currentTokens}" >
-                    <div class="card shadow mb-2">
-                        <div class="row d-flex align-items-center p-5" >
-                            <div class="col-3">
-                                <div>
-                                    <div class="counter-name">
-                                        <h:outputText value="#{token.counter.name}" />
+                        <div class="container-fluid" style="margin-top: 180px">
+            
+                            <ui:repeat var="token" value="#{tokenController.currentTokens}" >
+                                <div class="card shadow mb-2">
+                                    <div class="row d-flex align-items-center p-5" >
+                                        <div class="col-3">
+                                            <div>
+                                                <div class="counter-name">
+                                                    <h:outputText value="#{token.counter.name}" />
+                                                </div>
+                                                <h4>#{token.department.name}</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="token-circle element">
+                                                <h:outputText value="#{token.tokenNumber}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="">
+                                                <h:panelGroup rendered="#{token.bill ne null}" >
+                                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
+                                                        <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
+                                                        <img width="250px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+            
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="patientDetails">
+                                                <h:outputText value="#{token.patient.person.name}" /><br/>
+                                            </div>
+                                            <h3><h:outputText value="#{token.patient.person.area.name}" /></h3>
+                                        </div>
                                     </div>
-                                    <h4>#{token.department.name}</h4>
+            
                                 </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="token-circle element">
-                                    <h:outputText value="#{token.tokenNumber}" />
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="">
-                                    <h:panelGroup rendered="#{token.bill ne null}" >
-                                        <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                            <img width="250px" src="https://cdn.dribbble.com/users/1280935/screenshots/6974685/media/ec4c386222b837da0ff6eabec3f59ba3.gif"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                            <img width="250px"  src="https://assets.materialup.com/uploads/355a438c-4e7b-4412-a74d-1c4c1dd444fa/preview.gif"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-
-                                </div>
-                            </div>
-                            <div class="col-3">
-                                <div class="patientDetails">
-                                    <h:outputText value="#{token.patient.person.name}" /><br/>
-                                </div>
-                                <h3><h:outputText value="#{token.patient.person.area.name}" /></h3>
-                            </div>
+                            </ui:repeat>
                         </div>
 
-                    </div>
-                </ui:repeat>
-            </div>
+            
+          
 
             <!-- Automatic Refresh Every 5 Seconds -->
             <p:poll interval="5" listener="#{tokenController.fillPharmacyTokensCalled}" update="@form" />
@@ -240,34 +243,34 @@
             });
         </script>
         <script type="text/javascript">
-    //<![CDATA[
-        function toggleFullScreen() {
-            var elem = document.documentElement;
-            if (!document.fullscreenElement && !document.mozFullScreenElement &&
-                !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
+            //<![CDATA[
+            function toggleFullScreen() {
+                var elem = document.documentElement;
+                if (!document.fullscreenElement && !document.mozFullScreenElement &&
+                        !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
                 }
             }
-        }
-    //]]>
-    </script>
+            //]]>
+        </script>
 
     </h:body>
 </html>

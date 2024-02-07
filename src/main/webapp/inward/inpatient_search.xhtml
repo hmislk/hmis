@@ -31,8 +31,9 @@
 
                                 <p:commandButton ajax="false"
                                                  value="Search"
+                                                 icon="fas fa-search"
                                                  action="#{admissionController.searchAdmissions}"
-                                                 class="mt-2 w-100 mb-3"></p:commandButton>
+                                                 class="mt-2 w-100 mb-3 ui-button-warning"></p:commandButton>
 
 
 
@@ -117,24 +118,24 @@
                                         <h:panelGroup>
                                             <!-- Discharge Status -->
                                             <h:panelGroup rendered="#{a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Discharged"></i>
-                                                <i class="fa fa-check" title="Discharged"></i>
+                                                <p:tag severity="success" style="font-size: 15px" ><i class="fa fa-fw fa-bed" title="Discharged"></i>
+                                                &nbsp;<i class="fa fa-check" title="Discharged"></i></p:tag>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{not a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
-                                                <i class="fa fa-times" title="Not Discharged"></i>
+                                                <p:tag severity="danger" style="font-size: 15px" ><i class="fa fa-fw fa-bed" title="Not Discharged"></i>
+                                                    &nbsp;<i class="fa fa-times" title="Not Discharged"></i></p:tag>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                         <p:spacer width="20" ></p:spacer>
                                         <h:panelGroup>
                                             <!-- Bill Status -->
-                                            <h:panelGroup rendered="#{a.billSession}">
-                                                <i class="fa fa-fw fa-money" title="Payment Finalized"></i>
-                                                <i class="fa fa-check" title="Payment Finalized"></i>
+                                            <h:panelGroup rendered="#{a.paymentFinalized}">
+                                                <p:tag severity="success" style="font-size: 15px" ><i class="fa fa-fw fa-money-bill-alt" title="Payment Finalized"></i>
+                                                &nbsp;<i class="fa fa-check" title="Payment Finalized"></i></p:tag>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{not a.paymentFinalized}">
-                                                <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
-                                                <i class="fa fa-times" title="Payment Pending"></i>
+                                                <p:tag severity="danger" style="font-size: 15px" ><i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
+                                                    &nbsp;<i class="fa fa-times" title="Payment Pending"></i></p:tag>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </p:column>

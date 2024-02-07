@@ -16,9 +16,6 @@
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
 
-            <h:form >
-
-            </h:form>
 
 
             <h:form>
@@ -52,15 +49,15 @@
                                 <p:commandButton
                                     id="btnSelect"
                                     ajax="false"
-                                    value="Select**"
+                                    value="Select"
                                     action="#{bhtEditController.fillCreditCompaniesByPatient}"
                                     />
 
-                                <h:commandButton
-                                    id="btnSelectJsf"
-                                    value="Select**"
-                                    action="#{admissionController.navigateToAdmitFromMenu()}"
-                                    />
+                                <!--                                <h:commandButton
+                                                                    id="btnSelectJsf"
+                                                                    value="Select**"
+                                                                    action="#{admissionController.navigateToAdmitFromMenu()}"
+                                                                    />-->
 
 
 
@@ -73,45 +70,53 @@
 
 
                 <h:panelGroup  rendered="#{bhtEditController.current.bhtNo ne null}"> 
-                    <div class="d-flex justify-content-end align-items-center gap-3" >
-                        <h:panelGrid columns="4" class="d-flex justify-content-end">
-                            <p:commandButton
-                                ajax="false" 
-                                value="Save" 
-                                icon="fa fa-check"
-                                action="#{bhtEditController.saveCurrent}"  
-                                class="m-1 ui-button-success w-100">
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                icon="fa fa-search"
-                                value="Patient Lookup" 
-                                class="m-1 ui-button-warning w-100 "
-                                action="#{patientController.navigateToSearchPatients()}" />
-                            <p:commandButton 
-                                ajax="false" 
-                                icon="fa fa-id-card"
-                                value="Inpatient Care Dashboard" 
-                                class="m-1 ui-button-primary  w-100"
-                                action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                icon="fa fa-user"
-                                value="Patient Profile" 
-                                class="m-1 ui-button-secondary w-100"
-                                action="#{patientController.navigateToOpdPatientProfile()}" >
-                                <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-hospital"></h:outputText>
+                                    <h:outputLabel value="Admission Details" class="mx-4"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="Save" 
+                                        icon="fa fa-check"
+                                        action="#{bhtEditController.saveCurrent}"  
+                                        class="ui-button-success">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fa fa-search"
+                                        value="Patient Lookup" 
+                                        class="ui-button-warning mx-1"
+                                        action="#{patientController.navigateToSearchPatients()}" />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fa fa-user"
+                                        value="Patient Profile" 
+                                        class="ui-button-warning"
+                                        action="#{patientController.navigateToOpdPatientProfile()}" >
+                                        <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fa fa-id-card"
+                                        value="Inpatient Dashboard" 
+                                        class="mx-1 ui-button-secondary"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" >
+                                        <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
+                                </div>
 
-                        </h:panelGrid>
-                    </div>
+                            </div>
 
 
-                    <div class="row">
+                        </f:facet>
+<div class="row">
                         <div class="col-6">
-
+                            <common:patient_details controller="#{bhtEditController}" editable="true"></common:patient_details>
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
@@ -126,6 +131,28 @@
                                     <p:outputLabel  value="BHT No(full)"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
+                                    <p:outputLabel  value="Consultant"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringConsultant}" ></p:inputText>
+                                    <p:outputLabel  value="Medical Officer"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.opdDoctor}" ></p:inputText>
+
+                                    <p:outputLabel  value="Doctor who referred patient"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringDoctor}" ></p:inputText>
+                                    <p:outputLabel  value="Staff who referred patient"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringStaff}" ></p:inputText>
+                                    <p:outputLabel  value="Referral Institution"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referredByInstitution}" ></p:inputText>
+                                    <p:outputLabel  value="Workplace"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.workplace}" ></p:inputText>
+                                    <p:outputLabel  value="Referral Number"  />
+                                    <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
+                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referanceNo}" ></p:inputText>
                                     <p:outputLabel  value="Local/Foreigner"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}" 
@@ -241,7 +268,7 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <common:patient_details controller="#{bhtEditController}"></common:patient_details>
+                            
 
 
                             <p:panel header="Cancel Admission">
@@ -270,8 +297,11 @@
                                         #{rm.roomFacilityCharge.name}
                                     </p:column>      
                                     <p:column headerText="Admitted At">
-                                        #{rm.admittedAt}
-                                    </p:column>     
+                                        <h:outputText value="#{rm.admittedAt}">
+                                            <f:convertDateTime pattern="dd/MMM/yyyy hh:mm:ss a" />
+                                        </h:outputText>
+                                    </p:column>
+
                                     <p:column headerText="Admitted By">
                                         #{rm.addmittedBy.webUserPerson.name}
                                     </p:column> 
@@ -317,6 +347,11 @@
 
                         </div>
                     </div>
+                    </p:panel>
+
+
+
+                    
                 </h:panelGroup>
             </h:form>
 

@@ -552,7 +552,10 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) getCurrent().getItem());
-        double count = getInwardBean().calCount(timedItemFee, getCurrent().getFromTime(), getCurrent().getToTime());
+        if (getCurrent().getToTime() == null) {
+            getCurrent().setToTime(new Date());
+        }
+        double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
         getCurrent().setServiceValue(count * timedItemFee.getFee());
         getCurrent().setCreater(getSessionController().getLoggedUser());

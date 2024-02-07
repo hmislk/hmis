@@ -269,6 +269,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search?faces-redirect=true";
     }
+    
+    
 
     public String navigateToOpdAnalyticsIndex() {
         return "/opd/analytics/index";
@@ -1538,7 +1540,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-
         saveBatchBill();
         saveBillItemSessions();
 
