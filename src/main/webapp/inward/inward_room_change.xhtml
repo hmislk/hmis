@@ -6,7 +6,8 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:in="http://java.sun.com/jsf/composite/inward">
 
 
     <ui:define name="content">
@@ -96,31 +97,45 @@
                                 </f:facet>
                                 <p:tabView >
                                     <p:tab title="Patient Details">                            
-                                        <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
+                                        <in:bhtDetail admission="#{roomChangeController.current}"/>
                                     </p:tab>
                                     <p:tab title="Guardian Details">
-                                        <h:panelGrid columns="2" class="w-50">
-                                            <h:outputText  value="Name" ></h:outputText>
-                                            <h:outputText value="#{roomChangeController.current.guardian.name}"  />
-                                            <h:outputText value="Address" ></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.guardian.address}"  />
-                                            <h:outputText value="Phone No" ></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.guardian.mobile}"  />
-                                        </h:panelGrid>
+
+                                        <div class="row">
+                                            <div class="col-md-3"><p:outputLabel value="Name"/></div>
+                                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                            <div class="col-md-8"><h:outputText value="#{roomChangeController.current.guardian.name}"  /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3"><p:outputLabel value="Address"/></div>
+                                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                            <div class="col-md-8"><h:outputText  value="#{roomChangeController.current.guardian.address}"  /></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3"><p:outputLabel value="Phone No"/></div>
+                                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                            <div class="col-md-8"><h:outputText  value="#{roomChangeController.current.guardian.mobile}"  /></div>
+                                        </div>
+
+
                                     </p:tab>
 
                                     <p:tab title="Current Room Details">
-                                        <h:panelGrid columns="2" class="w-50">
 
-                                            <h:outputText value="Room Name"></h:outputText>
-                                            <h:outputText value=" #{roomChangeController.current.currentPatientRoom.roomFacilityCharge.name}"></h:outputText>
+                                        <div class="row">
+                                            <div class="col-md-3"><p:outputLabel value="Room Name"/></div>
+                                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                            <div class="col-md-8"><h:outputText value=" #{roomChangeController.current.currentPatientRoom.roomFacilityCharge.name}"></h:outputText></div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3"><p:outputLabel value="Admitted At"/></div>
+                                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                                            <div class="col-md-8"><h:outputText  value="#{roomChangeController.current.currentPatientRoom.admittedAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
 
-                                            <h:outputText  value="Admitted At"></h:outputText>
-                                            <h:outputText  value="#{roomChangeController.current.currentPatientRoom.admittedAt}">
-                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
-                                            </h:outputText>
-
-                                        </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>

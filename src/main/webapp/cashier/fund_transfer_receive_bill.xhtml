@@ -26,12 +26,12 @@
                     <p:panel header="Fund Transfer Received Bill" >
                         <h:outputText value="From" >
                         </h:outputText>
-                        <h:outputText value="#{financialTransactionController.currentBill.fromStaff.person.nameWithTitle}" >
+                        <h:outputText class="mx-2" value="#{financialTransactionController.currentBill.referenceBill.fromStaff.person.nameWithTitle}" >
                         </h:outputText>
 
-                        <h:outputText value="Value" >
+                        <h:outputText value="Value" class="mx-4" >
                         </h:outputText>
-                        <h:outputText value="#{financialTransactionController.currentBill.total}" >
+                        <h:outputText value="#{financialTransactionController.currentBill.referenceBill.total}" >
                         </h:outputText>
 
                     </p:panel>
