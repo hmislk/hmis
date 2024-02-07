@@ -10,14 +10,15 @@
 
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
-                <p:panel header="Fund Transfers To Receive" >
+                
+                <p:panel >
                     <p:panel header="Funds" >
-
-
                         <p:commandButton 
                             value="To Receie"
                             action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
                             ajax="false"
+                            class="my-2 ui-button-success"
+                            
                             >
 
                         </p:commandButton>
