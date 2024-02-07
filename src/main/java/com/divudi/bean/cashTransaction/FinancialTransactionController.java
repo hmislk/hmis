@@ -404,7 +404,7 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill";
     }
 
-    public fillPaymentsFromShiftStartToNow() {
+    public void fillPaymentsFromShiftStartToNow() {
         currentBillPayments= new ArrayList<>();
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "select b "
@@ -429,7 +429,7 @@ public class FinancialTransactionController implements Serializable {
               System.out.println("current bill payments = " + currentBillPayments.size());
             }
         }
-        
+       
 
     }
 
