@@ -393,7 +393,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
-            fillPaymentsFromOpdBills();
+            fillPaymentsFromShiftStartToNow();
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
             currentBill.setBillClassType(BillClassType.Bill);
@@ -405,40 +405,51 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillPaymentsFromShiftStartToNow() {
-        currentBillPayments = new ArrayList<>();
+        currentBillPayments= new ArrayList<>();
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-        String jpql = "select p "
-                + "from Payment p "
-                + "where p.creater =:cr "
-                + "and p.retired =:ret "
-                + "and p.id > :pid";
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.staff=:staff "
+                + " and b.retired=:ret "
+                + " and b.id > :ssbi";
         Map<String, Object> m = new HashMap<>();
-        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        m.put("staff", sessionController.getLoggedUser().getStaff());
         m.put("ret", false);
-        m.put("pid", shiftStartBillId);
-        currentBillPayments = paymentFacade.findByJpql(jpql, m);
-        System.out.println("nonClosedShiftStartFundBill = " + nonClosedShiftStartFundBill.getCreater().getName());
-        System.out.println("currentBillPayments = " + currentBillPayments.size());
+        m.put("ssbi", shiftStartBillId);
+        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
+        if (allBillsShiftStartToNow != null) {
+            System.out.println("allBillsAfterShiftStart2 = " + allBillsShiftStartToNow.size());
+            for (Bill b:allBillsShiftStartToNow) {
+                System.out.println("cb = " + b);
+                System.out.println("Payments list size " + b.getPayments().size());
+                for (Payment p : b.getPayments()) {
+                    currentBillPayments.add(p);
+                    System.out.println("p = " + "..........ADDED............");
+                }
+              System.out.println("current bill payments = " + currentBillPayments.size());
+            }
+        }
+       
+
+    }
+
+    public void copyPaymentFromBills(Bill b) {
+        
     }
 
     public void fillPaymentsFromOpdBills() {
-        currentBillPayments = new ArrayList<>();
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-        String jpql = "select p "
-                + "from Payment p "
-                + "where p.creater = :cr "
-                + "and p.retired = :ret "
-                + "and p.createdAt > :ccd"; 
-        Map<String, Object> m = new HashMap<>();
-        m.put("cr", nonClosedShiftStartFundBill.getCreater());
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.staff=:staff "
+                + " and b.retired=:ret "
+                + " and b.id > :ssbi"
+                + " and b.billType=:bt";
+        Map m = new HashMap();
+        m.put("staff", sessionController.getLoggedUser().getStaff());
         m.put("ret", false);
-        m.put("ccd",nonClosedShiftStartFundBill.getCreatedAt());
-        currentBillPayments = paymentFacade.findByJpql(jpql, m);
-        for (Payment p : currentBillPayments) {
-            System.out.println("Payment bill type = " + p.getBill().getBillType());
-        }
-        System.out.println("nonClosedShiftStartFundBill = " + nonClosedShiftStartFundBill.getCreater().getName());
-        System.out.println("currentBillPayments = " + currentBillPayments.size());
+        m.put("ssbi", shiftStartBillId);
+        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
