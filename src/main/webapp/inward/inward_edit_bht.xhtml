@@ -16,9 +16,6 @@
     <ui:define name="content">
         <h:panelGroup id="panSearch2">
 
-            <h:form >
-
-            </h:form>
 
 
             <h:form>
@@ -96,20 +93,21 @@
                                         action="#{patientController.navigateToSearchPatients()}" />
                                     <p:commandButton 
                                         ajax="false" 
-                                        icon="fa fa-id-card"
-                                        value="Inpatient Care Dashboard" 
-                                        class="ui-button-primary"
-                                        action="#{admissionController.navigateToAdmissionProfilePage}" >
-                                        <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
                                         icon="fa fa-user"
                                         value="Patient Profile" 
-                                        class="ui-button-secondary mx-1"
+                                        class="ui-button-warning"
                                         action="#{patientController.navigateToOpdPatientProfile()}" >
                                         <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fa fa-id-card"
+                                        value="Inpatient Dashboard" 
+                                        class="mx-1 ui-button-secondary"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}" >
+                                        <f:setPropertyActionListener value="#{bhtEditController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
                                 </div>
 
                             </div>
@@ -118,7 +116,7 @@
                         </f:facet>
 <div class="row">
                         <div class="col-6">
-
+                            <common:patient_details controller="#{bhtEditController}" editable="true"></common:patient_details>
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
@@ -270,7 +268,7 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <common:patient_details controller="#{bhtEditController}" editable="true"></common:patient_details>
+                            
 
 
                             <p:panel header="Cancel Admission">
