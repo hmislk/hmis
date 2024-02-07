@@ -187,7 +187,13 @@
                             <p:column headerText="Payment Method" >
                                 <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Value" >
+                            <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: red;color:white' : ''};
+                                      #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: green;color:white' : ''};
+                                      #{bp.bill.billType eq 'OpdPreBill' ? 'background-color: blue;color:white' : ''};
+                                      #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: pink;color:white' : ''};
+                                      #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: yellow;color:white' : ''};
+                                      #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: purple;color:white' : ''};">
+                                
                                 <h:outputText value="#{bp.paidValue}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Details" >
