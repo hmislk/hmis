@@ -464,6 +464,7 @@ public class GrnController implements Serializable {
     public void createGrn() {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
+        getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponent();
         calGrossTotal();
     }
@@ -471,6 +472,7 @@ public class GrnController implements Serializable {
     public void createGrnAll() {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setFromInstitution(getApproveBill().getToInstitution());
+        getGrnBill().setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         generateBillComponentAll();
         calGrossTotal();
     }
