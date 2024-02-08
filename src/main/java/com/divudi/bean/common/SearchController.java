@@ -2510,63 +2510,26 @@ public class SearchController implements Serializable {
     public void createInwardBHTForNotIssueTable() {
         createInwardBHTForIssueTable(true);
     }
-    
+
     public String navigateToIssueForBhtRequests() {
-//       bills =  createInwardBHTForIssueTable(true);
+        bills = createInwardPharmacyRequests();
         return "/ward/issue_for_bht_request_list";
     }
-    
-    public void createInwardBHTForIssueTable(Boolean bool) {
-        Date startTime = new Date();
 
+    public List<Bill> createInwardPharmacyRequests() {
         String sql;
-
         HashMap tmp = new HashMap();
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("admission", getPatientEncounter());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
-
-        sql = "Select b From Bill b where "
-                + " b.retired=false and  b.toDepartment=:toDep"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
-            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
-            tmp.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
-        }
-
+        sql = "Select b "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and  b.toDepartment=:toDep"
+                + " and b.billType=:bTp "
+                + " and b.patientEncounter=:admission ";
         sql += " order by b.createdAt desc  ";
-
-        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
-
-        for (Bill b : bills) {
-            b.setListOfBill(getBHTIssudBills(b));
-        }
-
-        if (bool != null) {
-            List<Bill> bs = new ArrayList<>();
-            for (Bill b : bills) {
-                if (pharmacySaleBhtController.checkBillComponent(b)) {
-                    bs.add(b);
-                }
-            }
-            if (bool) {
-                bills = bs;
-            } else {
-                bills.removeAll(bs);
-            }
-        }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
-
+        return getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
     }
-
 
     public void createInwardBHTForIssueOnlyTable() {
         createInwardBHTForIssueTable(false);
