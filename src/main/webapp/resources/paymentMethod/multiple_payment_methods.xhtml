@@ -25,18 +25,23 @@
 
                         <div class="d-flex align-items-center justify-content-between">
                             <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
-                        <div class="d-flex ">
-                            <p:commandButton 
-                                value="Add Another" 
-                                class="mx-2 ui-button-success" 
-                                icon="fas fa-plus" process="@this"
-                                update="tblMultiplePayments" 
-                                action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
-                            </p:commandButton>
-                        </div>
+                            <div class="d-flex ">
+                                <p:commandButton 
+                                    value="Add Another" 
+                                    class="mx-2 ui-button-success" 
+                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    icon="fas fa-plus" process="@this"
+                                    update="tblMultiplePayments" 
+                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
+                                </p:commandButton>
+                            </div>
+                            <p:outputLabel id="bl" value="Balance Amount - #{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                           style="color: #{opdBillController.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" />
+
+
                         </div>
 
-                        
+
                     </f:facet>
                     <div class="row" >
 

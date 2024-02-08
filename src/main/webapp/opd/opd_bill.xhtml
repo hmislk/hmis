@@ -471,8 +471,10 @@
                                             <h:panelGroup
                                                 class="row my-1 w-100"
                                                 layout="block" 
-                                                id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                >
                                                 <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" class="w-100"/>
+                                                
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>

@@ -59,6 +59,13 @@ public class FinancialTransactionController implements Serializable {
     private List<Payment> paymentsFromShiftSratToNow;
     List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
+    
+    private double totalOpdBillValues;
+    private double totalPharmecyBillValues;
+    private double totalShiftStart;
+    private double totalBalanceTransfer;
+    private double totalTransferRecive;
+    private double totalFunds;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -128,17 +135,21 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void prepareToAddNewFundTransferReceiveBill() {
+        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working start");
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         currentBillPayments = new ArrayList<>();
+        System.out.println("selected bill payments = " + selectedBill.getPayments().size());
         for (Payment p : selectedBill.getPayments()) {
             System.out.println("p = " + p);
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
+            System.out.println("this = " + "payment Aded");
 
         }
+        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working end");
     }
 
     // </editor-fold>  
@@ -392,8 +403,8 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
+        fillPaymentsFromShiftStartToNow();
         if (nonClosedShiftStartFundBill != null) {
-            fillPaymentsFromShiftStartToNow();
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
             currentBill.setBillClassType(BillClassType.Bill);
@@ -405,51 +416,49 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillPaymentsFromShiftStartToNow() {
-        currentBillPayments= new ArrayList<>();
+       currentBillPayments = new ArrayList<>();
+        if (nonClosedShiftStartFundBill == null) {
+            return;
+        }
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-        String jpql = "select b "
-                + " from Bill b "
-                + " where b.staff=:staff "
-                + " and b.retired=:ret "
-                + " and b.id > :ssbi";
+        String jpql = "select p "
+                + "from Payment p "
+                + "where p.creater = :cr "
+                + "and p.retired = :ret "
+                + "and p.id > :cid";
         Map<String, Object> m = new HashMap<>();
-        m.put("staff", sessionController.getLoggedUser().getStaff());
+        m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
-        m.put("ssbi", shiftStartBillId);
-        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
-        if (allBillsShiftStartToNow != null) {
-            System.out.println("allBillsAfterShiftStart2 = " + allBillsShiftStartToNow.size());
-            for (Bill b:allBillsShiftStartToNow) {
-                System.out.println("cb = " + b);
-                System.out.println("Payments list size " + b.getPayments().size());
-                for (Payment p : b.getPayments()) {
-                    currentBillPayments.add(p);
-                    System.out.println("p = " + "..........ADDED............");
-                }
-              System.out.println("current bill payments = " + currentBillPayments.size());
+        m.put("cid", nonClosedShiftStartFundBill.getId());
+        currentBillPayments = paymentFacade.findByJpql(jpql, m);
+        resetTotalFundsValues();
+        for (Payment p : currentBillPayments) {
+            if (p.getBill().getBillType()==BillType.OpdBill) {
+                totalOpdBillValues+=p.getPaidValue();
+            }else if(p.getBill().getBillType()==BillType.PharmacySale){
+                totalPharmecyBillValues+=p.getPaidValue();
+            }else if(p.getBill().getBillType()==BillType.FundTransferBill){
+                totalBalanceTransfer+=p.getPaidValue();
+            }else if(p.getBill().getBillType()==BillType.FundTransferReceivedBill){
+                totalTransferRecive+=p.getPaidValue();
+            }else if(p.getBill().getBillType()==BillType.ShiftStartFundBill){
+                totalShiftStart+=p.getPaidValue();
             }
         }
-       
-
+        calculateTotalFundsFromShiftStartToNow();
     }
-
-    public void copyPaymentFromBills(Bill b) {
-        
+    
+    public void calculateTotalFundsFromShiftStartToNow(){
+        double total=totalOpdBillValues+totalPharmecyBillValues+totalShiftStart+totalTransferRecive;
+        totalFunds=total-totalBalanceTransfer;
     }
-
-    public void fillPaymentsFromOpdBills() {
-        Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-        String jpql = "select b "
-                + " from Bill b "
-                + " where b.staff=:staff "
-                + " and b.retired=:ret "
-                + " and b.id > :ssbi"
-                + " and b.billType=:bt";
-        Map m = new HashMap();
-        m.put("staff", sessionController.getLoggedUser().getStaff());
-        m.put("ret", false);
-        m.put("ssbi", shiftStartBillId);
-        setAllBillsShiftStartToNow(billFacade.findByJpql(jpql, m));
+    
+    public void resetTotalFundsValues(){
+        totalOpdBillValues=0.0;
+        totalPharmecyBillValues=0.0;
+        totalShiftStart=0.0;
+        totalTransferRecive=0.0;
+        totalBalanceTransfer=0.0;
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -513,7 +522,7 @@ public class FinancialTransactionController implements Serializable {
 
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-
+        resetTotalFundsValues();
         return "/cashier/shift_end_summery_bill_print";
     }
 
@@ -582,14 +591,17 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromStaff(currentBill.getReferenceBill().getFromStaff());
         billController.save(currentBill);
+        System.out.println("currentBillPayments = " + currentBillPayments.size());
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
+            System.out.println("p = " + p.getId());
         }
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
+        
         return "/cashier/fund_transfer_receive_bill_print";
     }
 
@@ -761,5 +773,55 @@ public class FinancialTransactionController implements Serializable {
     public void setAllBillsShiftStartToNow(List<Bill> allBillsShiftStartToNow) {
         this.allBillsShiftStartToNow = allBillsShiftStartToNow;
     }
+
+    public double getTotalOpdBillValues() {
+        return totalOpdBillValues;
+    }
+
+    public void setTotalOpdBillValues(double totalOpdBillValues) {
+        this.totalOpdBillValues = totalOpdBillValues;
+    }
+
+    public double getTotalPharmecyBillValues() {
+        return totalPharmecyBillValues;
+    }
+
+    public void setTotalPharmecyBillValues(double totalPharmecyBillValues) {
+        this.totalPharmecyBillValues = totalPharmecyBillValues;
+    }
+
+    public double getTotalShiftStart() {
+        return totalShiftStart;
+    }
+
+    public void setTotalShiftStart(double totalShiftStart) {
+        this.totalShiftStart = totalShiftStart;
+    }
+
+    public double getTotalBalanceTransfer() {
+        return totalBalanceTransfer;
+    }
+
+    public void setTotalBalanceTransfer(double totalBalanceTransfer) {
+        this.totalBalanceTransfer = totalBalanceTransfer;
+    }
+
+    public double getTotalTransferRecive() {
+        return totalTransferRecive;
+    }
+
+    public void setTotalTransferRecive(double totalTransferRecive) {
+        this.totalTransferRecive = totalTransferRecive;
+    }
+
+    public double getTotalFunds() {
+        return totalFunds;
+    }
+
+    public void setTotalFunds(double totalFunds) {
+        this.totalFunds = totalFunds;
+    }
+    
+    
 
 }
