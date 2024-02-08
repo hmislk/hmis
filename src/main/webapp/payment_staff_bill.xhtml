@@ -174,7 +174,7 @@
 
 
                 <h:panelGroup id="pnlprintBill" rendered="#{staffPaymentBillController.printPreview}">
-                    <p:commandButton id="btnNewPayment" process="btnNewPayment" update="#{p:resolveFirstComponentWithId('panbilledit', view).clientId} :#{p:resolveFirstComponentWithId('pnlprintBill', view).clientId}" value="New Payment" action="#{staffPaymentBillController.newPayment}" oncomplete="location.reload(true);"
+                    <p:commandButton class="ui-button-success ml-2" icon="fas fa-plus" id="btnNewPayment" process="btnNewPayment" update="#{p:resolveFirstComponentWithId('panbilledit', view).clientId} :#{p:resolveFirstComponentWithId('pnlprintBill', view).clientId}" value="New Payment" action="#{staffPaymentBillController.newPayment}" oncomplete="location.reload(true);"
                                      />
 
                     <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
