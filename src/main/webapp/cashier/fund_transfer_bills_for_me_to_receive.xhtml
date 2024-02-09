@@ -45,6 +45,9 @@
                             <p:column headerText="Net Total" >
                                 <h:outputText value="#{bp.netTotal}" ></h:outputText>
                             </p:column>
+                            <p:column headerText="payments" >
+                                <h:outputText value="#{bp.payments.size()}" ></h:outputText>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>
