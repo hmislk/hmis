@@ -2511,6 +2511,26 @@ public class SearchController implements Serializable {
         createInwardBHTForIssueTable(true);
     }
 
+    public String navigateToIssueForBhtRequests() {
+        bills = createInwardPharmacyRequests();
+        return "/ward/issue_for_bht_request_list";
+    }
+
+    public List<Bill> createInwardPharmacyRequests() {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("admission", getPatientEncounter());
+        tmp.put("bTp", BillType.InwardPharmacyRequest);
+        sql = "Select b "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and  b.toDepartment=:toDep"
+                + " and b.billType=:bTp "
+                + " and b.patientEncounter=:admission ";
+        sql += " order by b.createdAt desc  ";
+        return getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
+    }
+
     public void createInwardBHTForIssueOnlyTable() {
         createInwardBHTForIssueTable(false);
     }

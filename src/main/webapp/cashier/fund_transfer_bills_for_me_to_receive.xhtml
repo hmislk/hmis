@@ -14,7 +14,7 @@
                 <p:panel >
                     <p:panel header="Funds" >
                         <p:commandButton 
-                            value="To Receie"
+                            value="To Receive"
                             action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
                             ajax="false"
                             class="my-2 ui-button-success"
@@ -44,6 +44,9 @@
                             </p:column>
                             <p:column headerText="Net Total" >
                                 <h:outputText value="#{bp.netTotal}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="payments" >
+                                <h:outputText value="#{bp.payments.size()}" ></h:outputText>
                             </p:column>
                         </p:dataTable>
 
