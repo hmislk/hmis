@@ -48,7 +48,7 @@ public class ApiKeyController implements Serializable {
 
     public String toManageMyApiKeys() {
         listMyApiKeys();
-        return "user_api_key";
+        return "/user_api_key";
     }
 
     public ApiKeyType[] getApiKeyTypes() {
