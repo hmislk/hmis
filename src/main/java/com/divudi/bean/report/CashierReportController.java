@@ -9,7 +9,6 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValue;
@@ -49,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -2862,16 +2862,29 @@ public class CashierReportController implements Serializable {
     }
 
     public void downloadAsCashierSummeryExcel() {
-        System.out.println("this = " + webUserBillsTotals);
         getWebUserBillsTotals();
 
         try {
-            // Create a new Excel workbook
-            Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Doctor Speciality Data");
 
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("All Cashier Summery");
+
+            Row ins = sheet.createRow(0);
+            ins.createCell(0).setCellValue(sessionController.getLoggedUser().getInstitution().getName());
+
+            CellRangeAddress mergedCell = new CellRangeAddress(0, 0, 0, 6);
+            sheet.addMergedRegion(mergedCell);
+
+            Row title = sheet.createRow(1);
+            title.createCell(0).setCellValue("All Cashier Report");
+
+            Row date = sheet.createRow(2);
+            date.createCell(0).setCellValue("Fron Date");
+            date.createCell(1).setCellValue(fromDate);
+            date.createCell(3).setCellValue("To Date");
+            date.createCell(4).setCellValue(toDate);
             // Create a header row
-            Row headerRow = sheet.createRow(0);
+            Row headerRow = sheet.createRow(4);
             headerRow.createCell(0).setCellValue("User");
             headerRow.createCell(1).setCellValue("Bill type");
             headerRow.createCell(2).setCellValue("Cash");
@@ -2881,7 +2894,7 @@ public class CashierReportController implements Serializable {
             headerRow.createCell(6).setCellValue("Slip");
             // Add more columns as needed
             // Populate the data rows
-            int rowNum = 1;
+            int rowNum = 5;
 
             for (WebUserBillsTotal userbill : webUserBillsTotals) {
                 if (userbill.getBillsTotals().isEmpty()) {
@@ -2911,7 +2924,7 @@ public class CashierReportController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"doctor_speciality_data.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"all_cashier_summery.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
