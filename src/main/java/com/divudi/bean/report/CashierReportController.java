@@ -30,12 +30,17 @@ import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -45,6 +50,9 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -1131,7 +1139,6 @@ public class CashierReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        System.out.println("webUserBillsTotals = " + webUserBillsTotals);
     }
 
     public void calCashierDataChannel() {
@@ -2861,7 +2868,7 @@ public class CashierReportController implements Serializable {
         calCashierDataCashier();
     }
 
-    public void downloadAsCashierSummeryExcel() {
+    public void downloadAsCashierSummeryExcel() throws ParseException {
         getWebUserBillsTotals();
 
         try {
@@ -2869,22 +2876,48 @@ public class CashierReportController implements Serializable {
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("All Cashier Summery");
 
+            Font font = workbook.createFont();
+            font.setFontHeightInPoints((short) 12);
+            font.setBold(true);
+
+            CellStyle style = workbook.createCellStyle();
+            style.setAlignment(HorizontalAlignment.CENTER);
+            style.setFont(font);
+
+            CellRangeAddress mergedInsCell = new CellRangeAddress(0, 0, 0, 6);
+            sheet.addMergedRegion(mergedInsCell);
+
             Row ins = sheet.createRow(0);
             ins.createCell(0).setCellValue(sessionController.getLoggedUser().getInstitution().getName());
+            ins.getCell(0).setCellStyle(style);
 
-            CellRangeAddress mergedCell = new CellRangeAddress(0, 0, 0, 6);
-            sheet.addMergedRegion(mergedCell);
+            CellRangeAddress mergedCellTitle = new CellRangeAddress(1, 1, 0, 6);
+            sheet.addMergedRegion(mergedCellTitle);
 
             Row title = sheet.createRow(1);
-            title.createCell(0).setCellValue("All Cashier Report");
+            title.createCell(0).setCellValue("All Cashier Report - " + sessionController.getLoggedUser().getDepartment().getName());
+            title.getCell(0).setCellStyle(style);
 
-            Row date = sheet.createRow(2);
-            date.createCell(0).setCellValue("Fron Date");
-            date.createCell(1).setCellValue(fromDate);
-            date.createCell(3).setCellValue("To Date");
-            date.createCell(4).setCellValue(toDate);
-            // Create a header row
-            Row headerRow = sheet.createRow(4);
+            CellRangeAddress mergedFromDateCell = new CellRangeAddress(2, 2, 0, 6);
+            sheet.addMergedRegion(mergedFromDateCell);
+
+            CellRangeAddress mergedToDateCell = new CellRangeAddress(3, 3, 0, 6);
+            sheet.addMergedRegion(mergedToDateCell);
+
+            DateFormat inputFormat = new SimpleDateFormat("E MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+            DateFormat outputFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss", Locale.ENGLISH);
+
+            TimeZone timeZoneSL = TimeZone.getTimeZone("Asia/Colombo");
+            inputFormat.setTimeZone(timeZoneSL);
+
+            Row fDate = sheet.createRow(2);
+            fDate.createCell(0).setCellValue("From Date -  " + outputFormat.format(inputFormat.parse(fromDate.toString())));
+            
+            
+            Row tDate = sheet.createRow(3);
+            tDate.createCell(0).setCellValue("To Date -  " + outputFormat.format(inputFormat.parse(toDate.toString())));
+
+            Row headerRow = sheet.createRow(5);
             headerRow.createCell(0).setCellValue("User");
             headerRow.createCell(1).setCellValue("Bill type");
             headerRow.createCell(2).setCellValue("Cash");
@@ -2894,7 +2927,7 @@ public class CashierReportController implements Serializable {
             headerRow.createCell(6).setCellValue("Slip");
             // Add more columns as needed
             // Populate the data rows
-            int rowNum = 5;
+            int rowNum = 6;
 
             for (WebUserBillsTotal userbill : webUserBillsTotals) {
                 if (userbill.getBillsTotals().isEmpty()) {
@@ -2915,11 +2948,6 @@ public class CashierReportController implements Serializable {
                 }
             }
 
-//          for (DoctorSpeciality speciality : items) {
-//                Row row = sheet.createRow(rowNum++);
-//                row.createCell(0).setCellValue(speciality.getName());
-//                row.createCell(1).setCellValue(speciality.getDescription());
-//            }
             // Set the response headers to initiate the download
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
@@ -2931,11 +2959,10 @@ public class CashierReportController implements Serializable {
             workbook.close();
             context.responseComplete();
 
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            UtilityController.addSuccessMessage("Download Successfully");
 
         } catch (IOException e) {
             // Handle any exceptions
-
         }
     }
 
