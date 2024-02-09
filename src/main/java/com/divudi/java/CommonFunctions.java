@@ -52,8 +52,8 @@ public class CommonFunctions {
 
         try {
             Date date = originalFormat.parse(argDate);
-            String formattedDateString = desiredFormat.format(date); 
-            return desiredFormat.parse(formattedDateString); 
+            String formattedDateString = desiredFormat.format(date);
+            return desiredFormat.parse(formattedDateString);
         } catch (ParseException e) {
             return null;
         }
@@ -224,7 +224,7 @@ public class CommonFunctions {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DATE);
         calendar.set(year, month, day, 0, 0, 0);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
+        calendar.set(Calendar.MILLISECOND, 0); // Ensure milliseconds are set to 0.
         return calendar.getTime();
     }
 
@@ -236,19 +236,17 @@ public class CommonFunctions {
         return getEndOfDay(new Date());
     }
 
-    public static Date getEndOfDay(Date date) {
-        if (date == null) {
-            date = new Date();
+    public static Date getEndOfDay(Date d) {
+        if (d == null) {
+            d = new Date();
         }
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
-        return calendar.getTime();
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.set(Calendar.HOUR_OF_DAY, 23); // Set hour to end of the day
+        c.set(Calendar.MINUTE, 59); // Set minute to last minute
+        c.set(Calendar.SECOND, 59); // Set second to last second
+        c.set(Calendar.MILLISECOND, 999); // Set millisecond to last millisecond
+        return c.getTime();
     }
 
     public static String nameToCode(String name) {

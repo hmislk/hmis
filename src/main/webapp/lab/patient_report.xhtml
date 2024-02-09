@@ -29,7 +29,7 @@
                         </h:panelGroup>
                     </f:facet>
                     <h:form id="form" >
-<!--                        <h1>#{patientReportController.currentPtIx.billItem.bill.total}</h1>-->
+<!--                        <h1>#{patientReportController.currentPtIx.patient.patientPhoneNumber}</h1>-->
 
                         <p:growl id="messages" showDetail="true"/> 
 
@@ -420,6 +420,7 @@
                                 </p:commandButton>
 
                                 <p:commandButton  ajax="false" 
+                                                  rendered="false"
                                                   value="Refresh" 
                                                   icon="fa-solid fa-file-pdf"
                                                   class="mx-1 ui-button-danger"
