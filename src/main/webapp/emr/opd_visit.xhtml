@@ -546,16 +546,72 @@
 
                                         </div>
 
+
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel id="docPrescreption" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
                                                     <h:outputText class="mx-4" value="Prescription"/>
                                                 </f:facet>
-                                                <p:commandButton  class="ui-button-info" ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="Print" 
+                                                    icon="pi pi-print">
+                                                    <p:printer target="txtPrescriptionDoc" />
                                                 </p:commandButton>
-                                                <p:commandButton icon="fas fa-refresh" class="mx-2 ui-button-warning" id="btnRefresh" ajax="false" value="refresh" action="#{patientEncounterController.refreshPrescription}"/>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="To Print" 
+                                                    action="opd_visit_print"
+                                                    icon="pi pi-print">
+                                                </p:commandButton>
+
+
+                                                <p:commandButton
+                                                    icon="fas fa-refresh"
+                                                    class="mx-1 ui-button-warning"
+                                                    id="btnRefresh"
+                                                    ajax="false" 
+                                                    value="refresh" 
+                                                    action="#{patientEncounterController.refreshPrescription}"/>
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                        }
+                                                    }
+                                                </style>
+
+
 
                                                 <p:textEditor 
                                                     styleClass="textEditer"

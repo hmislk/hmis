@@ -606,13 +606,21 @@
                                     </f:facet>
 
                                     <h:panelGroup id="centerBillPriview">
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
                                     </h:panelGroup>
-                                    
+
                                 </p:panel>
                             </div>
                             <div class="col-md-6">
@@ -632,13 +640,19 @@
                                         </p:commandButton>
                                     </f:facet>
                                     <h:panelGroup id="parinetBillPriview">
-                                        
+
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
                                     </h:panelGroup>
 
                                 </p:panel>
