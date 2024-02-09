@@ -25,38 +25,49 @@
 
                         <div class="d-flex align-items-center justify-content-between">
                             <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
-                        <div class="d-flex ">
-                            <p:commandButton 
-                                value="Add Another" 
-                                class="mx-2 ui-button-success" 
-                                icon="fas fa-plus" process="@this"
-                                update="tblMultiplePayments" 
-                                action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
-                            </p:commandButton>
-                        </div>
+                            <div class="d-flex ">
+                                <p:commandButton 
+                                    value="Add Another" 
+                                    class="mx-2 ui-button-success" 
+                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    icon="fas fa-plus" process="@this"
+                                    update="tblMultiplePayments" 
+                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
+                                </p:commandButton>
+                            </div>
+                            <p:outputLabel id="bl" value="Balance Amount - #{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                           style="color: #{opdBillController.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" />
+
+
                         </div>
 
-                        
+
                     </f:facet>
                     <div class="row" >
-
-                        <div class="col-4" >
-
-                            <p:selectOneMenu   
-                                id="pay" 
-                                value="#{pm.paymentMethod}"
-                                class="w-100">  
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems 
-                                    value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
-                                    var="pm1"
-                                    itemLabel="#{pm1.label}"
-                                    itemValue="#{pm1}"/>
-                                <p:ajax process="pay" 
-                                        update="paymentDetails"
-                                        event="change"/>
-                            </p:selectOneMenu>
-                        </div>
+                            <div class=" d-flex justify-content-between">
+                                <p:selectOneMenu   
+                                    id="pay" 
+                                    value="#{pm.paymentMethod}"
+                                    class="w-70">  
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
+                                        var="pm1"
+                                        itemLabel="#{pm1.label}"
+                                        itemValue="#{pm1}"/>
+                                    <p:ajax process="pay" 
+                                            update="paymentDetails"
+                                            event="change"/>
+                                </p:selectOneMenu>
+                                 <p:commandButton 
+                                    class="mx-2 ui-button-danger" 
+                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    icon="fas fa-times" 
+                                    process="@this"
+                                    update="tblMultiplePayments" 
+                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" >
+                                </p:commandButton>
+                            </div>
                     </div>
 
                     <div class="row mt-2" >

@@ -57,53 +57,65 @@
 
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputText styleClass="fas fa-money-bill fa-lg" />
-                        <h:outputLabel class="mx-2" value="Add Professional Fees" />    
+                        <div class="row">
+                            <div class="col-9">
+                                <h:outputText styleClass="fas fa-money-bill fa-lg" />
+                                <h:outputLabel class="mx-2" value="Add Professional Fees" />  
+                            </div>
+                            <div class="col-3">
+                                 <p:spacer width="80"/>
+                                <p:commandButton 
+                                    class="mx-1 ui-button-success"
+                                    value="New Bill"
+                                    icon="fa fa-plus"
+                                    ajax="false" 
+                                    actionListener="#{inwardProfessionalBillController.makeNull()}" >
+                                </p:commandButton>
+                                <p:spacer width="10"/>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning " 
+                                    action="#{patientController.navigateToSearchPatients()}" 
+                                    >
+                                </p:commandButton>
+
+                                <p:commandButton  
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current.patient}" 
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fa fa-id-card"
+                                    class="ui-button-secondary" 
+                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        target="#{admissionController.current}" 
+                                        value="#{inwardProfessionalBillController.current.patientEncounter}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div>
+
+                        </div>
                     </f:facet>
 
 
 
                     <h:panelGroup>
 
-                        <div class="d-flex justify-content-end align-items-center mb-3">
-                            <p:commandButton 
-                                class="mx-1 ui-button-success"
-                                icon="fa fa-plus"
-                                ajax="false" 
-                                actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                            </p:commandButton>
 
-                            <p:commandButton 
-                                ajax="false"
-                                icon="fa fa-search"
-                                class="ui-button-warning " 
-                                action="#{patientController.navigateToSearchPatients()}" 
-                                >
-                            </p:commandButton>
-
-                            <p:commandButton  
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning mx-1" 
-                                action="#{patientController.navigateToOpdPatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    value="#{admissionController.current.patient}" 
-                                    target="#{patientController.current}" >
-                                </f:setPropertyActionListener>
-                            </p:commandButton>
-
-                            <p:commandButton
-                                ajax="false"
-                                icon="fas fa-arrow-left"
-                                class="ui-button-secondary" 
-                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                >
-                                <f:setPropertyActionListener 
-                                    target="#{admissionController.current}" 
-                                    value="#{inwardProfessionalBillController.current.patientEncounter}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </div>
 
                         <div class="row">
                             <div class="col-6 ">
