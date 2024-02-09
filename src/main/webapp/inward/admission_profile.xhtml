@@ -282,6 +282,111 @@
                                         value="#{admissionController.current}" 
                                         target="#{pharmacySaleBhtController.patientEncounter}" />
                                 </p:commandButton>
+
+
+                                <p:commandButton 
+                                    value="Direct Issue to BHTs" 
+                                    action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Direct Issue to Theatre Cases"
+                                    action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="BHT Issue Requests"
+                                    action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true" 
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="View Pharmacy Requests"
+                                    action="#{admissionController.navigateToSearchInwardBills}" 
+                                    rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{searchController.patientEncounter}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Search Inpatient Direct Issues by Bill"
+                                    action="/inward/pharmacy_search_sale_bill_bht"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{searchController.patientEncounter}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Search Inpatient Direct Issues by Item"
+                                    action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{someController.target}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Search Inpatient Direct Issue Returns by Bill"
+                                    action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{someController.target}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Search Inpatient Direct Issue Returns by Item"
+                                    action="/inward/pharmacy_search_return_bill_item_bht?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{someController.target}" />
+                                </p:commandButton>
+
                             </div>
                         </p:panel>
                     </div>
