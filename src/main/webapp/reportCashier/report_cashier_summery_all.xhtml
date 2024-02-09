@@ -53,13 +53,14 @@
                                 icon="fas fa-cogs"  
                                 actionListener="#{cashierReportController.calCashierDataCashier()}" />  
 
-
                             <p:commandButton 
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"  
                                 ajax="false" 
-                                value="Excel" >
-                                <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery" />
+                                value="Excel" 
+                                actionListener="#{cashierReportController.excelLisner()}"
+                                action="#{cashierReportController.downloadAsCashierSummeryExcel()}"
+                                >
                             </p:commandButton>  
                             <p:commandButton 
                                 ajax="false" 
@@ -96,7 +97,8 @@
                             <f:facet name="footer" class="mt-3">
                                 <h:outputLabel style="float: right; font-size: 11px;" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                             </f:facet>
-
+                            
+                            
                             <p:dataTable id="tbl" value="#{cashierReportController.webUserBillsTotals}" var="csh"  class="mt-2">
 
                                 <p:columnGroup type="header">

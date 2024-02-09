@@ -8,6 +8,7 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -28,6 +29,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,11 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -56,7 +63,7 @@ public class CashierReportController implements Serializable {
     private SessionController sessionController;
     @Inject
     private CommonController commonController;
-   
+
     private CommonFunctions commonFunction;
     @EJB
     private WebUserFacade webUserFacade;
@@ -1124,6 +1131,7 @@ public class CashierReportController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
+        System.out.println("webUserBillsTotals = " + webUserBillsTotals);
     }
 
     public void calCashierDataChannel() {
@@ -2845,6 +2853,77 @@ public class CashierReportController implements Serializable {
         dataTableDatas.add(tmp5);
 
         return dataTableDatas;
+    }
+
+    public void excelLisner() {
+        calCashierData();
+        calCashierDataChannel();
+        calCashierDataCashier();
+    }
+
+    public void downloadAsCashierSummeryExcel() {
+        System.out.println("this = " + webUserBillsTotals);
+        getWebUserBillsTotals();
+
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Doctor Speciality Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("User");
+            headerRow.createCell(1).setCellValue("Bill type");
+            headerRow.createCell(2).setCellValue("Cash");
+            headerRow.createCell(3).setCellValue("Credit");
+            headerRow.createCell(4).setCellValue("Credit Card");
+            headerRow.createCell(5).setCellValue("Cheque");
+            headerRow.createCell(6).setCellValue("Slip");
+            // Add more columns as needed
+            // Populate the data rows
+            int rowNum = 1;
+
+            for (WebUserBillsTotal userbill : webUserBillsTotals) {
+                if (userbill.getBillsTotals().isEmpty()) {
+                    continue;
+                }
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(userbill.getWebUser().getName());
+
+                for (BillsTotals bt : userbill.getBillsTotals()) {
+
+                    row.createCell(1).setCellValue(bt.getName());
+                    row.createCell(2).setCellValue(bt.getCash());
+                    row.createCell(3).setCellValue(bt.getCredit());
+                    row.createCell(4).setCellValue(bt.getCard());
+                    row.createCell(5).setCellValue(bt.getCheque());
+                    row.createCell(6).setCellValue(bt.getSlip());
+                    row = sheet.createRow(rowNum++);
+                }
+            }
+
+//          for (DoctorSpeciality speciality : items) {
+//                Row row = sheet.createRow(rowNum++);
+//                row.createCell(0).setCellValue(speciality.getName());
+//                row.createCell(1).setCellValue(speciality.getDescription());
+//            }
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"doctor_speciality_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+
+            UtilityController.addSuccessMessage("Deleted Successfully");
+
+        } catch (IOException e) {
+            // Handle any exceptions
+
+        }
     }
 
     public void setDataTableDatas(List<String1Value1> dataTableDatas) {
