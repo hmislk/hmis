@@ -146,6 +146,34 @@
 
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                                <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
+
+                                                <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
+                                                    <h:panelGrid columns="2" style="text-align: left;" 
+                                                                 styleClass="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-fatal' : 
+                                                                               (commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-warn' : 'ui-messages-success')}">
+
+                                                        <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtCodeD" value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}" style="padding: 5px;" />
+
+                                                        <p:outputLabel id="lblNameD" value="Name" for="txtName" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtName" value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" style="padding: 5px;" />
+
+                                                        <p:outputLabel id="lblStockD" value="Stock" for="txtStock" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtStock" value="#{bi.pharmaceuticalBillItem.stock.stock}" style="padding: 5px;" />
+                                                        
+                                                         <p:outputLabel id="lblExpiryD" value="Expiry" for="txtExpiry" style="font-weight: bold;" />
+                                                         <p:outputLabel id="txtExpiry" value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="padding: 5px;" >
+                                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                         </p:outputLabel>
+                                                         
+                                                          <p:outputLabel id="lblBadgeD" value="Batch No" for="txtBadge" style="font-weight: bold;" />
+                                                          <p:outputLabel id="txtBadge" value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" style="padding: 5px;" />
+                                                          
+                                                          <p:outputLabel id="lblSaleRate" value="Sale Rate" style="font-weight: bold;" />
+                                                          <p:outputLabel id="txtSaleRate" value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" style="padding: 5px;" />
+                                                    </h:panelGrid>
+                                                </p:dialog>
                                             </p:column>
                                             <p:column headerText="Quentity">
                                                 <p:cellEditor>  
@@ -547,13 +575,13 @@
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}" >
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
-                                        <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                        <phi:saleBill_without_item bill="#{pharmacySaleController2.printBill}"></phi:saleBill_without_item>                                        
                                     </h:panelGroup>
                                 </div>
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
+                                        <phi:saleBill bill="#{pharmacySaleController2.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -561,7 +589,7 @@
                             <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacySaleController.printBill}"></phi:saleBill_prabodha>
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleController2.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -569,7 +597,7 @@
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill_five_five bill="#{pharmacySaleController.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacySaleController2.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>                            
