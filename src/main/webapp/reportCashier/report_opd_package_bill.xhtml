@@ -14,16 +14,15 @@
                 <f:facet name="header">
                     <p:outputLabel value="Package Detail Report - By Bill" />
                 </f:facet>
-                <h:panelGrid columns="2">                    
-
+                <h:panelGrid columns="2" class="my-2">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100 mt-1" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>       
                     <h:outputLabel value="Package"/>
-                    <p:autoComplete value="#{billPackageMedicalController.serviceItem}"
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" value="#{billPackageMedicalController.serviceItem}"
                                     completeMethod="#{itemController.completePackage}" var="ix"
                                     itemLabel="#{ix.name}" itemValue="#{ix}">
                         <p:column>
@@ -34,24 +33,24 @@
                         </p:column>
                     </p:autoComplete>
                     <h:outputLabel value="Credit Company"/>
-                    <p:autoComplete id="ins" value="#{billPackageMedicalController.institution}"
-                                    completeMethod="#{institutionController.completeIns}"
+                    <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" id="ins" value="#{billPackageMedicalController.institution}"
+                                    completeMethod="#{institutionController.completeCreditCompany}"
                                     var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
                         <p:column>
                             #{ix.name}
                         </p:column>
                     </p:autoComplete>
                    </h:panelGrid>
-                <h:panelGrid columns="4" > 
-                    <p:commandButton ajax="false" value="Search" 
+                <h:panelGrid columns="6" class="my-2"> 
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" 
                                      action="#{billPackageMedicalController.createOtherPackageBills()}"
                                       />
 
-                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
                         <p:dataExporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
                     </p:commandButton>
                 </h:panelGrid>
