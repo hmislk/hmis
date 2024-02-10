@@ -19,36 +19,40 @@
                 <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
                     <f:facet name="header">
                         <div class="row">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h:outputLabel value="Inward Payment Bill" />
-                            </div>
-                            <div class="mx-4" >
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-search"
-                                    class="ui-button-warning" 
-                                    value="Lookup"
-                                    />
-<!--                                action="#{inwardPaymentController.navigateToSearchPatients()}" -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputLabel value="Inward Payment Bill" />
+                                </div>
+                                <div class="mx-4" >
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-search"
+                                        class="ui-button-warning" 
+                                        value="Lookup"
+                                        action="#{patientController.navigateToSearchPatients()}"
+                                        />
 
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    value="Patient Profile"
-                                    class="ui-button-warning  mx-2" 
-                                     
-                                    />
-<!--                                action="#{inwardPaymentController.navigateToOpdPatientProfile() }"-->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-user"
+                                        value="Patient Profile"
+                                        class="ui-button-warning  mx-2" 
+                                        action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        > 
+                                        <f:setPropertyActionListener 
+                                            value="#{admissionController.current.patient}" 
+                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fas fa-id-card"
-                                    value="Patient Dashboard"
-                                    class="ui-button-secondary " 
-                                    action="#{inwardPaymentController.navigateToInpationDashbord()}" 
-                                    />
-                            </div>
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fas fa-id-card"
+                                        value="Patient Dashboard"
+                                        class="ui-button-secondary " 
+                                        action="#{inwardPaymentController.navigateToInpationDashbord()}" 
+                                        />
+                                </div>
                             </div>
                         </div>
                     </f:facet>
@@ -246,8 +250,13 @@
 
 
                     <div class="row">
-                        
+
                         <h:panelGroup id="gpBillPreview">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                <ui:repeat value="#{inwardPaymentController.current}" var="pp">
+                                    <bill:FiveFivePaymentBill bill="#{pp}" />                        
+                                </ui:repeat>
+                            </h:panelGroup> 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
                                 <ui:repeat value="#{inwardPaymentController.current}" var="pp">
                                     <bill:A4PaperPaymentBill bill="#{pp}" />                        
