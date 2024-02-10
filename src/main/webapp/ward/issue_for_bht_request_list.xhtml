@@ -12,42 +12,20 @@
                 <f:facet name="header">
                      <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
                      <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>      
-
                 </f:facet>
                 <div class="row">
                     <div class="col-md-2">
                         <h:panelGrid columns="1" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <p:spacer height="10"/>
                             <p:commandButton id="btnSearch1" 
                                              ajax="false" 
-                                             value="Search All" 
+                                             value="Search" 
                                              class="w-100 ui-button-warning" 
                                              icon="fas fa-search"
-                                             action="#{searchController.createInwardBHTForIssueTableAll}" />
-                            <p:commandButton id="btnSearch2" ajax="false" 
-                                             value="Search Not Issued" 
-                                             class="w-100 ui-button-warning" 
-                                             icon="fas fa-search"
-                                             action="#{searchController.createInwardBHTForNotIssueTable}" />
-                            <p:commandButton id="btnSearch3" 
-                                             class="w-100 ui-button-warning" 
-                                             icon="fas fa-search"
-                                             ajax="false" value="Search Isssued Only" 
-                                             action="#{searchController.createInwardBHTForIssueOnlyTable}" />
+                                             action="#{searchController.navigateToIssueForBhtRequests}" />
                             <p:spacer height="10"/>
-
-                            <h:outputLabel value="Request No"/>  
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/> 
                             <h:outputLabel value="BHT No"/> 
-
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />                                                
-                            <h:outputLabel/><h:outputLabel/>
+                            <p:inputText autocomplete="off"  value="#{searchController.patientEncounter.bhtNo}" />                                                
+                            
                         </h:panelGrid>
                     </div>
                     <div class="col-md-10">
