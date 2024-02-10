@@ -13,9 +13,42 @@
 
 
     <ui:define name="content">
+        <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter eq null}">
+            <h:form>
+                <p:panel header="BHT">
 
-        <h:panelGroup >
+                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                     value="#{inwardPaymentController.current.patientEncounter}"
+                                     completeMethod="#{admissionController.completePatientAll}" 
+                                     var="myItem" itemValue="#{myItem}" 
+                                     itemLabel="#{myItem.bhtNo}" 
+                                     size="30"  style="width: 400px;">
+<!--                        <p:ajax event="itemSelect" process="@this" update="@all" />-->
+                        <p:column>
+                            <h:outputLabel value="#{myItem.bhtNo}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                        </p:column>
+                    </p:autoComplete>
+
+
+                    <p:commandButton value="select" ajax="false" action="#{inwardPaymentController.bhtListener}" />
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{inwardPaymentController.current.patientEncounter ne null}"> >
             <h:form  >
+
                 <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
                     <f:facet name="header">
                         <div class="row">
@@ -40,7 +73,7 @@
                                         action="#{patientController.navigateToOpdPatientProfile()}" 
                                         > 
                                         <f:setPropertyActionListener 
-                                            value="#{admissionController.current.patient}" 
+                                            value="#{inwardPaymentController.current.patientEncounter.patient}" 
                                             target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
@@ -48,7 +81,7 @@
                                     <p:commandButton 
                                         ajax="false"
                                         icon="fas fa-id-card"
-                                        value="Patient Dashboard"
+                                        value="Inpatient Dashboard"
                                         class="ui-button-secondary " 
                                         action="#{inwardPaymentController.navigateToInpationDashbord()}" 
                                         />
@@ -59,32 +92,6 @@
                     <div class="row">
                         <div class="col-5">
                             <p:panel header="BHT">
-
-                                <!--                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                                            value="#{inwardPaymentController.current.patientEncounter}"
-                                                                            completeMethod="#{admissionController.completePatientAll}" 
-                                                                            var="myItem" itemValue="#{myItem}" 
-                                                                            itemLabel="#{myItem.bhtNo}" 
-                                                                            size="30"  style="width: 400px;">
-                                                                <p:ajax event="itemSelect" process="@this" update="@all" listener="#{inwardPaymentController.bhtListener}"/>
-                                                                <p:column>
-                                                                    <h:outputLabel value="#{myItem.bhtNo}"/>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                                                </p:column>
-                                                            </p:autoComplete>   -->
-
-
                                 <h:panelGroup id="panSearch2">
                                     <in:bhtDetail admission="#{inwardPaymentController.current.patientEncounter}"/>
                                 </h:panelGroup>
@@ -228,7 +235,11 @@
                                 icon="fas fa-id-card"
                                 class="ui-button-secondary " 
                                 ajax="false" 
-                                action="#{inwardPaymentController.navigateToInpationDashbord}"  >
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                        > 
+                                        <f:setPropertyActionListener 
+                                            value="#{inwardPaymentController.current.patientEncounter.patient}" 
+                                            target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                         </div>
                     </f:facet>
