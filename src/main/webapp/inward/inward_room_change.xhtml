@@ -81,6 +81,7 @@
                                 value="Inpatient Dashboard"
                                 action="#{admissionController.navigateToAdmissionProfilePage}" 
                                 >
+                                <f:setPropertyActionListener value="#{roomChangeController.current}" target="#{admissionController.current}" />
                             </p:commandButton>
                         </div>
                     </f:facet>
