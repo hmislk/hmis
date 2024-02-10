@@ -71,6 +71,9 @@
                             class="ui-button-secondary " 
                             action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                             >
+                            <f:setPropertyActionListener 
+                                            value="#{roomChangeController.current}" 
+                                            target="#{admissionController.current}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </div>
                 </f:facet>
