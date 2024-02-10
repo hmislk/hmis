@@ -32,8 +32,9 @@
                             <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
                             <p:outputLabel value="Patient Details" class="m-2"/>
                         </f:facet>
-                        <h:outputLabel value="Type Patinet Name or BHT : " style="margin-right: 10px"/>
+                        <h:outputLabel value="Type Patient Name or BHT : " style="margin-right: 10px"/>
                         <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                        required="true" requiredMessage="Please select a patient"
                                         value="#{pharmacySaleBhtController.patientEncounter}" 
                                         completeMethod="#{admissionController.completePatient}"
                                         var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -43,7 +44,7 @@
                                 <h:outputLabel value="#{apt2.bhtNo}"/> 
                             </p:column>
                             <p:column >
-                                <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/> 
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
