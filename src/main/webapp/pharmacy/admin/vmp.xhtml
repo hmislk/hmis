@@ -110,7 +110,7 @@
                                     value="#{vmpController.current.category}" 
                                     >
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
-                                    <f:selectItems value="#{pharmaceuticalItemTypeController.items}"
+                                    <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
                                                    var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
                                 </p:selectOneMenu>
 
@@ -161,7 +161,7 @@
                                 value="Save"
                                 process="btnSave gpDetail" 
                                 update="lstSelect msg" 
-                                class=" m-1 ui-button-warning w-25"
+                                class=" m-1 mt-2 ui-button-warning w-25"
                                 icon="fas fa-save"></p:commandButton>
                         </p:panel>
 
