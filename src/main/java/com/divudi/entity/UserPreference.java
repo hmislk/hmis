@@ -332,6 +332,7 @@ public class UserPreference implements Serializable {
 
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
+        this.opdSettleWithoutCashTendered = false;
     }
 
     public String getAbbreviationForHistory() {

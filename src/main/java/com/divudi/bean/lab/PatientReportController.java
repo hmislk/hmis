@@ -22,6 +22,7 @@ import com.divudi.ejb.PatientReportBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.lab.Investigation;
@@ -172,6 +173,7 @@ public class PatientReportController implements Serializable {
     private List<PatientReport> recentReportsOrderedByDoctor;
     private String smsNumber;
     private String smsMessage;
+    private boolean showBackground=false;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -1477,6 +1479,10 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
+        if(currentPtIx.getBillItem().getBill().getPatient().getPatientPhoneNumber()!=null){
+            Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
+            tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
+        }
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
                 if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
@@ -1495,6 +1501,7 @@ public class PatientReportController implements Serializable {
                     e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                     e.setSentSuccessfully(false);
                     getSmsFacade().create(e);
+                    System.out.println("Partial payment allowed KML Sms sended "+currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() );
                 }
             }
         }else{
@@ -1514,6 +1521,7 @@ public class PatientReportController implements Serializable {
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
+                System.out.println("Full Paid"+currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() );
             }
         }
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
@@ -2065,6 +2073,14 @@ public class PatientReportController implements Serializable {
         this.smsMessage = smsMessage;
     }
 
+    public boolean isShowBackground() {
+        return showBackground;
+    }
+
+    public void setShowBackground(boolean showBackground) {
+        this.showBackground = showBackground;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -2132,5 +2148,7 @@ public class PatientReportController implements Serializable {
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
     }
+    
+    
 
 }

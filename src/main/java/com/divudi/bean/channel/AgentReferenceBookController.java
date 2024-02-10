@@ -369,7 +369,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

@@ -57,43 +57,57 @@
 
             <p:panel rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
-                    <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" /> 
-                    
+                    <div class="row">
+                        <div class="col-9">
+                            <h:outputText styleClass="fa fa-money-bill-wave fa-lg" />
+                            <h:outputLabel class="m-2" value="Inward Estimated Professional Charges" />
+                        </div>
+                        <div class="col-3">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                style="float: right"
+                                class="ui-button-secondary" 
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}" 
+                                ><f:setPropertyActionListener 
+                                    target="#{admissionController.current.patient}" 
+                                    value="#{inwardProfessionalBillController.current.patient}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-search"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToSearchPatients()}" 
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="float: right;"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning mx-1" 
+                                action="#{patientController.navigateToOpdPatientProfile()}" 
+                                >
+                                <f:setPropertyActionListener 
+                                    value="#{inwardProfessionalBillController.current.patient}" 
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            
+                            <p:commandButton class=" ui-button-success "
+                                             style="float: right"
+                                             value="New Bill" 
+                                             icon="fa fa-plus"
+                                             ajax="false" 
+                                             actionListener="#{inwardProfessionalBillController.makeNull()}" >
+                            </p:commandButton>
+                            
+                        </div>
+                    </div>
+
+
                 </f:facet>
 
-                <div class="d-flex justify-content-end align-items-center mx-4 mb-1">
-                    <h:panelGrid columns="3">
-                        <p:commandButton class="w-100 ui-button-success m-2 "
-                                         style="float: right"
-                                         value="New Bill" 
-                                         icon="fa fa-plus"
-                                         ajax="false" 
-                                         actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            value="Lookup" 
-                            ajax="false"
-                            icon="fa fa-search"
-                            class="ui-button-warning " 
-                            action="#{patientController.navigateToSearchPatients()}" 
-                            >
-                        </p:commandButton>
-                        <p:commandButton 
-                            style="float: right;"
-                            value="Profile" 
-                            ajax="false"
-                            icon="fa fa-user"
-                            class="ui-button-warning mx-1" 
-                            action="#{patientController.navigateToOpdPatientProfile()}" 
-                            >
-                            <f:setPropertyActionListener 
-                                value="#{inwardProfessionalBillController.current.patient}" 
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                    </h:panelGrid>
-                </div>
+
 
                 <div class="row">
                     <div class="col-5" >
@@ -193,7 +207,7 @@
                                     </div>
                                     <div class="row m-1">
                                         <div class="col-4">
-                                            <p:commandButton value="Add" id="btn" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" />
+                                            <p:commandButton value="Add" id="btn" class="ui-button-success w-50" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" />
                                         </div>
                                     </div>
                                 </div>

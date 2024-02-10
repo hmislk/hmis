@@ -120,23 +120,22 @@
                                     <div class="col-md-12">
                                         <p:commandButton 
                                                 ajax="false"
-                                                value="Recieve" 
+                                                value="Recieve"
+                                                class="mx-1 w-100 ui-button-success"
                                                 action="#{grnController.navigateToResive()}" 
                                                 disabled="#{p.cancelled}">
                                                 <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                                <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Recieve All" 
-                                                class="mx-1"
+                                                class="mx-1 my-1 w-100 ui-button-warning"
                                                 action="#{grnController.navigateToResiveAll()}" 
                                                 disabled="#{p.cancelled}">
                                                 <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                                <f:setPropertyActionListener target="#{grnController.grnBill.referenceInstitution}" value="#{sessionController.loggedUser.institution}"/>
                                             </p:commandButton>
                                     </div>
-                                    <div class="mt-1 col-md-12">
+                                    <div class="mx-1 col-md-12">
                                         <p:commandButton 
                                             ajax="false" 
                                             class="w-100"

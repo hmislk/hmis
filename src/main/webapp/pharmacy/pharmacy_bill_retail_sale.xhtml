@@ -154,8 +154,37 @@
 
 
                                             <p:column headerText="Item">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
+                                                <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
+
+                                                <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
+                                                    <h:panelGrid columns="2" style="text-align: left;" 
+                                                                 styleClass="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-fatal' : 
+                                                                               (commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-warn' : 'ui-messages-success')}">
+
+                                                        <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtCodeD" value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}" style="padding: 5px;" />
+
+                                                        <p:outputLabel id="lblNameD" value="Name" for="txtName" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtName" value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" style="padding: 5px;" />
+
+                                                        <p:outputLabel id="lblStockD" value="Stock" for="txtStock" style="font-weight: bold;" />
+                                                        <p:outputLabel id="txtStock" value="#{bi.pharmaceuticalBillItem.stock.stock}" style="padding: 5px;" />
+                                                        
+                                                         <p:outputLabel id="lblExpiryD" value="Expiry" for="txtExpiry" style="font-weight: bold;" />
+                                                         <p:outputLabel id="txtExpiry" value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="padding: 5px;" >
+                                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                         </p:outputLabel>
+                                                         
+                                                          <p:outputLabel id="lblBadgeD" value="Batch No" for="txtBadge" style="font-weight: bold;" />
+                                                          <p:outputLabel id="txtBadge" value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" style="padding: 5px;" />
+                                                          
+                                                          <p:outputLabel id="lblSaleRate" value="Sale Rate" style="font-weight: bold;" />
+                                                          <p:outputLabel id="txtSaleRate" value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" style="padding: 5px;" />
+                                                    </h:panelGrid>
+                                                </p:dialog>
                                             </p:column>
+
                                             <p:column headerText="Quantity">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
@@ -528,7 +557,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                             </div>
-            
+
                             <div class="d-flex gap-3">
 
                                 <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
