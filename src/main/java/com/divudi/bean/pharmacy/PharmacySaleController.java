@@ -859,12 +859,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quentity?";
-            UtilityController.addErrorMessage("Quentity?");
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
             return;
         }
         if (getQty() == 0.0) {
-            errorMessage = "Quentity Zero?";
+            errorMessage = "Quantity Zero?";
             UtilityController.addErrorMessage("Quentity Zero?");
             return;
         }
