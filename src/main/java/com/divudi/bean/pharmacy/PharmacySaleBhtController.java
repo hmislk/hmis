@@ -148,6 +148,11 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
+        
+        if(getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
+            return;
+        }
 
         if (getBatchBill().getProcedure() == null) {
             return;
