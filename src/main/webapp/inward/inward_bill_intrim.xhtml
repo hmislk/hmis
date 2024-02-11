@@ -45,8 +45,13 @@
                                 <p:column>
                                     #{myItem.patient.person.name}
                                 </p:column>
+                                <p:column>
+                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
+                                </p:column>
+                                
 
                             </p:autoComplete>   
+                            
                             <p:commandButton ajax="false"  
                                              value="Select" 
                                              class="ml-2"
