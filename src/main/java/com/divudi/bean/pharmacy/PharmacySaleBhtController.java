@@ -148,7 +148,12 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
-
+        
+        if(getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
+            return;
+        }
+        
         if (getBatchBill().getProcedure() == null) {
             return;
         }
@@ -942,32 +947,34 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Quntity?";
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
-        if (getQty() > fetchStock.getStock()) {
+        if (getQty() > fetchStock.getStock()) { 
+            
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             errorMessage = "No Sufficient Stocks?";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+           
             return;
         }
-
+        
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 
