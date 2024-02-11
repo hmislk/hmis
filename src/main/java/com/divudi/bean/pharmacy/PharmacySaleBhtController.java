@@ -703,31 +703,12 @@ public class PharmacySaleBhtController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
         
-        if (getStock() == null) {
-            errorMessage = "Item?";
-            UtilityController.addErrorMessage("Item?");
-            return;
-        }    
         
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
-            UtilityController.addErrorMessage("Please not select Expired Items");
+        if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
-        if (getQty() == null) {
-            errorMessage = "Quantity?";
-            UtilityController.addErrorMessage("Quantity?");
-            return;
-        }
-        if (getQty() == 0.0) {
-            errorMessage = "Quantity Zero?";
-            UtilityController.addErrorMessage("Quentity Zero?");
-            return;
-        }
-        if (getQty() > getStock().getStock()) {
-            errorMessage = "No sufficient stocks.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
+        
         
         if (errorCheck()) {
             return;
