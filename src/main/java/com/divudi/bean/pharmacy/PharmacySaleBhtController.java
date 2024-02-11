@@ -148,12 +148,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
-        
-        if(getPreBill().getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
-            return;
-        }
-        
+
         if (getBatchBill().getProcedure() == null) {
             return;
         }
@@ -707,6 +702,14 @@ public class PharmacySaleBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        
+        if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        
+        
         if (errorCheck()) {
             return;
         }
@@ -947,34 +950,32 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getStock() == null) {
-            JsfUtil.addErrorMessage("Item?");
+            UtilityController.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quntity?";
-            JsfUtil.addErrorMessage("Quentity?");
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
             return;
         }
 
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
-        if (getQty() > fetchStock.getStock()) { 
-            
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+        if (getQty() > fetchStock.getStock()) {
             errorMessage = "No Sufficient Stocks?";
-           
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
-        
+
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
-            JsfUtil.addErrorMessage("Already added this item batch");
+            UtilityController.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 
