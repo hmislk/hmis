@@ -196,21 +196,25 @@
                                                     itemLabel="#{i.itemBatch.item.name}" 
                                                     itemValue="#{i}" 
                                                     >
-                                                    <p:column headerText="Item">
-                                                        <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Code">
-                                                        <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Stocks">
-                                                        <h:outputLabel value="#{i.stock}" >
-                                                            <f:convertNumber pattern="#,###.00" ></f:convertNumber>
+                                                    <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.itemBatch.item.name}" >
+                                                        &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
                                                         </h:outputLabel>
                                                     </p:column>
-                                                    <p:column headerText="Generic">
+                                                    <p:column headerText="Code" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Stocks" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.stock}" >
+                                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Generic" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
                                                     </p:column>
-                                                    <p:column headerText="Expiry">
+                                                    <p:column headerText="Expiry" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
@@ -260,7 +264,11 @@
 
 
                                                 <p:column headerText="Item" width="40%">
-                                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
+                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ': 
+                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                         severity="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
+                                                    </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Quantity" width="5%">
                                                     <p:cellEditor>  
@@ -274,7 +282,7 @@
                                                         </f:facet>  
                                                     </p:cellEditor> 
                                                 </p:column>
-                                                <p:column headerText="Derections" style="color: red;" width="7%">
+                                                <p:column headerText="Directions" style="color: red;" width="7%">
                                                     <p:cellEditor>  
                                                         <f:facet name="output">  
                                                             <h:outputText value="#{bi.descreption}" >
