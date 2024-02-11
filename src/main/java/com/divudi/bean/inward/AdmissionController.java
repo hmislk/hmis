@@ -465,8 +465,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
         current.getPatient().setEditingMode(false);
-        
-        return "/inward/admission_profile?faces-redirect?true";
+//        bhtSu
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     public List<Admission> completeAdmission(String query) {

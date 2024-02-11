@@ -67,6 +67,11 @@ th.align-right-header .ui-column-title {
 
 }
 
+.button-margin-adjusted {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 
 /* Style for screen (if needed) */
 .prescription-text .ql-container.ql-snow {

@@ -121,12 +121,12 @@ public class SurgeryBillController implements Serializable {
         resetSurgeryBillValues();
         getSurgeryBill().setPatientEncounter(pe1);
 
-        return "/theater/inward_bill_surgery";
+        return "/theater/inward_bill_surgery?faces-redirect=true";
     }
 
     public String navigateToAddSurgeriesFromMenu() {
         resetSurgeryBillValues();
-        return "/theater/inward_bill_surgery";
+        return "/theater/inward_bill_surgery?faces-redirect=true";
     }
 
     private void updateBillFee(BillFee bf) {

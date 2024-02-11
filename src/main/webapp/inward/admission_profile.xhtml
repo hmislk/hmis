@@ -164,7 +164,7 @@
                             <div class="d-grid gap-3"> 
                                 <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
                                     <p:column >
-                                        <h:outputText value="#{s}" ></h:outputText>
+                                        <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
                                     </p:column>
                                 </p:dataTable>
                                 <p:commandButton 
