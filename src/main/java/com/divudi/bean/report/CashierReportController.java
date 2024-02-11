@@ -8,7 +8,7 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValue;
@@ -28,13 +28,19 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
+import java.io.IOException;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -43,6 +49,15 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -56,7 +71,7 @@ public class CashierReportController implements Serializable {
     private SessionController sessionController;
     @Inject
     private CommonController commonController;
-   
+
     private CommonFunctions commonFunction;
     @EJB
     private WebUserFacade webUserFacade;
@@ -2845,6 +2860,110 @@ public class CashierReportController implements Serializable {
         dataTableDatas.add(tmp5);
 
         return dataTableDatas;
+    }
+
+    public void excelLisner() {
+        calCashierData();
+        calCashierDataChannel();
+        calCashierDataCashier();
+    }
+
+    public void downloadAsCashierSummeryExcel() throws ParseException {
+        getWebUserBillsTotals();
+
+        try {
+
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("All Cashier Summery");
+
+            Font font = workbook.createFont();
+            font.setFontHeightInPoints((short) 12);
+            font.setBold(true);
+
+            CellStyle style = workbook.createCellStyle();
+            style.setAlignment(HorizontalAlignment.CENTER);
+            style.setFont(font);
+
+            CellRangeAddress mergedInsCell = new CellRangeAddress(0, 0, 0, 6);
+            sheet.addMergedRegion(mergedInsCell);
+
+            Row ins = sheet.createRow(0);
+            ins.createCell(0).setCellValue(sessionController.getLoggedUser().getInstitution().getName());
+            ins.getCell(0).setCellStyle(style);
+
+            CellRangeAddress mergedCellTitle = new CellRangeAddress(1, 1, 0, 6);
+            sheet.addMergedRegion(mergedCellTitle);
+
+            Row title = sheet.createRow(1);
+            title.createCell(0).setCellValue("All Cashier Report - " + sessionController.getLoggedUser().getDepartment().getName());
+            title.getCell(0).setCellStyle(style);
+
+            CellRangeAddress mergedFromDateCell = new CellRangeAddress(2, 2, 0, 6);
+            sheet.addMergedRegion(mergedFromDateCell);
+
+            CellRangeAddress mergedToDateCell = new CellRangeAddress(3, 3, 0, 6);
+            sheet.addMergedRegion(mergedToDateCell);
+
+            DateFormat inputFormat = new SimpleDateFormat("E MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+            DateFormat outputFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss", Locale.ENGLISH);
+
+            TimeZone timeZoneSL = TimeZone.getTimeZone("Asia/Colombo");
+            inputFormat.setTimeZone(timeZoneSL);
+
+            Row fDate = sheet.createRow(2);
+            fDate.createCell(0).setCellValue("From Date -  " + outputFormat.format(inputFormat.parse(fromDate.toString())));
+            
+            
+            Row tDate = sheet.createRow(3);
+            tDate.createCell(0).setCellValue("To Date -  " + outputFormat.format(inputFormat.parse(toDate.toString())));
+
+            Row headerRow = sheet.createRow(5);
+            headerRow.createCell(0).setCellValue("User");
+            headerRow.createCell(1).setCellValue("Bill type");
+            headerRow.createCell(2).setCellValue("Cash");
+            headerRow.createCell(3).setCellValue("Credit");
+            headerRow.createCell(4).setCellValue("Credit Card");
+            headerRow.createCell(5).setCellValue("Cheque");
+            headerRow.createCell(6).setCellValue("Slip");
+            // Add more columns as needed
+            // Populate the data rows
+            int rowNum = 6;
+
+            for (WebUserBillsTotal userbill : webUserBillsTotals) {
+                if (userbill.getBillsTotals().isEmpty()) {
+                    continue;
+                }
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(userbill.getWebUser().getName());
+
+                for (BillsTotals bt : userbill.getBillsTotals()) {
+
+                    row.createCell(1).setCellValue(bt.getName());
+                    row.createCell(2).setCellValue(bt.getCash());
+                    row.createCell(3).setCellValue(bt.getCredit());
+                    row.createCell(4).setCellValue(bt.getCard());
+                    row.createCell(5).setCellValue(bt.getCheque());
+                    row.createCell(6).setCellValue(bt.getSlip());
+                    row = sheet.createRow(rowNum++);
+                }
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"all_cashier_summery.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+
+            UtilityController.addSuccessMessage("Download Successfully");
+
+        } catch (IOException e) {
+            // Handle any exceptions
+        }
     }
 
     public void setDataTableDatas(List<String1Value1> dataTableDatas) {

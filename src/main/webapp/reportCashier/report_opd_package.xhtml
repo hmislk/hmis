@@ -14,19 +14,15 @@
                 <f:facet name="header">
                     <p:outputLabel value="Package Bill Detail Report" />
                 </f:facet>
-                <h:panelGrid columns="1" style="min-width: 100%;">                    
-                    <p:panel>
+                <h:panelGrid columns="2" class="my-2">                    
                         <h:outputLabel value="From"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         </p:calendar>
-                        <p:spacer width="30" height="1"/>
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 mt-1" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         </p:calendar>
-
-                    </p:panel>
-                    <p:panel>
-                        <p:autoComplete widgetVar="aIx1" id="acIx1" 
+                        <h:outputLabel value="Package"/>
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" widgetVar="aIx1" id="acIx1" 
                                         value="#{billPackageMedicalController.currentBillItem.item}"
                                         completeMethod="#{itemController.completePackage}" var="ix"
                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30" 
@@ -38,14 +34,16 @@
                                 #{ix.forInstitution.name}
                             </p:column>
                         </p:autoComplete>
-                        <p:autoComplete id="ins" value="#{billPackageMedicalController.institution}"
-                                        completeMethod="#{institutionController.completeIns}"
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" id="ins" value="#{billPackageMedicalController.institution}"
+                                        completeMethod="#{institutionController.completeCreditCompany}"
                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 200px;">
                             <p:column>
                                 #{ix.name}
                             </p:column>
                         </p:autoComplete>
-                        <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                        <h:outputLabel value="Service/Investigation"/>
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100 mt-1" widgetVar="aIx" id="acIx" forceSelection="true"
                                         value="#{billPackageMedicalController.serviceItem}" 
                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
@@ -63,22 +61,22 @@
                                 #{ix.total}
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton ajax="false" value="Search" 
-                                         action="#{billPackageMedicalController.createOtherPackageBillItemsOld}"
-                                          />
+                        
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
                         <p:watermark for="acIx" value="Service/Investigation" />
-                        <p:commandButton value="Print" ajax="false" action="#" >
+                </h:panelGrid>
+                <h:panelGrid columns="6" class="my-2">
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Search" 
+                                         action="#{billPackageMedicalController.createOtherPackageBillItemsOld}"
+                                          />
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="Package_Bill_Detail_Report" />
                         </p:commandButton>
-
-                    </p:panel>
-                </h:panelGrid>   
+                </h:panelGrid>
 
                 <p:panel id="gpBillPreview">
                     <p:dataTable id="tbl1" value="#{billPackageMedicalController.billItems}" rowIndexVar="i" var="bi">

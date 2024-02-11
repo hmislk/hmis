@@ -66,11 +66,11 @@
                                         <h:panelGrid columns="7">
                                             <p:commandButton 
                                                 class="m-1 ui-button-success" 
-                                                id="btnAdd"
+                                                id="btnNew"
                                                 icon="fa fa-plus"
-                                                value="Add"  
+                                                value="New Bill"  
                                                 ajax="false" 
-                                                action="#{inwardAdditionalChargeController.addCharge}"/>
+                                                action="#{inwardAdditionalChargeController.makeNull()}"/>
 
                                             <p:defaultCommand 
                                                 target="btnAdd"/>
@@ -129,14 +129,6 @@
                                 </div>
                             </div>
 
-
-
-
-
-
-
-
-
                         </f:facet>
 
                         <div class="col-12">
@@ -177,7 +169,6 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
                                                             <h:outputLabel value="From Institution"/>
@@ -185,6 +176,7 @@
                                                         <div class="col-8 ">
                                                             <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
+                                                                            disabled="#{not empty inwardAdditionalChargeController.current.fromInstitution}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>
                                                                     #{ix.name}
@@ -210,16 +202,60 @@
                                                             <p:outputLabel value="Description"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
+                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" disabled="#{not empty inwardAdditionalChargeController.current.comments}"/>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <p:commandButton 
+                                                class="m-1 ui-button-success" 
+                                                id="btnAdd"
+                                                icon="fa fa-plus"
+                                                value="Add"  
+                                                ajax="false" 
+                                                action="#{inwardAdditionalChargeController.addCharge}"/>
                                             </p:panel>
                                         </div>
                                     </div>
 
                                 </p:panel>
                             </h:panelGroup>        
+                        </div>
+                        
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <h:panelGroup id="panelBillItems"  >
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-user-tie" />
+                                            <h:outputLabel class="mx-4" value="Inward OutSide Charges"/>
+                                        </f:facet>
+
+                                        <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardAdditionalChargeController.billItemList}" var="bif" >
+
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Fee</f:facet>
+                                                <h:outputLabel  value="#{bif.inwardChargeType}">
+                                                   
+                                                </h:outputLabel>
+                                            </p:column>
+                                           
+                                            <p:column>
+                                                <f:facet name="header">Total</f:facet>
+                                                <h:outputLabel value="#{bif.netValue}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Comments</f:facet>
+                                                <h:outputLabel value="#{bif.bill.comments}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </div>
+                            
                         </div>
                     </p:panel>
                 </h:panelGrid>

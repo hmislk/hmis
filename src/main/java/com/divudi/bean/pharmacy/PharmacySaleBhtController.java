@@ -148,6 +148,11 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
+        
+        if(getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
+            return;
+        }
 
         if (getBatchBill().getProcedure() == null) {
             return;
@@ -702,6 +707,14 @@ public class PharmacySaleBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        
+        if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        
+        
         if (errorCheck()) {
             return;
         }
@@ -946,8 +959,8 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quntity?";
-            UtilityController.addErrorMessage("Quentity?");
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
             return;
         }
 

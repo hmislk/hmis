@@ -147,6 +147,10 @@ public class FinancialTransactionController implements Serializable {
         }
         currentBillPayments = new ArrayList<>();
         System.out.println("selected bill payments = " + selectedBill.getPayments().size());
+        if(selectedBill.getPayments()==null||selectedBill.getPayments().isEmpty()){
+            selectedBill.setPayments(findPaymentsForBill(selectedBill));
+        }
+        
         for (Payment p : selectedBill.getPayments()) {
             System.out.println("p = " + p);
             Payment np = p.copyAttributes();
@@ -182,6 +186,18 @@ public class FinancialTransactionController implements Serializable {
         paymentsFromShiftSratToNow = null;
     }
 
+    public List<Payment> findPaymentsForBill(Bill b){
+        String jpql = "select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.bill=:b"
+                + " order by p.id";
+        Map m = new HashMap();
+        m.put("b", b);
+        m.put("ret", false);
+        return paymentFacade.findByJpql(jpql, m);
+    }
+    
     public void addPaymentToInitialFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -379,6 +395,8 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("p = " + p.getId());
             System.out.println("p = " + p.getPaidValue());
         }
+        currentBill.getPayments().addAll(currentBillPayments);
+        billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print";
     }
 
@@ -582,7 +600,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
-       
+
     }
 
     public String settleFundTransferReceiveBill() {

@@ -573,7 +573,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_doctor_payment_opd.xhtml?faces-redirect=true";
+        return "/reportCashier/report_doctor_payment_opd_by_bill.xhtml?faces-redirect=true";
 
     }
 
