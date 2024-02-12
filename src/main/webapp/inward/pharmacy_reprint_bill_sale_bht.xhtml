@@ -19,57 +19,73 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
                         </f:facet>
-
-
-
                     </p:panel>
 
                     <div class=" d-flex justify-content-between m-1">
                         <div>
-                            <p:commandButton value="Reprint" ajax="false" icon="fa-solid fa-print">
+                            <p:commandButton 
+                                value="Reprint" 
+                                class="ui-button-info"
+                                ajax="false" 
+                                icon="fa-solid fa-print">
                                 <p:printer target="tbl" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" 
-                                             class="m-2 ui-button-danger"
-                                             icon="fa fa-ban"
-                                             action="pharmacy_cancel_bill_retail_bht"
-                                             disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Cancel" 
+                                class="m-2 ui-button-danger"
+                                icon="fa fa-ban"
+                                action="pharmacy_cancel_bill_retail_bht"
+                                disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Return Item" 
-                                             action="pharmacy_bill_return_bht_issue"   
-                                             icon="fa fa-undo"
-                                             disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
-                                <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" 
-                                                             target="#{bhtIssueReturnController.bill}"  />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="To Return Item" 
+                                action="pharmacy_bill_return_bht_issue"   
+                                icon="fa fa-undo"
+                                disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
+                                <f:setPropertyActionListener 
+                                    value="#{pharmacyBillSearch.bill}" 
+                                    target="#{bhtIssueReturnController.bill}"  />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel" class="m-2 ui-button-success">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                styleClass="noPrintButton" 
+                                icon="fa-solid fa-file-excel" 
+                                class="m-2 ui-button-success">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton> 
                         </div>
                         <div>
-                            <p:commandButton ajax="false" value="Mark As Checked"
-                                             action="#{pharmacyBillSearch.markAsChecked()}"
-                                             icon="fa fa-check-square"
-                                             class="m-2 ui-button-success"
-                                             rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                            <p:commandButton ajax="false" value="Mark As Un Check"
-                                             icon="fa fa-square"
-                                             class="m-2 ui-button-warning"
-                                             action="#{pharmacyBillSearch.markAsUnChecked()}"
-                                             rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                            <p:commandButton ajax="false" value="Back To Interim"
-                                             icon="fa fa-backward"
-                                             class="m-2"
-                                             action="/inward/inward_bill_intrim"  />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark As Checked"
+                                action="#{pharmacyBillSearch.markAsChecked()}"
+                                icon="fa fa-check-square"
+                                class="m-2 ui-button-success"
+                                rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Mark As Un Check"
+                                icon="fa fa-square"
+                                class="m-2 ui-button-warning"
+                                action="#{pharmacyBillSearch.markAsUnChecked()}"
+                                rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Back To Interim"
+                                icon="fa fa-backward"
+                                class="m-2"
+                                action="/inward/inward_bill_intrim"  />
                         </div>
-
-
                     </div>
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Matrix Department"/>
                         <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}"/>
+                        
                     </h:panelGrid>
 
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
