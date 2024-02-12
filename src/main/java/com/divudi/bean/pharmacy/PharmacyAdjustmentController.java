@@ -720,7 +720,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);

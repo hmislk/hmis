@@ -44,24 +44,30 @@
 
                     </f:facet>
                     <div class="row" >
-
-                        <div class="col-4" >
-
-                            <p:selectOneMenu   
-                                id="pay" 
-                                value="#{pm.paymentMethod}"
-                                class="w-100">  
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems 
-                                    value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
-                                    var="pm1"
-                                    itemLabel="#{pm1.label}"
-                                    itemValue="#{pm1}"/>
-                                <p:ajax process="pay" 
-                                        update="paymentDetails"
-                                        event="change"/>
-                            </p:selectOneMenu>
-                        </div>
+                            <div class=" d-flex justify-content-between">
+                                <p:selectOneMenu   
+                                    id="pay" 
+                                    value="#{pm.paymentMethod}"
+                                    class="w-70">  
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
+                                        var="pm1"
+                                        itemLabel="#{pm1.label}"
+                                        itemValue="#{pm1}"/>
+                                    <p:ajax process="pay" 
+                                            update="paymentDetails"
+                                            event="change"/>
+                                </p:selectOneMenu>
+                                 <p:commandButton 
+                                    class="mx-2 ui-button-danger" 
+                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    icon="fas fa-times" 
+                                    process="@this"
+                                    update="tblMultiplePayments" 
+                                    action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.removePaymentDetail(pm)}" >
+                                </p:commandButton>
+                            </div>
                     </div>
 
                     <div class="row mt-2" >

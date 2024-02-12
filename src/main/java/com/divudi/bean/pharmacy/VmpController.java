@@ -336,18 +336,21 @@ public class VmpController implements Serializable {
     }
 
     public List<VirtualProductIngredient> getVivs() {
-        if (getCurrent().getId() == null) {
+    if (getCurrent().getId() == null) {
+        return new ArrayList<VirtualProductIngredient>();
+    } else {
+        Long currentId = getCurrent().getId();
+        String jpqlQuery = "SELECT v FROM VirtualProductIngredient v WHERE v.vmp.id = :vmpId";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("vmpId", currentId);
+        vivs = getVivFacade().findByJpql(jpqlQuery, parameters);
+
+        if (vivs == null) {
             return new ArrayList<VirtualProductIngredient>();
-        } else {
-
-            vivs = getVivFacade().findByJpql("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
-
-            if (vivs == null) {
-                return new ArrayList<VirtualProductIngredient>();
-            }
-
-            return vivs;
         }
+
+        return vivs;
+    }
     }
 
     public String getVivsAsString(Vmp vmp) {
