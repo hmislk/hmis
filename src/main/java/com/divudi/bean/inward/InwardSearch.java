@@ -238,11 +238,12 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        
         String jpql;
         Map temMap = new HashMap();
-        jpql = "select b from BilledBill b where"
+        jpql = "select b from Bill b where"
                 + " b.billType = :billType and "
-                + "and b.retired=false ";
+                + " b.retired=false ";
 
         jpql += " and  b.patientEncounter=:pe ";
         temMap.put("pe", admission);
@@ -250,7 +251,9 @@ public class InwardSearch implements Serializable {
         temMap.put("billType", BillType.InwardFinalBill);
         jpql += " order by b.id desc ";
      
-        bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+      // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        bill = getBillFacade().findFirstByJpql(jpql,temMap);
+        
         if(bill==null){
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
