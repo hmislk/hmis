@@ -147,45 +147,92 @@
                                         </f:facet>
 
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
-                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
                                             <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                             <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
-                                            <p:column headerText="Item">
+                                            <p:column headerText="Item" width="30%">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                                 <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
                                                 <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
-                                                    <h:panelGrid columns="2" style="text-align: left;" 
-                                                                 styleClass="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-fatal' : 
-                                                                               (commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ? 'ui-messages-warn' : 'ui-messages-success')}">
+                                                    <h:panelGroup style="text-align: left;">
+                                                             
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtCodeD" value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblNameD" value="Name" for="txtName" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtName" value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblStockD" value="Stock" for="txtStock" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtStock" value="#{bi.pharmaceuticalBillItem.stock.stock}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblExpiryD" value="Expiry" for="txtExpiry" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtExpiry" value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="padding: 5px;" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblBadgeD" value="Batch No" for="txtBadge" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtBadge" value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" style="padding: 5px;" />
 
-                                                        <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
-                                                        <p:outputLabel id="txtCodeD" value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblSaleRate" value="Sale Rate" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtSaleRate" value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
 
-                                                        <p:outputLabel id="lblNameD" value="Name" for="txtName" style="font-weight: bold;" />
-                                                        <p:outputLabel id="txtName" value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" style="padding: 5px;" />
-
-                                                        <p:outputLabel id="lblStockD" value="Stock" for="txtStock" style="font-weight: bold;" />
-                                                        <p:outputLabel id="txtStock" value="#{bi.pharmaceuticalBillItem.stock.stock}" style="padding: 5px;" />
-                                                        
-                                                         <p:outputLabel id="lblExpiryD" value="Expiry" for="txtExpiry" style="font-weight: bold;" />
-                                                         <p:outputLabel id="txtExpiry" value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="padding: 5px;" >
-                                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                                         </p:outputLabel>
-                                                         
-                                                          <p:outputLabel id="lblBadgeD" value="Batch No" for="txtBadge" style="font-weight: bold;" />
-                                                          <p:outputLabel id="txtBadge" value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" style="padding: 5px;" />
-                                                          
-                                                          <p:outputLabel id="lblSaleRate" value="Sale Rate" style="font-weight: bold;" />
-                                                          <p:outputLabel id="txtSaleRate" value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" style="padding: 5px;" />
-                                                    </h:panelGrid>
                                                 </p:dialog>
                                             </p:column>
 
-                                            <p:column headerText="Quantity">
+                                            <p:column headerText="Rate" style="width: 10%">
+                                                <h:outputLabel id="rate" value="#{bi.rate}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Value" style="width: 10%">
+                                                <h:outputLabel value="#{bi.grossValue}" id="gros">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Expiry" style="width: 15%">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                </h:outputLabel>
+
+                                            </p:column>
+                                            <p:column headerText="Qty" style="width: 8%">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
                                                         <h:outputText value="#{bi.qty}" >
@@ -198,32 +245,16 @@
                                                 </p:cellEditor> 
                                             </p:column>
 
-                                            <p:column style="width:6%">  
+                                            <p:column style="width:4%"> 
+
                                                 <p:rowEditor />  
-                                            </p:column>  
-
-
-                                            <p:column headerText="Rate">
-                                                <h:outputLabel id="rate" value="#{bi.rate}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Value">
-                                                <h:outputLabel value="#{bi.grossValue}" id="gros">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                                </h:outputLabel>
-
-                                            </p:column>
-                                            <p:column headerText="Remove">
-                                                <p:commandButton value="Remove" action="#{pharmacySaleController.removeBillItem(bi)}" ajax="false" >
+                                                <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
 
                                                 </p:commandButton>
-                                            </p:column>
+                                            </p:column> 
+                                            <!--                                            <p:column headerText="Remove">
+                                                                                            
+                                                                                        </p:column>-->
 
                                         </p:dataTable>
                                     </p:panel>
