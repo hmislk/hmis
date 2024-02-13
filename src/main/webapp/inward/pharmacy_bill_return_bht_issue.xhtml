@@ -114,7 +114,6 @@
                     </div>
                 </div>
 
-
                 <div class="row">
                     <div class="col-md-6">
                         <p:panel >
@@ -133,33 +132,27 @@
                             <h:panelGroup   id="gpBillPreview2">
 
                                 <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>
                                         </h:panelGroup>
                                     </div>
-
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewDouble2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
                                     <div >
                                         <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
                                             <phi:saleBill_prabodha bill="#{bhtIssueReturnController.bill}"></phi:saleBill_prabodha>
                                         </h:panelGroup>
                                     </div>
-
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewFiveFive2" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <phi:saleBill_five_five bill="#{bhtIssueReturnController.bill}"></phi:saleBill_five_five>
                                         </h:panelGroup>
                                     </div>
-
                                 </h:panelGroup>
 
                             </h:panelGroup>
@@ -183,31 +176,25 @@
 
                             <h:panelGroup   id="gpBillPreview1">
                                 <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:returnBill bill="#{bhtIssueReturnController.returnBill}"/>
                                     </h:panelGroup>
-
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
                                     <div >
                                         <h:panelGroup     rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq true}"> 
                                             <phi:saleBill_prabodha bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_prabodha>
                                         </h:panelGroup>
                                     </div>
-
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
                                     <div >
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                             <phi:saleBill_five_five bill="#{bhtIssueReturnController.returnBill}"></phi:saleBill_five_five>
                                         </h:panelGroup>
                                     </div>
-
                                 </h:panelGroup>
 
                             </h:panelGroup>
