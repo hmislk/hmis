@@ -24,7 +24,7 @@
 
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardProBills()}" value="Search"  />
+                                    <p:commandButton class="ui-button-warning" icon="fas fa-search" ajax="false" action="#{searchController.createInwardProBills()}" value="Search"  />
                                     <p:spacer height="10" width="5" ></p:spacer>
                                     <h:outputLabel value="Bill No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
@@ -33,8 +33,6 @@
                                     <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <h:outputLabel value="Patient Phone"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                    <h:outputLabel value="Total"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>
                                      <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
@@ -49,6 +47,7 @@
                                     value="#{searchController.bills}" 
                                     var="bill"
                                     paginator="true"
+                                    paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
@@ -62,12 +61,12 @@
                                         <h:outputLabel value="#{bill.insId}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Bht No" >
+                                    <p:column headerText="BHT No" >
                                         <h:outputLabel value="#{bill.patientEncounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At" >   
-                                        <h:outputLabel value="#{bill.createdAt}" />>
+                                        <h:outputLabel value="#{bill.createdAt}" />
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -91,9 +90,6 @@
                                     <p:column headerText="Client" >
                                         <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                                     </p:column>         
-                                    <p:column headerText="PaymentMethod">                            
-                                        <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                   
-                                    </p:column>
                                     <p:column headerText="Value" >                              
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
