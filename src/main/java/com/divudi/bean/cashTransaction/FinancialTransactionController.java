@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import org.bouncycastle.mail.smime.handlers.pkcs7_mime;
 
 /**
  *
@@ -77,6 +78,9 @@ public class FinancialTransactionController implements Serializable {
     private double Deductions;
     private double aditions;
     private double totalCCBillValues;
+    private double totalOpdBillCanceled;
+    private double totalPharmecyBillCanceled;
+    private double totalCCBillCanceled;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -342,7 +346,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String settleInitialFundBill() {
-        resetTotalFundsValues();
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -476,104 +479,111 @@ public class FinancialTransactionController implements Serializable {
         currentBillPayments = paymentFacade.findByJpql(jpql, m);
         resetTotalFundsValues();
         for (Payment p : currentBillPayments) {
-            if (null != p.getBill().getBillType()) {
-                switch (p.getBill().getBillType()) {
-                    case OpdBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalOpdBillValues += p.getPaidValue();
-                        totalBilledBillValue += p.getPaidValue();
-                        break;
-                    case PharmacySale:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalPharmecyBillValues += p.getPaidValue();
-                        totalBilledBillValue += p.getPaidValue();
-                        break;
-                    case FundTransferBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalBalanceTransfer += p.getPaidValue();
-                        break;
-                    case FundTransferReceivedBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalTransferRecive += p.getPaidValue();
-                        break;
-                    case ShiftStartFundBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalShiftStart += p.getPaidValue();
-                        break;
-                    case WithdrawalFundBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalWithdrawals += p.getPaidValue();
-                        break;
-                    case DepositFundBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalDeposits += p.getPaidValue();
-                        break;
-                    case CollectingCentreBill:
-                        if (p.getBill().isRefunded()) {
-                            totalBillRefunds += p.getPaidValue();
-                        }
-                        if (p.getBill().isCancelled()) {
-                            totalBillCanceld += p.getPaidValue();
-                        }
-                        totalCCBillValues += p.getPaidValue();
-                        break;
-                    default:
-                        break;
-                }
-            }
+            calculateBillValuesFromBillTypes(p);
         }
         calculateTotalFundsFromShiftStartToNow();
     }
 
-    public void calculateTotalFundsFromShiftStartToNow() {
-        aditions = totalOpdBillValues
-                + totalPharmecyBillValues
-                + totalShiftStart
-                + totalTransferRecive
-                + totalWithdrawals
-                + totalCCBillValues;
+    public void calculateBillValuesFromBillTypes(Payment p) {
+        if (p.getBill().getBillType()!=null) {
+            switch (p.getBill().getBillType()) {
+                case OpdBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalOpdBillCanceled += p.getPaidValue();
+                    }
+                    totalOpdBillValues += p.getPaidValue();
+                    totalBilledBillValue += p.getPaidValue();
+                    break;
+                case PharmacySale:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalPharmecyBillCanceled += p.getPaidValue();
+                        
+                    }
+                    totalPharmecyBillValues += p.getPaidValue();
+                    totalBilledBillValue += p.getPaidValue();
+                    break;
+                case FundTransferBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalBillCanceld += p.getPaidValue();
+                    }
+                    totalBalanceTransfer += p.getPaidValue();
+                    break;
+                case FundTransferReceivedBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalBillCanceld += p.getPaidValue();
+                    }
+                    totalTransferRecive += p.getPaidValue();
+                    break;
+                case ShiftStartFundBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalBillCanceld += p.getPaidValue();
+                    }
+                    totalShiftStart += p.getPaidValue();
+                    break;
+                case WithdrawalFundBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalBillCanceld += p.getPaidValue();
+                    }
+                    totalWithdrawals += p.getPaidValue();
+                    break;
+                case DepositFundBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalBillCanceld += p.getPaidValue();
+                    }
+                    totalDeposits += p.getPaidValue();
+                    break;
+                case CollectingCentreBill:
+                    if (p.getBill().isRefunded()) {
+                        totalBillRefunds += p.getPaidValue();
+                    }
+                    if (p.getBill().isCancelled()) {
+                        totalCCBillCanceled += p.getPaidValue();
+                    }
+                    totalCCBillValues += p.getPaidValue();
+                    totalBilledBillValue += p.getPaidValue();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
-        Deductions = totalBalanceTransfer
-                + totalDeposits
-                + totalBillCanceld
-                + totalBillRefunds;
+    public void calculateTotalFundsFromShiftStartToNow() {
+        totalBillCanceld=totalOpdBillCanceled+totalCCBillCanceled+totalPharmecyBillCanceled;
+        totalOpdBillValues=totalOpdBillValues-totalOpdBillCanceled;
+        totalPharmecyBillValues=totalPharmecyBillValues-totalPharmecyBillCanceled;
+        totalCCBillValues=totalCCBillValues-totalCCBillCanceled;
+        double totalBillValues = totalOpdBillValues
+                + totalPharmecyBillValues
+                + totalCCBillValues
+                + totalTransferRecive
+                + totalWithdrawals;
+
+        aditions = totalBillValues;
+        Deductions = totalBalanceTransfer + totalDeposits;
         totalFunds = aditions - Deductions;
-        shiftEndTotalValue = totalFunds;
+        shiftEndTotalValue = totalFunds + totalShiftStart;
 
     }
 
@@ -589,6 +599,10 @@ public class FinancialTransactionController implements Serializable {
         totalDeposits = 0.0;
         totalWithdrawals = 0.0;
         totalBilledBillValue = 0.0;
+        shiftEndTotalValue = 0.0;
+        totalOpdBillCanceled=0.0;
+        totalCCBillCanceled=0.0;
+        totalPharmecyBillCanceled=0.0;
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -1040,4 +1054,31 @@ public class FinancialTransactionController implements Serializable {
         this.totalCCBillValues = totalCCBillValues;
     }
 
+    public double getTotalOpdBillCanceled() {
+        return totalOpdBillCanceled;
+    }
+
+    public void setTotalOpdBillCanceled(double totalOpdBillCanceled) {
+        this.totalOpdBillCanceled = totalOpdBillCanceled;
+    }
+
+    public double getTotalPharmecyBillCanceled() {
+        return totalPharmecyBillCanceled;
+    }
+
+    public void setTotalPharmecyBillCanceled(double totalPharmecyBillCanceled) {
+        this.totalPharmecyBillCanceled = totalPharmecyBillCanceled;
+    }
+
+    public double getTotalCCBillCanceled() {
+        return totalCCBillCanceled;
+    }
+
+    public void setTotalCCBillCanceled(double totalCCBillCanceled) {
+        this.totalCCBillCanceled = totalCCBillCanceled;
+    }
+
+    
+    
+    
 }
