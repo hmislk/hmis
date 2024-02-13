@@ -35,12 +35,7 @@
                                         action="pharmacy_cancel_bill_return_bht" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
-                                </div>
-                            </div>
-                        </f:facet>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <p:commandButton
+                                     <p:commandButton
                                 id="check"
                                 ajax="false" 
                                 icon="fa fa-check-square"
@@ -65,7 +60,9 @@
                                 icon="fa fa-backward"
                                 value="Back To Interim"
                                 action="/inward/inward_bill_intrim"  />
-                        </div>
+                                </div>
+                            </div>
+                        </f:facet>
 
                         <div class="row mt-2">
                             <div class="col-lg-6">
@@ -163,7 +160,7 @@
                                         </div> 
                                     </f:facet>
                                     <h:panelGroup id="gpBillPreview">
-                                        <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        <ph:returnBill_1 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                     </h:panelGroup>
                                 </p:panel>
                             </div>
