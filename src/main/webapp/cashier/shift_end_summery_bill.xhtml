@@ -241,7 +241,15 @@
                             </p:column>
                             <p:column headerText="Action" >
                                 <p:commandButton 
-                                    class="ui-button-danger"
+                                    class="ui-button-success"
+                                    icon=" fa-solid fa-eye"
+                                    value="View Bill" 
+                                    action="#{billSearch.navigateToViewOpdBill}"
+                                    >
+                                    <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="ui-button-danger mx-1"
                                     icon=" fa-solid fa-trash"
                                     id="btnRemove"
                                     value="Remove" 
