@@ -247,6 +247,13 @@ public class BhtIssueReturnController implements Serializable {
 //            System.out.println("this = " + getBill().getBillItems().size() );
 
             for (BillItem bi : billItems) {
+
+
+//                System.out.println("bi = " + bi);
+//                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
+//                System.out.println("bi.getQty() = " + bi.getQty());
+//                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+
                 if (bi.getPharmaceuticalBillItem().getQtyInUnit() < bi.getQty()) {
 //                    System.out.println("bi.getQty = " + bi.getQty());
                     JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -254,6 +261,11 @@ public class BhtIssueReturnController implements Serializable {
                 }
             }
         }
+
+//        
+//        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
+//        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
+
         
         if (returnBill.getTotal() == 0) {
             UtilityController.addErrorMessage("Add Valied Return Quntity");
