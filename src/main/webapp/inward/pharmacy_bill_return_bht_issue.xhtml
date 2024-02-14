@@ -38,9 +38,9 @@
                             </div>
                         </div>
                     </f:facet>
-
-                    <p:dataTable var="ph" value="#{bhtIssueReturnController.billItems}"
-                                 scrollable="true" scrollHeight="250"
+                    <p:dataTable var="ph" 
+                                 value="#{bhtIssueReturnController.billItems}"
+                                 scrollable="true" 
                                  id="itemList" >  
 
                         <f:facet name="header">  
@@ -51,35 +51,36 @@
                             <h:outputText value=" #{ph.item.name}"  />                     
                         </p:column>  
 
-                        <p:column headerText="Ballance Qty in Unit" style="width:25px!important;"> 
+                        <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
                             <h:outputText value="#{ph.pharmaceuticalBillItem.qty}">  
                                 <f:convertNumber pattern="#0" />
                             </h:outputText>
                         </p:column>  
 
-                        <!--                    <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                                                <h:outputText value="#{ph.rate}"  />                        
-                                            </p:column>                 -->
+                        <p:column headerText="Purchase Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.rate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>                
 
-
-                        <p:column headerText="Bathch No" style="width:25px!important;">                       
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
+                        <p:column headerText="Batch No" style="width:25px!important;">                       
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                        
                         </p:column>  
 
-                        <p:column headerText="Date of Expirey" style="width:25px!important;">                     
+                        <p:column headerText="Date of Expiry" style="width:25px!important;">                     
                             <h:outputLabel value="#{ph.pharmaceuticalBillItem.doe}"> 
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
 
                         <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                            <p:inputText autocomplete="off" value="#{ph.qty}" >
+                            <p:inputText autocomplete="off" value="#{ph.qty}">
                                 <f:ajax 
                                     event="blur" 
                                     render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
                                     execute="@this" 
                                     listener="#{bhtIssueReturnController.onEdit(ph)}" >
-                                </f:ajax>
+                                </f:ajax>                               
                                 <f:convertNumber pattern="#,##" />
                             </p:inputText>
                         </p:column>  
@@ -96,10 +97,11 @@
                         ajax="false" 
                         icon="fa fa-plus"
                         class="ui-button-warning"
-                        action="pharmacy_search_sale_bill" 
+                        action="/inward/pharmacy_search_sale_bill_bht" 
+                        actionListener="#{searchController.makeListNull}"
                         value="Pharmacy Sale Search"
                         style="float: right;"
-                        actionListener="#{bhtIssueReturnController.makeNull}"  >
+                        >
                     </p:commandButton> 
                 </f:facet>
 
