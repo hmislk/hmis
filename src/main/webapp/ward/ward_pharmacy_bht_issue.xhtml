@@ -13,10 +13,16 @@
             <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
 
                 <f:facet name="header" >                                  
-                    <h:panelGrid columns="4">
-                        <p:commandButton  value="Issue" action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                        </p:commandButton>                        
-                    </h:panelGrid>
+                    <h:outputText value="BHT Issue" ></h:outputText>
+                    <p:commandButton 
+                        style="float: right;"
+                        class="ui-button-success"
+                        icon="fa fa-check"
+                        value="Issue to BHT" 
+                        action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}" 
+                        ajax="false" >
+                    </p:commandButton>                        
+
                 </f:facet>
 
                 <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
@@ -31,7 +37,7 @@
                         <h:outputText id="item" value="#{bItm.item.name}" >                                   
                         </h:outputText>
                     </p:column>  
-                    
+
                     <p:column headerText="Description" style="width: 50px!important;"  >                     
                         <h:outputText id="dis" value="#{bItm.item.descreption}" >                                   
                         </h:outputText>
@@ -54,21 +60,40 @@
                     </p:column>  
 
                     <p:column headerText="Qty" style="width:25px!important; text-align: right;">                   
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" > 
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
                     </p:column>              
 
-                </p:dataTable>  
-
-                <p:spacer height="50"/>
+                </p:dataTable> 
             </p:panel>
+
+
             <p:panel rendered="#{pharmacySaleBhtController.billPreview}">
-                <p:commandButton class="ui-button-secondary" icon="fas fa-arrow-left" ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Requested List"/>                    
-                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <div><h:outputLabel value="Bill Preview" class="mt-2"/> </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                class="ui-button-secondary" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                action="ward_pharmacy_bht_issue_request_list_for_issue" 
+                                actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" 
+                                value="Requested List"/>                    
+                            <p:commandButton 
+                                class="ui-button-info mx-2" 
+                                icon="fas fa-print" 
+                                value="Print" 
+                                ajax="false" 
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
 
                 <h:panelGroup   id="gpBillPreview">
-
                     <h:panelGroup id="gpBillPreviewDouble"> 
 
                         <div >
