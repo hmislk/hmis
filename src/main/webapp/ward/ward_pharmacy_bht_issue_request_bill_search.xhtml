@@ -102,7 +102,7 @@
                                             </h:outputLabel>
                                             <br/>
                                             <h:panelGroup rendered="#{b.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" value="Cancel at " />
                                                 <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                                value="#{b.cancelledBill.createdAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -113,7 +113,7 @@
                                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>     
                                             <br/>
                                             <h:panelGroup rendered="#{b.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled By " />
+                                                <h:outputLabel style="color: red;" value="Cancel By " />
                                                 <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
                                                 </h:outputLabel>
                                             </h:panelGroup>
