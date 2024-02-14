@@ -13,25 +13,46 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Inward Pharmacy Request Reprint" ></h:outputLabel>
                     <!--<p:commandButton ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search"  value="Requested List"/>-->
-                    <p:commandButton value="Reprint" ajax="false" >
+                    <p:commandButton class="ui-button-info mx-4" icon="fas fa-print" value="Reprint" ajax="false" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
+                    <p:commandButton class="ui-button-secondary" icon="fas fa-arrow-left" ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Back"/>
                 </f:facet>
 
                 <p:panel>
-                    <p:panelGrid columns="2" style="width: 100%;">
-                        <p:panel header="Bill Detail">
-                            <p:panelGrid columns="2">
-                                <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                <h:outputLabel value="Discount :" ></h:outputLabel>
-                                <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                            </p:panelGrid>
+                    <h:panelGrid columns="2" style="width: 100%;">
+                        <p:panel header="Bill Details" style="height: 100%">
+                            <h:panelGrid columns="3" class="w-100">
+                                <p:outputLabel value="Bill No" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></p:outputLabel>
+                                <p:outputLabel value="BHT No" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.patientEncounter.bhtNo}" ></p:outputLabel>
+                                <p:outputLabel value="Patient Name" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
+                                <p:outputLabel value="Date" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.createdAt}" ></p:outputLabel>
+                                <p:outputLabel value="Time" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.createdAt}" > <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></p:outputLabel>
+                                <p:outputLabel value="Discount" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                <p:outputLabel value="Net Total" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                            </h:panelGrid>
                         </p:panel>
-                    </p:panelGrid>
-                    <p:panel header="Bill Item Detail">
+                        <p:panel header="Bill" style="height: 100%">
+                            <h:panelGroup id="gpBillPreview">
+                                <phe:issueBill_request  bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGrid>
+                    <p:panel header="Bill Item Details">
                         <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
                             <p:column>
                                 <f:facet name="header">No</f:facet>
@@ -43,7 +64,7 @@
                             </p:column>
                             <p:column>
                                 <f:facet name="header">Qty</f:facet>
-                                    #{bip.pharmaceuticalBillItem.qty}
+                                    #{-bip.pharmaceuticalBillItem.qty}
                             </p:column>
                             <p:column>
                                 <f:facet name="header">Direction</f:facet>
@@ -56,15 +77,6 @@
                         </p:dataTable>
                     </p:panel>
                 </p:panel>
-
-
-                <p:panel >
-                    <h:panelGroup id="gpBillPreview">
-                        <phe:issueBill_request  bill="#{pharmacyBillSearch.bill}" />
-                    </h:panelGroup>
-                </p:panel>
-
-
             </p:panel>
 
 
