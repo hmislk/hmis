@@ -91,14 +91,14 @@
                                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                                     </p:commandButton>
                                 </p:column>
-                                <p:column headerText="Issued" width="35%">                   
+                                <p:column headerText="Issued" width="39%">                   
                                     <p:dataTable var="b" value="#{p.listOfBill}">                           
-                                        <p:column  >                                                               
+                                        <p:column  width="19%">                                                               
                                             <h:outputLabel  value="#{b.deptId}"/>                                   
                                         </p:column>
-                                        <p:column >
+                                        <p:column width="10%">
                                             <h:outputLabel value="#{b.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
                                             <h:panelGroup rendered="#{b.cancelled}" >
