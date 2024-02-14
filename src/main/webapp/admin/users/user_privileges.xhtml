@@ -68,6 +68,7 @@
                         </div>
 
                         <p:tree
+                            
                             id="tree"
                             selectionMode="checkbox"
                             datakey="#{node}"
@@ -75,9 +76,9 @@
                             value="#{userPrivilageController.rootTreeNode}" 
                             var="node" 
                             propagateSelectionDown="true"
-                            propagateSelectionUp="true"
+                            propagateSelectionUp="true"  
                             >  
-                            <p:treeNode>  
+                            <p:treeNode >  
                                 <h:outputText value="#{node}" />  
                             </p:treeNode>  
                         </p:tree>
