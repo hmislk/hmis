@@ -78,6 +78,9 @@ public class PharmacyBillSearch implements Serializable {
      */
     @Inject
     PharmacyCalculation pharmacyCalculation;
+    
+    @Inject
+    UtilityController utilityController;
     /**
      * Properties
      */
@@ -158,6 +161,9 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCheckedBy(getSessionController().getLoggedUser());
 
         getBillFacade().edit(bill);
+        
+        utilityController.addSuccessMessage("Mark as Checked");
+        
     }
 
     public void markAsUnChecked() {
@@ -177,6 +183,9 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCheckedBy(null);
 
         getBillFacade().edit(bill);
+        
+        utilityController.addSuccessMessage("Mark As Un Check");
+        
     }
 
     public void unitCancell() {

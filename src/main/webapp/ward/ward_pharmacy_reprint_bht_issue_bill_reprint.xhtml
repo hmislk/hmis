@@ -24,15 +24,11 @@
 
                     </p:panel>
 
-                   
-
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="Matrix Department"/>
-                        <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}"/>
-                    </h:panelGrid>
-
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
-
+                        <f:facet name="header">
+                             <h:outputLabel value="Matrix Department : &nbsp;"/>
+                        <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}"/>
+                        </f:facet>
                         <p:column>
                             <f:facet name="header">
                                 <h:outputLabel value="No"/>
@@ -118,9 +114,10 @@
 
                     </h:panelGroup>  -->
                     <p:panel>
-                        <p:commandButton value="Reprint" ajax="false" action="#"  >
+                        <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                        <p:commandButton class="ui-button-secondary mx-2" icon="fas fa-arrow-left" ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Back"/>
 
                         <h:panelGroup   id="gpBillPreview" > 
 

@@ -32,8 +32,8 @@
                         </h:outputText>
                     </p:column>  
                     
-                    <p:column headerText="Descreption" style="width: 50px!important;"  >                     
-                        <h:outputText id="dis" value="#{bItm.descreption}" >                                   
+                    <p:column headerText="Description" style="width: 50px!important;"  >                     
+                        <h:outputText id="dis" value="#{bItm.item.descreption}" >                                   
                         </h:outputText>
                     </p:column>  
 
@@ -62,8 +62,8 @@
                 <p:spacer height="50"/>
             </p:panel>
             <p:panel rendered="#{pharmacySaleBhtController.billPreview}">
-                <p:commandButton ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Requested List"/>                    
-                <p:commandButton value="Print" ajax="false" action="#" >
+                <p:commandButton class="ui-button-secondary" icon="fas fa-arrow-left" ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Requested List"/>                    
+                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
