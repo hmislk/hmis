@@ -40,8 +40,8 @@
                                         <h:outputLabel value="Dealer Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:panelGrid columns="2">
-                                        <h:outputLabel value="Dealer ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.department.name}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
                                     </p:panelGrid>
                                 </p:panel>
                             </div>
@@ -66,7 +66,7 @@
                             </div>
                         </div>
 
-                        <p:panel header="Bill Item Detail">
+                        <p:panel header="Bill Item Details">
                             <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
