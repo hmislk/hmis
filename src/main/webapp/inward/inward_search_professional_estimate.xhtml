@@ -34,8 +34,6 @@
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <h:outputLabel value="Patient Phone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                    <h:outputLabel value="Total"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                     <h:outputLabel value="Net Total"/>
                                      <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                               
@@ -90,9 +88,6 @@
 
                                     <p:column headerText="Client" >
                                         <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    </p:column>         
-                                    <p:column headerText="PaymentMethod">                            
-                                        <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                   
                                     </p:column>
                                     <p:column headerText="Value" >                              
                                         <h:outputLabel value="#{bill.netTotal}" >
