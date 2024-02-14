@@ -13,8 +13,17 @@
                 <h:form>
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Service Cancellation">                            
-                            <h:commandButton value="Cancel" action="#{inwardSearch.cancelBillService()}" >
-                            </h:commandButton>                            
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Service Cancellation" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton class="ui-button-danger mx-2" icon="fas fa-cancel" ajax="false" value="Cancel" action="#{inwardSearch.cancelBillService()}" >
+                            </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Patient Detail">
