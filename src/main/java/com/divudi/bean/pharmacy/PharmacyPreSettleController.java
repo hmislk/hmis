@@ -335,6 +335,8 @@ public class PharmacyPreSettleController implements Serializable {
 
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
+        getSaleBill().setCashPaid(cashPaid);
+        getSaleBill().setBalance(cashPaid-getPreBill().getNetTotal());
 
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
