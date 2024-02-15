@@ -95,7 +95,7 @@
                                     action="#{patientController.navigateToOpdPatientProfile()}" 
                                     >
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current.patient}" 
+                                        value="#{inwardProfessionalBillController.current.patientEncounter.patient}" 
                                         target="#{patientController.current}" >
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
@@ -122,7 +122,6 @@
                     <h:panelGroup>
 
 
-                        <h1>#{inwardProfessionalBillController.currentBillFee}</h1>
                         <div class="row">
                             <div class="col-6 ">
                                 <h:panelGroup>
