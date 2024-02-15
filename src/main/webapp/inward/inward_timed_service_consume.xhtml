@@ -178,8 +178,8 @@
                         <h:outputText styleClass="fas fa-wrench"></h:outputText>
                         <h:outputLabel value="Consumed Timed Service" class="mx-4"></h:outputLabel>
                     </f:facet>
-                    
-                    <p:dataTable id="list" class="mx-2" value="#{inwardTimedItemController.items}" var="ti">
+
+                    <p:dataTable id="list" class="w-100" value="#{inwardTimedItemController.items}" var="ti">
                         <p:column headerText="Service Name">
                             #{ti.item.name}
                         </p:column>
@@ -207,33 +207,32 @@
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>     
-                        <p:column headerText="Action" width="15%" class="d-flex gap-2">
-                            <p:commandButton 
-                                value="Update" 
-                                class="ui-button-warning"
-                                icon="fa fa-pencil"
-                                ajax="false" 
-                                action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
-                            </p:commandButton>
-                            <p:commandButton
-                                icon="fa-solid fa-trash"
-                                class="ui-button-danger"
-                                ajax="false"
-                                value="Remove"
-                                action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
-                            </p:commandButton>
+                        <p:column headerText="Action" >
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    value="Update" 
+                                    class="ui-button-warning"
+                                    icon="fa fa-pencil"
+                                    ajax="false" 
+                                    action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                                </p:commandButton>
+                                <p:commandButton
+                                    icon="fa-solid fa-trash"
+                                    class="ui-button-danger"
+                                    ajax="false"
+                                    value="Remove"
+                                    action="#{inwardTimedItemController.removePatientItem(ti)}"
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                </p:commandButton>
+                            </div>
+
                         </p:column>
 
                     </p:dataTable>
                 </p:panel>
 
-
-
             </p:panel>
         </h:form>
-
-
 
     </ui:define>
 
