@@ -208,6 +208,18 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
+    
+    public String navigateToNewPharmacyBillForCashierWholeSale() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setToken(currentToken);
+        return pharmacySaleController.navigateToPharmacyBillForCashierWholeSale();
+    }
 
     public String navigateToSettlePharmacyPreBill() {
         if (currentToken == null) {
@@ -256,10 +268,11 @@ public class TokenController implements Serializable, ControllerWithPatient {
         if (currentToken.getToInstitution() == null) {
             currentToken.setToInstitution(sessionController.getInstitution());
         }
+        tokenFacade.create(currentToken);
         currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
-        tokenFacade.create(currentToken);
+        tokenFacade.edit(currentToken);
         return "/token/pharmacy_token_print";
     }
 

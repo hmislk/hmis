@@ -744,7 +744,7 @@ public class BillNumberGenerator {
         hm.put("bd", new Date());
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         if(dd==null){
-             dd=1l;
+             dd=0l;
         }else{
             dd++;
         }

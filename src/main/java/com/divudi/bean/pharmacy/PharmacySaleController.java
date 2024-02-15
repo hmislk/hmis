@@ -202,7 +202,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     public String navigateToPharmacyBillForCashier() {
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
     }
-
+    
+    public String navigateToPharmacyBillForCashierWholeSale() {
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=false;";
+    }
+    
     private void prepareForPharmacySaleWithoutStock() {
         clearBill();
         clearBillItem();
