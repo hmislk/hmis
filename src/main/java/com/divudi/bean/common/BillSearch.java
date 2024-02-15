@@ -197,6 +197,8 @@ public class BillSearch implements Serializable {
     String encryptedPatientReportId;
     String encryptedExpiary;
 
+    private OverallSummary overallSummary;
+
     public void preparePatientReportByIdForRequests() {
         bill = null;
         if (encryptedPatientReportId == null) {
@@ -301,14 +303,12 @@ public class BillSearch implements Serializable {
     }
 
     public void fillTransactionTypeSummery() {
+        //For Auditing Purposes
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
         String url = request.getRequestURL().toString();
-
         String ipAddress = request.getRemoteAddr();
-
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -317,7 +317,6 @@ public class BillSearch implements Serializable {
         if (sessionController != null && sessionController.getDepartment() != null) {
             auditEvent.setDepartmentId(sessionController.getDepartment().getId());
         }
-
         if (sessionController != null && sessionController.getInstitution() != null) {
             auditEvent.setInstitutionId(sessionController.getInstitution().getId());
         }
@@ -403,6 +402,91 @@ public class BillSearch implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
+    }
+
+    public void fillCashierSummery() {
+        //For Auditing Purposes
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String url = request.getRequestURL().toString();
+        String ipAddress = request.getRemoteAddr();
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTransactionTypeSummery()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        bts.add(BillType.PharmacySale);
+        bts.add(BillType.PharmacyWholeSale);
+        bts.add(BillType.InwardPaymentBill);
+
+        billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
+
+        overallSummary = aggregateBillSummaries(billSummeries);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+    }
+
+    public List<BillSummery> generateBillSummaries(Institution ins, Department dep, WebUser u, List<BillType> bts, BillClassType bct, Date fd, Date td) {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder queryString = new StringBuilder("select new com.divudi.data.BillSummery(b.paymentMethod, ");
+        if (bct != null) {
+            queryString.append("b.billClassType, ");
+        }
+        queryString.append("sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) from Bill b where b.retired=false and b.billTime between :fd and :td");
+        parameters.put("fd", fd);
+        parameters.put("td", td);
+        if (ins != null) {
+            queryString.append(" and b.institution=:ins");
+            parameters.put("ins", ins);
+        }
+        if (dep != null) {
+            queryString.append(" and b.department=:dep");
+            parameters.put("dep", dep);
+        }
+        if (u != null) {
+            queryString.append(" and b.creater=:wu");
+            parameters.put("wu", u);
+        }
+        if (bts != null) {
+            queryString.append(" and b.billType in :bts");
+            parameters.put("bts", bts);
+        }
+        if (bct != null) {
+            queryString.append(" and b.billClassType=:bct");
+            parameters.put("bct", bct);
+        }
+        queryString.append(bct == null ? " group by b.paymentMethod, b.billType" : " group by b.paymentMethod, b.billClassType, b.billType");
+        List<BillSummery> bss = (List<BillSummery>) billFacade.findLightsByJpql(queryString.toString(), parameters, TemporalType.TIMESTAMP);
+        if (bss == null || bss.isEmpty()) {
+            return new ArrayList<>();
+        }
+        long key = 1;
+        for (BillSummery result : bss) {
+            result.setKey(key++);
+        }
+        return bss;
     }
 
     public String listBillsFromBillTypeSummery() {
@@ -2236,7 +2320,7 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         createBillItems();
         billBean.checkBillItemFeesInitiated(bill);
-        
+
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
@@ -2946,6 +3030,204 @@ public class BillSearch implements Serializable {
     public void setBillLight(BillLight billLight) {
         bill = billFacade.find(billLight.getId());
         this.billLight = billLight;
+    }
+
+    private long billTypeSummaryId = 0; // Counter for BillTypeSummary IDs
+    private long paymentSummaryId = 0; // Counter for PaymentSummary IDs
+
+    public OverallSummary aggregateBillSummaries(List<BillSummery> billSummaries) {
+        Map<String, BillTypeSummary> summaryMap = new HashMap<>();
+
+        for (BillSummery bs : billSummaries) {
+            String billType = (bs.getBillType() != null) ? bs.getBillType().toString() : "UnknownBillType";
+            String billClassType = (bs.getBillClassType() != null) ? bs.getBillClassType().toString() : "UnknownBillClassType";
+            String key = billType + ":" + billClassType;
+
+            BillTypeSummary billTypeSummary = summaryMap.get(key);
+            if (billTypeSummary == null) {
+                billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>());
+                summaryMap.put(key, billTypeSummary);
+            }
+
+            // Aggregate or update the payment summary for the billTypeSummary
+            updatePaymentSummary(billTypeSummary, bs);
+        }
+
+        return new OverallSummary(new ArrayList<>(summaryMap.values()));
+    }
+
+    private void updatePaymentSummary(BillTypeSummary billTypeSummary, BillSummery bs) {
+        boolean found = false;
+        for (PaymentSummary ps : billTypeSummary.getPaymentSummaries()) {
+            if (ps.getPaymentMethod().equals(bs.getPaymentMethod())) {
+                // Aggregate existing payment summary
+                ps.setTotal(ps.getTotal() + bs.getTotal());
+                ps.setDiscount(ps.getDiscount() + bs.getDiscount());
+                ps.setNetTotal(ps.getNetTotal() + bs.getNetTotal());
+                ps.setTax(ps.getTax() + bs.getTax());
+                ps.setCount(ps.getCount() + bs.getCount());
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            // Create a new payment summary and add it
+            PaymentSummary newPs = new PaymentSummary(bs.getPaymentMethod(), bs.getTotal(), bs.getDiscount(), bs.getNetTotal(), bs.getTax(), bs.getCount());
+            billTypeSummary.getPaymentSummaries().add(newPs);
+        }
+    }
+
+    public OverallSummary getOverallSummary() {
+        return overallSummary;
+    }
+
+    public void setOverallSummary(OverallSummary overallSummary) {
+        this.overallSummary = overallSummary;
+    }
+
+    public class PaymentSummary {
+
+        private long idCounter = 0;
+
+        private long id; // Unique identifier
+        private PaymentMethod paymentMethod;
+        private Double total;
+        private Double discount;
+        private Double netTotal;
+        private Double tax;
+        private Long count;
+
+        // Constructors, getters, and setters
+        public PaymentSummary(PaymentMethod paymentMethod, Double total, Double discount, Double netTotal, Double tax, Long count) {
+            this.id = ++idCounter; // Increment and assign a unique ID
+            this.paymentMethod = paymentMethod;
+            this.total = total;
+            this.discount = discount;
+            this.netTotal = netTotal;
+            this.tax = tax;
+            this.count = count;
+        }
+
+        // Unique ID getter
+        public long getId() {
+            return id;
+        }
+
+        // Add methods to aggregate (sum up) totals, discounts, netTotals, and tax values from BillSummery instances
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public Double getTotal() {
+            return total;
+        }
+
+        public void setTotal(Double total) {
+            this.total = total;
+        }
+
+        public Double getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(Double discount) {
+            this.discount = discount;
+        }
+
+        public Double getNetTotal() {
+            return netTotal;
+        }
+
+        public void setNetTotal(Double netTotal) {
+            this.netTotal = netTotal;
+        }
+
+        public Double getTax() {
+            return tax;
+        }
+
+        public void setTax(Double tax) {
+            this.tax = tax;
+        }
+
+        public Long getCount() {
+            return count;
+        }
+
+        public void setCount(Long count) {
+            this.count = count;
+        }
+    }
+
+    public class BillTypeSummary {
+
+        private long idCounter = 0;
+
+        private long id; // Unique identifier
+        private BillType billType;
+        private BillClassType billClassType;
+        private List<PaymentSummary> paymentSummaries;
+
+        // Constructors, getters, and setters
+        public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries) {
+            this.id = ++idCounter; // Increment and assign a unique ID
+            this.billType = billType;
+            this.billClassType = billClassType;
+            this.paymentSummaries = paymentSummaries;
+        }
+
+        // Unique ID getter
+        public long getId() {
+            return id;
+        }
+
+        // Methods to add or update payment summaries based on new BillSummery instances
+        public BillType getBillType() {
+            return billType;
+        }
+
+        public void setBillType(BillType billType) {
+            this.billType = billType;
+        }
+
+        public BillClassType getBillClassType() {
+            return billClassType;
+        }
+
+        public void setBillClassType(BillClassType billClassType) {
+            this.billClassType = billClassType;
+        }
+
+        public List<PaymentSummary> getPaymentSummaries() {
+            return paymentSummaries;
+        }
+
+        public void setPaymentSummaries(List<PaymentSummary> paymentSummaries) {
+            this.paymentSummaries = paymentSummaries;
+        }
+    }
+
+    public class OverallSummary {
+
+        private List<BillTypeSummary> billTypeSummaries;
+
+        // Constructors, getters, and setters
+        public OverallSummary(List<BillTypeSummary> billTypeSummaries) {
+            this.billTypeSummaries = billTypeSummaries;
+        }
+
+        // Methods to add or update bill type summaries based on new BillSummery instances
+        public List<BillTypeSummary> getBillTypeSummaries() {
+            return billTypeSummaries;
+        }
+
+        public void setBillTypeSummaries(List<BillTypeSummary> billTypeSummaries) {
+            this.billTypeSummaries = billTypeSummaries;
+        }
     }
 
 }

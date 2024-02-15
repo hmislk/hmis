@@ -103,13 +103,23 @@
                                         </div>
                                         <h:outputText class="text-right" value="#{financialTransactionController.totalTransferRecive}"/>
 
+                                        <h:outputText value="BILL REFUND"/>
+                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="#{financialTransactionController.totalBillRefunds}"/>
+
+                                        <h:outputText value="BILL CANCELED"/>
+                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
+                                        </div>
+                                        <h:outputText class="text-right" value="#{financialTransactionController.totalBillCanceld}"/>
+
                                         <h:outputText value="TOTAL FUNDS" style="font-weight: bold"/>
                                         <div style="width: 20px;height: 20px" class="mx-4">
                                         </div>
                                         <p:outputLabel 
                                             style="font-weight: bold"
                                             class="text-right"
-                                            value="#{financialTransactionController.totalFunds}" >
+                                            value="#{financialTransactionController.shiftEndTotalValue}" >
                                         </p:outputLabel>
                                     </h:panelGrid>
                                 </h:panelGroup>
@@ -232,7 +242,7 @@
                                 Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
                                 <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
                                 <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
+                                Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /></h:outputText><br/>
                                 <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                     Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
                                     Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
@@ -240,14 +250,36 @@
                                 </h:panelGroup><br/>
                             </p:column>
                             <p:column headerText="Action" >
-                                <p:commandButton 
-                                    class="ui-button-success"
-                                    icon=" fa-solid fa-eye"
-                                    value="View Bill" 
-                                    action="#{billSearch.navigateToViewOpdBill}"
-                                    >
-                                    <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
-                                </p:commandButton>
+                                <h:panelGroup rendered="#{bp.bill.billType eq 'OpdBill'}">
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon=" fa-solid fa-eye"
+                                        value="View Bill" 
+                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.bill.billType eq 'PharmacySale'}">
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon=" fa-solid fa-eye"
+                                        value="View Bill" 
+                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>  
+                                    </p:commandButton>              
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.bill.billType eq 'CollectingCentreBill'}">
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon=" fa-solid fa-eye"
+                                        value="View Bill" 
+                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        >
+                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
                                 <p:commandButton 
                                     class="ui-button-danger mx-1"
                                     icon=" fa-solid fa-trash"
