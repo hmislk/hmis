@@ -959,12 +959,15 @@ public class PharmacyRequestForBhtController implements Serializable {
             UtilityController.addErrorMessage("Quantity?");
             return;
         }
+        
+        
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
         billItem.setItem(getItem());
+        billItem.setQty(getQty());
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);

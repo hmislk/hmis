@@ -190,7 +190,7 @@
                                                     forceSelection="true" 
                                                     id="acStock" 
                                                     value="#{pharmacyRequestForBhtController.item}" 
-                                                    completeMethod="#{itemcontroller.completeAmpAndVmpItem}" 
+                                                    completeMethod="#{itemController.completeAmpAndVmpItem}" 
                                                     var="i" 
                                                     inputStyleClass="form-control"
                                                     itemLabel="#{i.name}" 
@@ -241,10 +241,7 @@
 
 
                                                 <p:column headerText="Item" width="40%">
-                                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" >
-                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired ': 
-                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                         severity="#{commonController.currentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.itemBatch.dateOfExpire ?'warning':''}" />
+                                                    <h:outputLabel value="#{bi.item.name}" >
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Quantity" width="5%">
