@@ -40,7 +40,7 @@
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Room"  /></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
@@ -57,14 +57,35 @@
                     </div>
                 </div>
                 
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Local" rendered="#{cc.attrs.admission.foriegner eq false}"/>
+                        <h:outputLabel  value="Foreigner" rendered="#{cc.attrs.admission.foriegner eq true}"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Claimbility"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Not Claimable" rendered="#{cc.attrs.admission.claimable eq false}"/>
+                        <h:outputLabel  value="Claimable" rendered="#{cc.attrs.admission.claimable eq true}"/>
+                    </div>
+                </div>
+                <h:panelGroup rendered="#{cc.attrs.admission.creditCompany ne null}">
+                    <div class="row">
+                        <div class="col-md-2"><p:outputLabel value="Credit Company"  /></div>
+                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                        <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.creditCompany.name}"/>
+
+                        </div>
+                    </div>
+                </h:panelGroup>
                 
+
+
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
-                    <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
 
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill  "/>
-
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
-                    <h:outputLabel  value="Admission Fee  " rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
+                    
 
                     <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
                     <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>

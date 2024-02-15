@@ -91,7 +91,7 @@
                         <td>:</td>
                         <td style="width: 30%" >
                             <!--                            <h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}" >
+                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -142,7 +142,7 @@
                             </td>
                             <td>
                                 <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"  >
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="###0" />
                                 </h:outputLabel>
                             </td>
                             <td>

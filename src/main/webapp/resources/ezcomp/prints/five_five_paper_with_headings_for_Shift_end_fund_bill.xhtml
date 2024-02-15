@@ -13,7 +13,9 @@
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" />
-        <cc:attribute name="startbill" />        
+        <cc:attribute name="startbill" />  
+        <cc:attribute name="Additions" type="java.lang.Double"/>
+        <cc:attribute name="Deductions" type="java.lang.Double"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -165,7 +167,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{cc.attrs.startbill.netTotal}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{cc.attrs.Additions}"    >
                                         <f:convertNumber pattern="+ #,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -185,7 +187,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{cc.attrs.startbill.netTotal}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{cc.attrs.Deductions}"    >
                                         <f:convertNumber pattern="- #,##0.00" />
                                     </h:outputLabel>
                                 </td>
