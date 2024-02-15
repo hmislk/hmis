@@ -10,56 +10,81 @@
         <h:form>
             <p:panel class="w-100">
                 <f:facet name="header">
-                     <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
-                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>      
+                    <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
+                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>      
 
                 </f:facet>
                 <div class="row">
                     <div class="col-md-2">
-                        <h:panelGrid columns="1" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                            </p:calendar>
-                            <p:spacer height="10"/>
-                            <p:commandButton id="btnSearch1" 
-                                             ajax="false" 
-                                             value="Search All" 
-                                             class="w-100 ui-button-warning" 
-                                             icon="fas fa-search"
-                                             action="#{searchController.createInwardBHTForIssueTableAll}" />
-                            <p:commandButton id="btnSearch2" ajax="false" 
-                                             value="Search Not Issued" 
-                                             class="w-100 ui-button-warning" 
-                                             icon="fas fa-search"
-                                             action="#{searchController.createInwardBHTForNotIssueTable}" />
-                            <p:commandButton id="btnSearch3" 
-                                             class="w-100 ui-button-warning" 
-                                             icon="fas fa-search"
-                                             ajax="false" value="Search Isssued Only" 
-                                             action="#{searchController.createInwardBHTForIssueOnlyTable}" />
-                            <p:spacer height="10"/>
 
-                            <h:outputLabel value="Request No"/>  
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/> 
-                            <h:outputLabel value="BHT No"/> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar 
+                            styleClass="dateTimePicker" 
+                            id="fromDate" 
+                            value="#{searchController.fromDate}" 
+                            navigator="false" 
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar 
+                            id="toDate" 
+                            class="w-100"
+                            inputStyleClass="form-control"
+                            value="#{searchController.toDate}" 
+                            navigator="false" 
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                        </p:calendar>
+                        <p:commandButton 
+                            id="btnSearch1" 
+                            ajax="false" 
+                            value="Search All" 
+                            class="w-100 ui-button-warning mt-3" 
+                            icon="fas fa-search"
+                            action="#{searchController.createInwardBHTForIssueTableAll}" />
+                        <p:commandButton 
+                            id="btnSearch2" 
+                            ajax="false" 
+                            value="Search Not Issued" 
+                            class="w-100  ui-button-warning my-2" 
+                            icon="fas fa-search"
+                            action="#{searchController.createInwardBHTForNotIssueTable}" />
+                        <p:commandButton 
+                            id="btnSearch3" 
+                            class="w-100 ui-button-warning mb-2" 
+                            icon="fas fa-search"
+                            ajax="false" 
+                            value="Search Isssued Only" 
+                            action="#{searchController.createInwardBHTForIssueOnlyTable}" />
+                        <p:spacer height="10"/>
 
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />                                                
-                            <h:outputLabel/><h:outputLabel/>
-                        </h:panelGrid>
+                        <h:outputLabel value="Request No"/>  
+                        <p:inputText 
+                            autocomplete="off"  
+                            value="#{searchController.searchKeyword.billNo}" 
+                            class="w-100"/> 
+                        <h:outputLabel value="BHT No"/> 
+
+                        <p:inputText 
+                            class="w-100"
+                            autocomplete="off"  
+                            value="#{searchController.searchKeyword.bhtNo}" />                                                
+                        <h:outputLabel/><h:outputLabel/>
+
                     </div>
                     <div class="col-md-10">
-                        <p:dataTable value="#{searchController.bills}" 
-                                     var="p" 
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     class="w-100"
-                                     >
-                            <p:column headerText="Request No" style="width: 15%;">
+                        <p:dataTable 
+                            value="#{searchController.bills}" 
+                            var="p" 
+                            rows="10"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+                            class="w-100"
+                            >
+                            <p:column headerText="Request No" style="width: 13%;">
 <!--                                <p:commandLink value="#{p.deptId}" action="ward_pharmacy_reprint_bht_issue_request">
                                  <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </p:commandLink>-->
@@ -73,13 +98,13 @@
                             <p:column headerText="BHT No" style="width: 5%;">                      
                                 <h:outputLabel value="#{p.patientEncounter.bhtNo}"/>                          
                             </p:column> 
-                            <p:column headerText="Requested at"  >
+                            <p:column headerText="Requested At"  >
                                 <h:outputLabel value="#{p.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" value="Cancelled At " />
                                     <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                    value="#{p.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -87,7 +112,7 @@
                                 </h:panelGroup>
 
                             </p:column>                 
-                            <p:column headerText="Requested by" style="width: 5%;" >                      
+                            <p:column headerText="Requested By" style="width: 5%;" >                      
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                          
                                 <br/>
@@ -97,9 +122,14 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column >
-                                <p:commandButton class="ui-button-success" ajax="false" value="Issue" action="ward_pharmacy_bht_issue" actionListener="#{pharmacySaleBhtController.generateBillComponent(p)}"
-                                                 disabled="#{p.cancelled eq true}">
+                            <p:column width="5%">
+                                <p:commandButton 
+                                    class="ui-button-success" 
+                                    ajax="false" 
+                                    value="To Issue" 
+                                    action="ward_pharmacy_bht_issue" 
+                                    actionListener="#{pharmacySaleBhtController.generateBillComponent(p)}"
+                                    disabled="#{p.cancelled eq true}">
                                 </p:commandButton>
                             </p:column>
 
@@ -114,14 +144,14 @@
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
                                             <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                            value="#{b.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column>                             
-                                    <p:column >
+                                    <p:column width="15%">
                                         <h:outputLabel value="#{b.creater.webUserPerson.name}"/>     
                                         <br/>
                                         <h:panelGroup rendered="#{b.cancelled}" >
@@ -130,11 +160,11 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column> 
-                                    <p:column >                              
-                                        <h:outputLabel value="#{b.toStaff.person.nameWithTitle}"/>                                   
+                                    <p:column width="15%">                              
+                                        <h:outputLabel value="#{b.toStaff.person.nameWithTitle}" />                                   
                                     </p:column> 
-                                    <p:column style="width: 10%;">
-                                        <p:commandButton ajax="false" value="View Issue Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint" >
+                                    <p:column style="width: 12%;">
+                                        <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint" >
                                             <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                         </p:commandButton>
                                     </p:column>

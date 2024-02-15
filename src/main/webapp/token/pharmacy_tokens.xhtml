@@ -123,6 +123,16 @@
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
 
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-primary"
+                                    icon="fa fa-pills" 
+                                    rendered="#{token.bill eq null}"
+                                    title="Pharmacy Bill for Cashier (WholeSale)" 
+                                    action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+
                                 <!-- Pay at Cashier Button -->
                                 <!-- Add icon="fa fa-money" to display a money icon -->
                                 <p:commandButton 

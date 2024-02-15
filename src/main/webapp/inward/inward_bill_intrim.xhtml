@@ -25,6 +25,7 @@
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
                             <p:outputLabel value="Interim Bill" />
+
                         </f:facet>
 
                         <h:panelGrid columns="10">
@@ -65,35 +66,33 @@
                         <f:facet name="header">
                             <h:outputText styleClass="fas fa-file-invoice-dollar" />
                             <p:outputLabel value="Inward Payment Bill" class="mx-2"/>
-                        </f:facet>
+                            <div columns="12" class="m-0 d-flex justify-content-end align-items-center" style="float:right;">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Clear" 
+                                    icon="fa-solid fa-eraser"
+                                    class="ui-button-warning"
+                                    action="#{bhtSummeryController.clear}"  />
 
-                        <h:panelGrid columns="12" class="my-2 d-flex justify-content-end align-items-center">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Clear" 
-                                icon="fa-solid fa-eraser"
-                                class="ui-button-warning"
-                                action="#{bhtSummeryController.clear}"  />
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Settle Bill"
+                                    icon="fa fa-check"
+                                    class="ui-button-success mx-1"
+                                    action="#{bhtSummeryController.toSettle()}"  />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Settle Bill"
-                                icon="fa fa-check"
-                                class="ui-button-success mx-1"
-                                action="#{bhtSummeryController.toSettle()}"  />
+                                <p:commandButton 
+                                    ajax="false"   
+                                    value="Print Bill" 
+                                    icon="fas fa-print"
+                                    class="ui-button-info"
+                                    action="#{bhtSummeryController.toPrintItrim()}"  />
 
-                            <p:commandButton 
-                                ajax="false"   
-                                value="Print Bill" 
-                                icon="fas fa-print"
-                                class="ui-button-info"
-                                action="#{bhtSummeryController.toPrintItrim()}"  />
 
-                            <div class="d-flex justify-content-end mx-4" >
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-search"
-                                    class="ui-button-warning" 
+                                    class="ui-button-warning  mx-1" 
                                     action="#{patientController.navigateToSearchPatients()}" 
                                     />
 
@@ -107,12 +106,16 @@
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fas fa-id-card"
-                                    class="ui-button-secondary " 
+                                    class="ui-button-secondary  mx-1" 
                                     action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                     />
+
+
                             </div>
 
-                        </h:panelGrid>
+                        </f:facet>
+
+
 
                         <h:panelGrid columns="1" rendered="#{bhtSummeryController.patientEncounter eq null}">
                             Please select a BHT and Click Display Details
@@ -178,10 +181,10 @@
                                                 id="dischargeTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                                 class="mx-2">                               
-<!--                                                <f:ajax execute="@this" 
-                                                        render="sum tvPt tot"
-                                                        event="dateSelect" 
-                                                        listener="#{bhtSummeryController.checkDate}" />-->
+                                                <!--                                                <f:ajax execute="@this" 
+                                                                                                        render="sum tvPt tot"
+                                                                                                        event="dateSelect" 
+                                                                                                        listener="#{bhtSummeryController.checkDate}" />-->
                                             </p:calendar> 
                                         </h:panelGrid>
                                         <div class="d-flex justify-content-end my-2">

@@ -588,7 +588,20 @@ public class InwardProfessionalBillController implements Serializable {
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
-
+        
+        if(currentBillFee.getSpeciality()==null){
+             UtilityController.addErrorMessage("Please select a Speciality");
+                return;
+        }else if (currentBillFee.getStaff()==null){
+             UtilityController.addErrorMessage("Please select a Staff");
+                return;
+        }else if (currentBillFee.getFeeValue()== 0.0) {
+             UtilityController.addErrorMessage("Please add fee");
+                return;
+        }else if (currentBillFee.getFeeAt()== null) {
+             UtilityController.addErrorMessage("Please select Date");
+                return;
+        }
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());

@@ -32,6 +32,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.facade.util.JsfUtil;
 
 /**
  *
@@ -119,10 +120,12 @@ public class BhtIssueReturnController implements Serializable {
 
         if (tmp.getQty() > getPharmacyRecieveBean().calQty4(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            calTotal();
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+        }else{
+            calTotal();
         }
 
-        calTotal();
         //   getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
 
@@ -204,11 +207,11 @@ public class BhtIssueReturnController implements Serializable {
 
     }
 
-    public void updateMargin(BillItem bi, Department matrixDepartment,PaymentMethod paymentMethod) {
+    public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment,paymentMethod);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
 
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -222,13 +225,12 @@ public class BhtIssueReturnController implements Serializable {
         getBillItemFacade().edit(bi);
     }
 
-    
-    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment,PaymentMethod paymentMethod) {
+    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment, PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         for (BillItem bi : billItems) {
 
-            updateMargin(bi, matrixDepartment,paymentMethod);
+            updateMargin(bi, matrixDepartment, paymentMethod);
             total += bi.getGrossValue();
             netTotal += bi.getNetValue();
         }
@@ -241,19 +243,49 @@ public class BhtIssueReturnController implements Serializable {
 
     public void settle() {
 
+        if (getBill().getBillItems() != null) {
+//            System.out.println("this = " + getBill().getBillItems().size() );
+
+            for (BillItem bi : billItems) {
+
+
+//                System.out.println("bi = " + bi);
+//                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
+//                System.out.println("bi.getQty() = " + bi.getQty());
+//                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+
+                if (bi.getPharmaceuticalBillItem().getQtyInUnit() < bi.getQty()) {
+//                    System.out.println("bi.getQty = " + bi.getQty());
+                    JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+                    return;
+                }
+            }
+        }
+
+//        
+//        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
+//        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
+
+        
+        if (returnBill.getTotal() == 0) {
+            UtilityController.addErrorMessage("Add Valied Return Quntity");
+            return;
+        }
+
 //        if (getBill().getCheckedBy() != null) {
 //            UtilityController.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
+        
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             UtilityController.addErrorMessage("This Bill Already Discharged");
             return;
         }
-        
+
         saveReturnBill();
         saveComponent();
 
-        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(),getBill().getPatientEncounter().getPaymentMethod());
+        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
 
         getBillFacade().edit(getReturnBill());
 
