@@ -34,6 +34,9 @@
                                 <p:column>
                                     #{myItem.patient.person.nameWithTitle}
                                 </p:column>
+                                <p:column>
+                                    #{myItem.currentPatientRoom.roomFacilityCharge.name}
+                                </p:column>
                             </p:autoComplete> 
                             <p:commandButton value="Select" ajax="false" ></p:commandButton>
                         </p:panel>
@@ -104,7 +107,7 @@
                         <p:panel >
                             <f:facet name="header">
                                 <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                <h:outputLabel value="Pateient Details" class="mx-4"></h:outputLabel>
+                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                             </f:facet>
 
                             <in:bhtDetail admission="#{inwardTimedItemController.current.patientEncounter}"/>
@@ -144,8 +147,12 @@
                                         <p:outputLabel value="Start Time"/>
                                     </div>
                                     <div class="col-4">
-                                        <p:calendar class="mx-2" id="startTime" value="#{inwardTimedItemController.current.fromTime}" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" size="40" >
+                                        <p:calendar 
+                                            class="mx-2" 
+                                            id="startTime" 
+                                            value="#{inwardTimedItemController.current.fromTime}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            size="40" >
                                         </p:calendar>  
                                     </div>
                                 </div>
@@ -153,9 +160,12 @@
                                 <div class="row">
                                     <div class="col-4">
 
-                                        <p:commandButton class="mx-2 ui-button-success" value="Add Service" ajax="false"
-                                                         action="#{inwardTimedItemController.save}" 
-                                                         />
+                                        <p:commandButton 
+                                            class="mx-2 ui-button-success" 
+                                            value="Add Service" 
+                                            ajax="false"
+                                            action="#{inwardTimedItemController.save}" 
+                                            />
                                     </div>
                                 </div>
                             </div>
@@ -166,9 +176,10 @@
                 <p:panel class="my-2" id="con">  
                     <f:facet name="header">
                         <h:outputText styleClass="fas fa-wrench"></h:outputText>
-                        <h:outputLabel value="Consumed Timed Sevice" class="mx-4"></h:outputLabel>
+                        <h:outputLabel value="Consumed Timed Service" class="mx-4"></h:outputLabel>
                     </f:facet>
-                    <p:dataTable class="mx-2" value="#{inwardTimedItemController.items}" var="ti">
+                    
+                    <p:dataTable id="list" class="mx-2" value="#{inwardTimedItemController.items}" var="ti">
                         <p:column headerText="Service Name">
                             #{ti.item.name}
                         </p:column>
@@ -192,19 +203,28 @@
                             <br/>
                             <h:panelGroup rendered="#{ti.retired}" >
                                 <h:outputLabel style="color: red;" value="Deleted By " />
-                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}" >                                       
+                                <h:outputLabel style="color: red;"  value="#{ti.retirer.webUserPerson.name}"  class="mx-1">                                       
                                 </h:outputLabel>
                             </h:panelGroup>
                         </p:column>     
-                        <p:column headerText="Update" >
-                            <p:commandButton value="Update" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                        <p:column headerText="Action" width="15%" class="d-flex gap-2">
+                            <p:commandButton 
+                                value="Update" 
+                                class="ui-button-warning"
+                                icon="fa fa-pencil"
+                                ajax="false" 
+                                action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                            </p:commandButton>
+                            <p:commandButton
+                                icon="fa-solid fa-trash"
+                                class="ui-button-danger"
+                                ajax="false"
+                                value="Remove"
+                                action="#{inwardTimedItemController.removePatientItem(ti)}"
+                                disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
                             </p:commandButton>
                         </p:column>
-                        <p:column headerText="Remove">
-                            <p:commandButton ajax="false" value="Remove "  
-                                             action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                             disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"  />
-                        </p:column>
+
                     </p:dataTable>
                 </p:panel>
 
