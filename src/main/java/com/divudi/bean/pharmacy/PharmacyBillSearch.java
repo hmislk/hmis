@@ -1665,6 +1665,43 @@ public class PharmacyBillSearch implements Serializable {
             UtilityController.addErrorMessage("No Bill to cancel");
         }
     }
+    
+    public void pharmacyRetailCancelBillWithStock(Bill cbill) {
+        setBill(cbill);
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (pharmacyErrorCheck()) {
+                return;
+            }
+
+
+            if (getBill().getBillType() != BillType.PharmacyPre && getBill().getBillType() != BillType.PharmacyWholesalePre) {
+                return;
+            }
+
+//            if (calculateNumberOfBillsPerOrder(getBill().getReferenceBill())) {
+//                return;
+//            } before
+            ////System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
+            ////System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
+            ////System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
+            if (checkDepartment(getBill())) {
+                return;
+            }
+
+            getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
+
+            
+
+
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(null);
+            getBillFacade().edit(getBill());
+
+
+        } else {
+            UtilityController.addErrorMessage("No Bill to cancel");
+        }
+    }
 
     public void pharmacyRetailCancelBillWithStockBht() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
