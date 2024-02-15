@@ -602,7 +602,6 @@ public class InwardProfessionalBillController implements Serializable {
              UtilityController.addErrorMessage("Please select Date");
                 return;
         }
-
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());
