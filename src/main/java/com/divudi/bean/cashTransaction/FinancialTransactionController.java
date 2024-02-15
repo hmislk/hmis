@@ -107,6 +107,10 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundDepositBill();
         return "/cashier/deposit_funds";
     }
+    
+    public String navigateToCashierSummary() {
+        return "/cashier/cashier_summary";
+    }
 
     public String navigateToReceiveNewFundTransferBill() {
         if (selectedBill == null) {
