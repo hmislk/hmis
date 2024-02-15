@@ -162,7 +162,12 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
-                                <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
+                                <p:dataTable 
+                                    id="tblSx"
+                                    value="#{bhtSummeryController.surgeryBills}" var="s"
+                                             selectionMode="single"
+                                             selection="#{bhtSummeryController.surgeryBill}">
+                                    <p:ajax process="tblSx" ></p:ajax>
                                     <p:column >
                                         <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
                                     </p:column>
@@ -178,19 +183,11 @@
                                         />
                                 </p:commandButton>
                                 <p:commandButton 
-
                                     ajax="false"
                                     value="Add Services for Surgeries" 
-
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    action="#{bhtSummaryController.navigateToAddServiceFromSurgeriesFromAdmissionProfile}"
                                     class="w-100">
-                                    <f:setPropertyActionListener
-                                        value="#{admissionController.current}"
-
-                                        target="#{billBhtController.patientEncounter}"
-
-                                        />
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Surgeries" 
@@ -208,7 +205,7 @@
                                     value="Add Services for Surgeries" 
 
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    action="#{billBhtController.navigateToAddServiceFromSurgeriesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"

@@ -145,6 +145,7 @@ public class BhtSummeryController implements Serializable {
     private List<Bill> pharmacyIssues;
     List<Bill> storeIssues;
     private List<Bill> surgeryBills;
+    private Bill surgeryBill;
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
@@ -164,6 +165,8 @@ public class BhtSummeryController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
+    @Inject
+    BillBhtController billBhtController;
     private Item item;
     boolean changed = false;
 
@@ -173,19 +176,40 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToInpatientProfile() {
-        if(patientEncounter==null){
+        if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
         fillSurgeryBills();
         return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
-    
-    private void fillSurgeryBills(){
+
+    private void fillSurgeryBills() {
         surgeryBills = billController.fillPatientSurgeryBills(patientEncounter);
+        if (surgeryBills == null || surgeryBills.isEmpty()) {
+            surgeryBill = null;
+        } else {
+            surgeryBill = surgeryBills.get(0);
+        }
     }
-    
-    
+
+    public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
+        if (surgeryBills == null) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+        if (surgeryBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+        if (surgeryBill == null) {
+            surgeryBill=surgeryBills.get(0);
+        }
+        billBhtController.resetBillData();
+        billBhtController.setBills(surgeryBills);
+        billBhtController.setBatchBill(surgeryBill);
+        return "/theater/inward_bill_surgery_service";
+    }
 
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {
@@ -2080,7 +2104,6 @@ public class BhtSummeryController implements Serializable {
         this.paid = paid;
     }
 
-
     public void calFinalValue() {
         grantTotal = 0;
         discount = 0;
@@ -2524,6 +2547,12 @@ public class BhtSummeryController implements Serializable {
         this.surgeryBills = surgeryBills;
     }
 
-    
-    
+    public Bill getSurgeryBill() {
+        return surgeryBill;
+    }
+
+    public void setSurgeryBill(Bill surgeryBill) {
+        this.surgeryBill = surgeryBill;
+    }
+
 }
