@@ -27,7 +27,7 @@
                     </div>
 
 
-                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}">
+                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
                         <f:facet name="header">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
@@ -76,7 +76,7 @@
                                 </div>
                             </div>
                             <div class="col-6 d-flex justify-content-end">
-                                <h:panelGroup id="totals">
+                                <h:panelGroup id="btotals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq true}">
                                     <h:panelGrid columns="3" class="my-2">
                                         <h:outputText value="OPD BILLS"/>
                                         <div style="background-color: #cce5ff;width: 20px;height: 20px" class="mx-4">
@@ -103,23 +103,13 @@
                                         </div>
                                         <h:outputText class="text-right" value="#{financialTransactionController.totalTransferRecive}"/>
 
-                                        <h:outputText value="BILL REFUND"/>
-                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="#{financialTransactionController.totalBillRefunds}"/>
-
-                                        <h:outputText value="BILL CANCELED"/>
-                                        <div style="background-color: #ffcccc;width: 20px;height: 20px" class="mx-4">
-                                        </div>
-                                        <h:outputText class="text-right" value="#{financialTransactionController.totalBillCanceld}"/>
-
                                         <h:outputText value="TOTAL FUNDS" style="font-weight: bold"/>
                                         <div style="width: 20px;height: 20px" class="mx-4">
                                         </div>
                                         <p:outputLabel 
                                             style="font-weight: bold"
                                             class="text-right"
-                                            value="#{financialTransactionController.shiftEndTotalValue}" >
+                                            value="#{financialTransactionController.totalFunds}" >
                                         </p:outputLabel>
                                     </h:panelGrid>
                                 </h:panelGroup>
@@ -127,7 +117,7 @@
                             </div>
                         </div>
 
-                        <p:panel header="Add Funds" class="my-1" >
+                        <p:panel header="Add Funds" class="my-1 mb-4" >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
                                     <h:outputText value="Add Funds"/>
@@ -138,7 +128,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        update="tblPayments totals btotals cmdPayment paymentDetails"
                                         action="#{financialTransactionController.addPaymentToShiftEndFundBill()}" >
                                     </p:commandButton>
                                 </div>
@@ -216,41 +206,59 @@
 
                         </p:panel>
 
-                        <p:dataTable 
-                            id="tblPayments" 
-                            value="#{financialTransactionController.currentBillPayments}" 
-                            var="bp" 
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            >
-                            <p:column headerText="Payment Method" >
-                                <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
-                                      #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
-                                      font-size: 15pt;font-weight:bold ">
-                                <h:outputText value="#{bp.paidValue}" />
-                            </p:column>
+                        <h:panelGroup id="totals" rendered="#{sessionController.currentPreference.showBillWiseDetails eq false}" style="font-weight: bold;font-size: 14pt" class="mt-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText value="Funds List" ></h:outputText>
+                                </div>
+                                <div class="d-flex">
+                                    <h:outputText value=" Total Funds : " ></h:outputText>
+                                    <p:outputLabel 
 
-                            <p:column headerText="Details" >
-                                Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
-                                <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
-                                Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" /></h:outputText><br/>
-                                <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
-                                    Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
-                                    Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
-                                    Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
-                                </h:panelGroup><br/>
-                            </p:column>
-                            <p:column headerText="Action" >
-                                <h:panelGroup rendered="#{bp.bill.billType eq 'OpdBill'}">
+                                        class="mx-2"
+                                        value="#{financialTransactionController.totalFunds}" >
+                                    </p:outputLabel>
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="false">
+                            <p:dataTable 
+                                id="tblPayments" 
+                                value="#{financialTransactionController.currentBillPayments}" 
+                                var="bp" 
+                                paginator="true"
+                                paginatorPosition="bottom"
+
+                                >
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Value" style="#{bp.bill.billType eq 'FundTransferReceivedBill' ? 'background-color: #ffcccc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'FundTransferBill' ? 'background-color: #ccffcc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'OpdBill' ? 'background-color: #cce5ff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'ShiftStartFundBill' ? 'background-color: #ffd9e6;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'DepositFundBill' ? 'background-color: #ffffcc;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'PharmacyPre' ? 'background-color: #e6ccff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'ShiftEndFundBill' ? 'background-color: #cce0ff;color: #333333' : ''};
+                                          #{bp.bill.billType eq 'PharmacySale' ? 'background-color: #e6ccff;color: #333333' : ''};
+                                          font-size: 15pt;font-weight:bold ">
+                                    <h:outputText value="#{bp.paidValue}" />
+                                </p:column>
+
+                                <p:column headerText="Details" >
+                                    Type : <h:outputText value="#{bp.bill.billType.label}" ></h:outputText><br/>
+                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferReceivedBill'}">From : <h:outputText value="#{bp.bill.fromStaff.name}" ></h:outputText><br/></h:panelGroup>
+                                    <h:panelGroup rendered="#{bp.bill.billType eq 'FundTransferBill'}">To : <h:outputText value="#{bp.bill.toStaff.name}" ></h:outputText><br/></h:panelGroup>
+                                    Date : <h:outputText value="#{bp.bill.billDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
+                                        Cheque Date : <h:outputText value="#{bp.chequeDate}" > <f:convertDateTime pattern="MM/dd/yyyy" /></h:outputText><br/>
+                                        Cheque Ref.NO : <h:outputText value="#{bp.chequeRefNo}" ></h:outputText><br/>
+                                        Bank Name : <h:outputText value="#{bp.bank.name}" ></h:outputText>
+                                    </h:panelGroup><br/>
+                                </p:column>
+                                <p:column headerText="Action" >
                                     <p:commandButton 
                                         class="ui-button-success"
                                         icon=" fa-solid fa-eye"
@@ -259,40 +267,23 @@
                                         >
                                         <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.bill.billType eq 'PharmacySale'}">
                                     <p:commandButton 
-                                        class="ui-button-success"
-                                        icon=" fa-solid fa-eye"
-                                        value="View Bill" 
-                                        action="#{billSearch.navigateToViewOpdBill}"
+                                        class="ui-button-danger mx-1"
+                                        icon=" fa-solid fa-trash"
+                                        id="btnRemove"
+                                        value="Remove" 
+                                        action="#{financialTransactionController.removePayment}" 
+                                        process="btnRemove tblPayments"
+                                        update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}
+                                        :#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('btotals',view).clientId}"
                                         >
-                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>  
-                                    </p:commandButton>              
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bp.bill.billType eq 'CollectingCentreBill'}">
-                                    <p:commandButton 
-                                        class="ui-button-success"
-                                        icon=" fa-solid fa-eye"
-                                        value="View Bill" 
-                                        action="#{billSearch.navigateToViewOpdBill}"
-                                        >
-                                        <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                </h:panelGroup>
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1"
-                                    icon=" fa-solid fa-trash"
-                                    id="btnRemove"
-                                    value="Remove" 
-                                    action="#{financialTransactionController.removePayment}" 
-                                    process="btnRemove tblPayments"
-                                    update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
-                                    >
-                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.removingPayment}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+
 
                         <p:panelGrid 
                             columns="2" 
