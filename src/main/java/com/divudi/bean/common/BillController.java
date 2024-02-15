@@ -629,6 +629,7 @@ public class BillController implements Serializable {
 
         return tmps;
     }
+    
 
     public List<Bill> fillPatientSurgeryBills(PatientEncounter pe) {
         String jpql;

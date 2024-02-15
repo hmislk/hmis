@@ -63,39 +63,15 @@
                                 <h:outputLabel class="mx-2" value="Add Professional Fees" />  
                             </div>
                             <div class="col-3">
-                                 <p:spacer width="80"/>
-                                <p:commandButton 
-                                    class="mx-1 ui-button-success"
-                                    value="New Bill"
-                                    icon="fa fa-plus"
-                                    ajax="false" 
-                                    actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                                </p:commandButton>
-                                <p:spacer width="10"/>
+                               
+                                
 
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-search"
-                                    class="ui-button-warning " 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    >
-                                </p:commandButton>
-
-                                <p:commandButton  
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                    >
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current.patient}" 
-                                        target="#{patientController.current}" >
-                                    </f:setPropertyActionListener>
-                                </p:commandButton>
+                                
 
                                 <p:commandButton
                                     ajax="false"
                                     icon="fa fa-id-card"
+                                    style="float: right;"
                                     class="ui-button-secondary" 
                                     action="#{bhtSummeryController.navigateToInpatientProfile()}" 
                                     >
@@ -103,6 +79,36 @@
                                         target="#{admissionController.current}" 
                                         value="#{inwardProfessionalBillController.current.patientEncounter}" ></f:setPropertyActionListener>
                                 </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    style="float: right"
+                                    class="ui-button-warning mx-1" 
+                                    action="#{patientController.navigateToSearchPatients()}" 
+                                    >
+                                </p:commandButton>
+                                <p:commandButton  
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    style="float: right"
+                                    class="ui-button-warning" 
+                                    action="#{patientController.navigateToOpdPatientProfile()}" 
+                                    >
+                                    <f:setPropertyActionListener 
+                                        value="#{inwardProfessionalBillController.current.patientEncounter.patient}" 
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="mx-1 ui-button-success"
+                                    value="New Bill"
+                                    icon="fa fa-plus"
+                                    style="float: right"
+                                    ajax="false" 
+                                    actionListener="#{inwardProfessionalBillController.makeNull()}" >
+                                </p:commandButton>
+                                
+                                
                             </div>
                         </div>
 
@@ -114,7 +120,6 @@
 
 
                     <h:panelGroup>
-
 
 
                         <div class="row">
@@ -152,7 +157,7 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
-                                        <p:autoComplete  class="w-100 my-2 mx-4" 
+                                        <p:autoComplete  class="w-100 mx-4" 
                                                          forceSelection="true" 
                                                          value="#{inwardProfessionalBillController.currentBillFee.staff}" 
                                                          id="scStaff"
@@ -180,11 +185,11 @@
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                             <f:ajax event="dateSelect"  render="feeAt"/>
                                         </p:calendar>
-                                        <h:outputLabel/>
+                                      
                                         <p:commandButton 
                                             value="Add" 
                                             icon="fa fa-plus"
-                                            class=" my-2 mx-4 ui-button-success"
+                                            class=" my-2 w-100 ui-button-success"
                                             id="btn" 
                                             action="#{inwardProfessionalBillController.addToBill()}" 
                                             ajax="false" />

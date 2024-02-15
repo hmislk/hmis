@@ -77,7 +77,7 @@
                                         <p:defaultCommand target="btnSettle"/>
 
                                         <p:commandButton class="w-100 ui-button-warning" 
-                                                         action="#{billBhtController.makeNull}" 
+                                                         action="#{billBhtController.resetBillData}" 
                                                          style="float: right"
                                                          icon="fa fa-plus"
                                                          ajax="false" 
@@ -111,7 +111,7 @@
                                             action="#{patientController.navigateToOpdPatientProfile()}" 
                                             >
                                             <f:setPropertyActionListener 
-                                                value="#{admissionController.current.patient}" 
+                                                value="#{billBhtController.patientEncounter.patient}" 
                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:spacer width="5"/>
@@ -208,7 +208,7 @@
                                                         </div>
                                                         <div class="col-8">
 
-                                                            <p:selectOneMenu value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100">
+                                                            <p:selectOneMenu value="#{billBhtController.currentBillItem.item}" filter="true" var="t" id="itm" class="w-100" autoWidth="false">
                                                                 <f:selectItem itemLabel="Please select service"/>
                                                                 <f:selectItems value="#{itemController.investigationsAndServices}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
 
@@ -425,7 +425,7 @@
                                             <p:commandButton value="New Bill" 
                                                              icon="fa fa-plus"
                                                              class="ui-button-success m-1"  ajax="false"
-                                                             action="#{billBhtController.makeNull()}" >
+                                                             action="#{billBhtController.resetBillData()}" >
                                             </p:commandButton>
                                         </h:panelGrid>
                                         <h:panelGrid columns="3">

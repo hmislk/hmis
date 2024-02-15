@@ -86,7 +86,7 @@ public class InwardAdditionalChargeController implements Serializable {
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Where item From");
+            UtilityController.addErrorMessage("Select Where Item From");
             return true;
         }
 

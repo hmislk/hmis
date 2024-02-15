@@ -94,6 +94,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             
     @Inject
     BhtEditController bhtEditController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+    
     ////////////////////////////
     private CommonFunctions commonFunctions;
     ///////////////////////
@@ -465,7 +468,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
         current.getPatient().setEditingMode(false);
-        return "/inward/admission_profile?faces-redirect?true";
+        bhtSummeryController.setPatientEncounter(current);
+        return bhtSummeryController.navigateToInpatientProfile();
     }
 
     public List<Admission> completeAdmission(String query) {
@@ -569,7 +573,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
         clearSearchValues();
-        return "/inward/inpatient_search";
+        return "/inward/inpatient_search?faces-redirect=true;";
     }
 
     public void listCurrentInpatients() {

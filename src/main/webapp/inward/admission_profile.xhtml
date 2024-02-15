@@ -162,6 +162,16 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
+                                <p:dataTable 
+                                    id="tblSx"
+                                    value="#{bhtSummeryController.surgeryBills}" var="s"
+                                             selectionMode="single"
+                                             selection="#{bhtSummeryController.surgeryBill}">
+                                    <p:ajax process="tblSx" ></p:ajax>
+                                    <p:column >
+                                        <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
@@ -169,7 +179,24 @@
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
+                                        />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Add Services for Surgeries" 
+                                    icon="fa fa-briefcase"
+                                    action="#{bhtSummaryController.navigateToAddServiceFromSurgeriesFromAdmissionProfile}"
+                                    class="w-100">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Add Surgeries" 
+                                    icon="fa fa-clock"
+                                    action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile}"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
                                         />
                                 </p:commandButton>
                                 <p:commandButton 
@@ -178,7 +205,7 @@
                                     value="Add Services for Surgeries" 
 
                                     icon="fa fa-briefcase"
-                                    action="#{billBhtController.navigateToAddServiceFromAdmissionProfile}"
+                                    action="#{billBhtController.navigateToAddServiceFromSurgeriesFromAdmissionProfile}"
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
@@ -187,22 +214,6 @@
 
                                         />
                                 </p:commandButton>
-                                
-                                
-                                <p:commandButton 
-                                    value="Direct Issue to Theatre Cases"
-                                    action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
-                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                                    icon="pi pi-check" 
-                                    class="w-100"
-                                    ajax="false">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{pharmacySaleBhtController.patientEncounter}" />
-                                </p:commandButton>
-                                
-                                
                             </div>
 
 
@@ -259,7 +270,7 @@
                         <p:panel header="Pharmaceuticals &amp; Consumables" class="m-1">
                             <div class="d-grid gap-3">
                                 <p:commandButton 
-                                    value="Request Medicines from Pharmacy" 
+                                    value="Pharmacy BHT Request" 
                                     action="#{admissionController.navigateToPharmacyBhtRequest}" 
                                     actionListener="#{pharmacySaleBhtController.resetAll}"
                                     icon="fa fa-prescription-bottle-alt"
@@ -271,7 +282,7 @@
 
 
                                 <p:commandButton 
-                                    value="Direct Issue from Pharmacy" 
+                                    value="Direct Issue to BHTs" 
                                     action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}"
@@ -283,10 +294,21 @@
                                         target="#{pharmacySaleBhtController.patientEncounter}" />
                                 </p:commandButton>
 
-                                
+                                <p:commandButton 
+                                    value="Direct Issue to Theatre Cases"
+                                    action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    icon="pi pi-check" 
+                                    class="w-100"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{pharmacySaleBhtController.patientEncounter}" />
+                                </p:commandButton>
 
                                 <p:commandButton 
-                                    value="Issue Medicines for Requests"
+                                    value="BHT Issue Requests"
                                     action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true" 
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}"
