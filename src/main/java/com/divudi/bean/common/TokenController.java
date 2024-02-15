@@ -208,6 +208,18 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
+    
+    public String navigateToNewPharmacyBillForCashierWholeSale() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setToken(currentToken);
+        return pharmacySaleController.navigateToPharmacyBillForCashierWholeSale();
+    }
 
     public String navigateToSettlePharmacyPreBill() {
         if (currentToken == null) {
