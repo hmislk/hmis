@@ -458,13 +458,10 @@
                             </p:tab>
                             <p:tab title="Financial Transaction" class="w-100" >
                                 <p:panel header="Financial Transaction" class="w-100">
-                                    <h:panelGrid columns="2">
+                                    <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel value="Show All Payment Details Bill Wise"></h:outputLabel>
                                         <p:selectBooleanButton value="#{sessionController.currentPreference.showBillWiseDetails}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
-                                        <h:outputLabel value="Can Transfer Cash to MySelf"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.transferMonyToMyself}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
-
-                                    </h:panelGrid>
+                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>
                         </p:tabView>
