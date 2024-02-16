@@ -220,7 +220,14 @@ public class UserPreference implements Serializable {
     
     private boolean autodisplayMenu = true;
     
+    //User Preference for Financial transaction manager
+    
+    private boolean showBillWiseDetails;
+    
+    
 
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -1138,6 +1145,15 @@ public class UserPreference implements Serializable {
     public void setBhtNumberWithOutAdmissionType(boolean bhtNumberWithOutAdmissionType) {
         this.bhtNumberWithOutAdmissionType = bhtNumberWithOutAdmissionType;
     }
+
+    public boolean isShowBillWiseDetails() {
+        return showBillWiseDetails;
+    }
+
+    public void setShowBillWiseDetails(boolean showBillWiseDetails) {
+        this.showBillWiseDetails = showBillWiseDetails;
+    }
+
     
     
     

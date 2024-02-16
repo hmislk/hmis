@@ -13,31 +13,31 @@
                 <h:form >
                     <p:panel>
                         <p:outputLabel  value="Department" ></p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmbDepartment"
-                                placeholder="Department"
-                                value="#{sessionController.department}"
-                                filter="true">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
+                        <p:selectOneMenu 
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            value="#{sessionController.department}"
+                            filter="true">
+                            <f:selectItem itemLabel="All" ></f:selectItem>
+                            <f:selectItems value="#{sessionController.loggableDepartments}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}" ></f:selectItems>
+                        </p:selectOneMenu>
                         <p:commandButton id="btnSave" 
                                          ajax="false" 
                                          value="Save" 
                                          icon="fas fa-save"
                                          class="ui-button-warning mx-2"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
-                        
+
                         <p:commandButton value="List preferences"
-                                                 process="cmbInstitution cmbDepartment"
-                                                 icon="fas fa-list"
-                                                 class="ui-button-success"
-                                                 ajax="false"
-                                                 action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
-                                                
+                                         process="cmbInstitution cmbDepartment"
+                                         icon="fas fa-list"
+                                         class="ui-button-success"
+                                         ajax="false"
+                                         action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
+
                         <p:tabView orientation="left" >
                             <p:tab title="Pharmacy" >
 
@@ -102,7 +102,7 @@
 
 
 
-                                        <h:outputLabel value="Can settle without Cash Tendered amount" rendered="false"></h:outputLabel>
+                                    <h:outputLabel value="Can settle without Cash Tendered amount" rendered="false"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         rendered="false"
                                         class="form-control"
@@ -120,8 +120,8 @@
                                         class="form-control">
                                         <f:selectItems value="#{enumController.opdItemListingStrategys}"></f:selectItems>
                                     </p:selectOneMenu>
-                                    
-                                     <h:outputLabel 
+
+                                    <h:outputLabel 
                                         class="form-label"
                                         value="Collecting Centre Item Listing Strategy" ></h:outputLabel>
                                     <p:selectOneMenu 
@@ -130,7 +130,7 @@
                                         <f:selectItems value="#{enumController.ccItemListingStrategys}"></f:selectItems>
                                     </p:selectOneMenu>
 
-                                    
+
 
                                     <h:outputLabel 
                                         value="OPD Bill Paper" 
@@ -309,11 +309,11 @@
 
                                         <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
-                                        
+
                                         <h:outputLabel value="Inward Add Bht Number Without Admission Type"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.bhtNumberWithOutAdmissionType}"/>
 
-                                        
+
                                         <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
 
@@ -454,6 +454,14 @@
 
 
                                     </h:panelGrid>
+                                </p:panel>
+                            </p:tab>
+                            <p:tab title="Financial Transaction" class="w-100" >
+                                <p:panel header="Financial Transaction" class="w-100">
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Show All Payment Details Bill Wise"></h:outputLabel>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.showBillWiseDetails}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
+                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>
                         </p:tabView>

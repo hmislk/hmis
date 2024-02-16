@@ -61,13 +61,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
-    
-    // </editor-fold> 
 
+    // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
     private Token removeingToken;
-   
+
     private List<Token> currentTokens;
     private Department department;
     private Institution institution;
@@ -133,6 +132,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", false);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -149,9 +152,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenDate=:date "
                 + " and t.completed=:com";
         Map m = new HashMap();
+        
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", true);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -220,7 +228,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacySaleController.setToken(currentToken);
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
-    
+
     public String navigateToNewPharmacyBillForCashierWholeSale() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -233,8 +241,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return pharmacySaleController.navigateToPharmacyBillForCashierWholeSale();
     }
 
-    public String navigateToSaleForCashier(){
-       if (currentToken == null) {
+    public String navigateToSaleForCashier() {
+        if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
@@ -246,17 +254,16 @@ public class TokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Bill Type");
             return "";
         }
-        
+
         if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
             JsfUtil.addErrorMessage("Wrong Bill Type");
             return "";
         }
         Bill tmp = billFacade.find(currentToken.getBill().getId());
-        if(tmp.getBillItems()==null){
+        if (tmp.getBillItems() == null) {
             tmp.setBillItems(loadPharmacyBillItems(tmp));
         }
-        
-        
+
         pharmacyPreSettleController.setPreBill(tmp);
         pharmacyPreSettleController.setBillPreview(false);
         pharmacyPreSettleController.setToken(currentToken);
@@ -264,12 +271,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacyBillSearch.pharmacyRetailCancelBillWithStock(tmp);
         pharmacySaleController.resetAll();
         pharmacySaleController.setPatient(currentToken.getPatient());
-        pharmacySaleController.setPreBill((PreBill)tmp);
+        pharmacySaleController.setPreBill((PreBill) tmp);
         currentToken.getBill().setCancelled(true);
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier";
-        
+
     }
-    
+
     public String navigateToSettlePharmacyPreBill() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -293,15 +300,16 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacyPreSettleController.setToken(currentToken);
         return "/pharmacy/pharmacy_bill_pre_settle";
     }
-    public List<BillItem> loadPharmacyBillItems(Bill bill){
+
+    public List<BillItem> loadPharmacyBillItems(Bill bill) {
         Map m = new HashMap();
         String jpql = "select bi from BillItem bi"
                 + " where bi.retired=:ret "
                 + " and bi.bill=:b";
-        m.put("b",bill);
+        m.put("b", bill);
         m.put("ret", false);
         return billItemFacade.findByJpql(jpql, m);
-        
+
     }
 
     public String settlePharmacyToken() {
@@ -460,8 +468,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         this.counter = counter;
     }
 
-    
-    
     @Override
     public Patient getPatient() {
         if (patient == null) {
@@ -493,7 +499,5 @@ public class TokenController implements Serializable, ControllerWithPatient {
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
-
-   
 
 }
