@@ -12,7 +12,7 @@
                 <h:form >
                     <p:panel id="panel" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Token" ></h:outputLabel>
+                            <h:outputLabel value="Pharmacy Tokens Completed" ></h:outputLabel>
                         </f:facet>
 
                         <h:panelGrid columns="3" class="my-2">
@@ -32,11 +32,11 @@
                                 ajax="false"
                                 icon="fas fa-cogs"
                                 class="ui-button-warning"
-                                action="#{tokenController.fillPharmacyTokens()}" >
+                                action="#{tokenController.fillPharmacyTokensCompleted()}" >
                             </p:commandButton>
                         </h:panelGrid>
 
-
+                        <h1>#{tokenController.counter}</h1>
                         <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
                             <!-- Token Number Column -->
