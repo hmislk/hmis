@@ -248,7 +248,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
         
         if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
-            System.out.println("currentToken.getBill().getBillType() = " + currentToken.getBill().getBillType());
             JsfUtil.addErrorMessage("Wrong Bill Type");
             return "";
         }
@@ -261,12 +260,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacyPreSettleController.setPreBill(tmp);
         pharmacyPreSettleController.setBillPreview(false);
         pharmacyPreSettleController.setToken(currentToken);
+        tmp.setComments("Editing pharmacy token bill");
         pharmacyBillSearch.pharmacyRetailCancelBillWithStock(tmp);
         pharmacySaleController.resetAll();
         pharmacySaleController.setPatient(currentToken.getPatient());
         pharmacySaleController.setPreBill((PreBill)tmp);
         currentToken.getBill().setCancelled(true);
-        System.out.println("Cancelled = " + currentToken.getBill().isCancelled());
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier";
         
     }
