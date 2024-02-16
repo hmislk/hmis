@@ -722,11 +722,8 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
         if (getBill().getBillType() == BillType.PharmacyPre) {
-            System.out.println("Inside3");
             if (checkSaleReturn(getBill())) {
-                System.out.println("Inside");
                 UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
-                System.out.println("Sale had been Returned u can't cancell bill");
                 return true;
             }
         }
@@ -1671,12 +1668,10 @@ public class PharmacyBillSearch implements Serializable {
         setBill(cbill);
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
-                System.out.println("pharmacyErrorCheck");
                 return;
             }
 
             if (getBill().getBillType() != BillType.PharmacyPre && getBill().getBillType() != BillType.PharmacyWholesalePre) {
-                System.out.println("12");
                 return;
             }
 
