@@ -1396,6 +1396,28 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
+    
+    public List<Item> completeAmpAndVmpItem(String query) {
+        List<Item> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            if (query.length() > 4) {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+            } else {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+            }
+
+//////// // System.out.println(sql);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("vmp", Vmp.class);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
+    }
 
     public List<Item> completePackage(String query) {
         List<Item> suggestions;
