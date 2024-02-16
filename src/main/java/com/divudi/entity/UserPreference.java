@@ -223,7 +223,6 @@ public class UserPreference implements Serializable {
     //User Preference for Financial transaction manager
     
     private boolean showBillWiseDetails;
-    private boolean transferMonyToMyself;
     
     
 
@@ -1155,13 +1154,6 @@ public class UserPreference implements Serializable {
         this.showBillWiseDetails = showBillWiseDetails;
     }
 
-    public boolean isTransferMonyToMyself() {
-        return transferMonyToMyself;
-    }
-
-    public void setTransferMonyToMyself(boolean TransferMonyToMyself) {
-        this.transferMonyToMyself = transferMonyToMyself;
-    }
     
     
     
