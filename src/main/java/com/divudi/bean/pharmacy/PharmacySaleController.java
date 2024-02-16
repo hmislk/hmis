@@ -380,7 +380,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (tmp.getQty() <= 0 || tmp.getQty() == null) {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
-
+            System.out.println("Can not enter a minus value");
             UtilityController.addErrorMessage("Can not enter a minus value");
             return true;
         }
@@ -388,7 +388,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (tmp.getQty() > tmp.getPharmaceuticalBillItem().getStock().getStock()) {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
-
+             System.out.println("noto Sufficient Stocks?");
             UtilityController.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
@@ -398,7 +398,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             setZeroToQty(tmp);
             onEditCalculation(tmp);
-
+            System.out.println("Another User On Change Bill Item Qty value is resetted = ");
             UtilityController.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
             return true;
         }
@@ -1170,12 +1170,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private void savePreBillItemsFinally(List<BillItem> list) {
+        System.out.println("list = " + list.size());
         for (BillItem tbi : list) {
             if (onEdit(tbi)) {
 //If any issue in Stock Bill Item will not save & not include for total
 //                continue;
             }
-
+            System.out.println("tbi = " + tbi.getItem().getName());
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
 
@@ -1331,7 +1332,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+                System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
                     ////System.out.println("bi.getQty() = " + bi.getQty());
@@ -1354,8 +1355,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calculateAllRates();
 
         Patient pt = savePatient();
-
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        System.out.println("pt = " + getPreBill().getBillItems().size());
+        List<BillItem> tmpBillItems = new ArrayList<>();
+        for(BillItem i : getPreBill().getBillItems()){
+            tmpBillItems.add(i);
+        }
         getPreBill().setBillItems(null);
 
         savePreBillFinally(pt);
