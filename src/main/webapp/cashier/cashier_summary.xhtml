@@ -82,12 +82,20 @@
                         <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
                             <h4>#{billTypeSummary.billType}</h4>
                             <table class="table table-striped">
-                                <tr>
+<!--                                <tr>
                                     <th>Payment Method</th>
                                     <th>Total</th>
                                     <th>Discount</th>
                                     <th>Net Total</th>
                                     <th>Tax</th>
+                                </tr>-->
+                                <tr>
+                                    <th>Bill Type</th>
+                                    <th></th>
+                                    <th>Cash</th>
+                                    <th>Credit</th>
+                                    <th>Credit Card</th>
+                                    <th>Total</th>
                                 </tr>
                                 <ui:repeat value="#{billTypeSummary.paymentSummaries}" var="paymentSummary">
                                     <tr>
