@@ -12,48 +12,49 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Service Bills" style="height: 100vh" >
-                        <div class="d-flex">
-                            <h:panelGrid columns="1">
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar
-                                value="#{searchController.fromDate}" 
-                                class="w-100"
-                                inputStyleClass="form-control"
-                                maxdate="#{commonFunctionsController.endOfDay}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                            </p:calendar>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar
+                                    value="#{searchController.fromDate}" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                </p:calendar>
 
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar 
-                                value="#{searchController.toDate}" 
-                                class="w-100"
-                                inputStyleClass="form-control"
-                                maxdate="#{commonFunctionsController.endOfDay}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
-                            </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar 
+                                    value="#{searchController.toDate}" 
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                </p:calendar>
 
-                            <p:commandButton ajax="false" 
-                                             icon="fas fa-search"
-                                             action="#{searchController.createInwardServiceTable()}" 
-                                             value="Search"  
-                                             class="mt-2 w-100 mb-3 ui-button-warning" />
+                                <p:commandButton ajax="false" 
+                                                 action="#{searchController.createInwardServiceTable()}" 
+                                                 value="Search"  
+                                                 icon="fas fa-search"
+                                                 class="w-100 ui-button-warning my-1" />
 
 
-                            <h:outputLabel value="Bill No"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                            <h:outputLabel value="BHT No"/>
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
-                            <h:outputLabel value="Patient Name"/>
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                            <h:outputLabel value="Patient Phone"/>   
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                            <h:outputLabel value="Item Name"/>   
-                            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                            <h:outputLabel value="Net Total"/>
+                                <h:outputLabel value="Bill No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                <h:outputLabel value="BHT No"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="Patient Phone"/>   
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
+                                <h:outputLabel value="Item Name"/>   
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                <h:outputLabel value="Net Total"/>
 
-                            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            </h:panelGrid>
-                            <div class="p-1">
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+
+                            </div>
+                            <div class="col-10">
                                 <p:dataTable id="tblBills" 
                                              value="#{searchController.bills}" 
                                              var="bill"
@@ -62,7 +63,6 @@
                                              paginator="true"
                                              rows="10"
                                              paginatorAlwaysVisible="false"
-                                             sortBy="#{bill.createdAt}"
                                              paginatorPosition="bottom"
                                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
@@ -70,11 +70,11 @@
                                              >    
 
 
-                                    <p:column headerText="Bill No" style="width: 15%">                               
+                                    <p:column headerText="Bill No">                               
                                         <h:outputLabel value="#{bill.insId}"></h:outputLabel>                                
                                     </p:column>
 
-                                    <p:column headerText="BHT No" style="width: 5%" >                              
+                                    <p:column headerText="BHT No">                              
                                         <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
                                     </p:column>
 
@@ -110,9 +110,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="BHT Total Value">
-                                        <h:outputLabel value="#{bill.patientEncounter.finalBill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
+                                        #{bill.patientEncounter.finalBill.netTotal}
                                     </p:column>
                                     <p:column headerText="Actions">
                                         <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_service"  >
@@ -122,6 +120,10 @@
                                 </p:dataTable>
                             </div>
                         </div>
+
+
+
+                 
 
                     </p:panel>
                 </h:form>
