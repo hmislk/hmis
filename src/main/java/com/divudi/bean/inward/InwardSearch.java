@@ -133,6 +133,17 @@ public class InwardSearch implements Serializable {
     Patient patient;
     Sex[] sex;
     private Admission admission;
+    
+    private boolean withProfessionalFee = false;
+    
+    public boolean showProfessionalFee(){
+        if(withProfessionalFee == true){
+            withProfessionalFee = false;
+        }else{
+            withProfessionalFee = true;
+        }
+        return withProfessionalFee;
+    }
 
     public void edit() {
         if (getBill() == null) {
@@ -258,6 +269,8 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
+        withProfessionalFee = false;
+        
         return "/inward/inward_reprint_bill_final";
     }
     
@@ -1531,6 +1544,14 @@ public class InwardSearch implements Serializable {
 
     public void setAdmission(Admission admission) {
         this.admission = admission;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
     }
     
     
