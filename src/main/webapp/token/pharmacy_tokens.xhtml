@@ -59,6 +59,7 @@
                                         <h:outputText value="Bill Number : " />
                                         <h:outputText value="#{token.bill.referenceBill.deptId}" />
                                     </h:panelGroup>
+
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
                                         <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
                                         
@@ -70,6 +71,7 @@
                                     
 
                                 </h:panelGrid>
+
 
                             </p:column>
 
@@ -129,7 +131,9 @@
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-primary"
+
                                     icon="fa fa-tablets" 
+
                                     rendered="#{token.bill eq null}"
                                     title="Pharmacy Bill for Cashier (WholeSale)" 
                                     action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
