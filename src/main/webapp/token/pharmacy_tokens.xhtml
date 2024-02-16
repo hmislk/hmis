@@ -51,22 +51,20 @@
 
                             <!-- Patient Name Column -->
                             <p:column headerText="Bill">
-                                <h:panelGrid rendered="#{token.bill ne null}" >
-                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null}" >
-                                        <h:outputText value="PAYMENT DONE" />
-                                        <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.referenceBill.deptId}" />
+                                    <h:panelGroup rendered="#{token.bill.referenceBill ne null and token.bill ne null}" >
+                                        <p style="background-color: rgba(76, 175, 80, 0.3); color:rgb(76, 175, 80) ">
+                                            <span>PAYMENT DONE</span><br/>
+                                            <span>Bill Number : </span>
+                                            <span>#{token.bill.referenceBill.deptId}</span>
+                                        </p>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" />
-                                        <br/>
-                                        <h:outputText value="Bill Number : " />
-                                        <h:outputText value="#{token.bill.deptId}" />
+                                    <h:panelGroup rendered="#{token.bill.referenceBill eq null and token.bill ne null}" >
+                                        <p class="ui-message-warn">
+                                            <span>AWAITING PAYMENT</span><br/>
+                                            <span>Bill Number : </span>
+                                            <span>#{token.bill.deptId}</span>
+                                        </p>
                                     </h:panelGroup>
-
-
-                                </h:panelGrid>
 
                             </p:column>
 
@@ -126,7 +124,7 @@
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-primary"
-                                    icon="fa fa-pills" 
+                                    icon="fa fa-capsules" 
                                     rendered="#{token.bill eq null}"
                                     title="Pharmacy Bill for Cashier (WholeSale)" 
                                     action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
