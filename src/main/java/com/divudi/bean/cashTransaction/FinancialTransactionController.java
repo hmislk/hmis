@@ -579,16 +579,18 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCanceld = totalOpdBillCanceled + totalCCBillCanceled + totalPharmecyBillCanceled;
+        totalBillCanceld = totalOpdBillCanceled 
+                + totalCCBillCanceled 
+                + totalPharmecyBillCanceled;
         totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
         totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
         totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
         double totalBillValues = totalBilledBillValue;
 
-        aditions = totalBillValues;
-        Deductions = totalBalanceTransfer + totalDeposits;
+        aditions = totalBillValues + totalShiftStart;
+        Deductions = totalBalanceTransfer + totalDeposits+totalBillRefunds;
         totalFunds = aditions - Deductions;
-        shiftEndTotalValue = totalFunds + totalShiftStart;
+        shiftEndTotalValue = totalFunds;
 
     }
 
