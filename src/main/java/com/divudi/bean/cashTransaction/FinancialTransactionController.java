@@ -583,12 +583,7 @@ public class FinancialTransactionController implements Serializable {
         totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
         totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
         totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
-        double totalBillValues = totalOpdBillValues
-                + totalPharmecyBillValues
-                + totalCCBillValues
-                + totalTransferRecive
-                + totalWithdrawals
-                + totalBilledBillValue;
+        double totalBillValues = totalBilledBillValue;
 
         aditions = totalBillValues;
         Deductions = totalBalanceTransfer + totalDeposits;
