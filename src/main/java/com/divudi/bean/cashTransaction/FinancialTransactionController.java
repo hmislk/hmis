@@ -498,9 +498,14 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getBill().isCancelled()) {
                         totalOpdBillCanceled += p.getPaidValue();
                     }
+                    if (p.getBill().getReferenceBill() != null) {
+                        System.out.println("p = " + p.getPaidValue());
+                        totalBilledBillValue += p.getPaidValue();
+                    }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
                         totalBilledBillValue += p.getPaidValue();
                     }
+                    
                     totalOpdBillValues += p.getPaidValue();
                     break;
                 case PharmacySale:
