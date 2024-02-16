@@ -871,9 +871,9 @@ public class PharmacyBean {
 
         stock = getStockFacade().find(stock.getId());
 
-        System.out.println("Before Update" + stock.getStock());
+//        System.out.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        System.out.println("After Update " + stock.getStock());
+//        System.out.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
         return true;
