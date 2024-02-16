@@ -35,8 +35,6 @@
                                 action="#{tokenController.fillPharmacyTokensCompleted()}" >
                             </p:commandButton>
                         </h:panelGrid>
-
-                        <h1>#{tokenController.counter}</h1>
                         <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
                             <!-- Token Number Column -->
