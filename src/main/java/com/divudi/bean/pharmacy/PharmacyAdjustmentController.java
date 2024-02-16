@@ -431,8 +431,10 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
         if (getDeptAdjustmentPreBill().getId() == null) {
+            System.out.println("savesakeAjes null = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
+            System.out.println("savesakeAjes getId() = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
@@ -527,7 +529,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -587,7 +589,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -631,7 +633,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -675,7 +677,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -762,7 +764,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -1172,6 +1174,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date toDate = null;
 
         saveSaleRateAdjustmentBill();
+        
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
