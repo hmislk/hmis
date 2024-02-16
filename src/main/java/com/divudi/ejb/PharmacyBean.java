@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -237,6 +238,7 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
+            UtilityController.addErrorMessage("Bill Already Cancelled");
             return null;
         }
 

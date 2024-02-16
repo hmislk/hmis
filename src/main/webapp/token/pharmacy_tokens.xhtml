@@ -35,15 +35,16 @@
                                 action="#{tokenController.fillPharmacyTokens()}" >
                             </p:commandButton>
                         </h:panelGrid>
-
+                        
 
                         <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
                             <!-- Token Number Column -->
                             <p:column headerText="Token Number">
                                 <h:outputText value="#{token.tokenNumber}" />
+                                
                             </p:column>
-
+                            
                             <!-- Patient Name Column -->
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.patient.person.name}" />
@@ -136,14 +137,24 @@
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-success mx-2"
+                                    disabled="#{token.bill.referenceBill ne null}"
                                     icon="fa fa-money-bill" 
                                     rendered="#{token.bill ne null}"
                                     title="Pay at Cashier" 
                                     action="#{tokenController.navigateToSettlePharmacyPreBill}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
-
-
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success"
+                                    icon="fas fa-arrows-rotate" 
+                                    rendered="#{token.bill ne null}"
+                                    title="Edit Bill" 
+                                    action="#{tokenController.navigateToSaleForCashier}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+                                <h1>#{tokenController.currentToken.bill.cancelled}</h1>
+                                <h1>#{token.bill.cancelled}</h1>
 
                             </p:column>
 

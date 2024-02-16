@@ -999,13 +999,13 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.billItem = billItem;
     }
 
-    private boolean errorCheckForPreBill() {
-        if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
-            return true;
-        }
-        return false;
-    }
+//    private boolean errorCheckForPreBill() {
+//        if (getPreBill().getBillItems().isEmpty()) {
+//            UtilityController.addErrorMessage("No Items added to bill to sale");
+//            return true;
+//        }
+//        return false;
+//    }
 
 //    private boolean checkPaymentScheme(PaymentScheme paymentScheme) {
 //        if (paymentScheme != null && paymentScheme.getPaymentMethod() != null && paymentScheme.getPaymentMethod() == PaymentMethod.Cheque) {
@@ -1325,6 +1325,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         editingQty = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("No Items added to bill to sale");
             return;
         }
 
@@ -1339,14 +1340,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 }
             }
         }
-
+        if(getPreBill().isCancelled()==true){
+            getPreBill().setCancelled(false);
+        }
 //        if (checkAllBillItem()) {
 //            //   Before Settle Bill Current Bills Item Check Agian There is any otheruser change his qty
 //            return;
 //        }
-        if (errorCheckForPreBill()) {
-            return;
-        }
+//        if (errorCheckForPreBill()) {
+//            return;
+//        }
 
         calculateAllRates();
 
