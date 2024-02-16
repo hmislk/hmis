@@ -111,7 +111,7 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundDepositBill();
         return "/cashier/deposit_funds";
     }
-    
+
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary";
     }
@@ -489,7 +489,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateBillValuesFromBillTypes(Payment p) {
-        if (p.getBill().getBillType()!=null) {
+        if (p.getBill().getBillType() != null) {
             switch (p.getBill().getBillType()) {
                 case OpdBill:
                     if (p.getBill().isRefunded()) {
@@ -498,8 +498,10 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getBill().isCancelled()) {
                         totalOpdBillCanceled += p.getPaidValue();
                     }
+                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
+                        totalBilledBillValue += p.getPaidValue();
+                    }
                     totalOpdBillValues += p.getPaidValue();
-                    totalBilledBillValue += p.getPaidValue();
                     break;
                 case PharmacySale:
                     if (p.getBill().isRefunded()) {
@@ -507,10 +509,11 @@ public class FinancialTransactionController implements Serializable {
                     }
                     if (p.getBill().isCancelled()) {
                         totalPharmecyBillCanceled += p.getPaidValue();
-                        
+                    }
+                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
+                        totalBilledBillValue += p.getPaidValue();
                     }
                     totalPharmecyBillValues += p.getPaidValue();
-                    totalBilledBillValue += p.getPaidValue();
                     break;
                 case FundTransferBill:
                     if (p.getBill().isRefunded()) {
@@ -564,8 +567,10 @@ public class FinancialTransactionController implements Serializable {
                     if (p.getBill().isCancelled()) {
                         totalCCBillCanceled += p.getPaidValue();
                     }
+                    if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
+                        totalBilledBillValue += p.getPaidValue();
+                    }
                     totalCCBillValues += p.getPaidValue();
-                    totalBilledBillValue += p.getPaidValue();
                     break;
                 default:
                     break;
@@ -574,15 +579,11 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        totalBillCanceld=totalOpdBillCanceled+totalCCBillCanceled+totalPharmecyBillCanceled;
-        totalOpdBillValues=totalOpdBillValues-totalOpdBillCanceled;
-        totalPharmecyBillValues=totalPharmecyBillValues-totalPharmecyBillCanceled;
-        totalCCBillValues=totalCCBillValues-totalCCBillCanceled;
-        double totalBillValues = totalOpdBillValues
-                + totalPharmecyBillValues
-                + totalCCBillValues
-                + totalTransferRecive
-                + totalWithdrawals;
+        totalBillCanceld = totalOpdBillCanceled + totalCCBillCanceled + totalPharmecyBillCanceled;
+        totalOpdBillValues = totalOpdBillValues - totalOpdBillCanceled;
+        totalPharmecyBillValues = totalPharmecyBillValues - totalPharmecyBillCanceled;
+        totalCCBillValues = totalCCBillValues - totalCCBillCanceled;
+        double totalBillValues = totalBilledBillValue;
 
         aditions = totalBillValues;
         Deductions = totalBalanceTransfer + totalDeposits;
@@ -604,9 +605,9 @@ public class FinancialTransactionController implements Serializable {
         totalWithdrawals = 0.0;
         totalBilledBillValue = 0.0;
         shiftEndTotalValue = 0.0;
-        totalOpdBillCanceled=0.0;
-        totalCCBillCanceled=0.0;
-        totalPharmecyBillCanceled=0.0;
+        totalOpdBillCanceled = 0.0;
+        totalCCBillCanceled = 0.0;
+        totalPharmecyBillCanceled = 0.0;
     }
 
     public void findNonClosedShiftStartFundBillIsAvailable() {
@@ -1082,7 +1083,4 @@ public class FinancialTransactionController implements Serializable {
         this.totalCCBillCanceled = totalCCBillCanceled;
     }
 
-    
-    
-    
 }
