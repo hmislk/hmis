@@ -175,19 +175,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    public String getActionForIcon(Icon icon) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ELContext elContext = context.getELContext();
-        ExpressionFactory factory = context.getApplication().getExpressionFactory();
-
-        // Fetch action string from the enum
-        String actionExpression = icon.getAction();
-
-        // Convert the string to an actual method binding
-        MethodExpression methodExpression = factory.createMethodExpression(elContext, actionExpression, String.class, new Class[0]);
-
-        return (String) methodExpression.invoke(elContext, null);
-    }
+  
 
     public String getLandingPageOld() {
         if (landingPage == null) {
