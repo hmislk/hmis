@@ -35,15 +35,16 @@
                                 action="#{tokenController.fillPharmacyTokens()}" >
                             </p:commandButton>
                         </h:panelGrid>
-
+                        
 
                         <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
 
                             <!-- Token Number Column -->
                             <p:column headerText="Token Number">
                                 <h:outputText value="#{token.tokenNumber}" />
+                                
                             </p:column>
-
+                            
                             <!-- Patient Name Column -->
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{token.patient.person.name}" />
@@ -58,15 +59,19 @@
                                         <h:outputText value="Bill Number : " />
                                         <h:outputText value="#{token.bill.referenceBill.deptId}" />
                                     </h:panelGroup>
+
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" />
+                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
+                                        
+                                        <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
                                         <br/>
                                         <h:outputText value="Bill Number : " />
                                         <h:outputText value="#{token.bill.deptId}" />
                                     </h:panelGroup>
-
+                                    
 
                                 </h:panelGrid>
+
 
                             </p:column>
 
@@ -126,7 +131,9 @@
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-primary"
-                                    icon="fa fa-pills" 
+
+                                    icon="fa fa-tablets" 
+
                                     rendered="#{token.bill eq null}"
                                     title="Pharmacy Bill for Cashier (WholeSale)" 
                                     action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
@@ -138,15 +145,23 @@
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-success mx-2"
+                                    disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
                                     icon="fa fa-money-bill" 
                                     rendered="#{token.bill ne null}"
                                     title="Pay at Cashier" 
                                     action="#{tokenController.navigateToSettlePharmacyPreBill}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
-
-
-
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fas fa-pen" 
+                                    disabled="#{token.bill.cancelled eq true}"
+                                    rendered="#{token.bill ne null}"
+                                    title="Edit Bill" 
+                                    action="#{tokenController.navigateToSaleForCashier}">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
                             </p:column>
 
 
