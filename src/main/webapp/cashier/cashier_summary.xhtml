@@ -16,35 +16,35 @@
 
                     <p:panel header="Cashier Summary" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" class="w-100">
                             <h:outputLabel value="From"/>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar class="w-100 " inputStyleClass="w-100" id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>                                
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            <p:calendar class="w-100 " inputStyleClass="w-100" id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
                             <h:outputLabel value="Institution"/>                                
-                            <p:selectOneMenu class="w-100 mx-4" value="#{billSearch.institution}" >
+                            <p:selectOneMenu class="w-100 " value="#{billSearch.institution}" >
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 mx-4"  value="#{billSearch.department}" >
+                            <p:selectOneMenu class="w-100 "  value="#{billSearch.department}" >
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Billed/Cancelled/Refunded"/>                                
-                            <p:selectOneMenu class="w-100  mx-4"  value="#{billSearch.billClassType}" >
+                            <p:selectOneMenu class="w-100  "  value="#{billSearch.billClassType}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
                                 <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="User"/>
-                            <p:autoComplete class="w-100  mx-4" inputStyleClass="w-100" id="cmbUser"  placeholder="All Users"
+                            <p:autoComplete class="w-100  " inputStyleClass="w-100" id="cmbUser"  placeholder="All Users"
                                             forceSelection="true" 
                                             completeMethod="#{webUserController.completeUser}" 
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
@@ -77,41 +77,47 @@
 
                         </h:panelGrid>
 
+                        <table class="table table-responsive" >
+                            <tr class="table-secondary">
+                                <th>Bill Type</th>
+                                <th>Payment Method</th>
+                                <th>Total</th>
+                                <th>Discount</th>
+                                <th>NetTotal</th>
+                                <th></th>
+<!--                                <th>Tax</th>-->
 
-
-                        <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
-                            <h4>#{billTypeSummary.billType}</h4>
-                            <table class="table table-striped">
-<!--                                <tr>
-                                    <th>Payment Method</th>
-                                    <th>Total</th>
-                                    <th>Discount</th>
-                                    <th>Net Total</th>
-                                    <th>Tax</th>
-                                </tr>-->
-                                <tr>
-                                    <th>Bill Type</th>
-                                    <th></th>
-                                    <th>Cash</th>
-                                    <th>Credit</th>
-                                    <th>Credit Card</th>
-                                    <th>Total</th>
+                            </tr>
+                            <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
+                                <tr  style="font-weight: bolder">
+                                    <td>#{billTypeSummary.billType.label}</td>
                                 </tr>
+
                                 <ui:repeat value="#{billTypeSummary.paymentSummaries}" var="paymentSummary">
-                                    <tr>
+
+                                    <tr >
+                                        <td></td>
+                                        <td></td>
                                         <td>#{paymentSummary.paymentMethod}</td>
-                                        <td>#{paymentSummary.total}</td>
-                                        <td>#{paymentSummary.discount}</td>
-                                        <td>#{paymentSummary.netTotal}</td>
-                                        <td>#{paymentSummary.tax}</td>
+                                        <td style="text-align: right">#{paymentSummary.total}</td>
+                                        <td style="text-align: right">#{paymentSummary.discount}</td>
+                                        <td style="text-align: right">#{paymentSummary.netTotal}</td>
+<!--                                        <td>#{paymentSummary.tax}</td>-->
                                     </tr>
                                 </ui:repeat>
-                            </table>
-                        </ui:repeat>
+                                <tr class="table-primary" style="font-weight: bold">
+                                    <td>Total</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td style="font-weight: bolder;text-align: right">RS: </td>
+                                    <td style="font-weight: bolder;text-align: right">#{billTypeSummary.billTypeTotal}</td>
+                                </tr>
+                            </ui:repeat>
+                        </table>
 
 
-
-                        <p:panel header="Data" >
+                        <p:panel header="Data" rendered="false" >
                             <p:dataTable id="tblBills" value="#{billSearch.billSummeries}" var="bs" rowKey="#{bs.key}" rowIndexVar="n" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill Summaries"/>
