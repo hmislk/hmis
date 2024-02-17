@@ -1,18 +1,23 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.TokenType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
 import com.divudi.facade.util.JsfUtil;
 import javax.inject.Named;
@@ -39,6 +44,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
     BillNumberGenerator billNumberGenerator;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
     // </editor-fold> 
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -50,12 +59,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
     PharmacyPreSettleController pharmacyPreSettleController;
     @Inject
     PatientController patientController;
-    // </editor-fold> 
+    @Inject
+    PharmacyBillSearch pharmacyBillSearch;
 
+    // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
     private Token removeingToken;
-   
+
     private List<Token> currentTokens;
     private Department department;
     private Institution institution;
@@ -121,6 +132,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", false);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -137,9 +152,14 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenDate=:date "
                 + " and t.completed=:com";
         Map m = new HashMap();
+        
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", true);
+        if (counter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", counter);
+        }
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -209,6 +229,54 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return pharmacySaleController.navigateToPharmacyBillForCashier();
     }
 
+    public String navigateToNewPharmacyBillForCashierWholeSale() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setToken(currentToken);
+        return pharmacySaleController.navigateToPharmacyBillForCashierWholeSale();
+    }
+
+    public String navigateToSaleForCashier() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        if (currentToken.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (currentToken.getBill().getBillType() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return "";
+        }
+
+        if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        Bill tmp = billFacade.find(currentToken.getBill().getId());
+        if (tmp.getBillItems() == null) {
+            tmp.setBillItems(loadPharmacyBillItems(tmp));
+        }
+
+        pharmacyPreSettleController.setPreBill(tmp);
+        pharmacyPreSettleController.setBillPreview(false);
+        pharmacyPreSettleController.setToken(currentToken);
+        tmp.setComments("Editing pharmacy token bill");
+        pharmacyBillSearch.pharmacyRetailCancelBillWithStock(tmp);
+        pharmacySaleController.resetAll();
+        pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setPreBill((PreBill) tmp);
+        currentToken.getBill().setCancelled(true);
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier";
+
+    }
+
     public String navigateToSettlePharmacyPreBill() {
         if (currentToken == null) {
             JsfUtil.addErrorMessage("No Token");
@@ -231,6 +299,17 @@ public class TokenController implements Serializable, ControllerWithPatient {
         pharmacyPreSettleController.setBillPreview(false);
         pharmacyPreSettleController.setToken(currentToken);
         return "/pharmacy/pharmacy_bill_pre_settle";
+    }
+
+    public List<BillItem> loadPharmacyBillItems(Bill bill) {
+        Map m = new HashMap();
+        String jpql = "select bi from BillItem bi"
+                + " where bi.retired=:ret "
+                + " and bi.bill=:b";
+        m.put("b", bill);
+        m.put("ret", false);
+        return billItemFacade.findByJpql(jpql, m);
+
     }
 
     public String settlePharmacyToken() {
@@ -389,8 +468,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         this.counter = counter;
     }
 
-    
-    
     @Override
     public Patient getPatient() {
         if (patient == null) {
@@ -422,7 +499,5 @@ public class TokenController implements Serializable, ControllerWithPatient {
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
-
-   
 
 }

@@ -57,7 +57,7 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
-                                    <p:outputLabel value="Add Outside Charge" class="m-2"/>
+                                    <p:outputLabel value="Add Outside Charges" class="m-2"/>
                                 </div>
                                 <div class="col-md-8">
                                     <div class="d-flex justify-content-end align-items-center" >
@@ -84,7 +84,7 @@
 
                                             <p:commandButton 
                                                 class="m-1 ui-button-warning " 
-                                                value="Go To Add Service" 
+                                                value="Go To Add Services" 
                                                 icon ="fa fa-wrench"
                                                 ajax="false" 
                                                 action="/inward/inward_bill_service" />
@@ -140,7 +140,7 @@
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
-                                                    <h:outputText value="Patient Detail" class="mx-3"></h:outputText>
+                                                    <h:outputText value="Patient Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <h:panelGroup id="panSearch2">
                                                     <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
@@ -152,7 +152,7 @@
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                    <h:outputText value="Charge Detail" class="mx-3"></h:outputText>
+                                                    <h:outputText value="Charge Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <div class="row">
                                                     <div class="row m-1">
@@ -162,7 +162,7 @@
                                                         </div>
                                                         <div class="col-8">
                                                             <div>
-                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" filter="true" >
                                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 </p:selectOneMenu>
@@ -174,17 +174,24 @@
                                                             <h:outputLabel value="From Institution"/>
                                                         </div>
                                                         <div class="col-8 ">
-                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+<!--                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
                                                                             disabled="#{not empty inwardAdditionalChargeController.current.fromInstitution}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>
-                                                                    #{ix.name}
-                                                                </p:column>
-                                                                <p:column>
-                                                                    #{ix.institutionCode}
-                                                                </p:column>
-                                                            </p:autoComplete>
+                                                            #{ix.name}
+                                                        </p:column>
+                                                        <p:column>
+                                                            #{ix.institutionCode}
+                                                        </p:column>
+                                                    </p:autoComplete>-->
+
+                                                            <div>
+                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
+                                                                    <f:selectItem itemLabel="Select Institution"/>
+                                                                    <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -207,12 +214,12 @@
                                                     </div>
                                                 </div>
                                                 <p:commandButton 
-                                                class="m-1 ui-button-success" 
-                                                id="btnAdd"
-                                                icon="fa fa-plus"
-                                                value="Add"  
-                                                ajax="false" 
-                                                action="#{inwardAdditionalChargeController.addCharge}"/>
+                                                    class="m-1 ui-button-success" 
+                                                    id="btnAdd"
+                                                    icon="fa fa-plus"
+                                                    value="Add"  
+                                                    ajax="false" 
+                                                    action="#{inwardAdditionalChargeController.addCharge}"/>
                                             </p:panel>
                                         </div>
                                     </div>
@@ -220,7 +227,7 @@
                                 </p:panel>
                             </h:panelGroup>        
                         </div>
-                        
+
                         <div class="row mt-2">
                             <div class="col-12">
                                 <h:panelGroup id="panelBillItems"  >
@@ -239,10 +246,10 @@
                                             <p:column>
                                                 <f:facet name="header">Fee</f:facet>
                                                 <h:outputLabel  value="#{bif.inwardChargeType}">
-                                                   
+
                                                 </h:outputLabel>
                                             </p:column>
-                                           
+
                                             <p:column>
                                                 <f:facet name="header">Total</f:facet>
                                                 <h:outputLabel value="#{bif.netValue}"/>
@@ -255,7 +262,7 @@
                                     </p:panel>
                                 </h:panelGroup>
                             </div>
-                            
+
                         </div>
                     </p:panel>
                 </h:panelGrid>

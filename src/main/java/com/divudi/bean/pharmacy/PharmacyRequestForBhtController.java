@@ -67,12 +67,12 @@ import org.primefaces.event.SelectEvent;
 
 @Named
 @SessionScoped
-public class PharmacySaleBhtController implements Serializable {
+public class PharmacyRequestForBhtController implements Serializable {
 
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacySaleBhtController() {
+    public PharmacyRequestForBhtController() {
     }
 
     @Inject
@@ -693,12 +693,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (getPreBill().getBillItems().isEmpty()) {
             return true;
         }
-        for (BillItem b : getPreBill().getBillItems()) {
-
-            if (onEdit(b)) {
-                return true;
-            }
-        }
+        
 
         return false;
 
@@ -955,7 +950,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        if (getStock() == null) {
+        if (getItem() == null) {
             UtilityController.addErrorMessage("Item?");
             return;
         }
@@ -964,51 +959,19 @@ public class PharmacySaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Quantity?");
             return;
         }
+        
+        
 
-        Stock fetchStock = getStockFacade().find(getStock().getId());
-
-        if (getQty() > fetchStock.getStock()) {
-            errorMessage = "No Sufficient Stocks?";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
-
-        if (checkItemBatch()) {
-            errorMessage = "Already added this item batch";
-            UtilityController.addErrorMessage("Already added this item batch");
-            return;
-        }
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return;
-        }
-
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return;
-//        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
-        billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        calculateBillItem();
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
-        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setItem(getItem());
+        billItem.setQty(getQty());
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
-
-        //User Stock Container Save if New Bill
-        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), usc);
-        billItem.setTransUserStock(us);
-
-        calculateAllRates();
 
         clearBillItem();
         setActiveIndex(1);
@@ -1309,7 +1272,7 @@ public class PharmacySaleBhtController implements Serializable {
 //        removingBillItem = null;
         editingBillItem = null;
         qty = null;
-        stock = null;
+        item = null;
 
     }
 
