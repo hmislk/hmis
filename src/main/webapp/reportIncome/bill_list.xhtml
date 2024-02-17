@@ -10,6 +10,17 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+
+                <h:form >
+                    <h:commandButton value="Download" >
+                        <p:dataExporter target="tbl" type="xlsx" fileName="test" ></p:dataExporter>
+                    </h:commandButton>
+                    <p:dataTable id="tbl" 
+                                 >
+                    </p:dataTable>
+                </h:form>
+
+
                 <h:form>
 
                     <p:panel header="Selected List of Bills" >
