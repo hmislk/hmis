@@ -435,6 +435,8 @@ public class BillSearch implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.CollectingCentreBill);
+        bts.add(BillType.PaymentBill);
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
@@ -484,6 +486,7 @@ public class BillSearch implements Serializable {
         }
         long key = 1;
         for (BillSummery result : bss) {
+
             result.setKey(key++);
         }
         return bss;
@@ -3055,15 +3058,15 @@ public class BillSearch implements Serializable {
 
     public OverallSummary aggregateBillSummaries(List<BillSummery> billSummaries) {
         Map<String, BillTypeSummary> summaryMap = new HashMap<>();
-
+         double billPaymentTotal=0;
         for (BillSummery bs : billSummaries) {
             String billType = (bs.getBillType() != null) ? bs.getBillType().toString() : "UnknownBillType";
             String billClassType = (bs.getBillClassType() != null) ? bs.getBillClassType().toString() : "UnknownBillClassType";
             String key = billType + ":" + billClassType;
-
+            
             BillTypeSummary billTypeSummary = summaryMap.get(key);
             if (billTypeSummary == null) {
-                billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>());
+                billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>(),billPaymentTotal);
                 summaryMap.put(key, billTypeSummary);
             }
 
@@ -3076,6 +3079,7 @@ public class BillSearch implements Serializable {
 
     private void updatePaymentSummary(BillTypeSummary billTypeSummary, BillSummery bs) {
         boolean found = false;
+         
         for (PaymentSummary ps : billTypeSummary.getPaymentSummaries()) {
             if (ps.getPaymentMethod().equals(bs.getPaymentMethod())) {
                 // Aggregate existing payment summary
@@ -3084,14 +3088,18 @@ public class BillSearch implements Serializable {
                 ps.setNetTotal(ps.getNetTotal() + bs.getNetTotal());
                 ps.setTax(ps.getTax() + bs.getTax());
                 ps.setCount(ps.getCount() + bs.getCount());
-                found = true;
                 break;
             }
         }
         if (!found) {
+            
             // Create a new payment summary and add it
+            double billPaymentTotal;
             PaymentSummary newPs = new PaymentSummary(bs.getPaymentMethod(), bs.getTotal(), bs.getDiscount(), bs.getNetTotal(), bs.getTax(), bs.getCount());
             billTypeSummary.getPaymentSummaries().add(newPs);
+            billPaymentTotal=bs.getTotal();
+            double biltypeSum=billTypeSummary.getBillTypeTotal()+billPaymentTotal;
+            billTypeSummary.setBillTypeTotal(biltypeSum);
         }
     }
 
@@ -3114,6 +3122,9 @@ public class BillSearch implements Serializable {
         private Double netTotal;
         private Double tax;
         private Long count;
+
+        private Boolean canceld;
+        private Boolean refund;
 
         // Constructors, getters, and setters
         public PaymentSummary(PaymentMethod paymentMethod, Double total, Double discount, Double netTotal, Double tax, Long count) {
@@ -3179,6 +3190,23 @@ public class BillSearch implements Serializable {
         public void setCount(Long count) {
             this.count = count;
         }
+
+        public Boolean getCanceld() {
+            return canceld;
+        }
+
+        public void setCanceld(Boolean canceld) {
+            this.canceld = canceld;
+        }
+
+        public Boolean getRefund() {
+            return refund;
+        }
+
+        public void setRefund(Boolean refund) {
+            this.refund = refund;
+        }
+
     }
 
     public class BillTypeSummary {
@@ -3189,13 +3217,15 @@ public class BillSearch implements Serializable {
         private BillType billType;
         private BillClassType billClassType;
         private List<PaymentSummary> paymentSummaries;
+        private double billTypeTotal = 0;
 
         // Constructors, getters, and setters
-        public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries) {
+        public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries,double billTypeTotal) {
             this.id = ++idCounter; // Increment and assign a unique ID
             this.billType = billType;
             this.billClassType = billClassType;
             this.paymentSummaries = paymentSummaries;
+            this.billTypeTotal=billTypeTotal;
         }
 
         // Unique ID getter
@@ -3227,6 +3257,15 @@ public class BillSearch implements Serializable {
         public void setPaymentSummaries(List<PaymentSummary> paymentSummaries) {
             this.paymentSummaries = paymentSummaries;
         }
+
+        public double getBillTypeTotal() {
+            return billTypeTotal;
+        }
+
+        public void setBillTypeTotal(double billTypeTotal) {
+            this.billTypeTotal = billTypeTotal;
+        }
+
     }
 
     public class OverallSummary {
