@@ -1,18 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-
-
-
-
-
         <ui:insert name="title" >
             <title>
                 <h:panelGroup rendered="#{sessionController.logged}" >
@@ -90,9 +85,9 @@
                     </ui:insert>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-<!--                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
-                        <f:event type="preRenderView" listener="#{sessionController.redirectToIndex1}" />
-                    </h:panelGroup>-->
+                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
+                        <!--<f:event rendered="#{applicationController.hasAwebsiteAsFrontEnd}" type="preRenderView" listener="#{sessionController.redirectToIndex1}" />-->
+                    </h:panelGroup>
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered ="#{sessionController.logged and sessionController.department ne null}"  >
@@ -119,20 +114,9 @@
         </h:panelGroup>
         <div class="d-flex justify-content-center align-items-center">
             <p:growl id="growl" life="2000"  />
-            <!--            <p:messages class="w-75 text-center " id="publicGrowl"  closable="true" ></p:messages>-->
         </div>
 
 
-        <!--        <script>
-                    setTimeout(function () {
-                        var growlContainer = document.getElementById('publicGrowl');
-                        growlContainer.style.display = 'none';
-                    }, 20000);
-        
-                    // Add a timeout function to hide the messages after a certain duration (e.g., 5000 milliseconds or 5 seconds)
-                    setTimeout(function () {
-                        $('#publicGrowl').alert('close');
-                    }, 5000);
-                </script>-->
+
     </h:body>
 </html>

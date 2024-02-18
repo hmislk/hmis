@@ -8,10 +8,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.Icon;
 import com.divudi.data.InstitutionType;
-import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
@@ -49,15 +46,11 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
-import javax.el.ELContext;
-import javax.el.ExpressionFactory;
-import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-
 import org.primefaces.model.DashboardColumn;
 import org.primefaces.model.DashboardModel;
 import org.primefaces.model.DefaultDashboardColumn;
@@ -175,19 +168,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    public String getActionForIcon(Icon icon) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ELContext elContext = context.getELContext();
-        ExpressionFactory factory = context.getApplication().getExpressionFactory();
-
-        // Fetch action string from the enum
-        String actionExpression = icon.getAction();
-
-        // Convert the string to an actual method binding
-        MethodExpression methodExpression = factory.createMethodExpression(elContext, actionExpression, String.class, new Class[0]);
-
-        return (String) methodExpression.invoke(elContext, null);
-    }
+  
 
     public String getLandingPageOld() {
         if (landingPage == null) {
@@ -603,6 +584,13 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Department getDepartment() {
+        if(department==null){
+            if(loggedUser!=null){
+                if(loggedUser.getDepartment()!=null){
+                    department = loggedUser.getDepartment();
+                }
+            }
+        }
         return department;
     }
 
