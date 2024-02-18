@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -14,31 +14,51 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Item-vice Adjustments" >
+                    <p:panel header="Item - wise Adjustments" >
 
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{pharmacyAdjustmentController.fromDepartment}"  >
-                            </p:autoComplete>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        </h:panelGrid>
+                        <div class="row">
+                            <div class="col-4">
+                                <h:outputLabel value="Department" />&nbsp;
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                value="#{pharmacyAdjustmentController.fromDepartment}"  >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-4">
+                                <h:outputLabel value="From" />&nbsp;
+                                <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-4">
+                                <h:outputLabel value="To" />&nbsp;
+                                <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                        </div>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" 
-                                             action="#{pharmacyAdjustmentController.fillDepartmentAdjustmentByBillItem()}" ></p:commandButton>
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill"
+                                icon="fas fa-fill"
+                                class="ui-button-warning"
+                                action="#{pharmacyAdjustmentController.fillDepartmentAdjustmentByBillItem()}" ></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2">
+                                <p:dataExporter type="xls" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton> 
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xls" target="tbl" fileName="Detailed_Transfer_Listing"  />
-                            </p:commandButton>  
+
                         </h:panelGrid>
 
 
@@ -47,28 +67,28 @@
                                          value="#{pharmacyAdjustmentController.billItems}" var="i" 
 
                                          rows="10"
-                                         paginator="true" paginatorPosition="both"
+                                         paginator="true" paginatorPosition="bottom"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                         rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                         rowsPerPageTemplate="5,10,15"
 
 
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Adjustment Report By Item for "/>
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="Department : "/>
+                                    <h:outputLabel value="Adjustment Report By Item for "/>&nbsp;
+                                    
+                                    <h:outputLabel value="Department : "/>&nbsp;
                                         <h:outputLabel value="#{pharmacyAdjustmentController.fromDepartment.name}"/> 
-                                        
+                                        <br/>
                                         <h:outputLabel value="From : "/>
-                                        <h:outputLabel value="#{pharmacyAdjustmentController.fromDate}">
+                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.fromDate}">&nbsp;
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To : "/>
-                                        <h:outputLabel value="#{pharmacyAdjustmentController.toDate}">
+                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.toDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                   
                                 </f:facet>
 
                                 <p:column headerText="Bill No"

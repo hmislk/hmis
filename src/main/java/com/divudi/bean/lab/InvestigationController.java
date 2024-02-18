@@ -171,7 +171,7 @@ public class InvestigationController implements Serializable {
         current = new Investigation();
         return "/admin/lims/investigation";
     }
-    
+
     public String navigateToAddInvestigation() {
         current = new Investigation();
         return "/admin/lims/investigation";
@@ -252,7 +252,7 @@ public class InvestigationController implements Serializable {
         }
         return "/admin/lims/investigation_single";
     }
-    
+
     public String navigateToManageInvestigation() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
@@ -1222,7 +1222,7 @@ public class InvestigationController implements Serializable {
         listAllIxs();
         return "/admin/lims/investigation_list";
     }
-    
+
     public String navigateToManageReportTemplateNames() {
         listAllIxs();
         return "/admin/lims/investigation_list";
@@ -1334,48 +1334,38 @@ public class InvestigationController implements Serializable {
 
     public void saveSelected() {
 
-//        if (errorCheck()) {
-//            return;
-//        }
-        getCurrent().setCategory(getCurrent().getInvestigationCategory());
+        if (getCurrent() == null) {
+            return;
+        }
+        
+
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
         }
-//        getCurrent().setInstitution(institution);
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //////// // System.out.println("1");
+        if (getCurrent().getId() != null) {
             if (billedAs == false) {
-                //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
-
             }
             if (reportedAs == false) {
-                //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-
             getFacade().create(getCurrent());
             if (billedAs == false) {
-                //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
             }
             if (reportedAs == false) {
-                //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
             Item sc = new Item();
-
             sc.setCreatedAt(new Date());
             sc.setCreater(sessionController.getLoggedUser());
-
             sc.setItemType(ItemType.SampleComponent);
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
@@ -1385,51 +1375,35 @@ public class InvestigationController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    public void save(Investigation i) {
 
-//        if (errorCheck()) {
-//            return;
-//        }
-        i.setCategory(i.getInvestigationCategory());
+    public void save(Investigation i) {
         i.setSymanticType(SymanticType.Laboratory_Procedure);
         if (i.getInwardChargeType() == null) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
         }
-//        i.setInstitution(institution);
         if (i.getId() != null && i.getId() > 0) {
-            //////// // System.out.println("1");
             if (billedAs == false) {
-                //////// // System.out.println("2");
                 i.setBilledAs(i);
-
             }
             if (reportedAs == false) {
-                //////// // System.out.println("3");
                 i.setReportedAs(i);
             }
             getFacade().edit(i);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            //////// // System.out.println("4");
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
-
             getFacade().create(i);
             if (billedAs == false) {
-                //////// // System.out.println("5");
                 i.setBilledAs(i);
             }
             if (reportedAs == false) {
-                //////// // System.out.println("6");
                 i.setReportedAs(i);
             }
             getFacade().edit(i);
             Item sc = new Item();
-
             sc.setCreatedAt(new Date());
             sc.setCreater(sessionController.getLoggedUser());
-
             sc.setItemType(ItemType.SampleComponent);
             sc.setName(i.getName());
             sc.setParentItem(i);
@@ -1439,8 +1413,7 @@ public class InvestigationController implements Serializable {
         recreateModel();
         getItems();
     }
-    
-    
+
     public void saveSelected(Investigation tix) {
         if (tix.getId() == null) {
             getFacade().create(tix);

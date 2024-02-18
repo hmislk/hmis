@@ -20,7 +20,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -48,6 +48,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,7 +81,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -280,7 +280,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
         savePatient();
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
 //            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
@@ -559,7 +559,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         clearBillValues();
         printPreview = false;
         this.patient = patient;
-        return "/opd/opd_bill_package?faces-redirect=true";
+        return "/opd_bill_package?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {

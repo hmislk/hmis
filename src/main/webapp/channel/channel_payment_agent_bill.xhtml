@@ -1,32 +1,42 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!channelStaffPaymentBillController.printPreview}" styleClass="alignTop" >
                         <p:panel header="Staff Payments" >
-                            <h:panelGrid columns="1" >
+                            
                                 <h:panelGrid columns="2" >
-                                    <h:panelGrid columns="6" class="mb-4">
+                                  
+                                         <p:outputLabel value="Agency Name" />
                                         <p:autoComplete completeMethod="#{institutionController.completeAgency}" required="true" id="ins" 
                                         forceSelection="true" value="#{channelStaffPaymentBillController.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" class="ml-2"/>
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" class="w-100 mx-2" inputStyleClass="mx-2 w-100"/>
+                                         <p:outputLabel value="From Date" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" class="w-100 mx-2 my-1" inputStyleClass="w-100 mx-2 my-1" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                         <p:outputLabel value="To Date" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" class="w-100 mx-2" inputStyleClass="w-100 mx-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <h:outputLabel value="Payment Method " class="ml-2" ></h:outputLabel>
+                                    <p:selectOneMenu id="cmbPay" class="w-100 mx-3 my-1" value="#{channelStaffPaymentBillController.paymentMethod}" >
+                                        <f:selectItem itemLabel="Please select a Payment method" />
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    </p:selectOneMenu>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" class="mx-2 ml-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" class="mx-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        <p:watermark value="Agent" for="ins"/>
+<!--                                        <p:watermark value="Agent" for="ins"/>-->
+<!--                                        <p:spacer/>-->
 
-                                        <p:commandButton ajax="false" value="Process" class="mx-2" action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
-                                        <p:commandButton ajax="false" value="Clear" class="mx-2" action="#{channelStaffPaymentBillController}"/>
-                                    </h:panelGrid>
-
+                                        <p:commandButton ajax="false" value="Process" icon="fa-solid fa-arrows-rotate"
+                                                 class="w-100 ui-button-warning my-1" action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
+                                        <p:commandButton ajax="false" value="Clear" icon="fa-solid fa-eraser"
+                                                 class="w-50 ui-button-danger my-1 mx-3" action="#{channelStaffPaymentBillController}"/>
+                         
 
 
                                 </h:panelGrid >
@@ -78,30 +88,27 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Payment Details" />
                                     </f:facet>
-                                    <h:panelGrid columns="2" >
+                                    <h:panelGrid columns="3" >
                                         <h:outputLabel value="Total Due" ></h:outputLabel>
+                                        <p:spacer width="30"/>
                                         <h:outputLabel class="mx-2" id="lblDue" value="#{channelStaffPaymentBillController.totalDue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Paying This time " ></h:outputLabel>
+                                        <p:spacer width="30"/>
                                         <h:outputLabel class="mx-2" id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
                                     </h:panelGrid>
                                 </p:panel>
-                                <h:panelGroup >
+                                <div class="w-50" >
 
-                                    <h:outputLabel value="Payment Method " class="ml-2" ></h:outputLabel>
-                                    <p:selectOneMenu class="mx-2" id="cmbPay" style="width: 400px;" value="#{channelStaffPaymentBillController.paymentMethod}" >
-                                        <f:selectItem itemLabel="Please select a Payment method" />
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                    </p:selectOneMenu>
-
-                                    <p:commandButton class="mx-2" ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBillAgent()}"  >
+                                    
+                                    <p:commandButton class="w-25 ui-button-success my-1" ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBillAgent()}"  >
                                         
                                     </p:commandButton>
-                                </h:panelGroup>
-                            </h:panelGrid>
+                                </div>
+                         
 
                         </p:panel>
                     </h:panelGroup>

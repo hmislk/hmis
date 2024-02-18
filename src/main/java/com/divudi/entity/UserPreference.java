@@ -6,7 +6,9 @@
 package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.ItemListingStrategy;
+import com.divudi.data.OpdTokenNumberGenerationStrategy;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.RestAuthenticationType;
@@ -102,6 +104,7 @@ public class UserPreference implements Serializable {
     private boolean checkPaymentSchemeValidation;
     private boolean grnBillDetailed;
     private boolean bhtNumberWithYear;
+    private boolean bhtNumberWithOutAdmissionType;
     private boolean depNumGenFromToDepartment;
     private boolean tranferNetTotalbyRetailRate;
     private boolean allowtoChangePaymentMethodDuringPayment;
@@ -200,13 +203,31 @@ public class UserPreference implements Serializable {
     private String nameRegex;
     private String mobileRegex;
     private String emailRegex;
+    private String nicRegex;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy ccItemListingStrategy;
+    
+    @Enumerated(value = EnumType.STRING)
+    private OpdBillingStrategy opdBillingStrategy;
+    
+    @Enumerated(value = EnumType.STRING)
+    private OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy;
+    private boolean printOpdTokenNumber=true;
+    
+    private boolean autodisplayMenu = true;
+    
+    //User Preference for Financial transaction manager
+    
+    private boolean showBillWiseDetails;
+    
+    
 
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -318,6 +339,7 @@ public class UserPreference implements Serializable {
 
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
+        this.opdSettleWithoutCashTendered = false;
     }
 
     public String getAbbreviationForHistory() {
@@ -1069,5 +1091,72 @@ public class UserPreference implements Serializable {
     public void setCcItemListingStrategy(ItemListingStrategy ccItemListingStrategy) {
         this.ccItemListingStrategy = ccItemListingStrategy;
     }
+
+    public String getNicRegex() {
+        return nicRegex;
+    }
+
+    public void setNicRegex(String nicRegex) {
+        this.nicRegex = nicRegex;
+    }
+
+    public boolean isAutodisplayMenu() {
+        return autodisplayMenu;
+    }
+
+    public void setAutodisplayMenu(boolean autodisplayMenu) {
+        this.autodisplayMenu = autodisplayMenu;
+    }
+
+    public OpdTokenNumberGenerationStrategy getOpdTokenNumberGenerationStrategy() {
+        if(opdTokenNumberGenerationStrategy==null){
+            opdTokenNumberGenerationStrategy=OpdTokenNumberGenerationStrategy.BILLS_BY_DEPARTMENT_CATEGORY_AND_FROMSTAFF;
+        }
+        return opdTokenNumberGenerationStrategy;
+    }
+
+    public void setOpdTokenNumberGenerationStrategy(OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy) {
+        this.opdTokenNumberGenerationStrategy = opdTokenNumberGenerationStrategy;
+    }
+
+    public OpdBillingStrategy getOpdBillingStrategy() {
+        if(opdBillingStrategy==null){
+            opdBillingStrategy=OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT;
+        }
+        return opdBillingStrategy;
+    }
+
+    public void setOpdBillingStrategy(OpdBillingStrategy opdBillingStrategy) {
+        this.opdBillingStrategy = opdBillingStrategy;
+    }
+
+    public boolean isPrintOpdTokenNumber() {
+        return printOpdTokenNumber;
+    }
+
+    public void setPrintOpdTokenNumber(boolean printOpdTokenNumber) {
+        this.printOpdTokenNumber = printOpdTokenNumber;
+    }
+
+    public boolean isBhtNumberWithOutAdmissionType() {
+        return bhtNumberWithOutAdmissionType;
+    }
+
+    public void setBhtNumberWithOutAdmissionType(boolean bhtNumberWithOutAdmissionType) {
+        this.bhtNumberWithOutAdmissionType = bhtNumberWithOutAdmissionType;
+    }
+
+    public boolean isShowBillWiseDetails() {
+        return showBillWiseDetails;
+    }
+
+    public void setShowBillWiseDetails(boolean showBillWiseDetails) {
+        this.showBillWiseDetails = showBillWiseDetails;
+    }
+
+    
+    
+    
+    
 
 }

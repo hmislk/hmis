@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -13,17 +13,17 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Staff Stock Report by Batch" >
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="5" class="my-2" >
 <!--                            <h:outputLabel value="Staff" >
                             </h:outputLabel>
                             <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{reportsStock.staff}"  >
                             </p:autoComplete>-->
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStocks}" ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton class="ui-button-warning " icon="fas fa-fill"  ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStocks}" ></p:commandButton>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" >
                                 </p:printer>
                             </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false">
+                            <p:commandButton  class="ui-button-success " icon="fas fa-file-excel" value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
                                                
                                                     

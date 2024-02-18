@@ -27,7 +27,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -68,6 +68,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -252,7 +253,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -810,7 +811,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         savePatient();
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             if (b == null) {
@@ -1081,7 +1082,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private boolean errorCheck() {
         if (getPatient().getPerson().getName() == null
                 || getPatient().getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
+            UtilityController.addErrorMessage("Please select a patient before billing");
             return true;
         }
         if (checkPatientAgeSex()) {
@@ -1101,7 +1102,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        }
 
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("Add tests");
+            UtilityController.addErrorMessage("Please Add tests before billing");
             return true;
         }
 

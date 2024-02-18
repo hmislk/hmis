@@ -119,6 +119,7 @@ public class PharmacySaleBhtController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
     boolean billPreview = false;
@@ -146,6 +147,11 @@ public class PharmacySaleBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+        
+        if(getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
 
@@ -353,7 +359,7 @@ public class PharmacySaleBhtController implements Serializable {
         department = null;
         replaceableStocks = new ArrayList<>();
         itemsWithoutStocks = new ArrayList<>();
-        errorMessage="";
+        errorMessage = "";
     }
 
     public void selectReplaceableStocksNew() {
@@ -586,7 +592,6 @@ public class PharmacySaleBhtController implements Serializable {
                 continue;
             }
 
-
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
 
@@ -682,6 +687,12 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private boolean checkAllBillItem() {
+        if (getPreBill().getBillItems() == null) {
+            return true;
+        }
+        if (getPreBill().getBillItems().isEmpty()) {
+            return true;
+        }
         for (BillItem b : getPreBill().getBillItems()) {
 
             if (onEdit(b)) {
@@ -697,6 +708,14 @@ public class PharmacySaleBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        
+        if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        
+        
         if (errorCheck()) {
             return;
         }
@@ -941,8 +960,8 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quntity?";
-            UtilityController.addErrorMessage("Quentity?");
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
             return;
         }
 
@@ -965,13 +984,12 @@ public class PharmacySaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
-        
+
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
-
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
@@ -1020,7 +1038,6 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setTotal(grossTot);
         getPreBill().setGrantTotal(grossTot);
         getPreBill().setDiscount(discount);
-
 
     }
 
@@ -1080,7 +1097,6 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
-
 
     }
 
@@ -1160,7 +1176,7 @@ public class PharmacySaleBhtController implements Serializable {
             handleSelectAction();
         } else if (!qry.trim().equals("") && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItems(qry, department);
-            if (itemsWithoutStocks != null) {
+            if (itemsWithoutStocks != null && !itemsWithoutStocks.isEmpty()) {
                 fillReplaceableStocksForAmp((Amp) itemsWithoutStocks.get(0));
             }
         }
@@ -1296,7 +1312,7 @@ public class PharmacySaleBhtController implements Serializable {
         stock = null;
 
     }
-    
+
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
@@ -1557,4 +1573,13 @@ public class PharmacySaleBhtController implements Serializable {
         this.errorMessage = errorMessage;
     }
 
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    
 }

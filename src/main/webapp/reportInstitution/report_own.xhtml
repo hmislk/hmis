@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -19,7 +19,7 @@
                             <p:accordionPanel activeIndex="#{commonReport.manageInstitutionReportIndex}">
                                 <p:ajax process="@this"></p:ajax>
 
-                                    <p:tab title="Book Keeping Summary(With Professional)" >
+                                    <p:tab title="Book Keeping Summary (With Professional)" >
                                         <div class="d-grid gap-2">  
 
                                             <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
@@ -27,24 +27,24 @@
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title=" Book Keeping Summary(Witout Professional" >
+                                    <p:tab title=" Book Keeping Summary (Witout Professional)" >
                                         <div class="d-grid gap-2">
 
                                             <p:commandButton class="w-100" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
                                             <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_without_pro_month"/>                             
-                                            <p:commandButton class="w-100" ajax="false" value="Category Vise Income" action="report_cash_catogory_summery"/>                             
+                                            <p:commandButton class="w-100" ajax="false" value="Category Wise Income" action="report_cash_catogory_summery"/>                             
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Day End" >
                                         <div class="d-grid gap-2"> 
 
-                                            <p:commandButton class="w-100" ajax="false" value="Day-end Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
-                                            <p:commandButton class="w-100" ajax="false" value="Day-end Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="Day-End Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="Day-End Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="Summary By Service Opd" >
+                                    <p:tab title="Summary By Service OPD" >
                                         <div class="d-grid gap-2"> 
 
                                             <p:commandButton class="w-100" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
@@ -67,8 +67,8 @@
                                     <p:tab title="Managing Director" >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill(Opd)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
-                                            <p:commandButton class="w-100" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill (OPD)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Item (OPD)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
                                         </div>
                                     </p:tab>
 
@@ -77,10 +77,10 @@
 
                                             <p:commandButton class="w-100" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
                                             <p:commandButton class="w-100" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" />
-                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill(With Letter)" action="report_opd_credit_bill_by_credit_company_with_letter" />
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill (With Letter)" action="report_opd_credit_bill_by_credit_company_with_letter" />
                                             <p:commandButton class="w-100" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
-                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill(OPD/Pharmacy/Inward)" action="/credit/credit_bill_all" /> 
-                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill Payment(OPD/Pharmacy/Inward)" action="/inward/inward_search_balance_payment_1" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill (OPD/Pharmacy/Inward)" action="/credit/credit_bill_all" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill Payment (OPD/Pharmacy/Inward)" action="/inward/inward_search_balance_payment_1" /> 
                                         </div>
                                     </p:tab>
 
@@ -94,7 +94,7 @@
                                     </p:tab>
 
 
-                                    <p:tab title="Summary By Investigation Opd" >
+                                    <p:tab title="Summary By Investigation OPD" >
                                         <div class="d-grid gap-2"> 
 
                                             <p:commandButton class="w-100" ajax="false" value="Summary By Investigation" action="report_investigation_service_summery" /> 
@@ -106,7 +106,7 @@
                                         <div class="d-grid gap-2"> 
 
                                             <p:commandButton class="w-100" ajax="false" value="OPD VAT 15%" action="/reportInstitution/report_opd_bills_for_vat"/> 
-                                            <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat"/>
+                                            <p:commandButton class="w-100" ajax="false" value="All Channel Bill With VAT" action="/channel/channel_report_all_bills_for_vat"/>
                                             <p:commandButton value="BHT VAT Report" action="/inward/inward_report_bht_inward_vat"  class="w-100" ajax="false" />
                                         </div>
                                     </p:tab>
@@ -115,8 +115,8 @@
                                     <p:tab title="Quick Book Reports" >
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton class="w-100" ajax="false" value="QB day income report " action="/qbReports/report_qb_day_income_with_out_professional" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
-                                            <p:commandButton class="w-100" ajax="false" value="Item To Export report " action="/qbReports/report_qb_item_list" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
+                                            <p:commandButton class="w-100" ajax="false" value="QB Day Income Report " action="/qbReports/report_qb_day_income_with_out_professional" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
+                                            <p:commandButton class="w-100" ajax="false" value="Item To Export Report " action="/qbReports/report_qb_item_list" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
                                         </div>
                                     </p:tab>
 

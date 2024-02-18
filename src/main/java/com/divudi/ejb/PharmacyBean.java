@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -52,7 +53,7 @@ import com.divudi.facade.StoreItemCategoryFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.VirtualProductIngredientFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -191,8 +192,10 @@ public class PharmacyBean {
         }
 
         for (BillItem bItem : bill.getBillItems()) {
+            System.out.println("bItem = " + bItem.getItem().getName());
             BillItem newBillItem = new BillItem();
             newBillItem.copy(bItem);
+            System.out.println("After copy");
             newBillItem.invertValue(bItem);
             newBillItem.setBill(preBill);
             newBillItem.setReferanceBillItem(bItem);
@@ -237,9 +240,10 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
+            UtilityController.addErrorMessage("Bill Already Cancelled");
             return null;
         }
-
+        System.out.println("1 = " + 1);
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 
@@ -867,9 +871,9 @@ public class PharmacyBean {
 
         stock = getStockFacade().find(stock.getId());
 
-        //System.err.println("Before Update" + stock.getStock());
+//        System.out.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        //System.err.println("After Update " + stock.getStock());
+//        System.out.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
         return true;
@@ -1193,7 +1197,7 @@ public class PharmacyBean {
         name = name.replaceAll("\'", "");
         name = name.replaceAll("\"", "");
         String j = "SELECT c FROM PharmaceuticalItemCategory c Where (c.name)=:name ";
-        
+
         try {
             cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql(j, m);
         } catch (Exception e) {
@@ -1231,16 +1235,14 @@ public class PharmacyBean {
         String j = "SELECT c FROM PharmaceuticalItemType c Where (c.name) = :n";
         Map m = new HashMap();
         m.put("n", name.trim().toUpperCase());
-        try{
-             cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j,m);
-        
-        }catch(Exception e){
+        try {
+            cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j, m);
+
+        } catch (Exception e) {
             return null;
         }
-        
-        
-        
-       if (cat == null && createNew == true) {
+
+        if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1313,14 +1315,14 @@ public class PharmacyBean {
     @EJB
     VmpFacade vmpFacade;
     @EJB
-    VtmsVmpsFacade vtmsVmpsFacade;
+    VirtualProductIngredientFacade virtualProductIngredientFacade;
 
-    public VtmsVmpsFacade getVtmsVmpsFacade() {
-        return vtmsVmpsFacade;
+    public VirtualProductIngredientFacade getVirtualProductIngredientFacade() {
+        return virtualProductIngredientFacade;
     }
 
-    public void setVtmsVmpsFacade(VtmsVmpsFacade vtmsVmpsFacade) {
-        this.vtmsVmpsFacade = vtmsVmpsFacade;
+    public void setVirtualProductIngredientFacade(VirtualProductIngredientFacade virtualProductIngredientFacade) {
+        this.virtualProductIngredientFacade = virtualProductIngredientFacade;
     }
 
     public VmpFacade getVmpFacade() {
@@ -1405,37 +1407,42 @@ public class PharmacyBean {
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         String sql;
-        if (strength == 0 || strengthUnit == null || cat == null) {
-            return null;
+        String vmpName = "";
+
+        if (vtm != null && vtm.getName() != null) {
+            vmpName += vtm.getName();
         }
+
+        if (strength < 0.00000001) {
+            vmpName += " " + strength;
+        }
+
+        if (strengthUnit != null && strengthUnit.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + strengthUnit.getName();
+        }
+
+        if (cat != null && cat.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + cat.getName();
+        }
+
+        vmpName = vmpName.trim();
+
         Map m = new HashMap();
-        m.put("vtm", vtm);
-        m.put("s", strength);
-        m.put("su", strengthUnit);
-        m.put("c", cat);
-        sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
-        ////System.out.println("m = " + m);
-        Vmp vmp;
-        if (v == null) {
-            ////System.out.println("new created");
+        m.put("n", vmpName);
+        m.put("v", vtm);
+        sql = "select v "
+                + "from Vmp v "
+                + "where v.name=:n "
+                + " and v.vtm=:v";
+        Vmp vmp=vmpFacade.findFirstByJpql(sql, m);
+        if (vmp == null) {
             vmp = new Vmp();
-
-            vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
-
+            vmp.setName(vmpName);
+            vmp.setVtm(vtm);
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
-
-            v = new VirtualProductIngredient();
-            v.setStrength(strength);
-            v.setStrengthUnit(strengthUnit);
-            v.setVtm(vtm);
-            v.setVmp(vmp);
-            v.setPharmaceuticalItemCategory(cat);
-            getVtmsVmpsFacade().create(v);
         }
-        v.getVmp().setRetired(false);
-        return v.getVmp();
+        return vmp;
     }
 
     public Vtm getVtmByName(String name, boolean createNew) {

@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling'))}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
+
+                    <h:form class="container-fluid" >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputText value="Mark In" >
+                                </h:outputText>
+                            </f:facet>
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Doctor/Staff" ></p:outputLabel>
+                                <p:autoComplete 
+                                    value="#{workingTimeController.current.staff}"
+                                    completeMethod="#{staffController.completeConsultant}"
+                                    minQueryLength="2"  
+                                    forceSelection="true" 
+                                    id="scStaff"
+                                    var="mys" 
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    itemValue="#{mys}"
+                                    >
+                                </p:autoComplete>
+                                <p:outputLabel value="Start Time" ></p:outputLabel>
+                                <p:calendar pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            value="#{workingTimeController.current.startRecord.recordTimeStamp}" ></p:calendar>
+                                <p:commandButton value="Mark In" ajax="false" action="#{workingTimeController.markIn()}" ></p:commandButton>
+                            </p:panelGrid>
+
+                        </p:panel>
+
+                    </h:form>
+
+
+                </h:panelGroup>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
+
+
+
+

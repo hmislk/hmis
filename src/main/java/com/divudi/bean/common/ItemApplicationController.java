@@ -76,8 +76,6 @@ public class ItemApplicationController {
         reloaded = null;
     }
 
-    
-
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Other">
     // </editor-fold>
@@ -121,6 +119,8 @@ public class ItemApplicationController {
         }
         return investigationsAndServices;
     }
+    
+    
 
     private List<ItemLight> fillPackages() {
         String jpql = "SELECT new com.divudi.data.ItemLight("

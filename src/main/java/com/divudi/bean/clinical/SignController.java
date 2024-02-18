@@ -146,7 +146,7 @@ public class SignController implements Serializable {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updates");
+            UtilityController.addSuccessMessage("Updated");
         }
         recreateModel();
         getItems();

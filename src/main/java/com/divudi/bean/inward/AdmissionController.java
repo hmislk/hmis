@@ -17,7 +17,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Doctor;
@@ -31,12 +31,14 @@ import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.AppointmentFacade;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.EncounterCreditCompanyFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,10 +89,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private PatientRoomFacade patientRoomFacade;
     @EJB
     private RoomFacade roomFacade;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+            
     @Inject
     BhtEditController bhtEditController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+    
     ////////////////////////////
-    @EJB
     private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
@@ -126,6 +133,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionStatus admissionStatusForSearch;
     private boolean patientDetailsEditable;
 
+    public void copyPatientAddressToGurdian(){
+        current.getGuardian().setAddress(current.getPatient().getPerson().getAddress());
+    }
+    
+    public void copyPatientPhoneNumberToGurdian(){
+        current.getGuardian().setPhone(current.getPatient().getPerson().getPhone());
+    }
+    
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
     }
@@ -154,6 +169,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     
     public void addCreditCompnay(){
         // need to add encounterCreditCompany to list
+        if (encounterCreditCompany.getInstitution() != null) {
+            encounterCreditCompany.setPatientEncounter(current);
+            encounterCreditCompanies.add(encounterCreditCompany);
+            encounterCreditCompany=new EncounterCreditCompany();
+        }
+        
+    }
+    
+    public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany){
+        if (encounterCreditCompany != null) {
+            encounterCreditCompanies.remove(encounterCreditCompany);
+            encounterCreditCompany=new EncounterCreditCompany();
+        }
     }
 
     public String navigateToInpatientDrugChart() {
@@ -440,7 +468,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
         current.getPatient().setEditingMode(false);
-        return "/inward/admission_profile?faces-redirect?true";
+        bhtSummeryController.setPatientEncounter(current);
+        return bhtSummeryController.navigateToInpatientProfile();
     }
 
     public List<Admission> completeAdmission(String query) {
@@ -544,7 +573,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
         clearSearchValues();
-        return "/inward/inpatient_search";
+        return "/inward/inpatient_search?faces-redirect=true;";
     }
 
     public void listCurrentInpatients() {
@@ -771,7 +800,25 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             UtilityController.addErrorMessage("Select Paymentmethod");
             return true;
         }
+        
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            if(encounterCreditCompany.getInstitution()!=null){
+                    getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
+                    getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
+                    getCurrent().setPolicyNo(encounterCreditCompany.getPolicyNo());
+                    getCurrent().setReferanceNo(encounterCreditCompany.getReferanceNo());
+                    //TO DO - Add credit limit, etc
+                }
+            
+            if(!getEncounterCreditCompanies().isEmpty()){
+                    EncounterCreditCompany tec = getEncounterCreditCompanies().get(0);
+                    getCurrent().setCreditCompany(tec.getInstitution());
+                    getCurrent().setCreditLimit(tec.getCreditLimit());
+                    getCurrent().setPolicyNo(tec.getPolicyNo());
+                    getCurrent().setReferanceNo(tec.getReferanceNo());
+                    //TO Do - add other fields
+                }
+            
             if (getCurrent().getCreditCompany() == null) {
                 UtilityController.addErrorMessage("Select Credit Company");
                 return true;
@@ -803,7 +850,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (getCurrent().getReferringDoctor() == null) {
+        if (getCurrent().getReferringConsultant() == null) {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
@@ -954,9 +1001,31 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getInwardPaymentController().pay();
             getInwardPaymentController().makeNull();
         }
-
+        
+        saveEncounterCreditCompanies(current);
+        
+       
+        // Save EncounterCreditCompanies
+        // Need to create EncounterCredit
         printPreview = true;
-
+    }
+    
+    
+    public void saveEncounterCreditCompanies(PatientEncounter current){
+         if (!encounterCreditCompanies.isEmpty() && current != null) {
+            for(EncounterCreditCompany ecc:encounterCreditCompanies){
+                ecc.setPatientEncounter(current);
+                ecc.setCreatedAt(new Date());
+                ecc.setCreater(sessionController.getLoggedUser());
+                if (ecc.getInstitution() != null) {
+                getEncounterCreditCompanyFacade().create(ecc);
+                } else {
+                getEncounterCreditCompanyFacade().edit(ecc);
+                }
+            } 
+        }
+        encounterCreditCompanies=new ArrayList<>();
+        encounterCreditCompany= new EncounterCreditCompany();
     }
 
     public void setSelectText(String selectText) {
@@ -1166,6 +1235,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        if(current!=null){
+            current.setPatient(patient);
+        }
     }
 
     public YearMonthDay getYearMonthDay() {
@@ -1359,6 +1431,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     
+    
 
     @Override
     public boolean isPatientDetailsEditable() {
@@ -1391,6 +1464,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         this.encounterCreditCompany = encounterCreditCompany;
+    }
+
+    public EncounterCreditCompanyFacade getEncounterCreditCompanyFacade() {
+        return encounterCreditCompanyFacade;
+    }
+
+    public void setEncounterCreditCompanyFacade(EncounterCreditCompanyFacade encounterCreditCompanyFacade) {
+        this.encounterCreditCompanyFacade = encounterCreditCompanyFacade;
     }
 
     /**

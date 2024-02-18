@@ -110,6 +110,9 @@ public class SampleController implements Serializable {
     }
 
     public Sample getCurrent() {
+        if(current == null){
+            current = new Sample();
+        }
         return current;
     }
 
@@ -121,7 +124,7 @@ public class SampleController implements Serializable {
         this.current = current;
     }
 
-    public String delete() {
+    public void delete() {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -134,16 +137,20 @@ public class SampleController implements Serializable {
         recreateModel();
         getItems();
         current = null;
-        return navigateToListItems();
     }
 
+    public String navigateToManageSpecimens() {
+        prepareAdd();
+        return "/admin/lims/manage_specimens?faces-redirect=true";
+    }
+    
     public String navigateToListItems() {
-        return "/admin/lims/speciman_list";
+        return "/admin/lims/speciman_list?faces-redirect=true";
     }
 
     public String navigateToAddItem() {
         prepareAdd();
-        return "/admin/lims/speciman";
+        return "/admin/lims/speciman?faces-redirect=true";
     }
 
     public String navigateToEditItem() {
@@ -151,7 +158,7 @@ public class SampleController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
-        return "/admin/lims/speciman";
+        return "/admin/lims/speciman?faces-redirect=true";
     }
 
     private SampleFacade getFacade() {

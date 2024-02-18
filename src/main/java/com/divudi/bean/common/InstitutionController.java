@@ -147,11 +147,11 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
     }
-    
+
     public List<Institution> getSearchItems() {
         return searchItems;
     }
-    
+
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String jpql = "select i "
@@ -179,6 +179,15 @@ public class InstitutionController implements Serializable {
                 current = null;
             }
         }
+    }
+
+    public List<Institution> fillAllItems() {
+        List<Institution> ins;
+        String sql = "Select i from Institution i where i.retired=:ret order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        ins = getFacade().findByJpql(sql, m);
+        return ins;
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
@@ -430,7 +439,7 @@ public class InstitutionController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            UtilityController.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -460,7 +469,7 @@ public class InstitutionController implements Serializable {
 
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            UtilityController.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -499,7 +508,7 @@ public class InstitutionController implements Serializable {
 
     public void updateCreditLimit(HistoryType historyType) {
         if (current == null || current.getId() == null) {
-            UtilityController.addErrorMessage("Please Select a Agency");
+            UtilityController.addErrorMessage("Please Select an Agency");
             return;
         }
 
@@ -566,6 +575,10 @@ public class InstitutionController implements Serializable {
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
         UtilityController.addSuccessMessage("History Saved");
+    }
+
+    public Institution findInstitution(Long id) {
+        return getFacade().find(id);
     }
 
     public void setSelectText(String selectText) {

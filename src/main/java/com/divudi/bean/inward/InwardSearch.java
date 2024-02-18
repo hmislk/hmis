@@ -19,7 +19,7 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -44,6 +44,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -83,7 +84,7 @@ public class InwardSearch implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
+
     private CommonFunctions commonFunctions;
 
     /**
@@ -132,6 +133,17 @@ public class InwardSearch implements Serializable {
     Patient patient;
     Sex[] sex;
     private Admission admission;
+    
+    private boolean withProfessionalFee = false;
+    
+    public boolean showProfessionalFee(){
+        if(withProfessionalFee == true){
+            withProfessionalFee = false;
+        }else{
+            withProfessionalFee = true;
+        }
+        return withProfessionalFee;
+    }
 
     public void edit() {
         if (getBill() == null) {
@@ -237,11 +249,12 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        
         String jpql;
         Map temMap = new HashMap();
-        jpql = "select b from BilledBill b where"
+        jpql = "select b from Bill b where"
                 + " b.billType = :billType and "
-                + "and b.retired=false ";
+                + " b.retired=false ";
 
         jpql += " and  b.patientEncounter=:pe ";
         temMap.put("pe", admission);
@@ -249,12 +262,20 @@ public class InwardSearch implements Serializable {
         temMap.put("billType", BillType.InwardFinalBill);
         jpql += " order by b.id desc ";
      
-        bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+      // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        bill = getBillFacade().findFirstByJpql(jpql,temMap);
+        
         if(bill==null){
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
+        withProfessionalFee = false;
+        
         return "/inward/inward_reprint_bill_final";
+    }
+    
+    public String navigateDoctorPayment(){
+        return "/inward/inward_bill_payment";
     }
 
     public boolean calculateRefundTotal() {
@@ -1523,6 +1544,14 @@ public class InwardSearch implements Serializable {
 
     public void setAdmission(Admission admission) {
         this.admission = admission;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
     }
     
     

@@ -71,6 +71,10 @@ public class InwardPaymentController implements Serializable {
         due = getFinalBillDue();
 
     }
+    
+    public String navigateToInpationDashbord(){
+        return "/inward/admission_profile?faces-redirect=true";
+    }
 
     private double getFinalBillDue() {
         String sql = "Select b From BilledBill b where"

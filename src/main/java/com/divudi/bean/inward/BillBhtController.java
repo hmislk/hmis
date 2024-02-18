@@ -22,7 +22,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -39,7 +38,6 @@ import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
-
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -52,6 +50,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,10 +59,6 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -102,9 +97,7 @@ public class BillBhtController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    @EJB
-    CommonFunctions commonFunctions;
-    ///////////////////
+
     @Inject
     InwardBeanController inwardBean;
     @Inject
@@ -114,6 +107,7 @@ public class BillBhtController implements Serializable {
     @Inject
     BillController billController;
     ///////////////////
+    CommonFunctions commonFunctions;
     private double total;
     private double discount;
     private double netTotal;
@@ -137,36 +131,35 @@ public class BillBhtController implements Serializable {
     private Doctor referredBy;
     Date date;
 
-
-    public String navigateToAddServiceFromAdmissionProfile() {
-        List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
-        if (patientSurgeries == null) {
-            JsfUtil.addErrorMessage("No Surgeries added yet");
-            return null;
-        }
-        if (patientSurgeries.isEmpty()) {
-            JsfUtil.addErrorMessage("No Surgeries added yet");
-            return null;
-        }
-
-        makeNull();
-        if (patientSurgeries.size() == 1) {
-            bills = null;
-            setBatchBill(patientSurgeries.get(0));
-        } else if (patientSurgeries.size() > 1) {
-            setBatchBill(null);
-            bills = patientSurgeries;
-        }
-
-        return "/theater/inward_bill_surgery_service";
-    }
+//    public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
+//        List<Bill> patientSurgeries = billController.fillPatientSurgeryBills(patientEncounter);
+//        if (patientSurgeries == null) {
+//            JsfUtil.addErrorMessage("No Surgeries added yet");
+//            return null;
+//        }
+//        if (patientSurgeries.isEmpty()) {
+//            JsfUtil.addErrorMessage("No Surgeries added yet");
+//            return null;
+//        }
+//
+//        resetBillData();
+//        if (patientSurgeries.size() == 1) {
+//            bills = null;
+//            setBatchBill(patientSurgeries.get(0));
+//        } else if (patientSurgeries.size() > 1) {
+//            setBatchBill(null);
+//            bills = patientSurgeries;
+//        }
+//
+//        return "/theater/inward_bill_surgery_service";
+//    }
 
     public String navigateToAddServiceFromMenu() {
-        makeNull();
+        resetBillData();
         return "/theater/inward_bill_surgery_service";
     }
-    
-    public void makeNull() {
+
+    public void resetBillData() {
         date = null;
         total = 0.0;
         discount = 0.0;
@@ -189,7 +182,7 @@ public class BillBhtController implements Serializable {
         bills = null;
         referredBy = null;
     }
-    
+
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -388,7 +381,7 @@ public class BillBhtController implements Serializable {
 
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
         // System.err.println("1");
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             //   System.err.println("2");
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
@@ -585,7 +578,7 @@ public class BillBhtController implements Serializable {
 
     private boolean errorCheckForAdding() {
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select Bht");
+            UtilityController.addErrorMessage("Please Select BHT");
             return true;
         }
 
@@ -594,7 +587,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            UtilityController.addErrorMessage("Please select an investigation or Services");
             return true;
         }
 
@@ -620,16 +613,8 @@ public class BillBhtController implements Serializable {
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            if (!(getCurrentBillItem().getItem() instanceof Investigation)) {
-                UtilityController.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
-                return true;
-            } else {
-                if (((Investigation) getCurrentBillItem().getItem()).getInvestigationCategory() == null) {
-                    UtilityController.addErrorMessage("Under administration, add Category For Investigation " + getCurrentBillItem().getItem().getName());
-                    return true;
-                }
-            }
-
+            UtilityController.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
+            return true;
         }
 
         return false;
@@ -639,7 +624,6 @@ public class BillBhtController implements Serializable {
         if (errorCheckForAdding()) {
             return;
         }
-
         if (errorCheckForPatientRoomDepartment()) {
             return;
         }
@@ -808,7 +792,7 @@ public class BillBhtController implements Serializable {
 
     public void prepareNewBill() {
         clearBillItemValues();
-        makeNull();
+        resetBillData();
         printPreview = false;
 
     }

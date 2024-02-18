@@ -83,6 +83,8 @@ The features available to different roles of the users are stated in detail in t
 * Mr Isuru Pathum
 * Mr A R C Sanka
 
+## Business Analyst 
+* Miss Binuthi Nilakna Ariyaratne (Since 2024)
 
 ## Quantity Control Feedback
 

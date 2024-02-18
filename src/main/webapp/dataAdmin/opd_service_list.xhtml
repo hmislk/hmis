@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/dataAdmin/report_entered_data.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 >
@@ -17,23 +17,27 @@
                 <p:panel id="panIx"  >
 
                     <f:facet name="header" >
-                        <h:outputLabel value="List of Service"></h:outputLabel>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                            <p:printer target="panIx" />
+                        <h:outputLabel value="List of Service" class="mx-2 mt-2"></h:outputLabel>
+                        <h:panelGrid columns="3" class="my-2" style="float: right">
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
+                            <p:printer target="print" />
                         </p:commandButton>
 
-                        <p:commandButton value="Excel" ajax="false" >
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false" >
                             <p:dataExporter type="xlsx" target="tblBills" fileName="Service Fees"
                                          />
                         </p:commandButton>
+                        </h:panelGrid>
 
                     </f:facet>
 
-                    <h:inputText autocomplete="off" id="txtSearch" value="#{serviceController.selectText}" style="width: 600px;" >
+                    <p:inputText autocomplete="off" id="txtSearch" value="#{serviceController.selectText}"
+                                 style="width: 600px; margin: 10px"
+                                 placeholder="Type here to Search" >
                         <f:ajax render="tblBills" execute="txtSearch" event="keyup" />
-                    </h:inputText>
+                    </p:inputText>
 
-                    <p:panel >
+                    <p:panel id="print" >
 
                         <p:dataTable id="tblBills" value="#{serviceController.serviceFee}" var="ix"  style="font-size: 12px;">
                             <f:facet name="header">
@@ -49,9 +53,9 @@
 
                             <p:subTable id="tbl" value="#{ix.itemFees}" var="d">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{ix.service.category.parentCategory.name}" style="font-weight:normal ;color: black;text-align: left;" /> 
-                                    <p:outputLabel value="#{ix.service.category.name}" style="font-weight:normal ;color: black;text-align: left;" />
-                                    <p:outputLabel value="#{ix.service.name}" style="font-weight:normal ;color: black;text-align: left;"/> 
+                                    <p:outputLabel value="#{ix.service.category.parentCategory.name} &nbsp;" style="font-weight:normal ;color: black;text-align: left;" /> 
+                                    <p:outputLabel value="#{ix.service.category.name} &nbsp;" style="font-weight:normal ;color: black;text-align: left;" />
+                                    <p:outputLabel value="#{ix.service.name} &nbsp;" style="font-weight:normal ;color: black;text-align: left;"/> 
                                 </f:facet>
 
                                 <p:column  style="width: 25%;" >                                    

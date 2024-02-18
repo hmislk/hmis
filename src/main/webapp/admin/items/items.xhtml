@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/items/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="item">
@@ -19,36 +19,35 @@
                         <div class="col-md-6">
                             <p:panel>
                                 <div class="container">
-                                    <div class="row" >
-                                        <div class="col-12" >
-                                            <p:commandButton 
-                                                id="btnAddIx"
-                                                value="Add Investigation"
-                                                class="w-25 m-1 ui-button-success"
-                                                update="lstSelect gpDetail detailFocus" 
-                                                process="btnAddIx" 
-                                                action="#{itemController.prepareAddingInvestigation()}" >
-                                            </p:commandButton>
-                                             <p:commandButton 
-                                                id="btnAddService"
-                                                value="Add Service"
-                                                class="w-25 m-1 ui-button-success"
-                                                update="lstSelect gpDetail detailFocus" 
-                                                process="btnAddService" 
-                                                action="#{itemController.prepareAddingService()}" >
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="btnDelete" 
-                                                class="w-25 m-1 ui-button-danger"
-                                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    <h:panelGrid columns="3">
+                                        <p:commandButton 
+                                            id="btnAddIx"
+                                            value="Add Investigation"
+                                            class="w-100 ui-button-success"
+                                            update="lstSelect gpDetail detailFocus" 
+                                            process="btnAddIx" 
+                                            action="#{itemController.prepareAddingInvestigation()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnAddService"
+                                            value="Add Service"
+                                            class="w-100 m-1 ui-button-success"
+                                            update="lstSelect gpDetail detailFocus" 
+                                            process="btnAddService" 
+                                            action="#{itemController.prepareAddingService()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            id="btnDelete" 
+                                            class="w-100 m-1 ui-button-danger"
+                                            onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                             return false;" 
-                                                action="#{itemController.delete()}"
-                                                value="Delete"
-                                                update="lstSelect gpDetail selectFocus msg"
-                                                process="btnDelete">
-                                            </p:commandButton>
-                                        </div>
-                                    </div>
+                                            action="#{itemController.delete()}"
+                                            value="Delete"
+                                            update="lstSelect gpDetail selectFocus msg"
+                                            process="btnDelete">
+                                        </p:commandButton>
+                                    </h:panelGrid>
+
 
                                     <div class="row">
                                         <div class="col-12">
@@ -90,74 +89,122 @@
                                     <p:defaultCommand target="btnSave"/>
                                 </f:facet>
                                 <h:panelGrid id="gpDetail" columns="1" class="w-100">
-                                    <p:tabView >
-                                        <p:tab id="gpDetails" title="Basic Details" >
-                                            <h:panelGrid columns="2">
-                                                <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <p:tabView class="w-100">
+                                        <p:tab id="gpDetails" title="Basic Details" class="w-100">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:inputText 
+                                                        autocomplete="off" 
+                                                        id="txtName" 
+                                                        value="#{itemController.current.name}" 
+                                                        required="true" 
+                                                        requiredMessage="Please enter a name to register"
+                                                        class="w-100"></p:inputText>
 
-                                                <p:inputText 
-                                                    autocomplete="off" 
-                                                    id="txtName" 
-                                                    value="#{itemController.current.name}" 
-                                                    required="true" 
-                                                    requiredMessage="Please enter a name to register"
-                                                    class="w-100 mx-2"></p:inputText>
+                                                </div>
+                                            </div>
 
-                                                <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                                <p:inputText autocomplete="off" id="txtAddress"   
-                                                             value="#{itemController.current.printName}" 
-                                                             class="w-100 mx-2" ></p:inputText>
-                                                <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                                <p:inputText autocomplete="off" id="txtFullName"   value="#{itemController.current.fullName}" class="w-100 mx-2" ></p:inputText>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:inputText autocomplete="off" id="txtAddress"   
+                                                                 value="#{itemController.current.printName}" 
+                                                                 class="w-100" ></p:inputText>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:inputText autocomplete="off" id="txtFullName"   value="#{itemController.current.fullName}" class="w-100" ></p:inputText>
 
-                                                <h:outputText value="Service Category/Sub Category" ></h:outputText>
-                                                <p:autoComplete 
-                                                    completeMethod="#{categoryController.completeServiceCategory}" 
-                                                    var="pta" 
-                                                    itemLabel="#{pta.name}"
-                                                    itemValue="#{pta}" 
-                                                    forceSelection="true" 
-                                                    value="#{itemController.current.category}"
-                                                    size="45"
-                                                    class="mx-2"
-                                                    id="cat"
-                                                    >                                    
-                                                    <p:column>#{pta.name}</p:column>
-                                                    <p:column>#{pta.parentCategory}</p:column>                                        
-                                                </p:autoComplete>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <h:outputLabel value=""/>
+                                                <h:outputLabel value=""/>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText value="Service Category/Sub Category" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:autoComplete 
+                                                        completeMethod="#{categoryController.completeServiceCategory}" 
+                                                        var="pta" 
+                                                        itemLabel="#{pta.name}"
+                                                        itemValue="#{pta}" 
+                                                        forceSelection="true" 
+                                                        value="#{itemController.current.category}"
+                                                        inputStyleClass="w-100"
+                                                        class="w-100"
+                                                        id="cat"
+                                                        >                                    
+                                                        <p:column>#{pta.name}</p:column>
+                                                        <p:column>#{pta.parentCategory}</p:column>                                        
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText value="Institution" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:selectOneMenu id="cmbIns" value="#{itemController.current.institution}" filter="true" class="form-control">
+                                                        <f:selectItem itemLabel="Please select a Institution"/>
+                                                        <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                        <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText value="Department" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:selectOneMenu id="cmbDep" value="#{itemController.current.department}" class="form-control">
+                                                        <f:selectItem itemLabel="Please select a Department"/>
+                                                        <f:selectItems value="#{departmentController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <h:outputText value="Charge Category" ></h:outputText>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:selectOneMenu
+                                                        filter="true"
+                                                        filterMatchMode="contains"
+                                                        id="cmbInward" 
+                                                        value="#{itemController.current.inwardChargeType}" 
+                                                        class="w-100">
+                                                        <f:selectItem itemLabel="Please select Charge"/>
+                                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <p:outputLabel value="Item Code"/>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100"/>
+                                                </div>
+                                            </div>
 
-                                                <h:outputText value="Institution" ></h:outputText>
-                                                <p:selectOneMenu id="cmbIns" value="#{itemController.current.institution}" class="form-control mx-2">
-                                                    <f:selectItem itemLabel="Please select a Institution"/>
-                                                    <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                    <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
-                                                </p:selectOneMenu>
-                                                <h:outputText value="Department" ></h:outputText>
-                                                <p:selectOneMenu id="cmbDep" value="#{itemController.current.department}" class="form-control mx-2">
-                                                    <f:selectItem itemLabel="Please select a Department"/>
-                                                    <f:selectItems value="#{departmentController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                </p:selectOneMenu>
-                                                <h:outputText value="Inward Charge Category" ></h:outputText>
-                                                <p:selectOneMenu
-                                                    filter="true"
-                                                    filterMatchMode="contains"
-                                                    id="cmbInward" 
-                                                    value="#{itemController.current.inwardChargeType}" 
-                                                    class="form-control mx-2">
-                                                    <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                </p:selectOneMenu>
-
-                                                <p:outputLabel value="Item Code"/>
-                                                <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="form-control mx-2"/>
-                                                <h:outputText></h:outputText>
-                                            </h:panelGrid>
                                         </p:tab>
                                         <p:tab title="Additional Details" >
                                             <h:panelGrid columns="2" >
                                                 <h:outputText id="lblid" value="ID" ></h:outputText>
                                                 <h:outputText id="lblId" value="#{itemController.current.id}" ></h:outputText>
-                                               
+
 
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.inactive}" itemLabel="Service Inactive"/>
@@ -178,6 +225,8 @@
                                                 <p:selectBooleanCheckbox value="#{itemController.current.discountAllowed}" itemLabel="Discount Allowed"/>
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{itemController.current.patientNotRequired}" itemLabel="Patient Not Required"/>
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{itemController.current.printFeesForBills}" itemLabel="Print Separate Fees"/>
                                                 <h:outputText value="Created Person"/>
                                                 <h:outputText value="#{itemController.current.creater.webUserPerson.nameWithTitle}"/>
                                                 <h:outputText value="Item Id"/>
@@ -194,7 +243,7 @@
                                             <h:outputText value="VATable" ></h:outputText>
                                             <p:selectBooleanCheckbox  value="#{itemController.current.vatable}" >
                                             </p:selectBooleanCheckbox>
-                                           
+
                                         </p:tab>
                                     </p:tabView>
                                 </h:panelGrid>

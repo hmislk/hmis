@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -17,11 +17,10 @@
                             <i class="fa fa-file-text" aria-hidden="true"/>
                             <h:outputLabel styleClass="noPrintButton"  value="Logins Report" class="mx-2 mt-2" />
                             <p:commandButton 
-                                styleClass="noPrintButton" 
                                 value="Print" ajax="false" 
                                 icon="fa fa-print"
                                 style="float: right;"
-                                class="ui-button-success">
+                                class="ui-button-info">
                                 <p:printer target="printBlock" />
                             </p:commandButton>
                         </f:facet>
@@ -38,7 +37,7 @@
                                 </p:calendar>
                             </h:panelGrid>
 
-                            <h:panelGrid >
+                            <h:panelGrid columns="3">
                                 <p:commandButton 
                                     id="btnRefresh" 
                                     action="#{loginController.fillLogins()}"
@@ -49,6 +48,12 @@
                                     ajax="false">                               
                                 </p:commandButton>
                                 <p:defaultCommand target="btnRefresh"/>
+                                <p:commandButton 
+                                    value="Excel" 
+                                    icon="fa fa-file-excel"
+                                    class="ui-button-success"
+                                    ajax="false"
+                                    action="#{loginController.downloadAsExcel}" />
                             </h:panelGrid>
                         </div>
 
@@ -74,7 +79,7 @@
                                 </h:outputLabel>
                             </h:panelGrid>
 
-                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index">
+                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
                                 <p:column headerText="No" width="30px" >
                                     <h:outputLabel value="#{index +1}" ></h:outputLabel>
                                 </p:column>
@@ -92,12 +97,12 @@
                                     <h:outputLabel value="#{b.webUser.webUserPerson.name}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Login At">
+                                <p:column headerText="Login At"  sortBy="#{b.logedAt}">
                                     <h:outputLabel value="#{b.logedAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Log out at">
+                                <p:column headerText="Log out at" sortBy="#{b.logoutAt}" >
                                     <h:outputLabel value="#{b.logoutAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>

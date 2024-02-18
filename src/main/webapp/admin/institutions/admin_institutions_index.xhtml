@@ -1,9 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -17,51 +19,58 @@
                                 <p:tab title="Manage" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton 
-                                            styleClass="linkButton" 
+                                            class="changeColor"
                                             ajax="false" 
                                             value="Manage Institutions" 
                                             action="#{navigationController.navigateToManageInstitution()}" 
                                             icon="fa-solid fa-building-user"/>
-<!--                                        <p:commandButton  
+                                        <p:commandButton  
                                             styleClass="linkButton" 
                                             ajax="false" 
                                             value="Manage Departments" 
                                             action="#{navigationController.navigateToManageDepartment()}" 
-                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>-->
-                                        
-                                        <p:commandButton styleClass="linkButton" 
-                                                         action="#{institutionController.toAddNewInstitution()}" 
-                                                         icon="fa-solid fa-building-user" value="Add New Institution">
-                                        </p:commandButton>
+                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
+
+                                        <!--                                        <p:commandButton styleClass="linkButton" 
+                                                                                                 action="#{institutionController.toAddNewInstitution()}" 
+                                                                                                 icon="fa-solid fa-building-user" value="Add New Institution">
+                                                                                </p:commandButton>-->
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{institutionController.toListInstitutions()}" 
                                                          icon="bi bi-list" value="List Institutions">
                                         </p:commandButton>
-                                        <p:commandButton styleClass="linkButton"  
-                                                         action="#{departmentController.toAddNewDepartment()}" 
-                                                         icon="fa-solid fa-building"
-                                                          value="Add New Department">
-                                        </p:commandButton>
+                                        <!--                                        <p:commandButton styleClass="linkButton"  
+                                                                                                 action="#{departmentController.toAddNewDepartment()}" 
+                                                                                                 icon="fa-solid fa-building"
+                                                                                                  value="Add New Department">
+                                                                                </p:commandButton>-->
                                         <p:commandButton styleClass="linkButton" 
                                                          action="#{departmentController.toListDepartments()}" 
                                                          icon="bi bi-list"
-                                                          value="List Departments">
+                                                         value="List Departments">
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
-                                        
+
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" icon="fa-solid fa-warehouse" action="#{navigationController.navigateToCollectingCenter()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres Upload" icon="fas fa-upload" action="#{navigationController.navigateToCollectingCenterUpload()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Areas" icon="fas fa-location-dot" action="#{navigationController.navigateToArea()}" />
                                         <p:commandButton styleClass="linkButton" 
+                                                         rendered="false"
                                                          action="#{routeController.toAddNewRoute}" 
                                                          icon="fas fa-map-location-dot"
-                                                          value="Add New Route">
+                                                         value="Add New Route">
                                         </p:commandButton>
-                                        <p:commandButton styleClass="linkButton"  
+                                        <p:commandButton styleClass="linkButton" 
+                                                         rendered="false"
                                                          action="#{routeController.toListRoutes()}" 
                                                          value="List Routes"
                                                          icon="fas fa-list">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         action="#{routeController.manageRoutes()}" 
+                                                         icon="fas fa-map-location-dot"
+                                                          value="Manage Routes">
                                         </p:commandButton>
                                     </div>
                                 </p:tab>
@@ -96,7 +105,6 @@
 
                     </div>
                 </div>
-
 
 
 

@@ -16,12 +16,23 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadController.file}"
                                               mode="simple"
                                               label="Choose File"/>
-                                <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadPatients}"
-                                                 ajax="false"/>
+                                <p:commandButton 
+                                    value="Upload"
+                                    icon="fa fa-upload"
+                                    action="#{dataUploadController.uploadPatients}"
+                                    ajax="false"/>
+                                <p:commandButton 
+                                    value="Download Template" 
+                                    ajax="false" 
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    onclick="PrimeFaces.monitorDownload(start, stop);" 
+                                    icon="fa fa-download">
+                                    <p:fileDownload value="#{dataUploadController.templateForPatientUpload}" />
+                                </p:commandButton>
                             </h:form>
 
                             <table class="table">
@@ -51,7 +62,9 @@
                                     <tr>
                                         <td>4</td>
                                         <td>Date of Birth</td>
-                                        <td>Patient date of birth in the format specified above. Optional.</td>
+                                        <td>Patient date of birth in the format specified above. Optional.<br/>
+                                            <div class="text-danger">Attention  :  Use this Patterns for date of birth ( "dd MMMM yyyy", "M/d/yy", "MM/dd/yyyy", "d/M/yy", "dd/MM,yyyy", "dd/MM/yyyy", "yyyy-MM-dd" )</div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>5</td>

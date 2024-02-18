@@ -89,6 +89,7 @@ public class RoomOccupancyController implements Serializable {
             return;
         }
         patientRoom.setDischarged(true);
+        JsfUtil.addSuccessMessage("Successfully Discharged");
         patientRoom.setDischargedAt(new Date());
         patientRoom.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(patientRoom);

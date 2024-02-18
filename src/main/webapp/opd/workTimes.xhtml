@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling'))}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
+                    
+                    <h:form class="container-fluid" >
+                        <p:panel >
+                            <f:facet name="header" >
+                                <h:outputText value="Currently Working" >
+                                </h:outputText>
+                            </f:facet>
+                            
+                            <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
+                                         rowKey="#{w.id}" >
+                                <p:column headerText="Name">
+                                    <h:outputLabel value="#{w.staffShift.staff.person.nameWithTitle}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="In">
+                                    <h:outputLabel value="#{w.startRecord.recordTimeStamp}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Out">
+                                    <h:outputLabel value="#{w.endRecord.recordTimeStamp}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Actions" >
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Retire" 
+                                        class="ui-button-danger"
+                                        icon="fas fa-door-open"
+                                        action="#{workingTimeController.markOut()}" >
+                                        <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     value="View"
+                                                     class="ui-button-success mx-2"
+                                                     icon="fas fa-eye"
+                                                     action="#{workingTimeController.navigateToViewWorkTime}" >
+                                        <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                          
+                            
+                        </p:panel>
+                        
+                    </h:form>
+                    
+                    
+                </h:panelGroup>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
+
+
+
+

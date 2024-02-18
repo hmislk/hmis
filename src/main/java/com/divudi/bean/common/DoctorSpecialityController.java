@@ -14,7 +14,9 @@ import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -31,8 +33,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -60,8 +62,8 @@ public class DoctorSpecialityController implements Serializable {
         this.selected = selected;
     }
 
-    public void deleteSelected(){
-        if(selected==null){
+    public void deleteSelected() {
+        if (selected == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
             return;
         }
@@ -71,11 +73,11 @@ public class DoctorSpecialityController implements Serializable {
         getFacade().edit(selected);
         items = null;
     }
-    
-    public void prepareCreate(){
+
+    public void prepareCreate() {
         selected = new DoctorSpeciality();
     }
-    
+
     public void updateSelected() {
         if (getSelected() == null) {
             JsfUtil.addErrorMessage("Nothing to save");
@@ -99,7 +101,7 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> getSelectedItems() {
-        if (selectText ==null || selectText.trim().equals("") ) {
+        if (selectText == null || selectText.trim().equals("")) {
             selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findByJpql("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -172,7 +174,7 @@ public class DoctorSpecialityController implements Serializable {
     public void setCurrent(DoctorSpeciality current) {
         this.current = current;
     }
-    
+
     // Method to generate the Excel file and initiate the download
     public void downloadAsExcel() {
         getItems();
@@ -232,10 +234,30 @@ public class DoctorSpecialityController implements Serializable {
         return ejbFacade;
     }
 
+    public DoctorSpeciality findDoctorSpeciality(String name, boolean createNewIfNotExists) {
+        String j;
+        j = "select s "
+                + " from DoctorSpeciality s "
+                + " where s.retired=:ret "
+                + " and s.name=:name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", name);
+        DoctorSpeciality ds = getFacade().findFirstByJpql(j, m);
+        if(ds==null && createNewIfNotExists){
+            ds = new DoctorSpeciality();
+            ds.setName(name);
+            ds.setCreatedAt(new Date());
+            ds.setCreater(sessionController.getLoggedUser());
+            getFacade().create(ds);
+        }
+        return ds;
+    }
+
     public List<DoctorSpeciality> getItems() {
         if (items == null) {
             String j;
-            j="select s from DoctorSpeciality s where s.retired=false order by s.name";
+            j = "select s from DoctorSpeciality s where s.retired=false order by s.name";
             items = getFacade().findByJpql(j);
         }
         return items;
@@ -287,5 +309,4 @@ public class DoctorSpecialityController implements Serializable {
     /**
      *
      */
-   
 }

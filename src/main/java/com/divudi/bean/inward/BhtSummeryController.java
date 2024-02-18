@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -36,12 +37,13 @@ import static com.divudi.data.inward.InwardChargeType.NursingCharges;
 import static com.divudi.data.inward.InwardChargeType.ProfessionalCharge;
 import static com.divudi.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
@@ -66,6 +68,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -90,7 +93,7 @@ import org.primefaces.event.RowEditEvent;
 public class BhtSummeryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @EJB
+
     private CommonFunctions commonFunctions;
     @EJB
     private PatientRoomFacade patientRoomFacade;
@@ -131,6 +134,8 @@ public class BhtSummeryController implements Serializable {
     private InwardTimedItemController inwardTimedItemController;
     @Inject
     private DischargeController dischargeController;
+    @Inject
+    BillController billController;
     ////////////////////////    
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
@@ -139,6 +144,8 @@ public class BhtSummeryController implements Serializable {
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
     List<Bill> storeIssues;
+    private List<Bill> surgeryBills;
+    private Bill surgeryBill;
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
@@ -148,7 +155,7 @@ public class BhtSummeryController implements Serializable {
     private double due;
     private double paid;
     private PatientItem tmpPI;
-    private Admission patientEncounter;
+    private PatientEncounter patientEncounter;
     private Bill current;
     private Date currentTime;
     private Date toTime;
@@ -158,6 +165,8 @@ public class BhtSummeryController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
+    @Inject
+    BillBhtController billBhtController;
     private Item item;
     boolean changed = false;
 
@@ -167,10 +176,40 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToInpatientProfile() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        fillSurgeryBills();
         return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
-    
-    
+
+    private void fillSurgeryBills() {
+        surgeryBills = billController.fillPatientSurgeryBills(patientEncounter);
+        if (surgeryBills == null || surgeryBills.isEmpty()) {
+            surgeryBill = null;
+        } else {
+            surgeryBill = surgeryBills.get(0);
+        }
+    }
+
+    public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
+        if (surgeryBills == null) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+        if (surgeryBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No Surgeries added yet");
+            return null;
+        }
+        if (surgeryBill == null) {
+            surgeryBill=surgeryBills.get(0);
+        }
+        billBhtController.resetBillData();
+        billBhtController.setBills(surgeryBills);
+        billBhtController.setBatchBill(surgeryBill);
+        return "/theater/inward_bill_surgery_service";
+    }
 
     public List<PatientRoom> getPatientRooms() {
         if (patientRooms == null) {
@@ -204,7 +243,7 @@ public class BhtSummeryController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -215,7 +254,7 @@ public class BhtSummeryController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1787,11 +1826,11 @@ public class BhtSummeryController implements Serializable {
         createTables();
     }
 
-    public Admission getPatientEncounter() {
+    public PatientEncounter getPatientEncounter() {
         return patientEncounter;
     }
 
-    public void setPatientEncounter(Admission patientEncounter) {
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
     }
@@ -1877,7 +1916,7 @@ public class BhtSummeryController implements Serializable {
 
         double extra = p.getAddedLinenCharge();
         ////System.out.println("extra = " + extra);
-        if (getCommonFunctions().checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
+        if (CommonFunctions.checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
             if (p.getAdmittedAt().equals(dischargedAt)) {
                 p.setCalculatedLinenCharge(0 + extra);
                 ////System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
@@ -1886,7 +1925,7 @@ public class BhtSummeryController implements Serializable {
                 ////System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
             }
         } else {
-            p.setCalculatedLinenCharge((linen * getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
+            p.setCalculatedLinenCharge((linen * CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
             ////System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
         }
     }
@@ -1904,7 +1943,7 @@ public class BhtSummeryController implements Serializable {
             p.setCalculatedMoCharge(calculated);
         } else {
             Date dischargedAt = p.getDischargedAt();
-            long dCount = getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt);
+            long dCount = CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt);
 
             if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
                 double calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
@@ -2063,14 +2102,6 @@ public class BhtSummeryController implements Serializable {
 
     public void setPaid(double paid) {
         this.paid = paid;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void calFinalValue() {
@@ -2506,6 +2537,22 @@ public class BhtSummeryController implements Serializable {
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
+    }
+
+    public List<Bill> getSurgeryBills() {
+        return surgeryBills;
+    }
+
+    public void setSurgeryBills(List<Bill> surgeryBills) {
+        this.surgeryBills = surgeryBills;
+    }
+
+    public Bill getSurgeryBill() {
+        return surgeryBill;
+    }
+
+    public void setSurgeryBill(Bill surgeryBill) {
+        this.surgeryBill = surgeryBill;
     }
 
 }

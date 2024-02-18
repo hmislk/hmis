@@ -11,7 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -49,6 +49,7 @@ import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,8 +92,8 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
-    @EJB
-    private CommonFunctions commonFunctions;
+
+    
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -106,6 +107,8 @@ public class InwardBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
+    private CommonFunctions commonFunctions;
+    
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
         Map<String, String> replaceables = CommonFunctions.getReplaceables(b);
@@ -1627,22 +1630,36 @@ public class InwardBeanController implements Serializable {
 
     public String getBhtText(AdmissionType admissionType) {
         String bhtText;
-        String sql = "SELECT count(a.id) FROM Admission a "
-                + " where a.admissionType.admissionTypeEnum=:adType ";
-
         HashMap hm = new HashMap();
-        hm.put("adType", admissionType.getAdmissionTypeEnum());
-        long temp = getAdmissionFacade().countByJpql(sql, hm);
+        Long temp = 0l;
+        String sql;
 
-        temp = temp + admissionType.getAdditionToCount();
+        if (admissionType != null) {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType.getAdmissionTypeEnum());
+            temp += admissionType.getAdditionToCount();
+            temp += admissionFacade.countByJpql(sql, hm);
+        } else {
+            sql = "SELECT count(a.id) FROM Admission a ";
+            sql += " where a.admissionType.admissionTypeEnum=:adType ";
+            hm.put("adType", admissionType);
+            temp += admissionFacade.countByJpql(sql);
+        }
 
-        bhtText = admissionType.getCode().trim() + Long.toString(temp);
+        if (getSessionController().getLoggedPreference().isBhtNumberWithOutAdmissionType()) {
+            bhtText = "BHT" + Long.toString(temp);
+        } else {
+            bhtText = admissionType.getCode().trim();
+        }
 
         if (getSessionController().getLoggedPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
 
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
         }
+
+        bhtText += "/" + Long.toString(temp);
         return bhtText;
     }
 
@@ -1843,8 +1860,18 @@ public class InwardBeanController implements Serializable {
 
         double duration = tif.getDurationHours() * 60;
         double consumeTimeM = 0L;
+        
+        if(admittedAt==null){
+            admittedAt = new Date();
+        }
 
-        consumeTimeM = getCommonFunctions().calculateDurationMin(admittedAt, dischargedAt);
+        if(dischargedAt==null){
+            dischargedAt=new Date();
+        }
+        
+        
+        
+        consumeTimeM = CommonFunctions.calculateDurationMin(admittedAt, dischargedAt);
 
         double count = 0;
 
@@ -1878,6 +1905,9 @@ public class InwardBeanController implements Serializable {
         }
 
         consumeTime = getCommonFunctions().calculateDurationMin(admittedDate, dischargedDate);
+        if (consumeTime == 0) {
+            return 0;
+        }
         double count = 0;
         double calculation = 0;
 

@@ -19,7 +19,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -50,6 +50,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -123,7 +124,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
@@ -334,7 +335,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
             return;
         }
         savePatient(getPatient());
-        if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
+        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
@@ -923,42 +924,42 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         return "/reportCashier/report_opd_package_bill.xhtml?faces-redirect=true";
     }
 
-    public String navigateToReportOpdPackageMedical() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String url = request.getRequestURL().toString();
-
-        String ipAddress = request.getRemoteAddr();
-
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigateToReportOpdPackageMedical()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_opd_package_medical.xhtml?faces-redirect=true";
-    }
+//    public String navigateToReportOpdPackageMedical() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//
+//        String url = request.getRequestURL().toString();
+//
+//        String ipAddress = request.getRemoteAddr();
+//
+//        AuditEvent auditEvent = new AuditEvent();
+//        auditEvent.setEventStatus("Started");
+//        long duration;
+//        Date startTime = new Date();
+//        auditEvent.setEventDataTime(startTime);
+//        if (sessionController != null && sessionController.getDepartment() != null) {
+//            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+//        }
+//
+//        if (sessionController != null && sessionController.getInstitution() != null) {
+//            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+//        }
+//        if (sessionController != null && sessionController.getLoggedUser() != null) {
+//            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+//        }
+//        auditEvent.setUrl(url);
+//        auditEvent.setIpAddress(ipAddress);
+//        auditEvent.setEventTrigger("navigateToReportOpdPackageMedical()");
+//        auditEventApplicationController.logAuditEvent(auditEvent);
+//
+//        Date endTime = new Date();
+//        duration = endTime.getTime() - startTime.getTime();
+//        auditEvent.setEventDuration(duration);
+//        auditEvent.setEventStatus("Completed");
+//        auditEventApplicationController.logAuditEvent(auditEvent);
+//        return "/reportCashier/report_opd_package_medical.xhtml?faces-redirect=true";
+//    }
 
     public void calTotals() {
         double tot = 0.0;

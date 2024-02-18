@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -85,8 +85,9 @@
                             </div>
                         </div>
 
-                        <div class="my-4" style="font-weight: bold;text-align: center">
-                            <p:outputLabel value="ADMISSIONS" />
+                        <div class="my-4" style="font-weight: bold;text-align: center;">
+                            <h1><h:outputLabel value="#{cc.attrs.admission.admissionType.name}" /></h1>
+                            
                         </div>
 
                         <div class="row d-flex justify-content-center ">

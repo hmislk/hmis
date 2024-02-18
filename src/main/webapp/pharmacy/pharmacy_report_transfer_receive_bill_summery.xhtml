@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -17,18 +17,18 @@
                     <p:panel header="Pharmacy Transfer Receive Summery Report" >
                         
                         <div class="row">
-                            <div class="col-6 ">
-                                <h:outputLabel value="Transfer Recive From" ></h:outputLabel>&nbsp;
+                            <div class="col-4 ">
+                                <h:outputLabel value="Recive From" ></h:outputLabel>&nbsp;
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="From" ></h:outputLabel>&nbsp;
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>
-                            <div class="col-3">
+                            <div class="col-4">
                                 <h:outputLabel value="To" ></h:outputLabel>&nbsp;
                             <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             </div>

@@ -69,7 +69,6 @@ public class OpdPreSettleController implements Serializable {
     SessionController sessionController;
     @Inject
     OpdPreBillController opdPreBillController;
-////////////////////////
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -102,6 +101,8 @@ public class OpdPreSettleController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    private Long billID;
+    private Bill currentBill;
 
     private Patient newPatient;
     private Patient searchedPatient;
@@ -150,6 +151,15 @@ public class OpdPreSettleController implements Serializable {
 
     }
 
+    
+    public String navigateToScanBills(){
+        return "/cashier/scan_bill_by_barcode_scanner?faces-redirect=true";
+    }
+    
+    public String navigateToSettleOpdPreBills(){
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+    
     public Double getEditingQty() {
         return editingQty;
     }
@@ -269,6 +279,7 @@ public class OpdPreSettleController implements Serializable {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
         getSaleBill().setBalance(getSaleBill().getNetTotal());
+        getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
 
@@ -301,7 +312,7 @@ public class OpdPreSettleController implements Serializable {
         getBillFacade().edit(getPreBill());
 
     }
-
+    
     private void saveSaleBillItems() {
         for (BillItem tbi : getPreBill().getBillItems()) {
             BillItem newBil = new BillItem();
@@ -346,7 +357,7 @@ public class OpdPreSettleController implements Serializable {
         if (errorCheckForSaleBill()) {
             return;
         }
-
+        
         saveSaleBill();
         saveSaleBillItems();
 
@@ -357,8 +368,8 @@ public class OpdPreSettleController implements Serializable {
         getSessionController().setLoggedUser(wb);
         setBill(getBillFacade().find(getSaleBill().getId()));
 
-        makeNull();
-        //    billPreview = true;
+//        makeNull();
+        billPreview = true;
 
     }
 
@@ -486,8 +497,9 @@ public class OpdPreSettleController implements Serializable {
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
     }
-
+    
     public String toSettle(Bill args) {
+        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
@@ -1042,5 +1054,23 @@ public class OpdPreSettleController implements Serializable {
     public void setOpdPreBillController(OpdPreBillController opdPreBillController) {
         this.opdPreBillController = opdPreBillController;
     }
+
+    public Bill getCurrentBill() {
+        return currentBill;
+    }
+
+    public void setCurrentBill(Bill currentBill) {
+        this.currentBill = currentBill;
+    }
+
+    public Long getBillID() {
+        return billID;
+    }
+
+    public void setBillID(Long billID) {
+        this.billID = billID;
+    }
+    
+    
 
 }

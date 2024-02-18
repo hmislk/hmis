@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-      xmlns:bill="http://java.sun.com/jsf/composite/bill"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
-      xmlns:in="http://java.sun.com/jsf/composite/inward">
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
 
 
     <h:body>
@@ -18,14 +18,18 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel  header="Service Reprint">
-                        <div class=" d-flex justify-content-between m-1">
+                        <f:facet name="header">
+                        <div class=" d-flex align-items-center justify-content-between m-1">
+                            <div >
+                                <h:outputLabel value="Service Reprint" />
+                            </div>
                             <div >
 
-                                <p:commandButton value="Reprint" ajax="false" action="#"  >
+                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
+                                <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
                                     <p:printer target="gpBillPreview2" ></p:printer>
                                 </p:commandButton>
 
@@ -48,9 +52,7 @@
                                         value="#{inwardSearch.bill}" 
                                         target="#{billSearch.bill}"  />
                                 </p:commandButton>
-                            </div>
-
-                            <div>
+                                
                                 <p:commandButton ajax="false" 
                                                  value="Mark As Checked"
                                                  icon="fa fa-check-square"
@@ -58,7 +60,7 @@
                                                  rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
                                                  class="m-2 ui-button-success"/>
                                 <p:commandButton ajax="false" 
-                                                 value="Mark As Un Check"
+                                                 value="Mark As Uncheck"
                                                  icon="fa fa-square"
                                                  action="#{inwardSearch.markAsUnChecked()}"
                                                  rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
@@ -77,12 +79,12 @@
                             </div>
 
                         </div>
-
+                            </f:facet>
                         <div class="col-12">
                             <div class="row  d-flex justify-content-center m-1">
                                 <div class="col-3 ">
 
-                                    <p:panel header="Patient Detail">
+                                    <p:panel header="Patient Details">
                                         <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
                                     </p:panel>
                                 </div>
@@ -168,12 +170,12 @@
                     <div class="printingOnly" >
 
                        <p:panel id="gpBillPreview" class="m-3">
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="bill">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
@@ -181,7 +183,7 @@
                         </p:panel>
                         
                         <p:panel id="gpBillPreview2" class="m-3">
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
@@ -190,7 +192,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>

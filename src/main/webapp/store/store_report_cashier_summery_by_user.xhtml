@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/store/store_summery_index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"       
-                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 >
 
 
@@ -15,6 +15,15 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
+                <h:panelGrid columns="6" class="my-2" style="float: right">
+                    <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                                     class="ui-button-warning" icon="fas fa-refresh"
+                                    action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                        <p:printer target="reportPrint"  />
+                    </p:commandButton> 
+                </h:panelGrid>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
 
@@ -41,16 +50,6 @@
                             <h:outputLabel value="#{commonReport.webUser.institution.name}"/><br/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                         </h:panelGrid>
-                        <p:panel style="float: left">
-                            <p:spacer width="60" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUser()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton> 
-                        </p:panel>
                         
                         <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
 

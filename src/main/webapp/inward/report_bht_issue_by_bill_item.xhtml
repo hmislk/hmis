@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -20,17 +20,17 @@
                                 <p:outputLabel value="Department" ></p:outputLabel>
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                                 itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{mdInwardReportController.dept}"  >
+                                                value="#{mdInwardReportController1.dept}"  >
                                 </p:autoComplete>
                                 <p:outputLabel value="From" ></p:outputLabel>
-                                <p:calendar value="#{mdInwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
+                                <p:calendar value="#{mdInwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                                 <p:outputLabel value="To" ></p:outputLabel>
-                                <p:calendar value="#{mdInwardReportController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
+                                <p:calendar value="#{mdInwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                             </h:panelGrid>
 
                             <p:panelGrid columns="1">
                                 <p:commandButton ajax="false" value="Fill" 
-                                                 action="#{mdInwardReportController.listInBhtBillItems()}"   ></p:commandButton>
+                                                 action="#{mdInwardReportController1.listInBhtBillItems()}"   ></p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
@@ -45,7 +45,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                         value="#{mdInwardReportController.billItem}" var="i" 
+                                         value="#{mdInwardReportController1.billItem}" var="i" 
                                          rowKey="#{i.id}" 
                                          rows="10"
                                          selection="#{searchController.selectedTelephoneNumbers}"
@@ -55,14 +55,14 @@
                                          >
                                 <f:facet name="header">
                                     <p:outputLabel value="Bht Issue Bill Item "/>
-                                    <p:outputLabel value="#{mdInwardReportController.dept.name}"/> 
+                                    <p:outputLabel value="#{mdInwardReportController1.dept.name}"/> 
 
                                     <p:outputLabel value="From  "/>
-                                    <p:outputLabel value="#{mdInwardReportController.fromDate}">
+                                    <p:outputLabel value="#{mdInwardReportController1.fromDate}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </p:outputLabel>
                                     <p:outputLabel value="-- To --"/>
-                                    <p:outputLabel value="#{mdInwardReportController.toDate}">
+                                    <p:outputLabel value="#{mdInwardReportController1.toDate}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </p:outputLabel>
 
@@ -138,7 +138,7 @@
                                         <p:column colspan="7"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <p:outputLabel value="#{mdInwardReportController.purchaseValue}" >
+                                                <p:outputLabel value="#{mdInwardReportController1.purchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </p:outputLabel>
                                             </f:facet>

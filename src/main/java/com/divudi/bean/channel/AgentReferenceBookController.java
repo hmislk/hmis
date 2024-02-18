@@ -11,7 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.ReferenceBookEnum;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.entity.channel.AgentReferenceBook;
@@ -19,6 +19,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +49,7 @@ public class AgentReferenceBookController implements Serializable {
     InstitutionFacade institutionFacade;
     @EJB
     private AgentHistoryFacade agentHistoryFacade;
-    @EJB
+
     CommonFunctions commonFunctions;
     @Inject
     SessionController sessionController;
@@ -368,7 +369,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

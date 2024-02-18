@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
@@ -76,12 +76,20 @@
                                                 styleClass="mx-1">
                                             </p:commandButton>
                                             <p:commandButton 
-                                                value="Billing" 
-                                                action="#{patientController.toEmrPatientProfile()}" 
-                                                ajax="false" 
+                                                value="OPD Billing" 
+                                                action="#{patientController.navigateToOpdBilling()}" 
+                                                ajax="false"
                                                 icon="fa fa-money-bill"
                                                 styleClass="mx-1">
-                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
+                                            </p:commandButton>
+                                             <p:commandButton 
+                                                value="Pharmecy Billing" 
+                                                action="#{patientController.navigateToPharamecyBilling()}" 
+                                                ajax="false"
+                                                icon="fa fa-money-bill"
+                                                styleClass="mx-1">
+                                                <f:setPropertyActionListener value="#{patientController.current}" target="#{patientController.current}" />
                                             </p:commandButton>
                                             <p:commandButton 
                                                 value="Patient Dashboard" 
@@ -110,7 +118,7 @@
                             <div class="row" >
                                 <div class="col-12" >
                                     <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
-                                        <p:tab title="Summery" >
+                                        <p:tab title="Summary">
                                             <emr:emr_summery patient="#{patientController.current}"/>
                                         </p:tab>
                                         <p:tab title="Demographics" >

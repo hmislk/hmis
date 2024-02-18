@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -245,11 +245,11 @@
                                     </p:column>
 
 
-                                    <p:column  headerText="Patient" styleClass="alignTop" style="width:13em;">
+                                    <p:column  headerText="Patient" styleClass="alignTop" style="width:14em;">
                                         <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
                                                        value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
-                                                       action="/patient" target="_blank"
-                                                       style="text-decoration:underline; max-width: 13em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
+                                                       action="#{patientController.navigateToOpdPatientEdit()}" 
+                                                       style="text-decoration:underline; max-width: 14em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'text-danger':''}"
                                                        >
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
@@ -258,8 +258,8 @@
 
                                         <h:commandLink id="colPtDetail1" rendered="#{!pi.billItem.bill.approvedAnyTest}"
                                                        value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
-                                                       action="/patient" 
-                                                       style="text-decoration:underline; max-width: 13em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
+                                                       action="#{patientController.navigateToOpdPatientEdit()}" 
+                                                       style="text-decoration:underline; max-width: 14em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'text-danger':''}"
                                                        >
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>

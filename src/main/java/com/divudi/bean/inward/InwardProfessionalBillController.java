@@ -18,7 +18,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillEntry;
 import com.divudi.entity.BillFee;
@@ -37,6 +37,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -88,7 +89,7 @@ public class InwardProfessionalBillController implements Serializable {
     private BillBeanController billBean;
     @EJB
     BillNumberGenerator billNumberBean;
-    @EJB
+
     CommonFunctions commonFunctions;
     //////////////////    
     private List<Bill> items = null;
@@ -587,7 +588,20 @@ public class InwardProfessionalBillController implements Serializable {
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
-
+        
+        if(currentBillFee.getSpeciality()==null){
+             UtilityController.addErrorMessage("Please select a Speciality");
+                return;
+        }else if (currentBillFee.getStaff()==null){
+             UtilityController.addErrorMessage("Please select a Staff");
+                return;
+        }else if (currentBillFee.getFeeValue()== 0.0) {
+             UtilityController.addErrorMessage("Please add fee");
+                return;
+        }else if (currentBillFee.getFeeAt()== null) {
+             UtilityController.addErrorMessage("Please select Date");
+                return;
+        }
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());

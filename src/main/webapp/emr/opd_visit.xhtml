@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
@@ -48,12 +48,13 @@
                                 icon="pi pi-print"
                                 class="p-0 m-1" 
                                 title="Print">
-                                <p:printer target=":formImage:tblView:txtComments"/>
+                                <p:printer target=":formImage:tblView:txeLetterPreview"/>
                             </p:commandButton>
 
 
                         </div>
                     </div>
+
                     <div class="row" >
                         <div class="col-12" >
                             <p:tabView id="tblView" activeIndex="#{emrController.activeIndexOfOpdVisit}">
@@ -81,18 +82,18 @@
                                                     <h:outputText styleClass="fa-solid fa-clock-rotate-left" /> <!-- FontAwesome Icon -->
                                                     <h:outputText value="Past Medical Conditions" class="mx-3"></h:outputText>
                                                 </f:facet>
-                                            <emr:patient_allergies 
-                                                editable="true"
-                                                allergies="#{patientEncounterController.patientAllergies}">
-                                            </emr:patient_allergies>
-                                            <emr:patient_conditions 
-                                                conditions="#{patientEncounterController.patientDiagnoses}"
-                                                editable="true">
-                                            </emr:patient_conditions>
-                                            <emr:patient_medicines 
-                                                editable="true"
-                                                medicines="#{patientEncounterController.patientMedicines}">
-                                            </emr:patient_medicines>
+                                                <emr:patient_allergies 
+                                                    editable="true"
+                                                    allergies="#{patientEncounterController.patientAllergies}">
+                                                </emr:patient_allergies>
+                                                <emr:patient_conditions 
+                                                    conditions="#{patientEncounterController.patientDiagnoses}"
+                                                    editable="true">
+                                                </emr:patient_conditions>
+                                                <emr:patient_medicines 
+                                                    editable="true"
+                                                    medicines="#{patientEncounterController.patientMedicines}">
+                                                </emr:patient_medicines>
                                             </p:panel>
                                         </div>
                                     </div>
@@ -123,21 +124,23 @@
                                                                         </div>-->
                                 </p:tab>
 
-                                <p:tab title="Visit Details" class="m-0">
+                                <p:tab title="Visit Details" class="m-0" id="visit">
                                     <div class="ui-g">
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-1">
                                                 <f:facet name="header" >
-                                                    <h:outputText value="Clinical Details" ></h:outputText>
+                                                    <h:outputText styleClass="fas fa-notes-medical"/>
+                                                    <h:outputText class="mx-4" value="Clinical Details" ></h:outputText>
                                                 </f:facet>
                                                 <p:inputTextarea id="txtComments" 
                                                                  queryDelay="0" 
                                                                  placeholder="Write comments here."
-                                                                 class="w-100" 
+                                                                 class="w-100 my-2" 
                                                                  autoResize="true"
                                                                  value="#{patientEncounterController.current.comments}" 
                                                                  completeMethod="#{patientEncounterController.completeClinicalComments}" 
                                                                  minQueryLength="1">
+
                                                     <f:ajax event="keyup" execute="@this" ></f:ajax>
                                                 </p:inputTextarea>
 
@@ -210,10 +213,13 @@
                                                     </div>
                                                 </div>
 
-
                                             </p:panel>
 
-                                            <p:panel header="Diagnosis" class="w-100 m-1" >
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-stethoscope"/>
+                                                    <h:outputText class="mx-4" value="Diagnosis"/>
+                                                </f:facet>
                                                 <div class="row" >
                                                     <div class="col-md-9" >
                                                         <p:autoComplete id="acDx" 
@@ -228,15 +234,17 @@
                                                     </div>
                                                     <div class="col-md-3" >
                                                         <p:commandButton ajax="true" 
+                                                                         class="ui-button-success"
+                                                                         value="Add"
                                                                          id="btnAddDx" 
                                                                          action="#{patientEncounterController.addDx}"
                                                                          process="acDx txtDx btnAddDx" 
-                                                                         update="acDx txtDx gpDx"
+                                                                         update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
-                                                <p:inputTextarea class="w-100" autoResize="true"
+                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
                                                                  id="txtDx" 
                                                                  value="#{patientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
@@ -254,16 +262,20 @@
                                                                  var="edx" class="w-100">
                                                         <p:column headerText="Diagnosis">
                                                             <h:outputLabel value="#{edx.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink id="clRemoveDx" 
-                                                                           value="(X)"
-                                                                           process="clRemoveDx" 
-                                                                           action="#{patientEncounterController.removeEncounterDiagnoses()}"
-                                                                           update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} ">
-                                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
-                                                            </p:commandLink>
                                                         </p:column>
                                                         <p:column headerText="Details">
                                                             <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton icon="fas fa-trash"
+                                                                             id="clRemoveDx"
+                                                                             class="ui-button-danger"
+                                                                             process="clRemoveDx" 
+                                                                             action="#{patientEncounterController.removeEncounterDiagnoses()}"
+                                                                             update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId}">
+                                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+
                                                         </p:column>
                                                     </p:dataTable>
                                                 </h:panelGroup>
@@ -272,6 +284,10 @@
                                             </p:panel>
 
                                             <p:panel header="Tests" class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-vial"/>
+                                                    <h:outputText class="mx-4" value="Tests"/>
+                                                </f:facet>
                                                 <div class="row" >
                                                     <div class="col-9" >
                                                         <p:autoComplete id="acIx" 
@@ -287,6 +303,8 @@
                                                     <div class="col-3" >
                                                         <p:commandButton ajax="true" 
                                                                          id="btnIx" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
                                                                          action="#{patientEncounterController.addEncounterInvestigation()}"
                                                                          process="acIx txtIx btnIx" 
                                                                          update="acIx txtIx gpIx"
@@ -297,15 +315,12 @@
 
 
                                                 <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
-                                                <p:inputText class="w-100" 
-                                                             id="txtIx" 
-                                                             value="#{patientEncounterController.encounterInvestigation.lobValue}">
-                                                </p:inputText>
-
-
-
+                                                <p:inputTextarea class="w-100 my-2" 
+                                                                 id="txtIx" 
+                                                                 value="#{patientEncounterController.encounterInvestigation.lobValue}">
+                                                </p:inputTextarea>
                                                 <p:watermark value="Select an investigation." for="acIx"></p:watermark>
-                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
+                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtIx"></p:watermark>
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
@@ -317,17 +332,22 @@
                                                                  var="ix" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink id="clRemoveIx"
-                                                                           action="#{patientEncounterController.removeEncounterInvestigation()}" 
-                                                                           process="clRemoveIx"
-                                                                           update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
-                                                                           >
-                                                                <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
-                                                                <h:outputText value="&nbsp;(X)" />
-                                                            </p:commandLink>
+
                                                         </p:column>
                                                         <p:column headerText="Details">
                                                             <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton
+                                                                id="clRemoveIx"
+                                                                action="#{patientEncounterController.removeEncounterInvestigation()}" 
+                                                                process="clRemoveIx"
+                                                                update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash">
+                                                                <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+
                                                         </p:column>
                                                     </p:dataTable>
                                                 </h:panelGroup>
@@ -339,7 +359,8 @@
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel class="w-100 m-0 p-0">
                                                 <f:facet name="header">
-                                                    <p:outputLabel value="Prescription" />
+                                                    <h:outputText styleClass="fas fa-pills"/>
+                                                    <p:outputLabel class="mx-4" value="Medicines" />
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
@@ -421,9 +442,11 @@
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
                                                             <p:commandButton value="Add"
+                                                                             class="ui-button-success"
                                                                              id="btnAddRx"
+                                                                             icon="pi pi-plus"
                                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update="tblRxList tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
+                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId}"
                                                                              action="#{patientEncounterController.addEncounterMedicine}" />
                                                         </div>
                                                     </div>
@@ -435,19 +458,26 @@
                                                     <p:column>
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
                                                     </p:column>
+                                                    <p:column>
+                                                        <p:commandButton icon="fas fa-trash" 
+                                                                         id="btnRemove"
+                                                                         process="btnRemove"
+                                                                         update="tblRxx"
+                                                                         class="ui-button-danger"
+                                                                         action="#{patientEncounterController.removeCfv()}">
+                                                            <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
+
+                                                        </p:commandButton>
+                                                    </p:column>
                                                 </p:dataTable>
-
-                                                <emr:patient_medicines 
-                                                    id="tblRxList"
-                                                    editable="true"
-                                                    medicines="#{patientEncounterController.encounterMedicines}">
-                                                </emr:patient_medicines>                                                
-
                                             </p:panel>
 
 
-                                            <p:panel header="Procedures" class="w-100 m-1" >
-
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Procedures"/>
+                                                </f:facet>
                                                 <div class="row" >
                                                     <div class="col-md-9" >
                                                         <p:autoComplete id="acSx" 
@@ -464,6 +494,8 @@
                                                     </div>
                                                     <div class="col-md-3" >
                                                         <p:commandButton ajax="true" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
                                                                          id="btnSx" 
                                                                          action="#{patientEncounterController.addEncounterProcedure}"
                                                                          process="acSx txtSx btnSx" update="acSx txtSx gpSx"
@@ -472,7 +504,7 @@
                                                         <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
                                                     </div>
                                                 </div>
-                                                <p:inputTextarea class="w-100" autoResize="true"
+                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
                                                                  id="txtSx" 
                                                                  value="#{patientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
@@ -490,18 +522,22 @@
                                                                  var="sx" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink 
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton  
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
                                                                 id="btnRemoveSx"
                                                                 ajax="true" 
                                                                 action="#{patientEncounterController.removeCfv}" 
                                                                 process="btnRemoveSx"
                                                                 update="tblSx ">
                                                                 <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
-                                                                <h:outputText value="&nbsp;(X)" />
-                                                            </p:commandLink>
-                                                        </p:column>
-                                                        <p:column headerText="Details">
-                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                            </p:commandButton>
                                                         </p:column>
                                                     </p:dataTable>
                                                 </h:panelGroup>
@@ -510,15 +546,82 @@
 
                                         </div>
 
+
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel id="docPrescreption" header="Prescription" >
-                                                <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
+                                            <p:panel id="docPrescreption" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
+                                                <f:facet name="header">
+                                                    <h:outputText  styleClass="fas fa-prescription-bottle"/>
+                                                    <h:outputText class="mx-4" value="Prescription"/>
+                                                </f:facet>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="Print" 
+                                                    icon="pi pi-print">
+                                                    <p:printer target="txtPrescriptionDoc" />
                                                 </p:commandButton>
-                                                <p:textEditor id="txtPrescriptionDoc" 
-                                                              toolbarVisible="false"
-                                                              secure='false' widgetVar="textEditorWidget" 
-                                                              value="#{patientEncounterController.encounterPrescreption.lobValue}">
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="To Print" 
+                                                    action="opd_visit_print"
+                                                    icon="pi pi-print">
+                                                </p:commandButton>
+
+
+                                                <p:commandButton
+                                                    icon="fas fa-refresh"
+                                                    class="mx-1 ui-button-warning"
+                                                    id="btnRefresh"
+                                                    ajax="false" 
+                                                    value="refresh" 
+                                                    action="#{patientEncounterController.refreshPrescription}"/>
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                        }
+                                                    }
+                                                </style>
+
+
+
+                                                <p:textEditor 
+                                                    styleClass="textEditer"
+                                                    class="my-2" 
+                                                    id="txtPrescriptionDoc" 
+                                                    toolbarVisible="false"
+                                                    secure='false' 
+                                                    widgetVar="textEditorWidget" 
+                                                    value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                    >
                                                 </p:textEditor>
                                             </p:panel>
                                         </div>
@@ -593,7 +696,9 @@
                                                         value="#{patientEncounterController.encounterReferral.stringValue}"></h:outputLabel>
                                                 </f:facet>
                                                 <h:panelGroup id="txtReferralDoc" ></h:panelGroup>
-                                                <p:textEditor 
+                                                <p:textEditor
+                                                    toolbarVisible="false"
+                                                    id="txeLetterPreview"
                                                     rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
                                                     secure="false" 
                                                     value="#{patientEncounterController.encounterReferral.lobValue}" >
@@ -787,29 +892,12 @@
                             <div class="col-4 p-1" >
 
 
-
-
-
-
-
-
-
-
-
-
                             </div>
                             <div class="col-4 p-1" >
-
-
-
-
 
                             </div>
                         </div>
                     </div>
-
-
-
 
                     <div class="container-fluid" >
                         <div class="row"   >
@@ -820,59 +908,19 @@
 
                                     </div>
 
-
-
                                     <div class="col-md-6"  >
-
-
-
-
-
-
-
-
-
 
 
                                     </div>
 
-
-
-
-
-
                                 </div>
-
-
-
-
 
                             </div>
                             <div class="col-md-4 m-0 p-1" >
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             </div>
                         </div>
                     </div>
-
-
-
-
-
 
                 </h:form>
 

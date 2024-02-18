@@ -10,7 +10,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -21,6 +21,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,6 @@ public class OpdPreBillReportController implements Serializable {
 
     @EJB
     PaymentFacade paymentFacade;
-    @EJB
     CommonFunctions commonFunctions;
     @EJB
     WebUserFacade webUserFacade;
@@ -390,7 +390,7 @@ public class OpdPreBillReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         
         
-        return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml.xhtml?faces-redirect=true";
+        return "/reportCashierBillFeePayment/report_cashier_summery_all.xhtml?faces-redirect=true";
     }
     
             

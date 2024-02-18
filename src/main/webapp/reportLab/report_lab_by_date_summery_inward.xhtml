@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/reportLab/lab_summeries_index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 >
 
     <ui:define name="subcontent">
@@ -13,38 +13,37 @@
             <p:panel>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                    <p:calendar class="w-100 mx-4 " inputStyleClass="w-100"  value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{bookKeepingSummery.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="w-100 mx-4 " inputStyleClass="w-100 my-1"  value="#{bookKeepingSummery.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Instituion"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{bookKeepingSummery.institution}"  
+                    <p:autoComplete class="w-100 mx-4 " inputStyleClass="w-100"  value="#{bookKeepingSummery.institution}"  
                                       completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
 
                 </h:panelGrid>
 
-                <h:panelGrid columns="4">
-                    <p:spacer height="1" width="80"/>
-                    <p:commandButton ajax="false" value="Process" action="#{bookKeepingSummery.createLabSummeryInward}"/>
-                    <p:commandButton ajax="false" value="Excel" actionListener="#{bookKeepingSummery.createLabSummeryInward}" styleClass="noPrintButton" style="float: right;" >
+                <h:panelGrid columns="4" class="my-2">
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{bookKeepingSummery.createLabSummeryInward}"/>
+                    <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Excel" actionListener="#{bookKeepingSummery.createLabSummeryInward}" >
                         <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                    <p:commandButton ajax="false" value="Print" class="ui-button-info" icon="fas fa-print" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
 
                 <h:panelGrid styleClass="printBlock" columns="2">
                     <h:outputLabel />
-                    <h:outputLabel value="LAB HAND OVER REPORT SUMMERY"/>                   
+                    <h:outputLabel  value="LAB HAND OVER REPORT SUMMERY"/>                   
                     <h:outputLabel value="From Date :  "/>
-                    <h:outputLabel value="#{bookKeepingSummery.fromDate}"  >
+                    <h:outputLabel class="mx-2" value="#{bookKeepingSummery.fromDate}"  >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel value="To Date"/>
-                    <h:outputLabel value="#{bookKeepingSummery.toDate}"  >
+                    <h:outputLabel class="mx-2" value="#{bookKeepingSummery.toDate}"  >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     </h:outputLabel>                       
                 </h:panelGrid>

@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/reportCashier/report_cashier.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"       
-                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
-                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
                 >
 
 
@@ -16,9 +16,21 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <div class="d-flex justify-content-end">
+                    <div class="d-flex align-items-center">
+                        <p:commandButton id="btnRefresh" class="ui-button-warning mx-1" icon="fas fa-refresh" ajax="false" value="Refresh"
+                                         action="#{commonReport.createCashierTableByUserUsingReciptNo()}" />  
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton ajax="false" value="Print" class="ui-button-info" icon="fas fa-print">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                    </div>
+                </div>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
 
                     <p:panel>
+
                         <f:facet name="header" >
                             <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
                             <br/>
@@ -28,14 +40,6 @@
                             <h:outputLabel value="#{commonReport.fromReciptNo}" />
                             <h:outputLabel value="&emsp;&emsp;To Bill No :"/>
                             <h:outputLabel value="#{commonReport.toReciptNo}" />
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
-                                             styleClass="noPrintButton" style="float: right;"
-                                             action="#{commonReport.createCashierTableByUserUsingReciptNo()}" />  
-                            <p:defaultCommand target="btnRefresh"/>
-
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="reportPrint"  />
-                            </p:commandButton>
                         </f:facet>
                         <f:facet name="footer">
                             <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
@@ -51,9 +55,9 @@
 
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                            forceSelection="true"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                            value="#{commonReport.webUser}" ></p:autoComplete>
+                                             forceSelection="true"
+                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                             value="#{commonReport.webUser}" ></p:autoComplete>
                             <p:watermark for="frn" value="From Recipt No" />
                             <p:watermark for="trn" value="To Recipt No" />
                         </h:panelGrid>
@@ -138,7 +142,7 @@
                         <ca:agentCancel  data="#{commonReport.userAgentRecieveBillCancel}" />
 
                         <p:spacer height="30"/>
-                        
+
                         <ca:collecting_centre_bill data="#{commonReport.collectingCentreRecieves}"/>
 
                         <p:spacer height="30"/>
@@ -526,9 +530,9 @@
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
-                        
+
                         <p:spacer height="30"/>
-                        
+
                         <p:dataTable id="sum22" value="#{commonReport.cashChequeCreditSummery}"  var="i" >
                             <f:facet name="header">
                                 <h:outputLabel value="Summary"/>

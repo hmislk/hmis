@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                
+                <p:panel >
+                    <p:panel header="Funds" >
+                        <p:commandButton 
+                            value="To Receive"
+                            action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
+                            ajax="false"
+                            class="my-2 ui-button-success"
+                            >
+
+                        </p:commandButton>
+
+
+                        <p:dataTable
+                            id="tblbill"
+                            value="#{financialTransactionController.fundTransferBillsToReceive}" 
+                            var="bp" 
+                            rowKey="#{bp.id}"
+                            selectionMode="single"
+                            selection="#{financialTransactionController.selectedBill}">
+                            <p:column headerText="Staff" >
+                                <h:outputText value="#{bp.staff.person.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Created At" >
+                                <h:outputText value="#{bp.createdAt}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Payment Method" >
+                                <h:outputText value="#{bp.paymentMethod.label}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total" >
+                                <h:outputText value="#{bp.total}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total" >
+                                <h:outputText value="#{bp.netTotal}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="payments" >
+                                <h:outputText value="#{bp.payments.size()}" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -51,6 +51,8 @@ public class DepartmentController implements Serializable {
     private Boolean codeDisabled = false;
     private Institution institution;
 
+    private Department superDepartment;
+
     List<Department> itemsToRemove;
 
     public Department findAndSaveDepartmentByName(String name) {
@@ -186,6 +188,18 @@ public class DepartmentController implements Serializable {
                 current = null;
             }
         }
+    }
+
+    public List<Department> fillAllItems() {
+        List<Department> newItems;
+        String sql = "Select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        newItems = getFacade().findByJpql(sql, m);
+        return newItems;
     }
 
     public List<Department> getInstitutionDepatrments() {
@@ -581,6 +595,18 @@ public class DepartmentController implements Serializable {
         }
     }
 
+    public Department findDepartment(Long id) {
+        return getFacade().find(id);
+    }
+
+    public Department getSuperDepartment() {
+        return superDepartment;
+    }
+
+    public void setSuperDepartment(Department superDepartment) {
+        this.superDepartment = superDepartment;
+    }
+
     /**
      * Converters
      */
@@ -597,13 +623,25 @@ public class DepartmentController implements Serializable {
             }
             DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "departmentController");
+            if (controller == null) {
+                System.out.println("controller is null");
+                return null;
+            }
+            if (controller.getEjbFacade() == null) {
+                System.out.println("controller is null");
+                return null;
+            }
             return controller.getEjbFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                java.lang.Long key;
+                key = Long.valueOf(value);
+                return key;
+            } catch (NumberFormatException e) {
+                return 0l;
+            }
         }
 
         String getStringKey(java.lang.Long value) {

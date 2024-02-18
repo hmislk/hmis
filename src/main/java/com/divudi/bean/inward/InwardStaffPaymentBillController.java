@@ -12,7 +12,7 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -30,6 +30,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.RefundBillFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,7 +74,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     private Date toDate;
     @Inject
     SessionController sessionController;
-    @EJB
+    
     private CommonFunctions commonFunctions;
     @EJB
     private BillFacade billFacade;
@@ -902,14 +903,25 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public double getTotalPaying() {
+        System.out.println("totalPaying = " + totalPaying);
         return totalPaying;
     }
 
     public void setTotalPaying(double totalPaying) {
+        System.out.println("setter totalPaying = " + totalPaying);
         this.totalPaying = totalPaying;
     }
 
     public void calculateDueFees() {
+
+        dueBillFees = new ArrayList<>();
+        payingBillFees = new ArrayList<>();
+        totalPaying = 0.0;
+        totalDue = 0.0;
+        printPreview = false;
+
+
+
 
         String sql;
         HashMap h = new HashMap();
@@ -943,7 +955,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
         dueBillFees.removeAll(removeingBillFees);
-
+        calculateTotalPay();
     }
 
     public void calculateTotalDue() {
@@ -959,16 +971,19 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void calculateTotalPay() {
+        System.out.println("calculateTotalPay");
         totalPaying = 0;
-
+        System.out.println("1");
+        System.out.println("totalPaying = " + totalPaying);
+        System.out.println("payingBillFees = " + payingBillFees);
         for (BillFee f : payingBillFees) {
-            //   ////// // System.out.println("totalPaying before " + totalPaying);
-            //   ////// // System.out.println("fee val is " + f.getFeeValue());
-            //   ////// // System.out.println("paid val is " + f.getPaidValue());
+            System.out.println("totalPaying before " + totalPaying);
+            System.out.println("fee val is " + f.getFeeValue());
+            System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //   ////// // System.out.println("totalPaying after " + totalPaying);
+            System.out.println("totalPaying after " + totalPaying);
         }
-        //   ////// // System.out.println("total pay is " + totalPaying);
+        System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -992,7 +1007,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //   ////// // System.out.println("setting paying bill fees " + payingBillFees.size());
+        System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -1010,18 +1025,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
-
-        dueBillFees = new ArrayList<>();
-        payingBillFees = new ArrayList<>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFees();
-        performCalculations();
-
     }
 
     public void prepareAdd() {
@@ -1058,7 +1062,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             UtilityController.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
-        performCalculations();
+//        performCalculations();
         if (totalPaying == 0) {
             UtilityController.addErrorMessage("Please select payments to update");
             return true;
@@ -1079,7 +1083,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             return;
         }
 
-        calculateTotalPay();
+//        calculateTotalPay();
         Bill b = createPaymentBill();
         current = b;
 

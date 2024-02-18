@@ -85,6 +85,13 @@ public enum BillType {
     PharmacyTransferReceive,
     PharmacyDirectReceive,
     PharmacyAdjustment,
+    PharmacyAdjustmentDepartmentStock,
+    PharmacyAdjustmentDepartmentSingleStock,
+    PharmacyAdjustmentStaffStock,
+    PharmacyAdjustmentSaleRate,
+    PharmacyAdjustmentWholeSaleRate,
+    PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentExpiryDate,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
     ChannelCash(ChannelCashFlow),
@@ -132,7 +139,21 @@ public enum BillType {
     // channel Session sperate X-ray scan or channel
     Channel,
     XrayScan,
-    
+    // Cash Handling and Transfer Processes
+    ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
+    ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
+    FundTransferBill, // For transferring the total balance from one shift to another
+    FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
+    WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
+    @Deprecated
+    TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
+    @Deprecated
+    TransactionVerificationBill, // For the incoming cashier to verify all transaction types
+    @Deprecated
+    FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
+    @Deprecated
+    FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
     ;
 
     public String getLabel() {
@@ -240,10 +261,27 @@ public enum BillType {
                 return "X-Ray and Scan";
             case InwardFinalBill:
                 return "Inward Final Bill";
-
+            case ShiftStartFundBill:
+                return "Initial Fund Bill";
+            case FundTransferBill:
+                return "Shift Balance Transfer Bill";
+            case TransactionHandoverBill:
+                return "Transaction Handover Bill";
+            case TransactionVerificationBill:
+                return "Transaction Verification Bill";
+            case DepositFundBill:
+                return "Deposit Processing Bill";
+            case WithdrawalFundBill:
+                return "Withdrawal Processing Bill";
+            case FinancialReconciliationBill:
+                return "Financial Reconciliation Bill";
+            case FinancialAuditingBill:
+                return "Financial Auditing Bill";
+            case FundTransferReceivedBill:
+                return "Fund Transfer Received Bill";
+            default:
+                return this.toString();
         }
-
-        return "Other";
     }
 
     private BillType parent = null;

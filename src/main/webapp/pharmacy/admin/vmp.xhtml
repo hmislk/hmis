@@ -1,180 +1,174 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/admin/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="subcontent">
+        <h:form>
+            <p:growl id="msg"/>
+            <p:focus id="selectFocus" for="lstSelect" />
+            <p:focus id="detailFocus" for="gpDetail" />
 
-        <p:panel >
-            <f:facet name="header" >
+            <p:panel header="Manage VMP" class="w-100">
 
-            </f:facet>
-            <div class="row" >
-                <div class="col-6" >
-                    <h:form id="formSelect"  >
-                        <p:selectOneListbox 
-                            filter="true"
-                            class="w-100" 
-                            id="lstSelect" 
-                            value="#{vmpController.current}">
-                            <f:selectItems value="#{vmpController.selectedItems}" itemLabel="#{v.name}" var="v" itemValue="#{v}"/>
-                            <p:ajax 
-                                process="@this" update=":formDetail:gpDetail" >
-                            </p:ajax>
-                        </p:selectOneListbox>
+                <div class="row" >
+                    <div class="col-5" >
 
                         <p:commandButton 
                             id="btnAdd" 
-                            class="w-25 m-1 ui-button-success"
                             value="Add" 
                             action="#{vmpController.prepareAdd()}"
-                            update=":formDetail:gpDetail" 
+                            class="ui-button-success"
+                            update="lstSelect gpDetail" 
+                            icon="fa fa-plus"
                             process="btnAdd"
                             >
                         </p:commandButton>
 
                         <p:commandButton 
                             id="btnDelete" 
-                            class="w-25 m-1"
-                            update=":formDetail:gpDetail lstSelect" 
-                            process="btnDelete"
+                            icon="fas fa-trash"
+                            update="lstSelect gpDetail msg" process="btnDelete"
+                            class=" m-1 ui-button-danger w-25"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{vmpController.delete()}"  
                             value="Delete"  >
                         </p:commandButton>
 
+                        <p:selectOneListbox 
+                            filter="true"
+                            class="w-100" 
+                            id="lstSelect" 
+                            value="#{vmpController.current}">
+                            <f:selectItems value="#{vmpController.selectedItems}" itemLabel="#{v.name}" var="v" itemValue="#{v}"/>
+                            <p:ajax update="gpDetail" process="lstSelect" >
+                            </p:ajax>
+                        </p:selectOneListbox>
 
-                    </h:form>
+
+
+
+                    </div>
+                    <div class="col-md-7" >
+                        <p:panel header="Vmp Details">
+                            <h:panelGrid 
+                                id="gpDetail"
+                                columns="2" 
+                                class="w-100" >
+                                <h:outputText 
+                                    value="Name" 
+                                    ></h:outputText>
+                                <p:inputText 
+                                    class="w-100"
+                                    required="true"
+                                    requiredMessage="Name Required"
+                                    autocomplete="off"
+                                    value="#{vmpController.current.name}" 
+                                    ></p:inputText>
+
+                                <h:outputText 
+                                    value="Generic Name" 
+                                    ></h:outputText>
+                                <p:autoComplete 
+                                    converter="vtm" 
+                                    value="#{vmpController.current.vtm}" 
+                                    forceSelection="true"
+                                    completeMethod="#{vtmController.completeVtm}" 
+                                    var="vt" 
+                                    class="w-100"
+                                    required="true"
+                                    requiredMessage="Generic Unit Required"
+                                    inputStyleClass="w-100"
+                                    itemLabel="#{vt.name}" 
+                                    itemValue="#{vt}" >
+                                </p:autoComplete>
+
+                                <h:outputText value="Dosage Form" ></h:outputText>
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Dosage Form Required"
+                                    value="#{vmpController.current.dosageForm}" 
+                                    class="w-100"
+                                    >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{dosageFormController.items}"
+                                                   var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                                </p:selectOneMenu>
+
+
+                                <h:outputText value="Category" ></h:outputText>
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    required="true"
+                                    class="w-100"
+                                    requiredMessage="Category Required"
+                                    value="#{vmpController.current.category}" 
+                                    >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                                   var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
+                                </p:selectOneMenu>
+
+
+                                <h:outputText value="Strength" >
+                                </h:outputText>
+
+                                <p:inputText 
+                                    autocomplete="off"
+                                    class="w-100"
+                                    value="#{vmpController.current.strengthOfAnIssueUnit}"
+                                    ></p:inputText>
+
+                                <h:outputText value="Strength Unit" >
+                                </h:outputText>
+                                <p:selectOneMenu 
+                                    class="w-100"
+                                    required="true"
+                                    requiredMessage="Strength Unit Required"
+                                    value="#{vmpController.current.strengthUnit}"
+                                    filter="true"             
+                                    >
+                                    <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>     
+
+                                <h:outputText value="Dispensing Unit" >
+                                </h:outputText>
+                                <p:selectOneMenu 
+                                    required="true"
+                                    requiredMessage="Issue Unit Required"
+                                    value="#{vmpController.current.issueUnit}"
+                                    filter="true"  
+                                    class="w-100"
+                                    >
+                                    <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
+                                    <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>     
+
+
+
+
+
+                            </h:panelGrid>
+                            <p:commandButton 
+                                action="#{vmpController.save}" 
+                                id="btnSave"
+                                value="Save"
+                                process="btnSave gpDetail" 
+                                update="lstSelect msg" 
+                                class=" m-1 mt-2 ui-button-warning w-25"
+                                icon="fas fa-save"></p:commandButton>
+                        </p:panel>
+
+                    </div>
                 </div>
-                <div class="col-6" >
-                    <h:form id="formDetail"  >
-                        <p:commandButton 
-                            action="#{vmpController.save}" 
-                            id="btnSave"
-                            value="Save"
-                            process="btnSave gpDetail"
-                            update=":formSelect:lstSelect :formMsg:msg"
-                            class="ui-button-danger w-25 m-1"></p:commandButton>
+            </p:panel>
 
-
-
-                        <p:panelGrid 
-                            id="gpDetail"
-                            columns="2" 
-                            class="w-100" >
-
-                            <h:outputLabel 
-                                value="Name" 
-                                class="w-100"></h:outputLabel>
-                            <p:inputText 
-
-                                required="true"
-                                requiredMessage="Name Required"
-                                autocomplete="off"
-                                value="#{vmpController.current.name}" 
-                                class="w-100"></p:inputText>
-
-                            <h:outputLabel 
-                                value="Generic Name" 
-                                ></h:outputLabel>
-                            <p:autoComplete 
-                                converter="vtm" 
-                                value="#{vmpController.current.vtm}" 
-                                forceSelection="true"
-                                completeMethod="#{vtmController.completeVtm}" 
-                                var="vt" 
-                                class="w-100"
-
-                                required="true"
-                                requiredMessage="Generic Unit Required"
-                                inputStyleClass="w-100"
-                                itemLabel="#{vt.name}" 
-                                itemValue="#{vt}" >
-                            </p:autoComplete>
-                            
-                            <h:outputLabel value="Dosage Form" ></h:outputLabel>
-                            <p:selectOneMenu 
-                                filter="true"
-                                required="true"
-                                requiredMessage="Dosage Form Required"
-                                value="#{vmpController.current.dosageForm}" 
-                                class="w-100">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{categoryController.items}"
-                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                            </p:selectOneMenu>
-                            
-
-                            <h:outputLabel value="Category" ></h:outputLabel>
-                            <p:selectOneMenu 
-                                filter="true"
-
-                                required="true"
-                                requiredMessage="Category Required"
-                                value="#{vmpController.current.category}" 
-                                class="w-100">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{pharmaceuticalItemTypeController.items}"
-                                               var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"/>
-                            </p:selectOneMenu>
-
-
-
-
-
-
-                            
-
-                            <h:outputLabel value="Strength" >
-                            </h:outputLabel>
-
-                            <p:inputText 
-                                autocomplete="off" 
-                                value="#{vmpController.current.strengthOfAnIssueUnit}"
-                                class="w-100"></p:inputText>
-
-                            <h:outputLabel value="Strength Unit" class="w-100" >
-                            </h:outputLabel>
-                            <p:selectOneMenu 
-
-                                required="true"
-                                requiredMessage="Strength Unit Required"
-                                value="#{vmpController.current.strengthUnit}"
-                                filter="true"             
-                                class="w-100">
-                                <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
-                                <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                            </p:selectOneMenu>     
-
-                            <h:outputLabel value="Dispensing Unit" class="w-100" >
-                            </h:outputLabel>
-                            <p:selectOneMenu 
-                                required="true"
-                                requiredMessage="Issue Unit Required"
-                                value="#{vmpController.current.issueUnit}"
-                                filter="true"             
-                                class="w-100">
-                                <f:selectItem itemLabel="Select Issue Unit" ></f:selectItem>
-                                <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
-                            </p:selectOneMenu>     
-
-
-
-
-
-                        </p:panelGrid>
-
-                    </h:form>
-                </div>
-            </div>
-        </p:panel>
-
-        <h:form id="formMsg" >
-            <p:growl id="msg" />
         </h:form>
 
     </ui:define>

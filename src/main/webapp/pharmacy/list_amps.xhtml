@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -12,80 +12,122 @@
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Pharmacy Item Assign Codes" >
-                        <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
-                                        itemLabel="#{dept.name}" itemValue="#{dept}" placeholder="Category"
-                                        forceSelection="true" value="#{dataAdministrationController.itemCategory}" >
-                        </p:autoComplete>
-                        <p:commandButton ajax="false" value="Excel">
-                            <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Update Code"
-                                         action="#{dataAdministrationController.createCodeSelectedCategory()}"/>
-                        <!--                        <p:commandButton ajax="false" value="Remove Code"
-                                                                 action="#{dataAdministrationController.createremoveAllCodes}"/>-->
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="Pharmacy Item Assign Codes" class="mt-3" />
+                        </f:facet>
 
+                        <div class="row mb-2">
+                            <div class="col-md-5">
+                                <p:autoComplete 
+                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                    var="dept" 
+                                    itemLabel="#{dept.name}" 
+                                    itemValue="#{dept}" 
+                                    placeholder="Select Category"
+                                    class="w-100"
+                                    inputStyleClass="form-control"
+                                    forceSelection="true" 
+                                    value="#{dataAdministrationController.itemCategory}" >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-md-2">
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Search"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning"
+                                    action="#{dataAdministrationController.createCodeSelectedCategory()}">
+                                </p:commandButton>
+                            </div>
+                            <div class="col-md-5">
+                                <p:commandButton 
+                                    class="ui-button-success"
+                                    icon="fa-solid fa-file-excel"
+                                    style="float: right;"
+                                    ajax="false" 
+                                    value="Excel">
+                                    <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
+                                </p:commandButton>
+                            </div>
+                            
+                        </div>
 
-                        <p:panel id="paItems">
+                        <p:dataTable 
+                            id="tblItem" 
+                            value="#{dataAdministrationController.items}" var="i"
+                            rowIndexVar="n"
+                            rowKey="#{i.id}" 
+                            rows="10"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20,50,100,1000"
+                            >
+                            <p:column 
+                                width="10%"
+                                headerText="Dosage Form" 
+                                sortBy="#{i.category.name}" 
+                                filterBy="#{i.category.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Category" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.category.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Name" 
+                                sortBy="#{i.name}"
+                                filterBy="#{i.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column
+                                width="5%"
+                                headerText="Code" 
+                                sortBy="#{i.code}"
+                                filterBy="#{i.code}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Code" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.code}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="Barcode" 
+                                sortBy="#{i.barcode}"
+                                filterBy="#{i.barcode}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="Barcode" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.barcode}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="VMP" 
+                                sortBy="#{i.vmp.name}"
+                                filterBy="#{i.vmp.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="VMP" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
+                            <p:column 
+                                headerText="VTM" 
+                                sortBy="#{i.vmp.vtm.name}"
+                                filterBy="#{i.vmp.vtm.name}" 
+                                filterMatchMode="contains">
+                                <f:facet name="header" >
+                                    <h:outputText value="VTM" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
 
-                            <p:dataTable id="tblItem" value="#{dataAdministrationController.items}" var="i"
-                                         rowIndexVar="n"
-                                         rowKey="#{i.id}" 
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20,50,100,1000"
-                                         >
-                                <p:column headerText="Dosage Form" 
-                                          sortBy="#{i.category.name}" 
-                                          filterBy="#{i.category.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Category" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.category.name}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Name" 
-                                          sortBy="#{i.name}"
-                                          filterBy="#{i.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Name" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Code" 
-                                          sortBy="#{i.code}"
-                                          filterBy="#{i.code}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Code" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Barcode" 
-                                          sortBy="#{i.barcode}"
-                                          filterBy="#{i.barcode}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Barcode" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.barcode}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="VMP" 
-                                          sortBy="#{i.vmp.name}"
-                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="VMP" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="VTM" 
-                                          sortBy="#{i.vmp.vtm.name}"
-                                          filterBy="#{i.vmp.vtm.name}" filterMatchMode="contains">
-                                    <f:facet name="header" >
-                                        <h:outputText value="VTM" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
                     </p:panel>
                 </h:form>
 

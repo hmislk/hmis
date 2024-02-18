@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/pharmacy_reports_index.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="subcontent">
 
@@ -16,14 +16,10 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Consultant Wise Appoinment Totals And Count(Can't Consider Appoinment Time)" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
                 </f:facet>
 
                 <p:panel id="pan1">
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="4" class="w-100" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{report3DController.reportKeyWord.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker"  >
                         </p:calendar>
@@ -40,21 +36,35 @@
                         <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                         itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                         value="#{report3DController.reportKeyWord.category}" />
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pg1" >
+
                         <h:outputLabel value="By Date"/> 
                         <p:selectBooleanCheckbox value="#{report3DController.reportKeyWord.bool1}" />
-<!--                        <h:outputLabel value="Count"/> 
-                        <p:selectBooleanCheckbox value="#{report3DController.reportKeyWord.bool2}" />-->
+                        <!--                        <h:outputLabel value="Count"/> 
+                                                <p:selectBooleanCheckbox value="#{report3DController.reportKeyWord.bool2}" />-->
                     </h:panelGrid> 
-                    <h:panelGrid columns="3">
-                        <p:commandButton action="#{report3DController.createPharmacyItemMovment3D}" value="Fill" ajax="false"/>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
-                            <p:printer target="reportPrint"  />
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton 
+                            action="#{report3DController.createPharmacyItemMovment3D}" 
+                            value="Fill"
+                            icon="fas fa-fill"
+                            class="ui-button-warning"
+                            ajax="false"/>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Excel" 
+                            icon="fas fa-file-excel"
+                            class="ui-button-success mx-2"  >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="Channel_Count"  />
                         </p:commandButton>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print" 
+                            icon="fas fa-print"
+                            class="ui-button-info">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" >

@@ -1,8 +1,8 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
 
@@ -11,145 +11,301 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                <!--<h1>#{ui.icon}</h1>-->
-                <h:panelGroup 
-                    id="panelPatientAddNew" 
-                    rendered="#{ui.icon eq 'Patient_Lookup'}"
-                    layout="block"
-                    class="col-md-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Patient Lookup">
-                        sdfsdf
-                    </p:panel>
+
+
+
+                <!-- Manage Token -->
+                <h:panelGroup id="panelManageToken" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Manage_Token'}">
+                    <h:form>
+                        <p:commandButton value="Manage Token" ajax="false" styleClass="m-1 ui-button-info" action="#{tokenManagementController.navigateToManageTokens()}" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                <h:panelGroup 
-                    id="panelPatientAddNew" 
-                    rendered="#{ui.icon eq 'Patient_Add_New'}"
-                    layout="block"
-                    class="col-md-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Add New Patient">
-                        dfsdf
-                    </p:panel>
+
+                <!-- Create Purchase Order -->
+                <h:panelGroup id="panelCreatePurchaseOrder" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Create_Purchase_Order'}">
+                    <h:form>
+                        <p:commandButton value="Create Purchase Order" icon="fas fa-plus-circle" ajax="false" action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                <h:panelGroup 
-                    id="panelOPDBilling" 
-                    rendered="#{ui.icon eq 'Opd_Billing'}"
-                    layout="block"
-                    class="col-md-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Opd Billing">
-                        dfsdf
-                    </p:panel>
+
+                <!-- Auto Order (P Model) -->
+                <h:panelGroup id="panelAutoOrderPModel" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_P_Model'}">
+                    <h:form>
+                        <p:commandButton value="Auto Order (P Model)" icon="fas fa-sync-alt" ajax="false" action="#{reorderController.autoOrderByDistributor()}" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
+                <!-- Auto Order (Q Model) -->
+                <h:panelGroup id="panelAutoOrderQModel" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_Q_Model'}">
+                    <h:form>
+                        <p:commandButton value="Auto Order (Q Model)" icon="fas fa-retweet" ajax="false" action="#{reorderController.autoOrderByDistributor()}" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Direct Purchase -->
+                <h:panelGroup id="panelDirectPurchase" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Direct_Purchase'}">
+                    <h:form>
+                        <p:commandButton value="Direct Purchase" icon="fas fa-hand-holding-usd" ajax="false" action="/pharmacy/pharmacy_purchase" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Purchase Orders Approval -->
+                <h:panelGroup id="panelPurchaseOrdersApproval" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Purchase_Orders_Approval'}">
+                    <h:form>
+                        <p:commandButton value="Purchase Orders Approval" icon="fas fa-clipboard-check" ajax="false" action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Goods Receipt -->
+                <h:panelGroup id="panelGoodsReceipt" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Goods_Receipt'}">
+                    <h:form>
+                        <p:commandButton value="Goods Receipt" icon="fas fa-dolly-flatbed" ajax="false" action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Return Received Goods -->
+                <h:panelGroup id="panelReturnReceivedGoods" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Return_Received_Goods'}">
+                    <h:form>
+                        <p:commandButton value="Return Received Goods" icon="fas fa-undo-alt" ajax="false" action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Return without Receipt -->
+                <h:panelGroup id="panelReturnWithoutReceipt" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Return_without_Receipt'}">
+                    <h:form>
+                        <p:commandButton value="Return without Receipt" icon="fas fa-exchange-alt" ajax="false" action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
+
+                <h:panelGroup 
+                    id="panelScanToPay" 
+                    rendered="#{ui.icon eq 'Scan_to_pay'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            value="Scan Bills"
+                            icon=""
+                            ajax="false" 
+                            action="#{opdPreSettleController.navigateToScanBills()}" 
+                            >
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
                 <h:panelGroup 
                     id="panelBillingForCashier" 
                     rendered="#{ui.icon eq 'Billing_For_Cashier'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
+
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Billing For Cashier">
-                        dfsdf
-                    </p:panel>
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
+                            actionListener="#{opdPreBillController.prepareNewBill}" 
+                            value="Billing For Cashier"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Patient_Lookup'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/patient_search.xhtml"   
+                            value="Patient Lookup"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Manage_Shift_Fund_Bills'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"   
+                            value="Manage Shift Fund Bills"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Manage_Token'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{tokenController.navigateToTokenIndex()}"   
+                            value="Token Management"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
+
+                <h:panelGroup 
+                    rendered="#{ui.icon eq 'Patient_Add_New'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form>
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/patient_edit.xhtml"   
+                            value="Add New Patient"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup 
+                    id="panelOPDBilling" 
+                    rendered="#{ui.icon eq 'Opd_Billing'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form >
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="#{opdBillController.navigateToNewOpdBill()}" actionListener="#{billController.prepareNewBill}"
+                            value="OPD Billing"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>
+                </h:panelGroup>
+
+
+
                 <h:panelGroup 
                     id="panelCollectingCentreBilling" 
                     rendered="#{ui.icon eq 'Collecting_Centre_Billing'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Collecting Centre Billing">
-                        dfsdf
-                    </p:panel>
+
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelMedicalPackageBilling" 
                     rendered="#{ui.icon eq 'Medical_Package_Billing'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-2"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Medical Package Billing">
-                        dfsdf
+
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPayments" 
                     rendered="#{ui.icon eq 'Accept_Payments'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1  mx-4"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept_Payments">
-                        dfsdf
-                    </p:panel>
+
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPD_Bills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept Payments For OPD Bills">
-                        dfsdf
-                    </p:panel>
+                    <h:form >
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd_search_pre_bill?faces-redirect=true"
+                            value="Accept Payment For OPD Bill"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>               
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
+                <h:panelGroup 
+                    id="opdBilSearch" 
+                    rendered="#{ui.icon eq 'Search_Opd_Bill'}"
+                    layout="block"
+                    class="col-md-1 m-3"
+                    >
+                    <h:form >
+                        <p:commandButton 
+                            style="width: 150px;height: 70px;font-size: 12pt"
+                            ajax="false" 
+                            class="m-1 ui-button-success"
+                            action="opd/opd_bill_search?faces-redirect=true"
+                            value="OPD Bill Search"
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
+                        </p:commandButton>
+                    </h:form>               
+                </h:panelGroup>
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForOPDBatchBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Accept Payments For OPD Batch Bills">
-                        dfsdf
+
                     </p:panel>
                 </h:panelGroup>
-            </ui:repeat>
-            <ui:repeat value="#{sessionController.userIcons}" var="ui">
+
                 <h:panelGroup 
                     id="panelAcceptPaymentsForPharmacyBills" 
                     rendered="#{ui.icon eq 'Accept_Payments_For_Pharmacy_Bills'}"
                     layout="block"
-                    class="col-md-3"
+                    class="col-md-1 m-3"
                     >
                     <p:panel
                         class="m-1 w-100"
                         header="Accept Payments For Pharmacy Bills">
-                        dfsdf
+
                     </p:panel>
-                </h:panelGroup>
+                </h:panelGroup> 
+
+
             </ui:repeat>
         </div>
 

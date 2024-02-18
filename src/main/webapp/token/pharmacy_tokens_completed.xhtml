@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/token/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel id="panel" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Pharmacy Tokens Completed" ></h:outputLabel>
+                        </f:facet>
+
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:outputLabel value="Counter" ></p:outputLabel>
+                            <p:selectOneMenu class="mx-2" value="#{tokenController.counter}" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{sessionController.loggableSubDepartments}" 
+                                    var="c" 
+                                    itemLabel="#{c.name}" 
+                                    itemValue="#{c}" >
+                                </f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:commandButton
+                                value="Process Tokens" 
+                                ajax="false"
+                                icon="fas fa-cogs"
+                                class="ui-button-warning"
+                                action="#{tokenController.fillPharmacyTokensCompleted()}" >
+                            </p:commandButton>
+                        </h:panelGrid>
+                        <p:dataTable var="token" value="#{tokenController.currentTokens}" id="tbl" widgetVar="tokenTable" styleClass="datatable-responsive">
+
+                            <!-- Token Number Column -->
+                            <p:column headerText="Token Number">
+                                <h:outputText value="#{token.tokenNumber}" />
+                            </p:column>
+
+                            <!-- Patient Name Column -->
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="#{token.patient.person.name}" />
+                            </p:column>
+
+                            <!-- Status Column -->
+                            <p:column headerText="Status">
+    <!--                            <h:outputText value="#{tokenController.getTokenStatus(token)}" />-->
+                                <p:tag value="#{tokenController.getTokenStatus(token) == 'Pending' ? 'Pending' : 
+                                                tokenController.getTokenStatus(token) == 'Called' ? 'Called' :
+                                                tokenController.getTokenStatus(token) == 'In Progress' ? 'In Progress' :
+                                                tokenController.getTokenStatus(token) == 'Completed' ? 'Completed' :
+                                                tokenController.getTokenStatus(token)}" 
+                                       severity="#{tokenController.getTokenStatus(token) == 'Pending' ? 'warning' :
+                                                   tokenController.getTokenStatus(token) == 'Called' ? 'secondary' :
+                                                   tokenController.getTokenStatus(token) == 'In Progress' ? 'info' :
+                                                   tokenController.getTokenStatus(token) == 'Completed' ? 'success' : ''}"
+                                       style="font-size: 14px;"/>
+
+                            </p:column>
+
+                            <!-- Actions Column -->
+                            <p:column headerText="Actions" styleClass="text-center">
+                                <!-- Call Token Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-phone" 
+                                    class="ui-button-success" 
+                                    update=":#{p:resolveFirstComponentWithId('panel',view).clientId}" 
+                                    title="Call Token" 
+                                    rendered="#{not token.called}" 
+                                    action="#{tokenController.callToken}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Call Token" />
+                                </p:commandButton>
+
+                                <!-- Start Token Service Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    id="btnStart"
+                                    icon="fa fa-play" 
+                                    class="ui-button-success mx-2" 
+                                    update="@form" 
+                                    title="Start Service" 
+                                    rendered="#{token.called and not token.inProgress}" 
+                                    action="#{tokenController.startTokenService}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                </p:commandButton>
+
+                                <!-- Complete Token Service Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-check" 
+                                    class="ui-button-success" 
+                                    update="@form" 
+                                    title="Complete Service" 
+                                    rendered="#{token.inProgress}" 
+                                    action="#{tokenController.completeTokenService}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Complete Token Service" />
+                                </p:commandButton>
+
+                                <!-- Reverse Call Token Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-undo" 
+                                    class="ui-button-warning" 
+                                    update="@form" 
+                                    title="Reverse Call" 
+                                    rendered="#{token.called and not token.inProgress}" 
+                                    action="#{tokenController.reverseCallToken}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Reverse Call Token" />
+                                </p:commandButton>
+
+                                <!-- Recall Token Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-refresh" 
+                                    class="ui-button-info mx-2" 
+                                    update="@form" 
+                                    title="Recall Token" 
+                                    rendered="#{token.called}" 
+                                    action="#{tokenController.recallToken}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Recall Token" />
+                                </p:commandButton>
+
+                                <!-- Restart Token Service Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-repeat" 
+                                    class="ui-button-warning" 
+                                    update="@form" 
+                                    title="Restart Service" 
+                                    rendered="#{token.inProgress}" 
+                                    action="#{tokenController.restartTokenService}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Restart Token Service" />
+                                </p:commandButton>
+
+                                <!-- Reverse Complete Token Service Button -->
+                                <p:commandButton 
+                                    ajax="false"
+                                    icon="fa fa-undo" 
+                                    class="ui-button-danger mx-2" 
+                                    update="@form" 
+                                    title="Reverse Complete Service" 
+                                    rendered="#{token.completed}" 
+                                    action="#{tokenController.reverseCompleteTokenService}"
+                                    process="@this">
+                                    <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
+                                    <p:tooltip value="Reverse Complete Token Service" />
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+
+
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

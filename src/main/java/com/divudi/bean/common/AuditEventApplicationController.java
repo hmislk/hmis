@@ -55,10 +55,13 @@ public class AuditEventApplicationController {
         if (auditEvent == null) {
             return;
         }
-        if (auditEvent.getId() == null) {
-            auditEventFacade.create(auditEvent);
-        }else{
-            auditEventFacade.edit(auditEvent);
+        try {
+            if (auditEvent.getId() == null) {
+                auditEventFacade.create(auditEvent);
+            } else {
+                auditEventFacade.edit(auditEvent);
+            }
+        } catch (Exception e) {
         }
     }
 

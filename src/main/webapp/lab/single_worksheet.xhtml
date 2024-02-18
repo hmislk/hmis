@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -31,33 +31,19 @@
 
                 </div>
                 <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
-
                     <div >
-
  <!--
-                                                    Referring Doc - for OPD : 
-                        #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}<br/>
-                        Referring Doc - for Admission : 
-                        #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
-                        
-                        Collecting Centre - for Admission
-                            #{patientInvestigationController.current.billItem.bill.collectingCentre.name}
-                        
+                        Referring Doc - for OPD :  #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}<br/>
+                        Referring Doc - for Admission :  #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
+                                                
                         bht :#{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}<br/>
-
-                        room:#{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}<br/>
                 
-                        room test 1  : #{patientInvestigationController.current.billItem.bill.patientEncounter}<br/>
-                        room test 2  : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom}<br/>
-                        room test 2  : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}<br/>
-
-                        Test Center 1 : #{patientInvestigationController.current.billItem.bill.institution.name}<br/>
-                        Test Center 2 : #{patientInvestigationController.current.billItem.bill}<br/>
-                        Test Center 3 : #{patientInvestigationController.current.billItem.bill.collectingCentre.institution.name}<br/>
-                        
-                        -->
-                        
-                        <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;"  >
+                        room : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}<br/>
+                     
+                        Collecting Center : #{patientInvestigationController.current.billItem.bill.collectingCentre.name}<br/>
+ -->                       
+                    
+                        <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;">
                             <div >
                                 <div>
                                     <h:panelGroup  style="min-width: 100%; padding: 5px!important; margin: 5px;">
@@ -90,6 +76,15 @@
                                                 </div>
                                             </h:panelGroup>
                                         </div>
+                                        
+                                        <div class="row">
+                                            <h:panelGroup rendered="#{patientInvestigationController.current.billItem.bill.collectingCentre ne null}">
+                                                <div class="row">
+                                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="CC Name : " /></div>
+                                                    <div class="col-6 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.collectingCentre.name}"></h:outputLabel></div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
 
                                         <div class="row">
                                             <h:panelGroup rendered="#{patientInvestigationController.current.billItem.bill.patientEncounter ne null}">
@@ -100,7 +95,7 @@
 
                                                 <div class="row">
                                                     <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Room No : " /></div>
-                                                    <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.name}"></h:outputLabel></div>
+                                                    <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}"></h:outputLabel></div>
                                                 </div>
                                             </h:panelGroup>
                                         </div>

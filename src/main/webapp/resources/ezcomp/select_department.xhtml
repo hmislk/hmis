@@ -26,7 +26,16 @@
                         <p>Select Department</p>
                     </div>
                     <div>
-                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" class="w-100 form-select form-select-lg p-1">
+                        <p:selectOneMenu
+                            value="#{sessionController.department}" 
+                            filter="true" 
+                            filterPlaceholder="Department" 
+                            filterMatchMode="contains" 
+                            required="true" 
+                            var="d" 
+                            class="w-100 form-select form-select-lg p-1"
+                            requiredMessage="Please select the Department you have to log.">
+                            <f:selectItem itemLabel="Select Department" ></f:selectItem>
                             <f:selectItems value="#{sessionController.departments}"
                                            var="dept"
                                            itemLabel="#{dept.name}"
@@ -51,7 +60,9 @@
                     <div class="mt-4">
                         <p:commandButton ajax="false"
                                          value="Select"
+                                         id="btnSelect"
                                          action="#{sessionController.selectDepartment()}" class="w-100 p-1"/>
+                        <p:defaultCommand target="btnSelect"> </p:defaultCommand>
                     </div>
                 </div>
 

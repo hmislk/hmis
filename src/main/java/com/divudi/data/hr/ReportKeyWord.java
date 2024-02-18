@@ -9,7 +9,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
-import com.divudi.ejb.CommonFunctions;
+
 import com.divudi.entity.Area;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -29,6 +29,7 @@ import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.membership.MembershipScheme;
+import com.divudi.java.CommonFunctions;
 import java.util.Date;
 import javax.inject.Inject;
 import javax.persistence.Transient;
@@ -39,7 +40,7 @@ import javax.persistence.Transient;
  */
 public class ReportKeyWord {
 
-    @Inject
+
     CommonFunctions commonFunctions;
 
     DayType[] dayTypes;
