@@ -139,7 +139,7 @@ public class PharmacyAdjustmentController implements Serializable {
         String sql;
         sql = "select bi from BillItem bi where "
                 + " bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billType=:bt "; 
+                + " and bi.bill.billType=:bt ";
 
         if (bt == BillType.PharmacyAdjustment) {
             if (fromDepartment != null) {
