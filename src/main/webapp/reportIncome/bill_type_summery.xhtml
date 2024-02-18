@@ -15,7 +15,7 @@
                     <p:panel header="Bill Type Summary" >
 
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="From #{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:outputLabel value="From"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
