@@ -11,11 +11,11 @@
         <ui:composition template="/reportCashier/report_cashier.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-<!--                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 -->
+ 
                     <p:panel header="Bill Type Summary" >
 
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="From"/>
+                            <h:outputLabel value="From #{sessionController.applicationPreference.longDateTimeFormat}"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
