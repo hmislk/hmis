@@ -91,12 +91,13 @@
                             <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
                                 <tr  style="font-weight: bolder">
                                     <td>#{billTypeSummary.billType.label}</td>
+                                    <td>#{billTypeSummary.billClassType}</td>
                                 </tr>
 
                                 <ui:repeat value="#{billTypeSummary.paymentSummaries}" var="paymentSummary">
 
                                     <tr >
-                                        <td></td>
+                                       
                                         <td></td>
                                         <td>#{paymentSummary.paymentMethod}</td>
                                         <td style="text-align: right">#{paymentSummary.total}</td>
@@ -107,7 +108,6 @@
                                 </ui:repeat>
                                 <tr class="table-primary" style="font-weight: bold">
                                     <td>Total</td>
-                                    <td></td>
                                     <td></td>
                                     <td></td>
                                     <td style="font-weight: bolder;text-align: right">RS: </td>
