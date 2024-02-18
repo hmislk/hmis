@@ -436,8 +436,9 @@ public class BillSearch implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
-        bts.add(BillType.CollectingCentreBill);
+        bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
+        bts.add(BillType.PatientPaymentReceiveBill);
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
