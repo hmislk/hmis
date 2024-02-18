@@ -248,7 +248,7 @@ public enum BillType {
             case OpdBathcBill:
                 return "OPD Accepet Payment";
             case CollectingCentrePaymentReceiveBill:
-                return "Collecting Centre Payment";
+                return "Collecting Centre Payment Receive";
             case ChannelProPayment:
                 return "Channel Professional Payment Bill";
             case ChannelIncomeBill:
