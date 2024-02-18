@@ -44,17 +44,17 @@
             <version>5.2.3</version>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.3</version>
-        </dependency>
+        </dependency>-->
 
-        <dependency>
+<!--        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-excelant</artifactId>
             <version>5.2.3</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>net.sourceforge.barbecue</groupId>

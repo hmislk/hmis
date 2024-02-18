@@ -13,39 +13,7 @@
 
                 <h:form>
 
-                    <script type="text/javascript">
-                        function download(filename, text) {
-                            var element = document.createElement('a');
-                            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-                            element.setAttribute('download', filename);
-
-                            element.style.display = 'none';
-                            document.body.appendChild(element);
-
-                            element.click();
-
-                            document.body.removeChild(element);
-                        }
-
-                        function exportTableToCSV(filename) {
-                            var csv = [];
-                            var rows = document.querySelectorAll("table tr");
-
-                            for (var i = 0; i < rows.length; i++) {
-                                var row = [], cols = rows[i].querySelectorAll("td, th");
-
-                                for (var j = 0; j < cols.length; j++)
-                                    row.push('"' + cols[j].innerText + '"');
-
-                                csv.push(row.join(","));
-                            }
-
-                            // Download CSV file
-                            download(filename, csv.join("\n"));
-                        }
-
-                    </script>
-
+                 
                     <p:panel header="Selected List of Bills" >
                         <p:commandButton action="/reportIncome/bill_type_summery" value="Back" ajax="false" icon="pi pi-arrow-left" styleClass="ui-button-secondary"></p:commandButton>
                         <p:commandButton value="Download" ajax="false" icon="pi pi-download" styleClass="ui-button-success">
