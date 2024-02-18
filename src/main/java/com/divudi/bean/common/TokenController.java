@@ -65,9 +65,11 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
+
     private Token removeingToken;
 
     private List<Token> currentTokens;
+    private List<Token> currentTokensCounterWise;
     private Department department;
     private Institution institution;
     private Department counter;
@@ -122,8 +124,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         fillPharmacyTokens();
         return "/token/pharmacy_tokens";
     }
-    
-    public void fillPharmacyTokens(){
+
+    public void logoutFromTvScreen() {
+        selectedCounter = null;
+    }
+
+    public void fillPharmacyTokens() {
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
@@ -137,12 +143,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
             j += " and t.counter =:ct";
             m.put("ct", counter);
         }
-        
-        if (selectedCounter != null) {
-            j += " and t.counter =:ct";
-            m.put("ct", selectedCounter);
-        }
-        
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -159,7 +159,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenDate=:date "
                 + " and t.completed=:com";
         Map m = new HashMap();
-        
+
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", true);
@@ -175,13 +175,13 @@ public class TokenController implements Serializable, ControllerWithPatient {
         fillPharmacyTokensCalled();
         return "/token/pharmacy_tokens_called"; // Adjust the navigation string as per your page structure
     }
-    
+
     public String navigateToManagePharmacyTokensCalledByCounter() {
-        fillPharmacyTokensCalled();
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
     }
 
     public void fillPharmacyTokensCalled() {
+        Map<String, Object> m = new HashMap<>();
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
@@ -189,7 +189,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.called=:cal "
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
-        Map<String, Object> m = new HashMap<>();
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
@@ -197,6 +196,29 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("com", false); // Tokens that are not completed
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public void fillPharmacyTokensCalledCounterWise() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        if (selectedCounter != null) {
+            System.out.println("selectedCounter = " + selectedCounter.getName());
+            j += " and t.counter =:ct";
+            m.put("ct", selectedCounter);
+        }
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokensCounterWise = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
     public Token findPharmacyTokens(Bill bill) {
@@ -520,7 +542,13 @@ public class TokenController implements Serializable, ControllerWithPatient {
     public void setSelectedCounter(Department selectedCounter) {
         this.selectedCounter = selectedCounter;
     }
-    
-    
+
+    public List<Token> getCurrentTokensCounterWise() {
+        return currentTokensCounterWise;
+    }
+
+    public void setCurrentTokensCounterWise(List<Token> currentTokensCounterWise) {
+        this.currentTokensCounterWise = currentTokensCounterWise;
+    }
 
 }
