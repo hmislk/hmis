@@ -436,9 +436,14 @@ public class BillSearch implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+
         bts.add(BillType.CollectingCentrePaymentReceiveBill);
         bts.add(BillType.PaymentBill);
         bts.add(BillType.PatientPaymentReceiveBill);
+
+        bts.add(BillType.CollectingCentreBill);
+        bts.add(BillType.PaymentBill);
+
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
@@ -3049,15 +3054,23 @@ public class BillSearch implements Serializable {
 
     public OverallSummary aggregateBillSummaries(List<BillSummery> billSummaries) {
         Map<String, BillTypeSummary> summaryMap = new HashMap<>();
+
         double billPaymentTotal = 0;
+
+         double billPaymentTotal=0;
+
         for (BillSummery bs : billSummaries) {
             String billType = (bs.getBillType() != null) ? bs.getBillType().toString() : "UnknownBillType";
             String billClassType = (bs.getBillClassType() != null) ? bs.getBillClassType().toString() : "UnknownBillClassType";
             String key = billType + ":" + billClassType;
-
+            
             BillTypeSummary billTypeSummary = summaryMap.get(key);
             if (billTypeSummary == null) {
+
                 billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>(), billPaymentTotal);
+
+                billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>(),billPaymentTotal);
+
                 summaryMap.put(key, billTypeSummary);
             }
 
@@ -3070,6 +3083,9 @@ public class BillSearch implements Serializable {
 
     private void updatePaymentSummary(BillTypeSummary billTypeSummary, BillSummery bs) {
         boolean found = false;
+
+
+         
 
         for (PaymentSummary ps : billTypeSummary.getPaymentSummaries()) {
             if (ps.getPaymentMethod()==paymentMethod.MultiplePaymentMethods && bs.getPaymentMethod()==paymentMethod.MultiplePaymentMethods) {
@@ -3087,6 +3103,10 @@ public class BillSearch implements Serializable {
         }
         if (!found) {
 
+
+
+            
+
             // Create a new payment summary and add it
             double billPaymentTotal;
             PaymentSummary newPs = new PaymentSummary(bs.getPaymentMethod(), bs.getTotal(), bs.getDiscount(), bs.getNetTotal(), bs.getTax(), bs.getCount());
@@ -3094,8 +3114,13 @@ public class BillSearch implements Serializable {
                 return;
             }
             billTypeSummary.getPaymentSummaries().add(newPs);
+
             billPaymentTotal = bs.getTotal();
             double biltypeSum = billTypeSummary.getBillTypeTotal() + billPaymentTotal;
+
+            billPaymentTotal=bs.getTotal();
+            double biltypeSum=billTypeSummary.getBillTypeTotal()+billPaymentTotal;
+
             billTypeSummary.setBillTypeTotal(biltypeSum);
         }
     }
@@ -3217,12 +3242,18 @@ public class BillSearch implements Serializable {
         private double billTypeTotal = 0;
 
         // Constructors, getters, and setters
+
         public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries, double billTypeTotal) {
+
+        public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries,double billTypeTotal) {
+
             this.id = ++idCounter; // Increment and assign a unique ID
             this.billType = billType;
             this.billClassType = billClassType;
             this.paymentSummaries = paymentSummaries;
             this.billTypeTotal = billTypeTotal;
+
+            this.billTypeTotal=billTypeTotal;
         }
 
         // Unique ID getter
