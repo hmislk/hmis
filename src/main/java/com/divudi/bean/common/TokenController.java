@@ -72,6 +72,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
     private Institution institution;
     private Department counter;
     private Patient patient;
+    private Department selectedCounter;
 
     private boolean patientDetailsEditable;
 
@@ -121,8 +122,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
         fillPharmacyTokens();
         return "/token/pharmacy_tokens";
     }
-
-    public void fillPharmacyTokens() {
+    
+    public void fillPharmacyTokens(){
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
@@ -136,6 +137,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
             j += " and t.counter =:ct";
             m.put("ct", counter);
         }
+        
+        if (selectedCounter != null) {
+            j += " and t.counter =:ct";
+            m.put("ct", selectedCounter);
+        }
+        
         j += " order by t.id DESC";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -167,6 +174,11 @@ public class TokenController implements Serializable, ControllerWithPatient {
     public String navigateToManagePharmacyTokensCalled() {
         fillPharmacyTokensCalled();
         return "/token/pharmacy_tokens_called"; // Adjust the navigation string as per your page structure
+    }
+    
+    public String navigateToManagePharmacyTokensCalledByCounter() {
+        fillPharmacyTokensCalled();
+        return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
     }
 
     public void fillPharmacyTokensCalled() {
@@ -499,5 +511,15 @@ public class TokenController implements Serializable, ControllerWithPatient {
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
     }
+
+    public Department getSelectedCounter() {
+        return selectedCounter;
+    }
+
+    public void setSelectedCounter(Department selectedCounter) {
+        this.selectedCounter = selectedCounter;
+    }
+    
+    
 
 }
