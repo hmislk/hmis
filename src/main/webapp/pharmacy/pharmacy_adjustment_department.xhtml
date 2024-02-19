@@ -155,12 +155,12 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="New Quentity" ></h:outputLabel>
+                                    <h:outputLabel value="New Quantity" ></h:outputLabel>
                                     <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
+                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
                                                      action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
