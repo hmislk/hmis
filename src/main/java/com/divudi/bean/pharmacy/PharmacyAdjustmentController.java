@@ -818,7 +818,6 @@ public class PharmacyAdjustmentController implements Serializable {
             UtilityController.addErrorMessage("Select Item Batch");
             return true;
         }
-
         return false;
     }
 
@@ -1107,6 +1106,7 @@ public class PharmacyAdjustmentController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        
 
         saveStaffStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
@@ -1116,6 +1116,12 @@ public class PharmacyAdjustmentController implements Serializable {
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
+        
+        JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
+        
+        stock = null;
+        qty = null;
+        comment = null;
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
