@@ -1196,6 +1196,10 @@ public class PharmacyAdjustmentController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        if(errorCheck()){
+            return;
+        }
 
         saveExpiryDateAdjustmentBill();
         saveExDateAdjustmentBillItems();
@@ -1205,6 +1209,8 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
+        
+        JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Expiry Rate(/faces/pharmacy/pharmacy_adjustment_expiry_date.xhtml)");
     }
