@@ -1256,11 +1256,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if (rsr== null) {
+        if (rsr == null) {
             JsfUtil.addErrorMessage("Add Retail Sale Rate..");
             return;
         }
-        
+
         if ((comment == null) || (comment.trim().equals(""))) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
@@ -1285,6 +1285,16 @@ public class PharmacyAdjustmentController implements Serializable {
         Date toDate = null;
 
         if (errorCheck()) {
+            return;
+        }
+
+        if (wsr == null) {
+            JsfUtil.addErrorMessage("Invalied Wholesale Rate..");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
 
