@@ -23,7 +23,7 @@
             </h:panelGroup>
             
             <div class="" >
-                <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" id="chequNo" class="mx-2">
+                <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" id="chequNo" class="mx-1">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
             </div>
@@ -37,7 +37,7 @@
             </div>
             
             <div class="" >
-                <p:calendar value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" class="mx-1">                            
+                <p:calendar value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" class="mx-1 w-50" inputStyleClass="w-100">                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
             </div>
