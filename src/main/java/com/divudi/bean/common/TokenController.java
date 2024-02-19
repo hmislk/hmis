@@ -65,13 +65,16 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Class variables">
     private Token currentToken;
+
     private Token removeingToken;
 
     private List<Token> currentTokens;
+    private List<Token> currentTokensCounterWise;
     private Department department;
     private Institution institution;
     private Department counter;
     private Patient patient;
+    private Department selectedCounter;
 
     private boolean patientDetailsEditable;
 
@@ -122,6 +125,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_tokens";
     }
 
+    public void logoutFromTvScreen() {
+        selectedCounter = null;
+    }
+
     public void fillPharmacyTokens() {
         String j = "Select t "
                 + " from Token t"
@@ -152,7 +159,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenDate=:date "
                 + " and t.completed=:com";
         Map m = new HashMap();
-        
+
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("com", true);
@@ -169,7 +176,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_tokens_called"; // Adjust the navigation string as per your page structure
     }
 
+    public String navigateToManagePharmacyTokensCalledByCounter() {
+        return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
+    }
+
     public void fillPharmacyTokensCalled() {
+        Map<String, Object> m = new HashMap<>();
         String j = "Select t "
                 + " from Token t"
                 + " where t.department=:dep"
@@ -177,7 +189,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.called=:cal "
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
-        Map<String, Object> m = new HashMap<>();
         m.put("dep", sessionController.getDepartment());
         m.put("date", new Date());
         m.put("cal", true); // Tokens that are called
@@ -185,6 +196,29 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("com", false); // Tokens that are not completed
         j += " order by t.id";
         currentTokens = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+    }
+
+    public void fillPharmacyTokensCalledCounterWise() {
+        Map<String, Object> m = new HashMap<>();
+        String j = "Select t "
+                + " from Token t"
+                + " where t.department=:dep"
+                + " and t.tokenDate=:date "
+                + " and t.called=:cal "
+                + " and t.inProgress=:prog "
+                + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
+        if (selectedCounter != null) {
+            System.out.println("selectedCounter = " + selectedCounter.getName());
+            j += " and t.counter =:ct";
+            m.put("ct", selectedCounter);
+        }
+        m.put("dep", sessionController.getDepartment());
+        m.put("date", new Date());
+        m.put("cal", true); // Tokens that are called
+        m.put("prog", false); // Tokens that are not in progress
+        m.put("com", false); // Tokens that are not completed
+        j += " order by t.id";
+        currentTokensCounterWise = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
 
     public Token findPharmacyTokens(Bill bill) {
@@ -337,6 +371,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         }
         tokenFacade.create(currentToken);
         currentToken.setTokenNumber(billNumberGenerator.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
+        currentToken.setCounter(counter);
         currentToken.setTokenDate(new Date());
         currentToken.setTokenAt(new Date());
         tokenFacade.edit(currentToken);
@@ -498,6 +533,22 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public Department getSelectedCounter() {
+        return selectedCounter;
+    }
+
+    public void setSelectedCounter(Department selectedCounter) {
+        this.selectedCounter = selectedCounter;
+    }
+
+    public List<Token> getCurrentTokensCounterWise() {
+        return currentTokensCounterWise;
+    }
+
+    public void setCurrentTokensCounterWise(List<Token> currentTokensCounterWise) {
+        this.currentTokensCounterWise = currentTokensCounterWise;
     }
 
 }
