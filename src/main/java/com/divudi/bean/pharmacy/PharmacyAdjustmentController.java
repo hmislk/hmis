@@ -138,7 +138,9 @@ public class PharmacyAdjustmentController implements Serializable {
 
     
     public void fillAmpStocks() {
+        System.out.println("fillAmpStocks");
         List<Stock> items = new ArrayList<>();
+        System.out.println("amp = " + amp);
         if(amp==null){
             ampStock = items;
             return;
@@ -150,8 +152,15 @@ public class PharmacyAdjustmentController implements Serializable {
                 + " where i.department=:d "
                 + " and i.itemBatch.item=:amp "
                 + " order by i.stock desc";
+        m.put("d", sessionController.getDepartment());
+        m.put("amp", amp);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        
         items = getStockFacade().findByJpql(sql, m);
+        
         if(items!=null){
+            System.out.println("items = " + items.size());
             ampStock = items;
         }
     }

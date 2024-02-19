@@ -24,10 +24,12 @@
                                         <h:outputText styleClass="fa-solid fa-syringe"></h:outputText>
                                         <h:outputLabel value="Select Item" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="2" class="w-100">
+                                    <p:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="Item" ></h:outputLabel>
                                         <p:autoComplete 
                                             id="acAmp"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
                                             completeMethod="#{itemController.completeAmps}"
                                             var="amp"
                                             itemLabel="#{amp.name}"
@@ -40,49 +42,45 @@
                                                 update="tblStocks" ></p:ajax>
                                         </p:autoComplete>
 
-                                        <h:outputLabel value="Batch" ></h:outputLabel>
+                                        <h:outputLabel value="Batches" ></h:outputLabel>
                                         <p:dataTable 
                                             id="tblStocks"
                                             value="#{pharmacyAdjustmentController.ampStock}"
+                                            var="i"
+                                            rows="10"
                                             selectionMode="single"
+                                            rowKey="#{i.id}"
                                             selection="#{pharmacyAdjustmentController.stock}">
                                             <p:column 
                                                 headerText="Rate" 
                                                 sortBy="#{i.itemBatch.retailsaleRate}"
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </p:column>
                                             <p:column 
                                                 sortBy="#{i.stock}"
                                                 headerText="Stocks" 
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.stock}" >
+                                                <h:outputText value="#{i.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </p:column>
                                             <p:column
                                                 headerText="Expiry" 
                                                 sortBy="#{i.itemBatch.dateOfExpire}"
                                                 styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
+                                                <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
 
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </p:column>
                                             <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
                                             <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
                                         </p:dataTable>
-                                        <h:outputLabel value="New Quentity" ></h:outputLabel>
-                                        <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
-                                        <h:outputLabel value="Comment" ></h:outputLabel>
-                                        <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-                                        <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
-                                                         action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
-                                        <p:defaultCommand target="btnAdjust"/>
-                                    </h:panelGrid>
+                                    </p:panelGrid>
                                 </p:panel>
 
                             </div>
@@ -92,7 +90,6 @@
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="3" class="w-100"></h:panelGrid>
                                     <div>
                                         <div class="row">
                                             <div class="col-md-3">
@@ -153,6 +150,19 @@
 
 
 
+                                </p:panel>
+                                <p:panel >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Adjust" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="New Quentity" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
+                                    <h:outputLabel value="Comment" ></h:outputLabel>
+                                    <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
+
+                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="w-75 my-1 ui-button-warning" icon="fa-solid fa-sliders"
+                                                     action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" ></p:commandButton>
+                                    <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
                             </div>
                         </div>
