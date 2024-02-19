@@ -25,18 +25,22 @@
 
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                             value="#{inwardProfessionalBillController.current.patientEncounter}" 
-                                            completeMethod="#{admissionController.completePatient}"
-                                            var="apt2" itemLabel="#{apt2.bhtNo}"
-                                            itemValue="#{apt2}" size="30"  class=" mx-2" >
-
-
+                                             completeMethod="#{admissionController.completePatient}"
+                                            var="apt2" 
+                                            itemLabel="#{apt2.bhtNo}"
+                                            itemValue="#{apt2}" 
+                                            size="30"  
+                                            class="mx-2">
                                 <p:column >
-                                    <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                    <h:outputLabel value="#{apt2.bhtNo}"/>
                                 </p:column>
                                 <p:column >
                                     <h:outputLabel value="#{apt2.patient.person.name}"/>
                                 </p:column>
-                            </p:autoComplete>  
+                                <p:column>
+                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:commandButton
                                 id="btnSelect"
