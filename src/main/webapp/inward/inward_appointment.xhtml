@@ -21,12 +21,10 @@
             <h:form id="form">
 
                 <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
-                    <p:panel header="Inward Appointments" style="height: 100vh"> 
-                        <div class="row">
-                            <div class="col-12 d-flex justify-content-end align-items-center">
-
-
-
+                    <p:panel header="" style="height: 100vh"> 
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Appointments"/>
+                            <div class="d-flex" style="float: right;">
                                 <p:commandButton  
                                     value="Make Appointment" 
                                     action="#{appointmentController.settleBill}" 
@@ -56,6 +54,14 @@
                                         
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
+                            </div>
+                                
+
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-end align-items-center">
+
+
 
                             </div>
 
