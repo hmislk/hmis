@@ -515,10 +515,11 @@ public class BillSearch implements Serializable {
         Map m = new HashMap();
         String j;
 
-        BillClassType tmpBillClassType = billSummery.getBillClassType();
-        BillType tmpBllType = billSummery.getBillType();
+        BillClassType filteredBillClassType = billSummery.getBillClassType();
+        BillType filteredBillType = billSummery.getBillType();
+        PaymentMethod filteredPaymentMethod = billSummery.getPaymentMethod();
 
-        if (tmpBillClassType == null) {
+        if (filteredBillClassType == null) {
             j = "select b "
                     + " from Bill b "
                     + " where b.retired=false "
@@ -530,30 +531,47 @@ public class BillSearch implements Serializable {
                     + " and b.billTime between :fd and :td ";
         }
 
-        if (department == null) {
-            j += " and b.institution=:ins ";
-            m.put("ins", sessionController.getLoggedUser().getInstitution());
-        } else {
+        if (department != null) {
             j += " and b.department=:dep ";
             m.put("dep", department);
+        }
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
         }
         if (user != null) {
             j += " and b.creater=:wu ";
             m.put("wu", user);
         }
-        if (tmpBllType != null) {
-            j += " and b.billType=:bt ";
-            m.put("bt", tmpBllType);
+
+        if (filteredPaymentMethod != null) {
+            j += " and b.paymentMethod=:pm ";
+            m.put("pm", filteredPaymentMethod);
         }
-        if (tmpBillClassType != null) {
+
+        if (filteredBillType != null) {
+            j += " and b.billType=:bt ";
+            m.put("bt", filteredBillType);
+        }
+        if (filteredBillClassType != null) {
             j += " and b.billClassType=:bct ";
-            m.put("bct", tmpBillClassType);
+            m.put("bct", filteredBillClassType);
         }
         m.put("fd", fromDate);
         m.put("td", toDate);
+
+        System.out.println("j = " + j);
+        System.out.println("m = " + m);
+
         bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 
-        if (tmpBillClassType == BillClassType.CancelledBill || tmpBillClassType == BillClassType.RefundBill) {
+        if (bills != null) {
+            System.out.println("bills = " + bills.size());
+        } else {
+            System.out.println("bills = " + bills);
+        }
+
+        if (filteredBillClassType == BillClassType.CancelledBill || filteredBillClassType == BillClassType.RefundBill) {
             directTo = "/reportIncome/bill_list_cancelled";
         } else {
             directTo = "/reportIncome/bill_list";
