@@ -47,11 +47,6 @@
                         </div>
                     </h:panelGroup>
 
-
-
-
-
-
                     <table class="headingPrinting" >
                         <tr>
                             <td colspan="4">
@@ -78,7 +73,7 @@
                                         <div class="col-4 w-100">
                                             <div class="d-flex justify-content-between w-100 text-left" style="align-content: l">
                                                 <div class="w-100 text-left align-left">
-                                                    <h:outputLabel value="B.H.T NO" />
+                                                    <h:outputLabel value="BHT NO" />
                                                 </div>
                                                 <div class="w-100 ">
                                                     <h:outputLabel value=":" />
@@ -90,7 +85,7 @@
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100 text-left">
-                                                    <h:outputLabel value="BILL NO" />
+                                                    <h:outputLabel value="Bill NO" />
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value=":" />
@@ -126,32 +121,30 @@
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100">
-                                                    <h:outputLabel value="Date of Admission" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
-                                                    <h:outputLabel value="Time of Admission" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
+                                                    <h:outputLabel value="Admission At"/>
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value=":" />
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime}" >
-                                                        <f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                                        <f:convertDateTime pattern="dd MM yyyy h:mm a"/>
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </div>
                                             </div>
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100">
-                                                    <h:outputLabel value="Time of Discharged" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
-                                                    <h:outputLabel value="Date of Discharged" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                                    <h:outputLabel value="Discharged At"/>
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value=":" />
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
-                                                        <f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                                        <f:convertDateTime pattern="dd MM yyyy h:mm a"/>
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputLabel>
                                                 </div>
                                             </div>
@@ -176,7 +169,7 @@
                                                     <h:outputLabel value=":" />
                                                 </div>
                                                 <div class=" w-100">
-                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.printRoomFacilityCharge.room.name}" />
+                                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
                                                 </div>
                                             </div>
                                         </div>
@@ -187,8 +180,6 @@
                             </h:panelGroup>
                         </table> 
                     </div>
-
-
 
                     <table class="headingPrinting tableheader">
                         <!--                        <tr>
@@ -456,9 +447,7 @@ DUE AMOUNT
                     </table>
 
                     <div class="d-flex justify-content-between px-5 mt-4">
-                        <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.code}">
-                        </h:outputLabel>
-                        <h:outputLabel value="Cashier :" >
+                        <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.name}">
                         </h:outputLabel>
                         <h:outputLabel value="Patient/Guardian" >
                         </h:outputLabel>
@@ -469,22 +458,6 @@ DUE AMOUNT
 
 
                 </div>
-                <!--            	<div style="position: absolute;
-                                        left: 0%;
-                                        bottom:  3%;                                                         	 
-                                        font-size:10px!important;" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}" >
-                                        <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.creditPaidAmount}" >
-                                        <f:convertNumber pattern="******0.00" />
-                                        </h:outputLabel>
-                                </div>
-                                <div style="position: absolute;
-                                        left: 50%;
-                                        bottom:  3%;
-                                        font-size:10px!important;" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}" >
-                                        <h:outputLabel  value="#{cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.creditPaidAmount}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
-                                        <f:convertNumber pattern="******0.00" />
-                                        </h:outputLabel>
-                                </div>-->
 
             </div>
         </h:panelGroup>
