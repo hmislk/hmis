@@ -63,10 +63,11 @@
                                 id="tblBills" 
                                 value="#{searchController.bills}" 
                                 var="bb"
+                                rows="10"
                                 paginator="true"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15"
-                                class="m-1"
+                                rowsPerPageTemplate="10,20"
+                                class="m-1 w-100"
                                 >
                                 <p:column>
                                     <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}"  >
@@ -107,10 +108,15 @@
                                 <p:column headerText="Client" >
                                     <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>         
-                                <p:column headerText="PaymentMethod">                            
+                                <p:column headerText="Payment Method">                            
                                     <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                 </p:column>
-                                <p:column headerText="Value" >                              
+                                <p:column headerText="Total" >                              
+                                    <h:outputLabel value="#{bb.total}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>                                  
+                                </p:column>  
+                                <p:column headerText="Net Total" >                              
                                     <h:outputLabel value="#{bb.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>                                  
