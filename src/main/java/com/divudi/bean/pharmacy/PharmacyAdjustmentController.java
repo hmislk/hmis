@@ -1256,6 +1256,16 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (rsr== null) {
+            JsfUtil.addErrorMessage("Add Retail Sale Rate..");
+            return;
+        }
+        
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
         saveSaleRateAdjustmentBill();
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);

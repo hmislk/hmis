@@ -127,6 +127,13 @@
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
+                                            <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.wholesaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel></div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
@@ -155,7 +162,7 @@
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="New Sale Rate" ></h:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.rsr}"  class="w-100"></p:inputText>
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.rsr}" rendered="true" requiredMessage="Enter New Sale Rate" class="w-100"></p:inputText>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
