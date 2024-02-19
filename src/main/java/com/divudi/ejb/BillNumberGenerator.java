@@ -95,7 +95,6 @@ public class BillNumberGenerator {
                 + "  where  b.retired=false "
                 + " and b.institution=:ins "
                 + " and b.billType = :bt ";
-                
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
