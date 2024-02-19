@@ -120,10 +120,9 @@ public class PharmacyAdjustmentController implements Serializable {
     List<BillItem> billItems;
     List<Stock> stocks;
     List<Bill> bills;
-    
+
     private Amp amp;
     private List<Stock> ampStock;
-    
 
     private boolean printPreview;
 
@@ -136,12 +135,9 @@ public class PharmacyAdjustmentController implements Serializable {
         billItems = fetchBillItems(BillType.PharmacyAdjustment);
     }
 
-    
     public void fillAmpStocks() {
-        System.out.println("fillAmpStocks");
         List<Stock> items = new ArrayList<>();
-        System.out.println("amp = " + amp);
-        if(amp==null){
+        if (amp == null) {
             ampStock = items;
             return;
         }
@@ -154,17 +150,14 @@ public class PharmacyAdjustmentController implements Serializable {
                 + " order by i.stock desc";
         m.put("d", sessionController.getDepartment());
         m.put("amp", amp);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        
+
         items = getStockFacade().findByJpql(sql, m);
-        
-        if(items!=null){
-            System.out.println("items = " + items.size());
+
+        if (items != null) {
             ampStock = items;
         }
     }
-    
+
     public List<BillItem> fetchBillItems(BillType bt) {
         List<BillItem> billItems = new ArrayList<>();
 
@@ -203,9 +196,13 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
+    
+    
 
     public void makeNull() {
         printPreview = false;
+        ampStock = new ArrayList<>();
+        amp = null;
         clearBill();
         clearBillItem();
     }
@@ -359,7 +356,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveDeptStockAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -381,7 +378,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveDeptSingleStockAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -403,7 +400,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveStaffStockAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -425,7 +422,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void savePurchaseRateAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -447,7 +444,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveSaleRateAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -471,7 +468,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveWholeSaleRateAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -493,7 +490,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
-    
+
     private void saveExpiryDateAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -1076,7 +1073,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
-    
+
     public void adjustStockForDepartment() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1097,7 +1094,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
-    
+
     public void adjustStaffStock() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -1106,7 +1103,6 @@ public class PharmacyAdjustmentController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        
 
         saveStaffStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
@@ -1116,9 +1112,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
-        
+
         JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
-        
+
         stock = null;
         qty = null;
         comment = null;
@@ -1177,17 +1173,23 @@ public class PharmacyAdjustmentController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
+        if (errorCheck()) {
+            return;
+        }
+
         savePurchaseRateAdjustmentBill();
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
-
-//        clearBill();
-//        clearBillItem();
+        
         printPreview = true;
-
+        
+        JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully..");
+        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
+
+        
     }
 
     public void adjustExDate() {
@@ -1213,7 +1215,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date toDate = null;
 
         saveSaleRateAdjustmentBill();
-        
+
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -1612,7 +1614,5 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setAmpStock(List<Stock> ampStock) {
         this.ampStock = ampStock;
     }
-    
-    
 
 }

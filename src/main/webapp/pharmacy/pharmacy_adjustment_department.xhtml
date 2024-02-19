@@ -8,14 +8,10 @@
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
-
                 <h:form>
-
                     <p:panel header="Department Stock Adjustment : Quantity" rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <div class="row">
                             <div class="col-md-6">
@@ -114,20 +110,19 @@
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.purcahseRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
-
+                                        <div class="row">
+                                            <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel></div>
+                                        </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
@@ -139,16 +134,16 @@
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Expiry"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                            <div class="col-md-7 align-items-center">
+                                                <h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                    &nbsp;<p:tag rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
+                                                    &nbsp;<p:tag 
+                                                        rendered="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ': 
                                                                              commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
                                                                  severity="#{commonController.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel></div>
                                         </div>
                                     </div>
-
-
 
                                 </p:panel>
                                 <p:panel >
@@ -180,11 +175,7 @@
                     </p:panel>
 
                 </h:form>
-
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
