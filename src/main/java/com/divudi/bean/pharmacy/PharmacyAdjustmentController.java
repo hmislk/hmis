@@ -196,8 +196,6 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
-    
-    
 
     public void makeNull() {
         printPreview = false;
@@ -1083,6 +1081,16 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (qty == null) {
+            JsfUtil.addErrorMessage("Add Quantity..");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
         saveDeptStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
@@ -1091,6 +1099,8 @@ public class PharmacyAdjustmentController implements Serializable {
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
+
+        JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
@@ -1104,6 +1114,16 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (qty == null) {
+            JsfUtil.addErrorMessage("Add Quantity..");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
         saveStaffStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
@@ -1113,11 +1133,9 @@ public class PharmacyAdjustmentController implements Serializable {
 
         printPreview = true;
 
-        JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
+        makeNull();
 
-        stock = null;
-        qty = null;
-        comment = null;
+        JsfUtil.addSuccessMessage("Staff Stock Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
@@ -1177,27 +1195,41 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (String.valueOf(pr) == null) {
+            JsfUtil.addErrorMessage("Add Purchase Rate..");
+            return;
+        }
+
+        if (pr < 0) {
+            JsfUtil.addErrorMessage("Invalied Purchase Rate..");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
         savePurchaseRateAdjustmentBill();
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
-        
+
         printPreview = true;
-        
+
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully..");
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
 
-        
     }
 
     public void adjustExDate() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
-        if(errorCheck()){
+
+        if (errorCheck()) {
             return;
         }
 
@@ -1209,7 +1241,7 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
-        
+
         JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Expiry Rate(/faces/pharmacy/pharmacy_adjustment_expiry_date.xhtml)");
@@ -1219,8 +1251,8 @@ public class PharmacyAdjustmentController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
-        if(errorCheck()){
+
+        if (errorCheck()) {
             return;
         }
 
@@ -1229,7 +1261,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
-        
+
         JsfUtil.addSuccessMessage("Retail Sale Rate Adjustment Successfully..");
 
         printPreview = true;
@@ -1241,8 +1273,8 @@ public class PharmacyAdjustmentController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
-        if(errorCheck()){
+
+        if (errorCheck()) {
             return;
         }
 
@@ -1252,7 +1284,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
         printPreview = true;
-        
+
         JsfUtil.addSuccessMessage("Wholesale Rate Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");

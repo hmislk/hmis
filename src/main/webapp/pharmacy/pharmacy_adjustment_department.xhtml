@@ -124,6 +124,13 @@
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
+                                            <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.wholesaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel></div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
@@ -151,7 +158,9 @@
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="New Quantity" ></h:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"></p:inputText>
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100">
+                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                    </p:inputText>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
@@ -165,13 +174,26 @@
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
-                        <p:commandButton class="ui-button-success" icon="fas fa-plus" ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
-                        <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print">
-                            <p:printer target="print"/>
-                        </p:commandButton>
-                        <p:panel id="print">
-                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.bill}" />
-                        </p:panel>
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                action="#{pharmacyAdjustmentController.makeNull()}" 
+                                value="New Adjustment"/>
+                            <p:commandButton 
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                ajax="false" 
+                                value="Print">
+                                <p:printer target="print"/>
+                            </p:commandButton>
+                        </div>
+                        
+                        <h:panelGroup id="print">
+                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                        </h:panelGroup>
+                        
                     </p:panel>
 
                 </h:form>
