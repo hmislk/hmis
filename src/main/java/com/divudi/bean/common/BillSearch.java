@@ -293,6 +293,7 @@ public class BillSearch implements Serializable {
 
         List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
         billSummeries = new ArrayList<>();
+        System.out.println("billSummeries = " + billSummeries.size());
         Long i = 1l;
         for (Object o : objs) {
             BillSummery tbs = (BillSummery) o;
@@ -435,8 +436,14 @@ public class BillSearch implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyWholeSale);
         bts.add(BillType.InwardPaymentBill);
+
+        bts.add(BillType.CollectingCentrePaymentReceiveBill);
+        bts.add(BillType.PaymentBill);
+        bts.add(BillType.PatientPaymentReceiveBill);
+
         bts.add(BillType.CollectingCentreBill);
         bts.add(BillType.PaymentBill);
+
 
         billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
 
@@ -453,9 +460,10 @@ public class BillSearch implements Serializable {
     public List<BillSummery> generateBillSummaries(Institution ins, Department dep, WebUser u, List<BillType> bts, BillClassType bct, Date fd, Date td) {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder queryString = new StringBuilder("select new com.divudi.data.BillSummery(b.paymentMethod, ");
-        if (bct != null) {
-            queryString.append("b.billClassType, ");
-        }
+//        if (bct != null) {
+//            queryString.append("b.billClassType, ");
+//        }
+        queryString.append("b.billClassType, ");
         queryString.append("sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) from Bill b where b.retired=false and b.billTime between :fd and :td");
         parameters.put("fd", fd);
         parameters.put("td", td);
@@ -479,8 +487,14 @@ public class BillSearch implements Serializable {
             queryString.append(" and b.billClassType=:bct");
             parameters.put("bct", bct);
         }
-        queryString.append(bct == null ? " group by b.paymentMethod, b.billType" : " group by b.paymentMethod, b.billClassType, b.billType");
+
+        queryString.append(" group by b.paymentMethod, b.billClassType, b.billType");
+
+        // queryString.append(bct == null ? " group by b.paymentMethod, b.billType" : " group by b.paymentMethod, b.billClassType, b.billType");
         List<BillSummery> bss = (List<BillSummery>) billFacade.findLightsByJpql(queryString.toString(), parameters, TemporalType.TIMESTAMP);
+        System.out.println("bss = " + bss.size());
+        System.out.println("parameters = " + parameters);
+        System.out.println("JPQL = " + queryString.toString());
         if (bss == null || bss.isEmpty()) {
             return new ArrayList<>();
         }
@@ -3058,7 +3072,11 @@ public class BillSearch implements Serializable {
 
     public OverallSummary aggregateBillSummaries(List<BillSummery> billSummaries) {
         Map<String, BillTypeSummary> summaryMap = new HashMap<>();
+
+        double billPaymentTotal = 0;
+
          double billPaymentTotal=0;
+
         for (BillSummery bs : billSummaries) {
             String billType = (bs.getBillType() != null) ? bs.getBillType().toString() : "UnknownBillType";
             String billClassType = (bs.getBillClassType() != null) ? bs.getBillClassType().toString() : "UnknownBillClassType";
@@ -3066,7 +3084,11 @@ public class BillSearch implements Serializable {
             
             BillTypeSummary billTypeSummary = summaryMap.get(key);
             if (billTypeSummary == null) {
+
+                billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>(), billPaymentTotal);
+
                 billTypeSummary = new BillTypeSummary(bs.getBillType(), bs.getBillClassType(), new ArrayList<>(),billPaymentTotal);
+
                 summaryMap.put(key, billTypeSummary);
             }
 
@@ -3079,8 +3101,14 @@ public class BillSearch implements Serializable {
 
     private void updatePaymentSummary(BillTypeSummary billTypeSummary, BillSummery bs) {
         boolean found = false;
+
+
          
+
         for (PaymentSummary ps : billTypeSummary.getPaymentSummaries()) {
+            if (ps.getPaymentMethod()==paymentMethod.MultiplePaymentMethods && bs.getPaymentMethod()==paymentMethod.MultiplePaymentMethods) {
+                return;
+            }
             if (ps.getPaymentMethod().equals(bs.getPaymentMethod())) {
                 // Aggregate existing payment summary
                 ps.setTotal(ps.getTotal() + bs.getTotal());
@@ -3092,13 +3120,25 @@ public class BillSearch implements Serializable {
             }
         }
         if (!found) {
+
+
+
             
+
             // Create a new payment summary and add it
             double billPaymentTotal;
             PaymentSummary newPs = new PaymentSummary(bs.getPaymentMethod(), bs.getTotal(), bs.getDiscount(), bs.getNetTotal(), bs.getTax(), bs.getCount());
+             if (newPs.getPaymentMethod()==paymentMethod.MultiplePaymentMethods) {
+                return;
+            }
             billTypeSummary.getPaymentSummaries().add(newPs);
+
+            billPaymentTotal = bs.getTotal();
+            double biltypeSum = billTypeSummary.getBillTypeTotal() + billPaymentTotal;
+
             billPaymentTotal=bs.getTotal();
             double biltypeSum=billTypeSummary.getBillTypeTotal()+billPaymentTotal;
+
             billTypeSummary.setBillTypeTotal(biltypeSum);
         }
     }
@@ -3220,11 +3260,17 @@ public class BillSearch implements Serializable {
         private double billTypeTotal = 0;
 
         // Constructors, getters, and setters
+
+        public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries, double billTypeTotal) {
+
         public BillTypeSummary(BillType billType, BillClassType billClassType, List<PaymentSummary> paymentSummaries,double billTypeTotal) {
+
             this.id = ++idCounter; // Increment and assign a unique ID
             this.billType = billType;
             this.billClassType = billClassType;
             this.paymentSummaries = paymentSummaries;
+            this.billTypeTotal = billTypeTotal;
+
             this.billTypeTotal=billTypeTotal;
         }
 
