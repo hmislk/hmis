@@ -1235,6 +1235,10 @@ public class PharmacyAdjustmentController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        if(errorCheck()){
+            return;
+        }
 
         saveWholeSaleRateAdjustmentBill();
         saveWsrAdjustmentBillItems();
@@ -1242,6 +1246,8 @@ public class PharmacyAdjustmentController implements Serializable {
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
         printPreview = true;
+        
+        JsfUtil.addSuccessMessage("Wholesale Rate Adjustment Successfully..");
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");
     }
