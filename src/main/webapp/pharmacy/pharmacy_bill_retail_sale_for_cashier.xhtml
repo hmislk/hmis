@@ -412,7 +412,7 @@
                                                         listener="#{pharmacySaleController.changeListener()}"/>
                                             </p:selectOneMenu>
 
-                                            <p:selectOneMenu class="mx-2" id="cmbPs" value="#{pharmacySaleController.paymentScheme}">   
+                                            <p:selectOneMenu class="mx-2 my-1" id="cmbPs" value="#{pharmacySaleController.paymentScheme}">   
                                                 <f:selectItem itemLabel="Discount Scheme"/>
                                                 <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                 <p:ajax process="@this pay " 
