@@ -1233,6 +1233,16 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (exDate == null) {
+            JsfUtil.addErrorMessage("Add Expiry Date..");
+            return;
+        }
+        
+        if ((comment == null) || (comment.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
         saveExpiryDateAdjustmentBill();
         saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setDateOfExpire(exDate);

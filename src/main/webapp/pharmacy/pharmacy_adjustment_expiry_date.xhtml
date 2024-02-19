@@ -116,21 +116,32 @@
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
+                                                </h:outputLabel>
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.purcahseRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
+                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.wholesaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
                                             <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel></div>
+                                                </h:outputLabel>
+                                            </div>
                                         </div>
 
                                         <div class="row">
@@ -154,7 +165,15 @@
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="New Expiry Date" ></h:outputLabel>
-                                    <p:calendar  autocomplete="off" value="#{pharmacyAdjustmentController.exDate}" navigator="true" inputStyleClass="form-control" class="w-100"></p:calendar>
+                                    <p:calendar  
+                                        autocomplete="off" 
+                                        value="#{pharmacyAdjustmentController.exDate}" 
+                                        rendererType="true" 
+                                        requiredMessage="Add Expiry Date.." 
+                                        navigator="true" inputStyleClass="form-control" 
+                                        class="w-100">
+                                        
+                                    </p:calendar>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
@@ -189,14 +208,11 @@
                                 <p:printer target="print"/>
                             </p:commandButton>
                         </div>
-                        
+
                         <h:panelGroup id="print">
                             <ph:adjustmentBill_expiry_date bill="#{pharmacyAdjustmentController.bill}" />
                         </h:panelGroup>
-                        
-                        
-                        
-                        
+
                     </p:panel>
 
                 </h:form>
