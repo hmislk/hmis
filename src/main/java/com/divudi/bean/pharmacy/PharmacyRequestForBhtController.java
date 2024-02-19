@@ -149,8 +149,8 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
-        
-        if(getPreBill().getBillItems().isEmpty()) {
+
+        if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
@@ -235,6 +235,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     //Check when edititng Qty
     //
     public boolean onEdit(BillItem tmp) {
+        Stock fetchedStock = null;
         //Cheking Minus Value && Null
         if (tmp.getQty() <= 0 || tmp.getQty() == null) {
             setZeroToQty(tmp);
@@ -244,14 +245,18 @@ public class PharmacyRequestForBhtController implements Serializable {
             return true;
         }
 
-        Stock fetchedStock = getStockFacade().find(tmp.getPharmaceuticalBillItem().getStock().getId());
+        if (tmp.getPharmaceuticalBillItem().getStock() != null) {
+            System.out.println("fetchedStock = notnull" );
+            fetchedStock = getStockFacade().find(tmp.getPharmaceuticalBillItem().getStock().getId());
+        }
+        if (fetchedStock != null) {
+            if (tmp.getQty() > fetchedStock.getStock()) {
+                setZeroToQty(tmp);
+                onEditCalculation(tmp);
 
-        if (tmp.getQty() > fetchedStock.getStock()) {
-            setZeroToQty(tmp);
-            onEditCalculation(tmp);
-
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return true;
+                UtilityController.addErrorMessage("No Sufficient Stocks?");
+                return true;
+            }
         }
 
         //Check Is There Any Other User using same Stock
@@ -693,7 +698,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getPreBill().getBillItems().isEmpty()) {
             return true;
         }
-        
 
         return false;
 
@@ -703,14 +707,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
-        
+
         if (getPreBill().getBillItems().isEmpty()) {
             UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
-        
-        
+
         if (errorCheck()) {
             return;
         }
@@ -959,8 +961,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             UtilityController.addErrorMessage("Quantity?");
             return;
         }
-        
-        
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
 
@@ -1008,14 +1008,10 @@ public class PharmacyRequestForBhtController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        if (b.getTransUserStock().isRetired()) {
-            UtilityController.addErrorMessage("This Item Already removed");
-            return;
-        }
 
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
 
-        getPreBill().getBillItems().remove(b.getSearialNo());
+        getPreBill().getBillItems().remove(b);
 
         calTotal();
     }
@@ -1169,12 +1165,15 @@ public class PharmacyRequestForBhtController implements Serializable {
                 if (sq.getQty() == 0) {
                     continue;
                 }
-
+                if (sq.getStock()!=null) {
+                    System.out.println("sq = " + "stock");
+                }
                 //Checking User Stock Entity
                 if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
                     UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
                     continue;
                 }
+                
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
@@ -1544,5 +1543,4 @@ public class PharmacyRequestForBhtController implements Serializable {
         this.item = item;
     }
 
-    
 }
