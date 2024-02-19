@@ -224,6 +224,9 @@ public class UserPreference implements Serializable {
     
     private boolean showBillWiseDetails;
     
+    @Lob
+    private String inpatientFinalBillPrintHeader;
+    
     
 
     
@@ -1022,6 +1025,8 @@ public class UserPreference implements Serializable {
         }
         return longTimeFormat;
     }
+    
+    
 
     public void setLongTimeFormat(String longTimeFormat) {
         this.longTimeFormat = longTimeFormat;
@@ -1152,6 +1157,14 @@ public class UserPreference implements Serializable {
 
     public void setShowBillWiseDetails(boolean showBillWiseDetails) {
         this.showBillWiseDetails = showBillWiseDetails;
+    }
+
+    public String getInpatientFinalBillPrintHeader() {
+        return inpatientFinalBillPrintHeader;
+    }
+
+    public void setInpatientFinalBillPrintHeader(String inpatientFinalBillPrintHeader) {
+        this.inpatientFinalBillPrintHeader = inpatientFinalBillPrintHeader;
     }
 
     

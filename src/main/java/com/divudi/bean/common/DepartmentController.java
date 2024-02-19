@@ -623,13 +623,25 @@ public class DepartmentController implements Serializable {
             }
             DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "departmentController");
+            if (controller == null) {
+                System.out.println("controller is null");
+                return null;
+            }
+            if (controller.getEjbFacade() == null) {
+                System.out.println("controller is null");
+                return null;
+            }
             return controller.getEjbFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                java.lang.Long key;
+                key = Long.valueOf(value);
+                return key;
+            } catch (NumberFormatException e) {
+                return 0l;
+            }
         }
 
         String getStringKey(java.lang.Long value) {
