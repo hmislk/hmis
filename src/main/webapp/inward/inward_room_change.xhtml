@@ -225,7 +225,7 @@
 
                                         <p:tab title="Add Extra Charge Details">
                                             <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >                        
-                                                <p:column headerText="Room">
+                                                <p:column headerText="Room" width="70px;">
                                                     <h:outputLabel value="#{rm.roomFacilityCharge.name}" />                                                                 
                                                 </p:column>     
                                                 <p:column class="text-center">
@@ -248,11 +248,11 @@
                                                     <p:inputText autocomplete="off" value="#{rm.addedMaintainCharge}"
                                                                  disabled="#{rm.retired eq true}" class="w-100"/>                                            
                                                 </p:column>
-                                                <p:column headerText="Mo Charge">
+                                                <p:column headerText="MO Charge">
                                                     <p:inputText autocomplete="off" value="#{rm.addedMoCharge}"
                                                                  disabled="#{rm.retired eq true}" class="w-100"/>                                            
                                                 </p:column>
-                                                <p:column headerText="Madical Care">
+                                                <p:column headerText="Medical Care">
                                                     <p:inputText autocomplete="off" value="#{rm.addedMedicalCareCharge}"
                                                                  disabled="#{rm.retired eq true}" class="w-100"/>                                            
                                                 </p:column>
