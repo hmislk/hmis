@@ -461,10 +461,10 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
         if (getDeptAdjustmentPreBill().getId() == null) {
-            System.out.println("savesakeAjes null = " + getDeptAdjustmentPreBill().getId());
+            //System.out.println("savesakeAjes null = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
-            System.out.println("savesakeAjes getId() = " + getDeptAdjustmentPreBill().getId());
+            //System.out.println("savesakeAjes getId() = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
@@ -1213,15 +1213,19 @@ public class PharmacyAdjustmentController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        if(errorCheck()){
+            return;
+        }
 
         saveSaleRateAdjustmentBill();
-
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
-//        clearBill();
-//        clearBillItem();
+        
+        JsfUtil.addSuccessMessage("Retail Sale Rate Adjustment Successfully..");
+
         printPreview = true;
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Sale rate(/faces/pharmacy/pharmacy_adjustment_retail_sale_rate.xhtml)");
