@@ -1337,6 +1337,11 @@ public class BhtSummeryController implements Serializable {
             UtilityController.addErrorMessage("Patient Already Discharged");
             return;
         }
+        
+        if (date == null){
+            JsfUtil.addErrorMessage("Please Enter the Date");
+            return;
+        }
 
         if (checkDischargeTime()) {
             return;
