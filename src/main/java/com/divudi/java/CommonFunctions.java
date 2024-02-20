@@ -12,6 +12,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,6 +43,43 @@ public class CommonFunctions {
         return convertedPhoneNumber;
     }
 
+    public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    //----------Date Time Formats
+    public static String getDateFormat(Date date) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
+        s = d.format(date);
+        return s;
+    }
+
+    public static String getDateFormat(Date date, String formatString) {
+        if (date == null) {
+            date = new Date();
+        }
+        if (formatString == null || formatString.trim().equals("")) {
+            formatString = "dd MMMM yyyy";
+        }
+        String s ;
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+
+    
+    public static LocalDateTime convertDateToLocalDateTime(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    
+    
     public static Date convertDateToDbType(String argDate) {
         if (argDate == null) {
             return null; // Handle null input
@@ -264,6 +302,10 @@ public class CommonFunctions {
         code = name.replaceAll(" ", "_");
         code = code.toLowerCase();
         return code;
+    }
+
+    public static String dateToString(Date date, String ddMMyyyy) {
+        return formatDate(date, ddMMyyyy);
     }
 
     public Date getFirstDayOfYear(Date date) {

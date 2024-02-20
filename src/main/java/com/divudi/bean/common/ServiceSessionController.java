@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.entity.Bill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.facade.ServiceSessionFacade;
 import java.io.Serializable;
@@ -208,4 +209,51 @@ public class ServiceSessionController implements Serializable {
             }
         }
     }
+    
+    
+    @FacesConverter(forClass = ServiceSession.class)
+    public static class ServiceSessionConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            System.out.println("value = " + value);
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            ServiceSessionController controller = (ServiceSessionController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "serviceSessionController");
+            return controller.getFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            System.out.println("value = " + value);
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            System.out.println("value = " + value);
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            System.out.println("object = " + object);
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ServiceSession) {
+                ServiceSession o = (ServiceSession) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + ServiceSession.class.getName());
+            }
+        }
+    }
+
+    
 }
