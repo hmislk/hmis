@@ -284,6 +284,17 @@ public class PriceMatrixController implements Serializable {
         return imsd;
     }
 
+    public PriceMatrix getChannellingDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
+        PriceMatrix channellingPriceMatrix = null;
+        if (channellingPriceMatrix == null) {
+            channellingPriceMatrix = fetchChannellingMemberShipDiscount(membershipScheme, paymentMethod, department);
+        }
+
+        return channellingPriceMatrix;
+    }
+    
+    
+    
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
