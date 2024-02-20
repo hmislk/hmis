@@ -16,4 +16,8 @@ public enum MessageType {
     Marketing,
     BillCancellationInformationMail,
     BillReturnInfromationMail,
+    ChannelBooking,
+    ChannelCustom,
+    ChannelReminder,
+    ChannelCancellation,
 }
