@@ -53,12 +53,6 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
                     </p:column>                                  
 
                     <p:column style="text-align: right!important;"> 
