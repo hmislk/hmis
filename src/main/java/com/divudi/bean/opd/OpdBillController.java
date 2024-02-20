@@ -191,6 +191,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
     private double cashPaid;
     private double cashBalance;
     private double cashRemain = cashPaid;
+    private double remainMultiplePaymentBalance;
     private BillType billType;
 
     private Double grosTotal;
@@ -269,8 +270,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search?faces-redirect=true";
     }
-    
-    
 
     public String navigateToOpdAnalyticsIndex() {
         return "/opd/analytics/index";
@@ -1540,7 +1539,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-
         saveBatchBill();
         saveBillItemSessions();
 
@@ -1870,6 +1868,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return false;
     }
 
+    public double calculatRemainForMultiplePaymentTotal() {
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+
+            }
+            return total - multiplePaymentMethodTotalValue;
+        }
+        return total;
+    }
+
     private boolean errorCheck() {
 
         if (getLstBillEntries().isEmpty()) {
@@ -2029,6 +2045,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
             }
+            if(cashPaid==0.0){
+                setCashPaid(multiplePaymentMethodTotalValue);
+            }
 
         }
 
@@ -2038,7 +2057,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         }
 
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
-
             if (cashPaid == 0.0) {
                 UtilityController.addErrorMessage("Please enter the paid amount");
                 return true;
@@ -2155,7 +2173,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         bi.setRate(getBillBean().billItemRate(addingEntry));
 //            bi.setQty(1.0);
         bi.setNetValue(bi.getRate() * bi.getQty());
-
 
         if (bi.getItem().isVatable()) {
             bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
@@ -3144,12 +3161,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             strTenderedValue = String.valueOf(netTotal);
 
         } else {
-            strTenderedValue="";
+            strTenderedValue = "";
         }
-         try {
+        try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {
-            
+
         }
 
         return paymentMethod;

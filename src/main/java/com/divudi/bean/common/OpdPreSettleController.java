@@ -156,6 +156,10 @@ public class OpdPreSettleController implements Serializable {
         return "/cashier/scan_bill_by_barcode_scanner?faces-redirect=true";
     }
     
+    public String navigateToSettleOpdPreBills(){
+        return "/opd/opd_search_pre_bill?faces-redirect=true";
+    }
+    
     public Double getEditingQty() {
         return editingQty;
     }

@@ -29,6 +29,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -46,6 +47,8 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -134,6 +137,17 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
 
+    private boolean withProfessionalFee = false;
+
+    public boolean showProfessionalFee() {
+        if (withProfessionalFee == true) {
+            withProfessionalFee = false;
+        } else {
+            withProfessionalFee = true;
+        }
+        return withProfessionalFee;
+    }
+
     public void edit() {
         if (getBill() == null) {
             return;
@@ -175,6 +189,68 @@ public class InwardSearch implements Serializable {
         }
         personFacade.edit(getBill().getPatient().getPerson());
         JsfUtil.addSuccessMessage("Patient Details Updated.");
+    }
+
+    public String fillDataForInpatientsForFinalBill(String template, Bill bill) {
+        if (template == null || template.trim().isEmpty()) {
+            return "";
+        }
+        if (bill == null) {
+            return "";
+        }
+        if (bill.getPatientEncounter() == null) {
+            return "";
+        }
+        PatientEncounter pe = bill.getPatientEncounter();
+
+        String output = new String(template);
+
+        output = output.replace("{dept_id}", String.valueOf(bill.getDeptId()))
+                .replace("{ins_id}", String.valueOf(bill.getInsId()))
+                .replace("{gross_total}", String.valueOf(bill.getTotal()))
+                .replace("{discount}", String.valueOf(bill.getDiscount()))
+                .replace("{net_total}", String.valueOf(bill.getNetTotal()))
+                .replace("{cancelled}", String.valueOf(bill.isRefunded()))
+                .replace("{returned}", String.valueOf(bill.isCancelled()))
+                .replace("{cashier_username}", bill.getCreater().getName());
+
+        if (pe.getInstitution() != null) {
+            output = output.replace("{from_institution}", pe.getInstitution().getName())
+                    .replace("{to_institution}", pe.getInstitution().getName());
+        }
+
+        if (pe.getDepartment() != null) {
+            output = output.replace("{from_department}", pe.getDepartment().getName())
+                    .replace("{to_department}", pe.getDepartment().getName());
+        }
+
+        if (pe.getPatient() != null) {
+            output = output.replace("{patient_name}", pe.getPatient().getPerson().getNameWithTitle())
+                    .replace("{patient_age}", pe.getPatient().getAgeOnBilledDate(pe.getDateOfAdmission()))
+                    .replace("{patient_sex}", pe.getPatient().getPerson().getSex().name())
+                    .replace("{patient_address}", pe.getPatient().getPerson().getAddress())
+                    .replace("{patient_phone}", pe.getPatient().getPerson().getPhone())
+                    .replace("{patient_phn_number}", pe.getPatient().getPhn());
+        }
+
+        output = output.replace("{admission_number}", pe.getBhtNo())
+                .replace("{payment_method}", pe.getPaymentMethod().getLabel());
+
+        DateFormat df = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat());
+        DateFormat tf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat());
+
+        if (pe.getDateOfAdmission() != null) {
+            output = output.replace("{admission_date}", df.format(pe.getDateOfAdmission()));
+        }
+
+        if (bill.getBillDate() != null) {
+            output = output.replace("{bill_date}", df.format(bill.getBillDate()));
+        }
+        if (bill.getBillTime() != null) {
+            output = output.replace("{bill_time}", tf.format(bill.getBillTime()));
+        }
+
+        return output;
     }
 
 //    public void replace() {
@@ -234,31 +310,36 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToFinalBillForAdmission() {
-        if(admission==null){
+        if (admission == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+
         String jpql;
         Map temMap = new HashMap();
-        jpql = "select b from BilledBill b where"
+        jpql = "select b from Bill b where"
                 + " b.billType = :billType and "
-                + "and b.retired=false ";
+                + " b.retired=false ";
 
         jpql += " and  b.patientEncounter=:pe ";
         temMap.put("pe", admission);
 
         temMap.put("billType", BillType.InwardFinalBill);
         jpql += " order by b.id desc ";
-     
-        bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        if(bill==null){
+
+        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        bill = getBillFacade().findFirstByJpql(jpql, temMap);
+
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
+        withProfessionalFee = false;
+
         return "/inward/inward_reprint_bill_final";
     }
-    
-    public String navigateDoctorPayment(){
+
+    public String navigateDoctorPayment() {
         return "/inward/inward_bill_payment";
     }
 
@@ -1529,7 +1610,13 @@ public class InwardSearch implements Serializable {
     public void setAdmission(Admission admission) {
         this.admission = admission;
     }
-    
-    
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
+    }
 
 }

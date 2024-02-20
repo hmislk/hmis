@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
@@ -13,30 +13,30 @@
                 <h:form >
                     <p:panel>
                         <p:outputLabel  value="Department" ></p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmbDepartment"
-                                placeholder="Department"
-                                value="#{sessionController.department}"
-                                filter="true">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
+                        <p:selectOneMenu 
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            value="#{sessionController.department}"
+                            filter="true">
+                            <f:selectItem itemLabel="All" ></f:selectItem>
+                            <f:selectItems value="#{sessionController.loggableDepartments}"
+                                           var="d"
+                                           itemLabel="#{d.name}"
+                                           itemValue="#{d}" ></f:selectItems>
+                        </p:selectOneMenu>
                         <p:commandButton id="btnSave" 
                                          ajax="false" 
                                          value="Save" 
                                          icon="fas fa-save"
                                          class="ui-button-warning mx-2"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
-                        
+
                         <p:commandButton value="List preferences"
-                                                 process="cmbInstitution cmbDepartment"
-                                                 icon="fas fa-list"
-                                                 class="ui-button-success"
-                                                 ajax="false"
-                                                 action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
+                                         process="cmbInstitution cmbDepartment"
+                                         icon="fas fa-list"
+                                         class="ui-button-success"
+                                         ajax="false"
+                                         action="#{sessionController.fillCurrentPreferences}"></p:commandButton>
 
                         <p:tabView orientation="left" >
                             <p:tab title="Pharmacy" >
@@ -102,8 +102,9 @@
 
 
 
-                                    <h:outputLabel value="Can settle without Cash Tendered amount"></h:outputLabel>
+                                    <h:outputLabel value="Can settle without Cash Tendered amount" rendered="false"></h:outputLabel>
                                     <p:selectBooleanButton 
+                                        rendered="false"
                                         class="form-control"
                                         offIcon="fas fa-times"
                                         onIcon="fas fa-check"
@@ -119,8 +120,8 @@
                                         class="form-control">
                                         <f:selectItems value="#{enumController.opdItemListingStrategys}"></f:selectItems>
                                     </p:selectOneMenu>
-                                    
-                                     <h:outputLabel 
+
+                                    <h:outputLabel 
                                         class="form-label"
                                         value="Collecting Centre Item Listing Strategy" ></h:outputLabel>
                                     <p:selectOneMenu 
@@ -129,7 +130,7 @@
                                         <f:selectItems value="#{enumController.ccItemListingStrategys}"></f:selectItems>
                                     </p:selectOneMenu>
 
-                                    
+
 
                                     <h:outputLabel 
                                         value="OPD Bill Paper" 
@@ -191,6 +192,41 @@
 
 
                             </p:tab>
+                            <p:tab title="Placeholders for Templates" >
+                                <h:panelGroup >
+                                    {ins_id}<br/>
+                                    {dept_id}<br/>
+                                    {from_institution}<br/>
+                                    {from_department}<br/>
+                                    {to_institution}<br/>
+                                    {to_department}<br/>
+                                    {patient_name}<br/>
+                                    {patient_age}<br/>
+                                    {patient_sex}<br/>
+                                    {patient_address}<br/>
+                                    {patient_phone}<br/>
+                                    {patient_phn_number}<br/>
+                                    {admission_number}<br/>
+                                    {admission_date}<br/>
+
+                                    {payment_method}<br/>
+                                    {gross_total}<br/>
+                                    {discount}<br/>
+                                    {net_total}<br/>
+
+                                    {table_class}<br/>
+                                    {table_style}<br/>
+                                    {serial_class}<br/>
+                                    {serial_style}<br/>
+
+                                    {cancelled}<br/>
+                                    {returned}<br/>
+
+                                    {cashier_username}<br/>
+                                    {bill_date}<br/>
+                                    {bill_time}<br/>
+                                </h:panelGroup>
+                            </p:tab>
                             <p:tab title="In-ward" >
                                 <p:panel header="Inward" >
                                     <h:panelGrid columns="2" >
@@ -203,60 +239,26 @@
                                             <f:selectItem itemLabel="Please Select Paper Type" />
                                             <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
+
+                                        <h:outputText value="Header for Inpatient Final Bill" ></h:outputText>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.inpatientFinalBillPrintHeader}" class="w-100" rows="20"/>
+
+
+                                        <h:outputText value="Template for Inward Depposit Bill" ></h:outputText>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" class="w-100" rows="20"/>
+
+                                        <h:outputText value="Template for Inward Deposit Cancel Bill" ></h:outputText>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}"  rows="20" class="w-100"/>
+
                                     </h:panelGrid>
 
-                                    <div class="row">
 
-
-
-
-                                        <div class="col-md-6">
-                                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" class="w-100" rows="20"/>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h:panelGroup >
-                                                <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
-                                                Available Fields
-                                                {ins_id}<br/>
-                                                {dept_id}<br/>
-                                                {from_institution}<br/>
-                                                {from_department}<br/>
-                                                {to_institution}<br/>
-                                                {to_department}<br/>
-                                                {patient_name}<br/>
-                                                {patient_age}<br/>
-                                                {patient_sex}<br/>
-                                                {patient_address}<br/>
-                                                {patient_phone}<br/>
-                                                {patient_phn_number}<br/>
-                                                {admission_number}
-                                                {admission_date}
-
-                                                {payment_method}
-                                                {gross_total}
-                                                {discount}
-                                                {net_total}
-
-                                                {table_class}<br/>
-                                                {table_style}<br/>
-                                                {serial_class}<br/>
-                                                {serial_style}<br/>
-
-                                                {cancelled}
-                                                {returned}
-
-                                                {cashier_username}
-                                                {bill_date}
-                                                {bill_time}
-                                            </h:panelGroup>
-                                        </div>
-                                    </div>
 
 
 
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}"  rows="20" class="w-100"/>
+
                                         </div>
                                         <div class="col-md-6">
                                             <h:panelGroup >
@@ -308,11 +310,11 @@
 
                                         <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
-                                        
+
                                         <h:outputLabel value="Inward Add Bht Number Without Admission Type"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.bhtNumberWithOutAdmissionType}"/>
 
-                                        
+
                                         <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
 
@@ -452,6 +454,14 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
 
 
+                                    </h:panelGrid>
+                                </p:panel>
+                            </p:tab>
+                            <p:tab title="Financial Transaction" class="w-100" >
+                                <p:panel header="Financial Transaction" class="w-100">
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Show All Payment Details Bill Wise"></h:outputLabel>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.showBillWiseDetails}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>

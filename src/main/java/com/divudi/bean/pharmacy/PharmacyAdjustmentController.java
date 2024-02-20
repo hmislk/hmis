@@ -120,6 +120,10 @@ public class PharmacyAdjustmentController implements Serializable {
     List<BillItem> billItems;
     List<Stock> stocks;
     List<Bill> bills;
+    
+    private Amp amp;
+    private List<Stock> ampStock;
+    
 
     private boolean printPreview;
 
@@ -132,6 +136,26 @@ public class PharmacyAdjustmentController implements Serializable {
         billItems = fetchBillItems(BillType.PharmacyAdjustment);
     }
 
+    
+    public void fillAmpStocks() {
+        List<Stock> items = new ArrayList<>();
+        if(amp==null){
+            ampStock = items;
+            return;
+        }
+        String sql;
+        Map m = new HashMap();
+        sql = "select i "
+                + " from Stock i "
+                + " where i.department=:d "
+                + " and i.itemBatch.item=:amp "
+                + " order by i.stock desc";
+        items = getStockFacade().findByJpql(sql, m);
+        if(items!=null){
+            ampStock = items;
+        }
+    }
+    
     public List<BillItem> fetchBillItems(BillType bt) {
         List<BillItem> billItems = new ArrayList<>();
 
@@ -431,8 +455,10 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
         if (getDeptAdjustmentPreBill().getId() == null) {
+            System.out.println("savesakeAjes null = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
+            System.out.println("savesakeAjes getId() = " + getDeptAdjustmentPreBill().getId());
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
     }
@@ -527,7 +553,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -587,7 +613,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -631,7 +657,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -675,7 +701,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -720,7 +746,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -762,7 +788,7 @@ public class PharmacyAdjustmentController implements Serializable {
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
-            getBillItemFacade().create(tbi);
+            getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
@@ -1172,6 +1198,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Date toDate = null;
 
         saveSaleRateAdjustmentBill();
+        
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -1554,5 +1581,23 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public List<Stock> getAmpStock() {
+        return ampStock;
+    }
+
+    public void setAmpStock(List<Stock> ampStock) {
+        this.ampStock = ampStock;
+    }
+    
+    
 
 }

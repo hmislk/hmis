@@ -73,7 +73,7 @@ public class InwardPaymentController implements Serializable {
     }
     
     public String navigateToInpationDashbord(){
-        return "/inward/admission_profile";
+        return "/inward/admission_profile?faces-redirect=true";
     }
 
     private double getFinalBillDue() {

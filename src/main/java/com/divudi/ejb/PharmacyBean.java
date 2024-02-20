@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -191,8 +192,10 @@ public class PharmacyBean {
         }
 
         for (BillItem bItem : bill.getBillItems()) {
+            System.out.println("bItem = " + bItem.getItem().getName());
             BillItem newBillItem = new BillItem();
             newBillItem.copy(bItem);
+            System.out.println("After copy");
             newBillItem.invertValue(bItem);
             newBillItem.setBill(preBill);
             newBillItem.setReferanceBillItem(bItem);
@@ -237,9 +240,10 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
+            UtilityController.addErrorMessage("Bill Already Cancelled");
             return null;
         }
-
+        System.out.println("1 = " + 1);
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 
@@ -867,9 +871,9 @@ public class PharmacyBean {
 
         stock = getStockFacade().find(stock.getId());
 
-        //System.err.println("Before Update" + stock.getStock());
+//        System.out.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        //System.err.println("After Update " + stock.getStock());
+//        System.out.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
         return true;

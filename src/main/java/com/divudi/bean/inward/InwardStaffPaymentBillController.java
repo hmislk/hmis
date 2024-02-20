@@ -903,14 +903,25 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public double getTotalPaying() {
+        System.out.println("totalPaying = " + totalPaying);
         return totalPaying;
     }
 
     public void setTotalPaying(double totalPaying) {
+        System.out.println("setter totalPaying = " + totalPaying);
         this.totalPaying = totalPaying;
     }
 
     public void calculateDueFees() {
+
+        dueBillFees = new ArrayList<>();
+        payingBillFees = new ArrayList<>();
+        totalPaying = 0.0;
+        totalDue = 0.0;
+        printPreview = false;
+
+
+
 
         String sql;
         HashMap h = new HashMap();
@@ -944,7 +955,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
         dueBillFees.removeAll(removeingBillFees);
-
+        calculateTotalPay();
     }
 
     public void calculateTotalDue() {
@@ -960,16 +971,19 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void calculateTotalPay() {
+        System.out.println("calculateTotalPay");
         totalPaying = 0;
-
+        System.out.println("1");
+        System.out.println("totalPaying = " + totalPaying);
+        System.out.println("payingBillFees = " + payingBillFees);
         for (BillFee f : payingBillFees) {
-            //   ////// // System.out.println("totalPaying before " + totalPaying);
-            //   ////// // System.out.println("fee val is " + f.getFeeValue());
-            //   ////// // System.out.println("paid val is " + f.getPaidValue());
+            System.out.println("totalPaying before " + totalPaying);
+            System.out.println("fee val is " + f.getFeeValue());
+            System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //   ////// // System.out.println("totalPaying after " + totalPaying);
+            System.out.println("totalPaying after " + totalPaying);
         }
-        //   ////// // System.out.println("total pay is " + totalPaying);
+        System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -993,7 +1007,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //   ////// // System.out.println("setting paying bill fees " + payingBillFees.size());
+        System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -1011,18 +1025,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
-
-        dueBillFees = new ArrayList<>();
-        payingBillFees = new ArrayList<>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFees();
-        performCalculations();
-
     }
 
     public void prepareAdd() {
@@ -1059,7 +1062,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             UtilityController.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
-        performCalculations();
+//        performCalculations();
         if (totalPaying == 0) {
             UtilityController.addErrorMessage("Please select payments to update");
             return true;
@@ -1080,7 +1083,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             return;
         }
 
-        calculateTotalPay();
+//        calculateTotalPay();
         Bill b = createPaymentBill();
         current = b;
 

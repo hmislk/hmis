@@ -607,16 +607,23 @@ public class Person implements Serializable {
     }
 
     public String getSmsNumber() {
+        if(smsNumber!=null){
+            return smsNumber;
+        }
         if (this.getMobile() == null && this.getPhone() == null) {
             smsNumber = "";
-        } else if (this.getMobile() != null && this.getPhone() == null) {
-            smsNumber = this.getMobile();
-        } else if (this.getPhone() != null && this.getMobile() == null) {
+        }else if (this.getPhone() != null && this.getMobile() == null) {
             smsNumber = this.getPhone();
-        } else {
+        }else if (this.getMobile() != null && this.getPhone() == null) {
+            smsNumber = this.getMobile();
+        }  else {
             smsNumber = this.getMobile();
         }
         return smsNumber;
+    }
+
+    public void setSmsNumber(String smsNumber) {
+        this.smsNumber = smsNumber;
     }
 
 }

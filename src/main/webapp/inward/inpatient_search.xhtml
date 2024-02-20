@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
     </h:head>
@@ -14,8 +14,9 @@
             <ui:define name="content">
                 <h:form id="form">
                     <p:panel header="Admissions" style="height: 100vh" >
-                        <div class="d-flex">
-                            <h:panelGrid columns="1">
+                        <div class="row">
+                            <div class="col-2">
+                                 <h:panelGrid columns="1">
                                 <p:outputLabel value="From Date"></p:outputLabel>
                                 <p:calendar
                                     value="#{admissionController.fromDate}" 
@@ -31,8 +32,9 @@
 
                                 <p:commandButton ajax="false"
                                                  value="Search"
+                                                 icon="fas fa-search"
                                                  action="#{admissionController.searchAdmissions}"
-                                                 class="mt-2 w-100 mb-3"></p:commandButton>
+                                                 class="mt-2 w-100 mb-3 ui-button-warning"></p:commandButton>
 
 
 
@@ -74,16 +76,16 @@
                                                  filter="true"
                                                  style="width: 200px">
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.managaeInstitutionIndex}"
+                                    <f:selectItems value="#{institutionController.items}"
                                                    var="i"
                                                    itemLabel="#{i.name}"
                                                    itemValue="#{i}"></f:selectItems>
                                 </p:selectOneMenu>
 
                             </h:panelGrid> 
-
-
-                            <div class="p-1" >
+                            </div>
+                            <div class="col-10">
+                                  <div class="p-1" >
                                 <p:dataTable id="tblBills" 
                                              value="#{admissionController.items}" 
                                              var="a"
@@ -114,33 +116,37 @@
                                         <h:outputText value="#{a.patient.person.address}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Status" >
-                                        <h:panelGroup>
+                                        <h:panelGroup class="my-1">
                                             <!-- Discharge Status -->
-                                            <h:panelGroup rendered="#{a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Discharged"></i>
-                                                <i class="fa fa-check" title="Discharged"></i>
+                                            <h:panelGroup rendered="#{a.discharged}" >
+                                                <p:tag severity="success" style="font-size: 15px" class="my-1 w-75" >
+                                                    <i class="fa fa-fw fa-bed" title="Discharged"></i>
+                                                &nbsp;<i class="fa fa-check" title="Discharged"></i></p:tag>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{not a.discharged}">
-                                                <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
-                                                <i class="fa fa-times" title="Not Discharged"></i>
+                                                <p:tag severity="danger" style="font-size: 15px"  class="my-1 w-75" >
+                                                    <i class="fa fa-fw fa-bed" title="Not Discharged"></i>
+                                                    &nbsp;<i class="fa fa-times" title="Not Discharged"></i></p:tag>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                         <p:spacer width="20" ></p:spacer>
                                         <h:panelGroup>
                                             <!-- Bill Status -->
-                                            <h:panelGroup rendered="#{a.billSession}">
-                                                <i class="fa fa-fw fa-money" title="Payment Finalized"></i>
-                                                <i class="fa fa-check" title="Payment Finalized"></i>
+                                            <h:panelGroup rendered="#{a.paymentFinalized}">
+                                                <p:tag severity="success" style="font-size: 15px"  class="my-1 w-75">
+                                                    <i class="fa fa-fw fa-money-bill-alt" title="Payment Finalized"></i>
+                                                &nbsp;<i class="fa fa-check" title="Payment Finalized"></i></p:tag>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{not a.paymentFinalized}">
-                                                <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
-                                                <i class="fa fa-times" title="Payment Pending"></i>
+                                                <p:tag severity="danger" style="font-size: 15px"  class="my-1 w-75">
+                                                    <i class="fa fa-fw fa-money-bill-alt" title="Payment Pending"></i>
+                                                    &nbsp;<i class="fa fa-times" title="Payment Pending"></i></p:tag>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Current Room" >
-                                        <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
+                                        <h:outputText value="#{a.currentPatientRoom.roomFacilityCharge.name}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Admission Date" >
                                         <h:outputLabel value="#{a.dateOfAdmission}" >
@@ -173,7 +179,9 @@
                                 </p:dataTable>
 
                             </div>
+                            </div>
                         </div>
+                       
                     </p:panel>
                 </h:form>
             </ui:define>

@@ -52,8 +52,8 @@ public class CommonFunctions {
 
         try {
             Date date = originalFormat.parse(argDate);
-            String formattedDateString = desiredFormat.format(date); 
-            return desiredFormat.parse(formattedDateString); 
+            String formattedDateString = desiredFormat.format(date);
+            return desiredFormat.parse(formattedDateString);
         } catch (ParseException e) {
             return null;
         }
@@ -218,13 +218,16 @@ public class CommonFunctions {
         if (date == null) {
             date = new Date();
         }
-        Calendar calendar = Calendar.getInstance();
+        // Get a Calendar instance using the default time zone and locale.
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 0, 0, 0);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
+
+        // Reset hour, minutes, seconds and millis
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -236,19 +239,21 @@ public class CommonFunctions {
         return getEndOfDay(new Date());
     }
 
-    public static Date getEndOfDay(Date date) {
-        if (date == null) {
-            date = new Date();
+    public static Date getEndOfDay(Date d) {
+        if (d == null) {
+            d = new Date();
         }
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, day, 23, 59, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        ////// // System.out.println("calendar.getTime() = " + calendar.getTime());
-        return calendar.getTime();
+        // Get a Calendar instance using the default time zone and locale.
+        Calendar c = Calendar.getInstance(TimeZone.getDefault());
+        c.setTime(d);
+
+        // Set hour, minute, second, and millisecond to the last possible values for the day.
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+
+        return c.getTime();
     }
 
     public static String nameToCode(String name) {

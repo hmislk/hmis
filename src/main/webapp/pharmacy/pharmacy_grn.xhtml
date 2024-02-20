@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
@@ -24,7 +24,7 @@
                 </f:facet>
                 <h:panelGroup rendered="#{!grnController.printPreview}">
 
-                    <h:panelGrid columns="7" style="min-width: 100%;">
+                    <h:panelGrid columns="7" style="min-width: 100%;" class="my-2">
                         <h:outputLabel value="DEALOR"/>
 
                         <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
@@ -43,7 +43,7 @@
 
                     </h:panelGrid>
 
-
+                    
                     <p:dataTable 
                         var="bi" 
                         styleClass="noBorder" 
@@ -179,6 +179,11 @@
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>  
+                        <p:column headerText="Profit %" style="width:80px; text-align: left;">                    
+                        <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate ) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
+                            <f:convertNumber pattern="0.0" ></f:convertNumber>
+                        </h:outputText>
+                    </p:column>
                         <p:column width="6%">
                             <p:commandButton 
                                 ajax="false"

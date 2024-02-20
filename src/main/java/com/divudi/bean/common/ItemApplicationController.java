@@ -81,10 +81,9 @@ public class ItemApplicationController {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public List<ItemLight> getItems() {
-//        if (items == null) {
-//            items = fillAllItems();
-//        }
-        items = fillAllItems();
+        if (items == null) {
+            items = fillAllItems();
+        }
         return items;
     }
 
