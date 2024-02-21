@@ -130,7 +130,9 @@
                             action="#{opdBillController.navigateToSearchOpdBills()}" 
                             value="OPD Bill Search" 
                             icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                            actionListener="#{searchController.clearBillList()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="/opd_search_billitem_own?faces-redirect=true" 
