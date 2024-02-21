@@ -82,9 +82,9 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel value="Activities" />
-                                        <p:inputTextarea class="mx-2 w-100 my-1" value="#{sheduleController.current.activities}" rows="4" />
+                                        <p:inputTextarea class="mx-2 w-100 my-1"  rows="4" />
                                         <h:outputLabel value="Actions" />
-                                        <p:inputTextarea class="mx-2 w-100" value="#{sheduleController.current.actions}" rows="4"/>
+                                        <p:inputTextarea class="mx-2 w-100"  rows="4"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
@@ -181,7 +181,7 @@
                                                 <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.startingNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
 
                                                 <p:outputLabel value="Reserved Number"/>
-                                                <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.reservedNumber}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
+                                                <p:inputText class="w-100" autocomplete="off"  disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
 
                                                 <p:outputLabel value="Max Number"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.maxNo}"/>
@@ -209,7 +209,7 @@
                                                 <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
 
                                                 <p:outputLabel value="Paid Payment Only"/>
-                                                <p:selectBooleanCheckbox value="#{sheduleController.current.paidAppointmentsOnly}"/>
+                                                <p:selectBooleanCheckbox />
 
                                                 <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
                                                 <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
