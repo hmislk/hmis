@@ -27,192 +27,171 @@
                 }
             </style>
 
-            <p:panel>
-                <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                            <h:outputText class="mx-4" value="Channel Booking"/>
-                        </div>
+            <div class="row p-0 m-0" >
+                <div class="col-12" >
+                    <!-- Add Booking Button -->
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Add Booking" 
+                        action="#{bookingController.navigateToAddBooking()}"
+                        icon="ui-icon-plus" />
 
-                        <div class="d-flex justify-content-center align-items-center">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Add Booking" 
-                                icon="fas fa-plus"
-                                class="ui-button-success"
-                                action="#{bookingController.navigateToAddBooking()}"
-                                />
+                    <!-- View Session Data Button -->
+                    <p:commandButton 
+                        class="m-1"
+                        ajax="false" 
+                        value="View Session Data" 
+                        action="#{bookingController.navigateToViewSessionData()}"
+                        icon="ui-icon-search" />
 
-                            <!-- View Session Data Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="View Session Data"
-                                icon="fas fa-eye"
-                                class="mx-1 ui-button-primary"
-                                action="#{bookingController.navigateToViewSessionData()}"
-                                />
+                    <!-- Manage Booking Button -->
+                    <p:commandButton 
+                        class="m-1"
+                        ajax="false" 
+                        value="Manage Booking" 
+                        action="#{bookingController.navigateToManageBooking()}"
+                        icon="ui-icon-pencil" />
 
-                            <!-- Manage Booking Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Manage Booking" 
-                                class="ui-button-Warning"
-                                action="#{bookingController.navigateToManageBooking()}"
-                                icon="fa-solid fa-bars-progress" />
+                    <!-- Back to Bookings Button -->
+                    <p:commandButton 
+                        class="m-1"
+                        ajax="false" 
+                        value="Back to Bookings" 
+                        action="#{bookingController.navigateBackToBookings()}"
+                        icon="ui-icon-arrowreturnthick-1-w" />
 
-                            <!-- Back to Bookings Button -->
-                            <p:commandButton 
-                                ajax="false" 
-                                class="mx-1 ui-button-secondary"
-                                value="Back to Bookings" 
-                                action="#{bookingController.navigateBackToBookings()}"
-                                icon="fa-solid fa-arrow-left" />
-                        </div>
-                    </div>
-                </f:facet>
-                <div class="row">
-                    <div class="col-2">
-                        <div >
-                            <div >
-                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
-                                <p:selectOneListbox 
-                                    id="acSpeciality"
-                                    filter="true"
-                                    value="#{bookingController.speciality}"
-                                    class="w-100 fullHeightListbox"
-                                    >
-                                    <p:ajax  
-                                        process="@this" 
-                                        update="scStaff"
-                                        listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                    <f:selectItems value="#{doctorSpecialityController.selectedItems}"
-                                                   var="spe" 
-                                                   itemValue="#{spe}"
-                                                   itemLabel="#{spe.name}"></f:selectItems>
-                                </p:selectOneListbox>
-                            </div>
 
-                        </div>
-                    </div>
-
-                    <div class="col-2">
-                        <div>
-                            <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
-                            <p:selectOneListbox 
-                                id="scStaff"
-                                filter="true"
-                                value="#{bookingController.staff}"
-                                class="w-100 fullHeightListbox"
-                                >
-                                <p:ajax  
-                                    process="@this" 
-                                    update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"  
-                                    listener="#{bookingController.generateSessions}"/>
-                                <f:selectItems value="#{bookingController.consultants}"
-                                               var="con" 
-                                               itemValue="#{con}"
-                                               itemLabel="#{con.name}"></f:selectItems>
-                            </p:selectOneListbox>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 p-0" >
-                        <p:watermark for="acSessions" value="Select Session" ></p:watermark>
-                        <p:selectOneListbox 
-                            id="acSessions"
-                            filter="true"
-                            value="#{bookingController.selectedServiceSession}" 
-                            class="w-100 fullHeightListbox"
-                            var="s">
-                            <f:selectItems 
-                                value="#{bookingController.serviceSessions}" 
-                                var="ses" 
-                                itemValue="#{ses}"
-                                itemLabel="#{ses.name}"/>
-                            <p:column>
-                                <h:outputText value="#{s.name}" />
-                            </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 20px!important; text-align: center;">
-                                <h:outputText value="#{s.displayCount}">
-                                    <f:convertNumber pattern="00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 50px!important; text-align: center;">
-                                <h:outputText value="#{s.sessionDate}">
-                                    <f:convertDateTime pattern="dd MMM"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.startingTime}">
-                                    <f:convertDateTime pattern="hh:mm"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column style="width: 40px!important; text-align: center;">
-                                <h:outputText value="#{s.totalFee}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:ajax event="change" 
-                                    process="@this"
-                                    update="acBookings"
-                                    listener="#{bookingController.fillBillSessions}" />
-                        </p:selectOneListbox>
-                    </div>
-                    
-                    <div class="col-4" >
-                        <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
-                        <p:selectOneListbox 
-                            id="acBookings" 
-                            value="#{bookingController.managingBillSession}" 
-                            filter="true" 
-                            var="bs" 
-                            class="w-100 fullHeightListbox">
-                            <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
-                            <p:column style="width: 5px!important;">
-                                <h:outputText value="#{bs.serialNo}" />
-                            </p:column>
-
-                            <p:column style="width: 60px!important;">
-                                <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
-                            </p:column>
-
-                            <p:column style="width: 20px!important;">
-                                
-                                <p:outputLabel class="badge badge-primary" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
-                                <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
-                                <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
-                                <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
-                                <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
-                            </p:column>
-
-                            <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                            </p:column>
-
-                            <p:column style="width: 5px!important;">
-                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                            </p:column>
-
-                            <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
-                            </p:column>
-
-                        </p:selectOneListbox>
-                    </div>
                 </div>
+            </div>
 
+            <div  class="row p-0 m-0" style="height: 80%;" >
+                <div class="col-md-2 p-0" >
+                    <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                    <p:selectOneListbox 
+                        id="acSpeciality"
+                        filter="true"
+                        value="#{bookingController.speciality}"
+                        class="w-100 fullHeightListbox"
+                        >
+                        <p:ajax  
+                            process="@this" 
+                            update="scStaff"
+                            listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                        <f:selectItems value="#{doctorSpecialityController.selectedItems}"
+                                       var="spe" 
+                                       itemValue="#{spe}"
+                                       itemLabel="#{spe.name}"></f:selectItems>
+                    </p:selectOneListbox>
+                </div>
+                <div class="col-md-2 p-0" >
+                    <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
+                    <p:selectOneListbox 
+                        id="scStaff"
+                        filter="true"
+                        value="#{bookingController.staff}"
+                        class="w-100 fullHeightListbox"
+                        >
+                        <p:ajax  
+                            process="@this" 
+                            update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"  
+                            listener="#{bookingController.generateSessions}"/>
+                        <f:selectItems value="#{bookingController.consultants}"
+                                       var="con" 
+                                       itemValue="#{con}"
+                                       itemLabel="#{con.name}"></f:selectItems>
+                    </p:selectOneListbox>
+                </div>
+                <div class="col-md-4 p-0" >
+                    <p:watermark for="acSessions" value="Select Session" ></p:watermark>
+                    <p:selectOneListbox 
+                        id="acSessions"
+                        filter="true"
+                        value="#{bookingController.selectedServiceSession}" 
+                        class="w-100 fullHeightListbox"
+                        var="s">
+                        <f:selectItems 
+                            value="#{bookingController.serviceSessions}" 
+                            var="ses" 
+                            itemValue="#{ses}"
+                            itemLabel="#{ses.name}"/>
+                        <p:column>
+                            <h:outputText value="#{s.name}" />
+                        </p:column>
+                        <p:column style="width: 20px!important; text-align: center;">
+                            <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                <f:convertNumber pattern="00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column style="width: 20px!important; text-align: center;">
+                            <h:outputText value="#{s.displayCount}">
+                                <f:convertNumber pattern="00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column style="width: 50px!important; text-align: center;">
+                            <h:outputText value="#{s.sessionDate}">
+                                <f:convertDateTime pattern="dd MMM"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column style="width: 40px!important; text-align: center;">
+                            <h:outputText value="#{s.startingTime}">
+                                <f:convertDateTime pattern="hh:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column style="width: 40px!important; text-align: center;">
+                            <h:outputText value="#{s.totalFee}">
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </p:column>
 
-            </p:panel>
+                        <p:ajax event="change" 
+                                process="@this"
+                                update="acBookings"
+                                listener="#{bookingController.fillBillSessions}" />
+                    </p:selectOneListbox>
+                </div>
+                <div class="col-md-4 p-0" >
+                    <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
+                    <p:selectOneListbox 
+                        id="acBookings" 
+                        value="#{bookingController.managingBillSession}" 
+                        filter="true" 
+                        var="bs" 
+                        class="w-100 fullHeightListbox">
+                        <f:selectItems value="#{bookingController.billSessions}" var="item" itemValue="#{item}" />
+                        <p:column style="width: 5px!important;">
+                            <h:outputText value="#{bs.serialNo}" />
+                        </p:column>
+
+                        <p:column style="width: 60px!important;">
+                            <h:outputText value="#{bs.bill.patient.person.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column style="width: 20px!important;">
+                            <p:outputLabel value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
+                            <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
+                            <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
+                            <p:outputLabel value="Paid" rendered="#{bs.bill.paidAmount ne 0}"/>
+                            <p:outputLabel value="-Agent" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}"/>
+                            <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}"/>
+                            <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}"/>
+                        </p:column>
+
+                        <p:column style="width: 10px!important;">
+                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                        </p:column>
+
+                        <p:column style="width: 5px!important;">
+                            <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                        </p:column>
+
+                        <p:column style="width: 10px!important;">
+                            <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                        </p:column>
+
+                    </p:selectOneListbox>
+                </div>
+            </div>
 
 
         </h:form>
