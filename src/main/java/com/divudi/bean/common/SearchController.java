@@ -204,6 +204,15 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
+    
+    
+    public void clearBillList(){
+        if(bills == null){
+            return;
+        }else{
+            bills = new ArrayList<>();
+        }
+    }
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
