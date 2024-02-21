@@ -29,22 +29,28 @@
 
 
             <div style="font-weight: bold;text-align: left;font-size: 12pt" class="row mt-2 d-flex align-items-center">
-<!--                <div class="col-4">
-                    <div class="d-flex align-items-center">          
-                        <h:outputLabel value="RECEIPT"   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                <div id="header" style="height: 1.2cm;">
+
+                </div>
+                <div class="col-5">
+                    <div class="d-grid  align-items-center">
+                        <div class="d-flex">
+                            <h:outputLabel value="RECEIPT "   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                        </div>
+                        <h:outputLabel value="Refund Bill" />
                     </div>
-                </div>-->
-<!--                <div class="col-8">
-                    <div class="mx-5">
+                </div>
+                <div class="col-7">
+                    <div class="">
                         <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
                             <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
                         </div>
                     </div>
-                </div>-->
+                </div>
 
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
-                <h:outputLabel value="**OPD Return Receipt**" style="text-align: center; font-weight: bold"/>
+
             </div>
 
             <div class="billline">
@@ -204,24 +210,24 @@
                 </table>
             </div>
 
-<!--
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
-                <div class="billline">
-                    <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                   />
-                    </div>
-                </div>
-            </h:panelGroup>-->
+            <!--
+                        <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
+                            <div class="billline">
+                                <div style="width: 100%;text-align: center;font-size: 10px;">
+                                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                               />
+                                </div>
+                            </div>
+                        </h:panelGroup>-->
 
-<!--            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
+            <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
                 <div >
                     <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
                         <h:outputLabel value="Doctor : " ></h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
-            </h:panelGroup>-->
+            </h:panelGroup>
 
             <div class="" >
 
@@ -244,34 +250,30 @@
                         <td colspan="2" style="text-align: center;" class="billline">
                             <hr/>
                         </td> 
-                    </tr>
+                    </tr> 
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
-
-
+                            
                             <h:panelGroup rendered="#{not bip.item.printFeesForBills}">
                                 <tr>
                                     <td  style="overflow: visible;">
-                                        <div class="d-flex justify-content-between">
-                                            <div>
-                                                <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                                </h:outputLabel>
+                                        <div class="d-flex gap-0">
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name} "  style="text-transform: capitalize!important;"  >
+                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{-bip.qty gt 1}" class="d-flex">
+                                                <h:outputText value="(" class="itemsBlockRightFiveFive" style="width: 1rem" />
+                                                <h:outputText  value= "#{-bip.qty}" class="itemsBlockRightFiveFive ">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                                <h:outputText value=")"  class="itemsBlockRightFiveFive" style="width: 1rem"/>
+                                            </h:panelGroup>
 
-                                            </div>
-                                            <div>
-                                                <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="("  style="text-transform: capitalize!important;text-align: center"  >
-                                                </h:outputLabel>
-                                                <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
-                                                </h:outputLabel>
-                                                <h:outputLabel rendered="#{bip.qty gt 1.0}" class="itemsBlockRightFiveFive" value=")"  style="text-transform: capitalize!important;"  >
-                                                </h:outputLabel>
-
-                                            </div>
                                         </div>
                                     </td>
+
                                     <td style="text-align: right">
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"  value="#{-bip.grossValue }"    >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
@@ -290,10 +292,7 @@
                                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.fee.name}"  style="text-transform: capitalize!important;"  >
                                                     </h:outputLabel>
                                                 </div>
-                                                <div>
-                                                    <h:outputLabel rendered="#{bip.qty gt 0.0}" class="itemsBlockRightFiveFive" value="#{bip.qty}"  style="text-transform: capitalize!important;"  >
-                                                    </h:outputLabel>
-                                                </div>
+
 
                                             </div>
 
@@ -301,14 +300,13 @@
 
                                         </td>
                                         <td style="text-align: right">
-                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{bf.feeValue}" >
+                                            <h:outputLabel class="itemsBlockRightFiveFive" value="#{-bf.feeValue}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
                                     </tr>
                                 </ui:repeat>
                             </h:panelGroup>
-
 
                         </ui:repeat>
                     </h:panelGroup>
@@ -336,13 +334,9 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-
                             </tr>
                         </ui:repeat>
                     </h:panelGroup>
-
-
-
 
                 </table>
 
@@ -352,9 +346,6 @@
             <div class="billline">
                 <hr/>
             </div>
-
-
-
 
             <div  >
 
@@ -366,7 +357,7 @@
                                 <h:outputLabel value="Total" styleClass="itemHeadingsFiveFive" />
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel styleClass="itemHeadingsFiveFive" value="#{cc.attrs.bill.total}" >
+                                <h:outputLabel styleClass="itemHeadingsFiveFive" value="#{-cc.attrs.bill.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -394,7 +385,7 @@
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{-cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
