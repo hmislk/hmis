@@ -122,6 +122,7 @@ public class BookingController implements Serializable {
     Date channelDay;
     private ServiceSession selectedServiceSession;
     private BillSession selectedBillSession;
+    private BillSession managingBillSession;
     private List<ServiceSession> serviceSessions;
     private List<BillSession> billSessions;
     List<Staff> consultants;
@@ -140,6 +141,23 @@ public class BookingController implements Serializable {
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
+    
+    public String navigateToAddBooking(){
+         return "/channel/add_booking";
+    }
+    
+    public String navigateToViewSessionData(){
+         return "/channel/session_data";
+    }
+    
+    public String navigateToManageBooking(){
+         return "/channel/manage_booking";
+    }
+    
+    public String navigateBackToBookings(){
+        return "/channel/channel_booking";
+    }
+    
     public String nurse() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
@@ -949,6 +967,7 @@ public class BookingController implements Serializable {
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
+        System.out.println("billSessions = " + billSessions);
         this.billSessions = billSessions;
     }
 
@@ -1022,6 +1041,7 @@ public class BookingController implements Serializable {
     }
 
     public BillSession getSelectedBillSession() {
+        System.out.println("getSelectedBillSession - selectedBillSession = " + selectedBillSession);
         if (selectedBillSession == null) {
             selectedBillSession = new BillSession();
             Bill b = new BilledBill();
@@ -1034,9 +1054,9 @@ public class BookingController implements Serializable {
     }
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
-        System.out.println("selectedBillSession = " + selectedBillSession);
+        System.out.println("setSelectedBillSession : selectedBillSession = " + selectedBillSession);
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().makeNull();
+        getChannelCancelController().resetVariablesFromBooking();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
 
@@ -1198,5 +1218,16 @@ public class BookingController implements Serializable {
     public ChannelStaffPaymentBillController getChannelStaffPaymentBillController() {
         return channelStaffPaymentBillController;
     }
+
+    public BillSession getManagingBillSession() {
+        System.out.println("managingBillSession = " + managingBillSession);
+        return managingBillSession;
+    }
+
+    public void setManagingBillSession(BillSession managingBillSession) {
+        this.managingBillSession = managingBillSession;
+    }
+    
+    
 
 }
