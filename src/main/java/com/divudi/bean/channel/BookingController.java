@@ -25,6 +25,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.ArrivalRecord;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -123,7 +124,7 @@ public class BookingController implements Serializable {
     private ServiceSession selectedServiceSession;
     private BillSession selectedBillSession;
     private BillSession managingBillSession;
-    private List<ServiceSession> serviceSessions;
+    private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
@@ -307,7 +308,7 @@ public class BookingController implements Serializable {
         staff = null;
         selectedServiceSession = null;
         /////////////////////
-        serviceSessions = null;
+        sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
     }
@@ -674,14 +675,14 @@ public class BookingController implements Serializable {
     }
 
     public void generateSessions() {
-        serviceSessions = new ArrayList<>();
+        sessionInstances = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
 
         if (staff != null) {
-            sql = "Select s From ServiceSession s "
+            sql = "Select s From SessionInstance s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
                     + " and s.originatingSession is null"
@@ -690,10 +691,10 @@ public class BookingController implements Serializable {
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());
             try {
-                serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
+                sessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
             } catch (Exception e) {
             }
-            generateSessionEvents(serviceSessions);
+            generateSessionEvents(sessionInstances);
         }
     }
 
@@ -718,7 +719,7 @@ public class BookingController implements Serializable {
     public void generateSessionsFutureBooking(SelectEvent event) {
         date = null;
         date = ((Date) event.getObject());
-        serviceSessions = new ArrayList<>();
+        sessionInstances = new ArrayList<>();
         Map m = new HashMap();
 
         Date currenDate = new Date();
@@ -743,7 +744,7 @@ public class BookingController implements Serializable {
             m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
-            serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
+            sessionInstances = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }
 
         billSessions = new ArrayList<>();
@@ -758,11 +759,11 @@ public class BookingController implements Serializable {
     }
 
     public List<ServiceSession> getServiceSessions() {
-        return serviceSessions;
+        return sessionInstances;
     }
 
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
-        this.serviceSessions = serviceSessions;
+        this.sessionInstances = serviceSessions;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {
@@ -948,11 +949,11 @@ public class BookingController implements Serializable {
     }
 
     public void listnerSessionRowSelect() {
-        if (serviceSessions == null) {
+        if (sessionInstances == null) {
             selectedServiceSession = null;
             return;
         }
-        for (ServiceSession ss : serviceSessions) {
+        for (ServiceSession ss : sessionInstances) {
             if (ss.getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
                 selectedServiceSession = ss;
             }
