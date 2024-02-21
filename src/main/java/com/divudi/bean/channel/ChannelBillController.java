@@ -90,6 +90,7 @@ public class ChannelBillController implements Serializable {
     private double amount;
     private boolean foriegn = false;
     boolean settleSucessFully = false;
+    private boolean printPreview;
     PaymentMethod paymentMethod;
     PaymentMethod settlePaymentMethod;
     PaymentMethod cancelPaymentMethod;
@@ -694,7 +695,7 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelCreditPaidBill() {
-        System.out.println("cancelCreditPaidBill" );
+        System.out.println("cancelCreditPaidBill");
         System.out.println("getBillSession() = " + getBillSession());
         if (getBillSession() == null) {
             UtilityController.addErrorMessage("No BillSession");
@@ -746,7 +747,7 @@ public class ChannelBillController implements Serializable {
         if ((bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) && bill.getPaidBill() == null) {
             bill.setPaidBill(bill);
             billFacade.edit(bill);
-        }else if(bill.getPaidBill() == null){
+        } else if (bill.getPaidBill() == null) {
             bill.setPaidBill(bill);
         }
         System.out.println("paid bill changed");
@@ -1180,6 +1181,12 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
+    public String startNewChannelBooking() {
+        makeNull();
+        printPreview = false;
+        return bookingController.navigateBackToBookings();
+    }
+
     public void makeNull() {
         amount = 0.0;
         foriegn = false;
@@ -1204,6 +1211,29 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
+        printPreview = false;
+    }
+
+    public void resetVariablesFromBooking() {
+        amount = 0.0;
+        foriegn = false;
+        billFee = null;
+        refundBillFee = null;
+        newPatient = null;
+        searchPatient = null;
+        printingBill = null;
+        agentRefNo = "";
+        billSession = null;
+        patientTabId = "tabNewPt";
+        patientSearchTab = 0;
+        billFee = null;
+        refundBillFee = null;
+        billItems = null;
+        paymentMethod = null;
+        institution = null;
+        refundableTotal = 0;
+        toStaff = null;
+        paymentScheme = null;
     }
 
     @Inject
@@ -1390,36 +1420,47 @@ public class ChannelBillController implements Serializable {
 //
 //    }
     public void add() {
+        System.out.println("add");
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;
             return;
         }
-
+        System.out.println("Error check completed");
         savePatient();
+        System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
+        System.out.println("Printing bill completed");
         printingBill = getBillFacade().find(printingBill.getId());
+        System.out.println("printing bill retrieved");
         bookingController.fillBillSessions();
+        System.out.println("bill sessions filled ");
         bookingController.generateSessions();
+        System.out.println("going to send sms = ");
         sendSmsAfterBooking();
         settleSucessFully = true;
+        printPreview = true;
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 
     public void sendSmsAfterBooking() {
-        Sms e = new Sms();
-        e.setCreatedAt(new Date());
-        e.setCreater(sessionController.getLoggedUser());
-        e.setBill(printingBill);
-        e.setCreatedAt(new Date());
-        e.setCreater(sessionController.getLoggedUser());
-        e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
-        e.setSendingMessage(chanellBookingSms(printingBill));
-        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        e.setSmsType(MessageType.ChannelBooking);
-        getSmsFacade().create(e);
-        boolean suc = smsManagerEjb.sendSms(comment, comment, agentRefNo, comment, patientTabId);
+        try {
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(printingBill);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
+            e.setSendingMessage(chanellBookingSms(printingBill));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setSmsType(MessageType.ChannelBooking);
+            getSmsFacade().create(e);
+            boolean suc = smsManagerEjb.sendSms(comment, comment, agentRefNo, comment, patientTabId);
+        } catch (Exception e) {
+            System.out.println("Error in SMS");
+        }
     }
 
     private String chanellBookingSms(Bill b) {
@@ -1433,7 +1474,7 @@ public class ChannelBillController implements Serializable {
                 "hh:mm a");
         //System.out.println("time = " + time);
         ServiceSession ss = null;
-        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getServiceSession() != null 
+        if (b != null && b.getSingleBillSession() != null && b.getSingleBillSession().getServiceSession() != null
                 && b.getSingleBillSession().getServiceSession().getOriginatingSession() != null) {
             ss = b.getSingleBillSession().getServiceSession().getOriginatingSession();
         }
@@ -2404,6 +2445,14 @@ public class ChannelBillController implements Serializable {
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
