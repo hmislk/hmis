@@ -2133,7 +2133,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            UtilityController.addErrorMessage("Please correct item fee");
             return;
         }
 

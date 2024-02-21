@@ -136,7 +136,7 @@ public class PharmacyIssueController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-
+   
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
@@ -537,11 +537,18 @@ public class PharmacyIssueController implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
+        
+        if(storeIssueController.getPreBill().getComments() == null){
+            JsfUtil.addErrorMessage("Write the Comment..");
+            return;
+        }
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
+        getPreBill().setComments(storeIssueController.getPreBill().getComments());
+        getPreBill().setInvoiceNumber(storeIssueController.getPreBill().getInvoiceNumber());
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
@@ -1137,5 +1144,4 @@ public class PharmacyIssueController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 }
