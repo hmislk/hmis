@@ -273,6 +273,12 @@
                                     <bill:A4PaperPaymentBill bill="#{pp}" />                        
                                 </ui:repeat>
                             </h:panelGroup> 
+                            
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+                                <ui:repeat value="#{inwardPaymentController.current}" var="pp">
+                                    <bill:A4PaperPaymentBillWithoutHeading bill="#{pp}" />                        
+                                </ui:repeat>
+                            </h:panelGroup> 
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" style="align-items: center;">
                                 <ui:repeat value="#{inwardPaymentController.current}" var="pp" >

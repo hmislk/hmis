@@ -33,7 +33,7 @@ import org.joda.time.PeriodType;
  * @author buddhika
  */
 public class CommonFunctions {
-
+    
     public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
         if (phonenumber == null) {
             return null;
