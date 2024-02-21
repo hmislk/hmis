@@ -9,8 +9,8 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
-import com.divudi.entity.channel.PatientAppointment;
-import com.divudi.facade.PatientAppointmentFacade;
+import com.divudi.entity.channel.SessionInstance;
+import com.divudi.facade.SessionInstanceFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
@@ -29,19 +29,19 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PatientAppointmentController implements Serializable {
+public class SessionInstanceController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private PatientAppointmentFacade ejbFacade;
+    private SessionInstanceFacade ejbFacade;
 
-    List<PatientAppointment> selectedItems;
-    private PatientAppointment current;
-    private List<PatientAppointment> items = null;
+    List<SessionInstance> selectedItems;
+    private SessionInstance current;
+    private List<SessionInstance> items = null;
 
-    public void save(PatientAppointment pa) {
+    public void save(SessionInstance pa) {
 //        if (pa == null) {
 //            return;
 //        }
@@ -58,14 +58,14 @@ public class PatientAppointmentController implements Serializable {
 //        getItems();
     }
 
-    public PatientAppointmentController() {
+    public SessionInstanceController() {
     }
 
-    public PatientAppointmentFacade getFacade() {
+    public SessionInstanceFacade getFacade() {
         return ejbFacade;
     }
 
-    @FacesConverter(forClass = PatientAppointment.class)
+    @FacesConverter(forClass = SessionInstance.class)
     public static class PatientAppointmentConverter implements Converter {
 
         @Override
@@ -73,8 +73,8 @@ public class PatientAppointmentController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            PatientAppointmentController controller = (PatientAppointmentController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "patientAppointmentController");
+            SessionInstanceController controller = (SessionInstanceController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "sessionInstanceController");
             if (controller == null) {
                 System.out.println("controller is null");
                 return null;
@@ -107,12 +107,12 @@ public class PatientAppointmentController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof PatientAppointment) {
-                PatientAppointment o = (PatientAppointment) object;
+            if (object instanceof SessionInstance) {
+                SessionInstance o = (SessionInstance) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientAppointment.class.getName());
+                        + object.getClass().getName() + "; expected type: " + SessionInstance.class.getName());
             }
         }
     }

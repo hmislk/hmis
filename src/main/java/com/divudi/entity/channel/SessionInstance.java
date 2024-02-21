@@ -11,7 +11,7 @@ import javax.persistence.Id;
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Entity
-public class PatientAppointment implements Serializable {
+public class SessionInstance implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -36,10 +36,10 @@ public class PatientAppointment implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof PatientAppointment)) {
+        if (!(object instanceof SessionInstance)) {
             return false;
         }
-        PatientAppointment other = (PatientAppointment) object;
+        SessionInstance other = (SessionInstance) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

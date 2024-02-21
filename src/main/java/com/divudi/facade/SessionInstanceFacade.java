@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.channel.PatientAppointment;
+import com.divudi.entity.channel.SessionInstance;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  * @author buddhika
  */
 @Stateless
-public class PatientAppointmentFacade extends AbstractFacade<PatientAppointment> {
+public class SessionInstanceFacade extends AbstractFacade<SessionInstance> {
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
@@ -24,8 +24,8 @@ public class PatientAppointmentFacade extends AbstractFacade<PatientAppointment>
         if(em == null){}return em;
     }
 
-    public PatientAppointmentFacade() {
-        super(PatientAppointment.class);
+    public SessionInstanceFacade() {
+        super(SessionInstance.class);
     }
 
 }
