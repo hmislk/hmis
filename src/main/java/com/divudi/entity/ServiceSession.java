@@ -84,7 +84,7 @@ public class ServiceSession extends Item implements Serializable {
     boolean serviceSessionCreateForOriginatingSession = false;
 
     //new Adittions
-    private int recervedNumbers;
+    private int reservedNumber;
     private boolean paidAppointmentsOnly;
     private boolean canChangePatient;
 
@@ -442,12 +442,12 @@ public class ServiceSession extends Item implements Serializable {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
-    public int getRecervedNumbers() {
-        return recervedNumbers;
+    public int getReservedNumber() {
+        return reservedNumber;
     }
 
-    public void setRecervedNumbers(int recervedNumbers) {
-        this.recervedNumbers = recervedNumbers;
+    public void setReservedNumber(int reservedNumber) {
+        this.reservedNumber = reservedNumber;
     }
 
     public boolean isPaidAppointmentsOnly() {
