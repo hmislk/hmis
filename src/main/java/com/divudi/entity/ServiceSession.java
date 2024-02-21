@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.Lob;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -69,7 +69,7 @@ public class ServiceSession extends Item implements Serializable {
     boolean deactivated;
     String deactivateComment;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     ServiceSession originatingSession;
     @Transient
     int transDisplayCountWithoutCancelRefund;
@@ -81,21 +81,7 @@ public class ServiceSession extends Item implements Serializable {
     @Transient
     Boolean arival;
     @Transient
-    boolean serviceSessionCreateForOriginatingSession = false;
-
-    //new Adittions
-    private int reservedNumber;
-    private boolean paidAppointmentsOnly;
-    private boolean canChangePatient;
-
-    @Lob
-    private String activities;
-    @Lob
-    private String actions;
-    @Lob
-    private String notificationRoles;
-    @Lob
-    private String dataEntryForms;
+    boolean serviceSessionCreateForOriginatingSession=false;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -227,7 +213,7 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public String getDayString() {
-        if (sessionWeekday == null) {
+        if (sessionWeekday==null) {
             return "";
         }
         switch (sessionWeekday) {
@@ -441,63 +427,5 @@ public class ServiceSession extends Item implements Serializable {
     public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
-
-    public int getReservedNumber() {
-        return reservedNumber;
-    }
-
-    public void setReservedNumber(int reservedNumber) {
-        this.reservedNumber = reservedNumber;
-    }
-
-    public boolean isPaidAppointmentsOnly() {
-        return paidAppointmentsOnly;
-    }
-
-    public void setPaidAppointmentsOnly(boolean paidAppointmentsOnly) {
-        this.paidAppointmentsOnly = paidAppointmentsOnly;
-    }
-
-    public boolean isCanChangePatient() {
-        return canChangePatient;
-    }
-
-    public void setCanChangePatient(boolean canChangePatient) {
-        this.canChangePatient = canChangePatient;
-    }
-
-    public String getActivities() {
-        return activities;
-    }
-
-    public void setActivities(String activities) {
-        this.activities = activities;
-    }
-
-    public String getActions() {
-        return actions;
-    }
-
-    public void setActions(String actions) {
-        this.actions = actions;
-    }
-
-    public String getNotificationRoles() {
-        return notificationRoles;
-    }
-
-    public void setNotificationRoles(String notificationRoles) {
-        this.notificationRoles = notificationRoles;
-    }
-
-    public String getDataEntryForms() {
-        return dataEntryForms;
-    }
-
-    public void setDataEntryForms(String dataEntryForms) {
-        this.dataEntryForms = dataEntryForms;
-    }
-    
-    
 
 }
