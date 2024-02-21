@@ -761,6 +761,8 @@ public class PatientController implements Serializable {
         patientEncounterController.fillPatientInvestigations(current);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
+    
+    
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
