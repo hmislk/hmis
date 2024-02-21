@@ -143,7 +143,7 @@ public class ChannelReportController implements Serializable {
 
     @EJB
     DepartmentFacade departmentFacade;
-    @EJB
+    
     CommonFunctions commonFunctions;
     @EJB
     StaffFacade staffFacade;

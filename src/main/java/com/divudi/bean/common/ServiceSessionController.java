@@ -216,13 +216,15 @@ public class ServiceSessionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("value = " + value);
+            System.out.println("getAsObject - value = " + value);
             if (value == null || value.length() == 0) {
                 return null;
             }
             ServiceSessionController controller = (ServiceSessionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "serviceSessionController");
-            return controller.getFacade().find(getKey(value));
+            ServiceSession found = controller.getFacade().find(getKey(value));
+            System.out.println("found = " + found);
+            return found;
         }
 
         java.lang.Long getKey(String value) {
