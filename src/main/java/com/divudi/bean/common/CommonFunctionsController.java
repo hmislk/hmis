@@ -24,63 +24,6 @@ import java.time.temporal.ChronoUnit;
 @ApplicationScoped
 public class CommonFunctionsController {
     
-    
-    private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
-    private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
-    private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
-
-    public static String convertToWord(double number) {
-        if (number == 0) {
-            return "Zero";
-        }
-
-        int intPart = (int) number;
-        int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
-        
-        //System.out.println(number);
-        //System.out.println(number - intPart);
-        System.out.println(intPart);
-        //System.out.println(String.format("%.2f", number%1));
-        System.out.println(decimalPart);
-        
-        // System.out.println(String.format("%.2f", decimalPart));
-
-        StringBuilder result = new StringBuilder();
-
-        if (intPart >= 1000000) {
-            result.append(convert(intPart / 1000000)).append(" Million ");
-            intPart %= 1000000;
-        }
-
-        if (intPart >= 1000) {
-            result.append(convert(intPart / 1000)).append(" Thousand ");
-            intPart %= 1000;
-        }
-
-        if (intPart > 0) {
-            result.append(convert(intPart));
-        }
-
-        if (decimalPart > 0) {
-            result.append(" and ").append(convert(decimalPart)).append(" Cents");
-        }
-
-        return result.toString().trim();
-    }
-
-    private static String convert(int number) {
-        if (number < 10) {
-            return units[number];
-        } else if (number < 20) {
-            return teens[number - 10];
-        } else if (number < 100) {
-            return tens[number / 10] + " " + units[number % 10];
-        } else {
-            return units[number / 100] + " Hundred " + convert(number % 100);
-        }
-    }
-    
-    
 
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
