@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -68,7 +69,7 @@ public class ServiceSession extends Item implements Serializable {
     boolean deactivated;
     String deactivateComment;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     ServiceSession originatingSession;
     @Transient
     int transDisplayCountWithoutCancelRefund;
