@@ -353,7 +353,7 @@ public class PatientController implements Serializable {
                 + " order by p.id desc";
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        allPatientList = getFacade().findByJpql(j, m,100000);
+        allPatientList = getFacade().findByJpql(j, m, 100000);
 
         for (Patient pt : allPatientList) {
             System.out.println("pt = " + pt);
@@ -761,8 +761,6 @@ public class PatientController implements Serializable {
         patientEncounterController.fillPatientInvestigations(current);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
     }
-    
-    
 
     public String navigateToOpdPatientProfile() {
         if (current == null) {
@@ -781,13 +779,12 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission?faces-redirect=true;";
     }
-    
-    public String navigatePatientAdmit(){
-        Admission ad=new Admission();
+
+    public String navigatePatientAdmit() {
+        Admission ad = new Admission();
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
         return "/inward/inward_admission?faces-redirect=true;";
-    
 
     }
 
@@ -869,7 +866,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-                
+
         return "/opd/patient?faces-redirect=true;";
     }
 
@@ -1441,6 +1438,10 @@ public class PatientController implements Serializable {
         quickSearchPatientList = null;
         controller.setPatient(new Patient());
         controller.setPatientDetailsEditable(true);
+        if (quickSearchPhoneNumber != null) {
+            System.out.println("quickSearchPhoneNumber = " + quickSearchPhoneNumber);
+            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+        }
     }
 
     public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {

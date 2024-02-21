@@ -24,26 +24,7 @@
                                 </h:outputText>
                             </f:facet>
 
-                            <p:panel>
-                                <p:panelGrid columns="2" >
-                                    <p:outputLabel value="Doctor/Staff" ></p:outputLabel>
-                                    <p:autoComplete 
-                                        forceSelection="true" 
-                                        value="#{workingTimeController.current.staffShift.staff}" 
-                                        id="scStaff"
-                                        completeMethod="#{staffController.completeConsultant}" var="mys" 
-                                        itemLabel="#{mys.person.nameWithTitle}" 
-                                        itemValue="#{mys}"/>
-
-
-
-                                    <p:outputLabel value="Start Time" ></p:outputLabel>
-                                    <p:calendar pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                value="#{workingTimeController.current.startRecord.recordTimeStamp}" ></p:calendar>
-                                    <p:commandButton value="Mark In" ajax="false" action="#{workingTimeController.markIn()}" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:panel>
-
+                            
                             <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
                                          rowKey="#{w.id}" >
                                 <p:column headerText="Name">
