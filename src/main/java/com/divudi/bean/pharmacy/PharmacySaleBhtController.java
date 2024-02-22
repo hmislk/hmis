@@ -1185,9 +1185,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void generateBillComponent(Bill b) {
-
-        System.out.println("b = " + b);
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        System.out.println("usc = " + usc);
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
