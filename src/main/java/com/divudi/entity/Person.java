@@ -352,19 +352,6 @@ public class Person implements Serializable {
     }
 
     public String getName() {
-//        if (SessionController.getCurrentPreference().getChangeTextCasesPatientName()!= null) {
-//            if (SessionController.getCurrentPreference().getChangeTextCasesPatientName()== "UPPERCASE") {
-//                return name.toUpperCase();
-//            }
-//
-//            if (SessionController.getCurrentPreference().getChangeTextCasesPatientName()== "LOWERCASE") {
-//                return name.toLowerCase();
-//            }
-//
-//            if (SessionController.getCurrentPreference().getChangeTextCasesPatientName()== "CAPITALIZE") {
-//                return StringUtils.capitalize(name);
-//            }
-//        }
         return name;
     }
 

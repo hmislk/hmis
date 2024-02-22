@@ -5,6 +5,7 @@
  */
 package com.divudi.java;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -33,11 +35,40 @@ import org.joda.time.PeriodType;
  * @author buddhika
  */
 public class CommonFunctions {
+    
+    SessionController sessionController;
      
     private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
+    public String changeTextCases(String nm){
+        String upString = null;
+        if (nm != null) {
+            if (sessionController.getCurrentPreference().getChangeTextCasesPatientName()!=null) {
+                switch (sessionController.getCurrentPreference().getChangeTextCasesPatientName()) {
+                    case "UPPERCASE":
+                        upString=nm.toUpperCase();
+                        return nm;
+                        
+                    case "LOWERCASE":
+                        upString=nm.toLowerCase();
+                        break;
+                        
+                    case "CAPITALIZE":
+                        upString=StringUtils.capitalize(nm);
+                        break;
+                    default:
+                       return nm; 
+                }
+            }
+           
+        }
+        
+        return upString;
+    }
+    
+    
     public static String convertToWord(double number) {
         if (number == 0) {
             return "Zero";
