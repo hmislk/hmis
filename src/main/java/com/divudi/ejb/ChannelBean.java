@@ -18,6 +18,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -511,6 +512,100 @@ public class ChannelBean {
         return createdSessions;
     }
 
+    
+    
+    public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions, Date d) {
+        int sessionDayCount = 0;
+        List<SessionInstance> createdSessions = new ArrayList<>();
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return createdSessions;
+        }
+        Date nowDate;
+        if (d == null) {
+            nowDate = Calendar.getInstance().getTime();
+        } else {
+            nowDate = d;
+        }
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(nowDate);
+        c.add(Calendar.MONTH, 1);
+        Date toDate = c.getTime();
+        Integer tmp = 0;
+        int rowIndex = 0;
+        while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounterLargest(inputSessions)) {
+            boolean hasSpecificDateSession = false;
+            for (ServiceSession ss : inputSessions) {
+                if (ss.getSessionDate() != null) {
+                    Calendar sessionDate = Calendar.getInstance();
+                    sessionDate.setTime(ss.getSessionDate());
+                    Calendar nDate = Calendar.getInstance();
+                    nDate.setTime(nowDate);
+
+                    if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        hasSpecificDateSession = true;
+                        ServiceSession newSs = new ServiceSession();
+                        newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                        if (newSs == null) {
+                            newSs = createServiceSessionForChannelShedule(ss, nowDate);
+                        }
+                        //Temprory
+                        newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
+                        newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                        newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
+                        newSs.setStaff(ss.getStaff());
+                        newSs.setTransRowNumber(rowIndex++);
+                        //add to list
+                        createdSessions.add(newSs);
+
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
+                            sessionDayCount++;
+                        }
+                    }
+                }
+            }
+
+            if (hasSpecificDateSession == false) {
+                for (ServiceSession ss : inputSessions) {
+                    Calendar wdc = Calendar.getInstance();
+                    wdc.setTime(nowDate);
+
+                    if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
+                        ServiceSession newSs = new ServiceSession();
+                        newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                        if (newSs == null) {
+                            newSs = new ServiceSession();
+                            newSs = createServiceSessionForChannelShedule(ss, nowDate);
+                        }
+                        //Temprory
+                        newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
+                        newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
+                        newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(newSs, nowDate));
+                        newSs.setTransRowNumber(rowIndex++);
+                        //add to list
+                        createdSessions.add(newSs);
+                        if (!Objects.equals(tmp, ss.getSessionWeekday())) {
+                            sessionDayCount++;
+                        }
+                    }
+
+                }
+            }
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+        getBookingController().calculateFeeBooking(createdSessions, channelBillController.getPaymentMethod());
+
+        return createdSessions;
+    }
+
+    
+    
+    
     public void createDocLeaveSession(List<ServiceSession> createdSessions, Date nDate, int rIndex) {
         ServiceSession newSs = new ServiceSession();
         newSs.setId(1l);

@@ -691,7 +691,7 @@ public class BookingController implements Serializable {
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());
             try {
-                sessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
+                sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, sessionStartingDate);
             } catch (Exception e) {
             }
             generateSessionEvents(sessionInstances);
