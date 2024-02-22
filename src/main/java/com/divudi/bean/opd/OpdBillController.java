@@ -1285,6 +1285,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (str == null || str.isEmpty()) {
             return str;
         }
+        
         StringBuilder result = new StringBuilder();
         String[] words = str.split("\\s");
         for (String word : words) {
