@@ -192,65 +192,72 @@ public class InwardSearch implements Serializable {
     }
 
     public String fillDataForInpatientsForFinalBill(String template, Bill bill) {
-        if (template == null || template.trim().isEmpty()) {
+        if (isInvalidInput(template, bill)) {
             return "";
         }
-        if (bill == null) {
-            return "";
-        }
-        if (bill.getPatientEncounter() == null) {
-            return "";
-        }
+
         PatientEncounter pe = bill.getPatientEncounter();
+        Patient patient = pe.getPatient();
+        Person person = patient.getPerson();
 
-        String output = new String(template);
-
-        output = output.replace("{dept_id}", String.valueOf(bill.getDeptId()))
+        String output = template
+                .replace("{dept_id}", String.valueOf(bill.getDeptId()))
                 .replace("{ins_id}", String.valueOf(bill.getInsId()))
                 .replace("{gross_total}", String.valueOf(bill.getTotal()))
                 .replace("{discount}", String.valueOf(bill.getDiscount()))
                 .replace("{net_total}", String.valueOf(bill.getNetTotal()))
                 .replace("{cancelled}", String.valueOf(bill.isRefunded()))
                 .replace("{returned}", String.valueOf(bill.isCancelled()))
-                .replace("{cashier_username}", bill.getCreater().getName());
-
-        if (pe.getInstitution() != null) {
-            output = output.replace("{from_institution}", pe.getInstitution().getName())
-                    .replace("{to_institution}", pe.getInstitution().getName());
-        }
-
-        if (pe.getDepartment() != null) {
-            output = output.replace("{from_department}", pe.getDepartment().getName())
-                    .replace("{to_department}", pe.getDepartment().getName());
-        }
-
-        if (pe.getPatient() != null) {
-            output = output.replace("{patient_name}", pe.getPatient().getPerson().getNameWithTitle())
-                    .replace("{patient_age}", pe.getPatient().getAgeOnBilledDate(pe.getDateOfAdmission()))
-                    .replace("{patient_sex}", pe.getPatient().getPerson().getSex().name())
-                    .replace("{patient_address}", pe.getPatient().getPerson().getAddress())
-                    .replace("{patient_phone}", pe.getPatient().getPerson().getPhone())
-                    .replace("{patient_phn_number}", pe.getPatient().getPhn());
-        }
-
-        output = output.replace("{admission_number}", pe.getBhtNo())
-                .replace("{payment_method}", pe.getPaymentMethod().getLabel());
-
-        DateFormat df = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat());
-        DateFormat tf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortTimeFormat());
-
-        if (pe.getDateOfAdmission() != null) {
-            output = output.replace("{admission_date}", df.format(pe.getDateOfAdmission()));
-        }
-
-        if (bill.getBillDate() != null) {
-            output = output.replace("{bill_date}", df.format(bill.getBillDate()));
-        }
-        if (bill.getBillTime() != null) {
-            output = output.replace("{bill_time}", tf.format(bill.getBillTime()));
-        }
+                .replace("{cashier_username}", bill.getCreater().getName())
+                .replace("{patient_nic}", person.getNic())
+                .replace("{patient_phn_number}", patient.getPhn())
+                .replace("{admission_number}", pe.getBhtNo())
+                .replace("{admission_date}", formatDate(pe.getDateOfAdmission(), sessionController))
+                .replace("{net_total_in_words}", "") // Assuming a method to convert net total to words
+                .replace("{bht}", "") // Assuming value for bht if required
+                .replace("{date_of_discharge}", formatDate(pe.getDateOfDischarge(), sessionController))
+                .replace("{admission_type}", getAdmissionType(pe))
+                .replace("{patient_name}", person.getNameWithTitle())
+                .replace("{patient_age}", patient.getAgeOnBilledDate(pe.getDateOfAdmission()))
+                .replace("{patient_sex}", person.getSex().name())
+                .replace("{patient_address}", person.getAddress())
+                .replace("{patient_phone}", person.getPhone())
+                .replace("{from_institution}", getInstitutionName(pe))
+                .replace("{to_institution}", getInstitutionName(pe))
+                .replace("{from_department}", getDepartmentName(pe))
+                .replace("{to_department}", getDepartmentName(pe))
+                .replace("{payment_method}", pe.getPaymentMethod().getLabel())
+                .replace("{bill_date}", formatDate(bill.getBillDate(), sessionController))
+                .replace("{bill_time}", formatTime(bill.getBillTime(), sessionController));
 
         return output;
+    }
+
+    private String formatDate(Date date, SessionController sessionController) {
+        return date != null ? CommonFunctions.dateToString(date, sessionController.getApplicationPreference().getLongDateFormat()) : "";
+    }
+
+    private String formatTime(Date time, SessionController sessionController) {
+        return time != null ? CommonFunctions.dateToString(time, sessionController.getApplicationPreference().getLongDateFormat()) : "";
+    }
+
+    private String getAdmissionType(PatientEncounter pe) {
+        return pe.getAdmissionType() != null ? pe.getAdmissionType().getName() : "";
+    }
+
+    private String getInstitutionName(PatientEncounter pe) {
+        return pe.getInstitution() != null ? pe.getInstitution().getName() : "";
+    }
+
+    private String getDepartmentName(PatientEncounter pe) {
+        return pe.getDepartment() != null ? pe.getDepartment().getName() : "";
+    }
+
+    private boolean isInvalidInput(String template, Bill bill) {
+        return template == null || template.trim().isEmpty()
+                || bill == null || bill.getPatientEncounter() == null
+                || bill.getPatientEncounter().getPatient() == null
+                || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
 //    public void replace() {
