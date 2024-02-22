@@ -1185,9 +1185,8 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void generateBillComponent(Bill b) {
-
-        //User Stock Container Save if New Bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        System.out.println("usc = " + usc);
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
@@ -1217,6 +1216,8 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                 billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
+                System.out.println("sq = " + sq.getStock());
+                System.out.println("sq = " + sq.getStock().getItemBatch().getItem().getName());
                 billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
 
                 billItem.setItem(sq.getStock().getItemBatch().getItem());
@@ -1228,7 +1229,8 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
                 billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-
+                System.out.println("3 = " + billItem.getPharmaceuticalBillItem().getItemBatch());
+                System.out.println("4 = " + billItem.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
                 billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
                 billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
 
@@ -1236,7 +1238,7 @@ public class PharmacySaleBhtController implements Serializable {
 
                 billItem.setItem(sq.getStock().getItemBatch().getItem());
                 billItem.setReferanceBillItem(i.getBillItem());
-
+                System.out.println("billItem = " + billItem.getItem().getName());
                 billItem.setSearialNo(getBillItems().size() + 1);
                 getBillItems().add(billItem);
 
