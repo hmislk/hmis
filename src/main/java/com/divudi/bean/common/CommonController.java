@@ -191,14 +191,14 @@ public class CommonController implements Serializable {
     }
 
     //----------Date Time Formats
-    public String getDateFormat(Date date) {
+    public static String getDateFormat(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
         s = d.format(date);
         return s;
     }
 
-    public String getDateFormat(Date date, String formatString) {
+    public static String getDateFormat(Date date, String formatString) {
         String s = "";
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);

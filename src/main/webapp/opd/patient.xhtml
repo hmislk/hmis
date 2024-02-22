@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://java.sun.com/jsf/facelets"
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       template="/resources/template/template.xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -18,88 +18,93 @@
                 </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:form >
+                        <p:panel>
+                            <f:facet name="header">
+                                <p:outputLabel value="Patient Profile" class="my-2"/>
+                                <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" style="float: right;"></p:commandButton>
+                                <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" style="float: right;"></p:commandButton>
+                                <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" style="float: right;"></p:commandButton>
+                            </f:facet>
+                            <div class="row" >
 
-                        <div class="row" >
-
-                            <div class="col-md-8" >
-                                <p:panelGrid columns="2" class="w-100 table table-striped" >
-                                    <f:facet name="header" >
-                                        <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" ></p:commandButton>
-                                        <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" ></p:commandButton>
-                                        <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" ></p:commandButton>
-                                    </f:facet>
-
-
-                                    <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
-                                    <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
-
-                                    <p:outputLabel value="Age:" rendered="#{not empty patientController.current.person.ageAsString}" />
-                                    <p:outputLabel value="#{patientController.current.person.ageAsString}" rendered="#{not empty patientController.current.person.ageAsString}" />
-
-                                    <p:outputLabel value="Sex:" rendered="#{not empty patientController.current.person.sex}" />
-                                    <p:outputLabel value="#{patientController.current.person.sex}" rendered="#{not empty patientController.current.person.sex}" />
-
-                                    <p:outputLabel value="Number:" rendered="#{not empty patientController.current.phn}" />
-                                    <p:outputLabel value="#{patientController.current.phn}" rendered="#{not empty patientController.current.phn}" />
-
-                                    <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
-                                    <p:outputLabel value="#{patientController.current.person.dob}" rendered="#{not empty patientController.current.person.dob}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </p:outputLabel>
-
-                                    <p:outputLabel value="Race:" rendered="#{not empty patientController.current.person.race.name}" />
-                                    <p:outputLabel value="#{patientController.current.person.race.name}" rendered="#{not empty patientController.current.person.race.name}" />
-
-                                    <p:outputLabel value="Religion:" rendered="#{not empty patientController.current.person.religion.name}" />
-                                    <p:outputLabel value="#{patientController.current.person.religion.name}" rendered="#{not empty patientController.current.person.religion.name}" />
-
-                                    <p:outputLabel value="Occupation:" rendered="#{not empty patientController.current.person.occupation.name}" />
-                                    <p:outputLabel value="#{patientController.current.person.occupation.name}" rendered="#{not empty patientController.current.person.occupation.name}" />
-
-                                    <p:outputLabel value="Civil Status:" rendered="#{not empty patientController.current.person.civilStatus.name}" />
-                                    <p:outputLabel value="#{patientController.current.person.civilStatus.name}" rendered="#{not empty patientController.current.person.civilStatus.name}" />
-
-                                    <p:outputLabel value="Phone:" rendered="#{not empty patientController.current.person.phone}" />
-                                    <p:outputLabel value="#{patientController.current.phoneNumberStringTransient}" rendered="#{not empty patientController.current.person.phone}" />
-
-                                    <p:outputLabel value="Additional Contact Number:" rendered="#{not empty patientController.current.person.mobile}" />
-                                    <p:outputLabel value="#{patientController.current.person.mobile}" rendered="#{not empty patientController.current.person.mobile}" />
-
-                                    <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
-                                    <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
-
-                                    <p:outputLabel value="ID:" rendered="#{not empty patientController.current.person.nic}" />
-                                    <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
-
-                                    <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
-                                    <p:outputLabel value="#{patientController.current.code}" rendered="#{not empty patientController.current.code}" />
-
-                                    <p:outputLabel value="Address:" rendered="#{not empty patientController.current.person.address}" />
-                                    <p:outputLabel value="#{patientController.current.person.address}" rendered="#{not empty patientController.current.person.address}" />
-
-                                    <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
-                                    <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
-
-
-                                    <p:outputLabel value="Has an Account:"  />
-                                    <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
-
-
-                                    <p:outputLabel value="Account Balance:" rendered="#{patientController.current.hasAnAccount}" />
-                                    <p:outputLabel value="#{patientController.current.runningBalance}" rendered="#{patientController.current.hasAnAccount}" />
-
-                                    <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
-                                    <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
+                                <div class="col-md-8" >
+                                    <p:panelGrid columns="2" class="w-100 table table-striped" >
 
 
 
-                                </p:panelGrid>
-                                <!-- Barcode -->
-                                <h:panelGroup  style="text-align: center; width: 100%;" layout="block">
-                                    <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
-                                </h:panelGroup>
-                            </div>
-                            <div  class="col-md-4 d-flex flex-column  gap-2" >
+                                        <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                        <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+
+                                        <p:outputLabel value="Age:" rendered="#{not empty patientController.current.person.ageAsString}" />
+                                        <p:outputLabel value="#{patientController.current.person.ageAsString}" rendered="#{not empty patientController.current.person.ageAsString}" />
+
+                                        <p:outputLabel value="Sex:" rendered="#{not empty patientController.current.person.sex}" />
+                                        <p:outputLabel value="#{patientController.current.person.sex}" rendered="#{not empty patientController.current.person.sex}" />
+
+                                        <p:outputLabel value="Number:" rendered="#{not empty patientController.current.phn}" />
+                                        <p:outputLabel value="#{patientController.current.phn}" rendered="#{not empty patientController.current.phn}" />
+
+                                        <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
+                                        <p:outputLabel value="#{patientController.current.person.dob}" rendered="#{not empty patientController.current.person.dob}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </p:outputLabel>
+
+                                        <p:outputLabel value="Race:" rendered="#{not empty patientController.current.person.race.name}" />
+                                        <p:outputLabel value="#{patientController.current.person.race.name}" rendered="#{not empty patientController.current.person.race.name}" />
+
+                                        <p:outputLabel value="Religion:" rendered="#{not empty patientController.current.person.religion.name}" />
+                                        <p:outputLabel value="#{patientController.current.person.religion.name}" rendered="#{not empty patientController.current.person.religion.name}" />
+
+                                        <p:outputLabel value="Occupation:" rendered="#{not empty patientController.current.person.occupation.name}" />
+                                        <p:outputLabel value="#{patientController.current.person.occupation.name}" rendered="#{not empty patientController.current.person.occupation.name}" />
+
+                                        <p:outputLabel value="Civil Status:" rendered="#{not empty patientController.current.person.civilStatus.name}" />
+                                        <p:outputLabel value="#{patientController.current.person.civilStatus.name}" rendered="#{not empty patientController.current.person.civilStatus.name}" />
+
+                                        <p:outputLabel value="Phone:" rendered="#{not empty patientController.current.person.phone}" />
+                                        <p:outputLabel value="#{patientController.current.phoneNumberStringTransient}" rendered="#{not empty patientController.current.person.phone}" />
+
+                                        <p:outputLabel value="Additional Contact Number:" rendered="#{not empty patientController.current.person.mobile}" />
+                                        <p:outputLabel value="#{patientController.current.person.mobile}" rendered="#{not empty patientController.current.person.mobile}" />
+
+                                        <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
+                                        <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
+
+                                        <p:outputLabel value="ID:" rendered="#{not empty patientController.current.person.nic}" />
+                                        <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
+
+                                        <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
+                                        <p:outputLabel value="#{patientController.current.code}" rendered="#{not empty patientController.current.code}" />
+
+                                        <p:outputLabel value="Address:" rendered="#{not empty patientController.current.person.address}" />
+                                        <p:outputLabel value="#{patientController.current.person.address}" rendered="#{not empty patientController.current.person.address}" />
+
+                                        <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
+                                        <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
+
+
+                                        <p:outputLabel value="Has an Account:"  />
+                                        <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
+
+
+                                        <p:outputLabel value="Account Balance:" rendered="#{patientController.current.hasAnAccount}" />
+                                        <p:outputLabel value="#{patientController.current.runningBalance}" rendered="#{patientController.current.hasAnAccount}" />
+
+                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
+                                        <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
+
+
+
+                                    </p:panelGrid>
+
+
+                                    <!-- Barcode -->
+                                    <h:panelGroup  style="text-align: center; width: 100%;" layout="block">
+                                        <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
+                                    </h:panelGroup>
+
+                                </div>
+                                <div  class="col-md-4 d-flex flex-column  gap-2" >
                                 <p:commandButton value="Admit" 
                                                  action="#{patientController.navigateToAdmitFromPatientProfile()}" 
                                                  ajax="false" 
@@ -170,9 +175,14 @@
                                 </p:commandButton>
                                 <p:messages ></p:messages>
                             </div>
+                            </div>  
 
-                        </div>
 
+
+                            
+
+                           
+                        </p:panel>
 
 
 

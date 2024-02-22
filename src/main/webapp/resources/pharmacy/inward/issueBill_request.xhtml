@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -103,7 +103,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 20% ;text-align: left;" >
-                                <h:outputLabel value="BHT" ></h:outputLabel>
+                                <h:outputLabel value="BHT No" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
@@ -180,7 +180,7 @@
                             </td>
 
                             <td>
-                                <h:outputLabel    value="#{bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
+                                <h:outputLabel    value="#{-bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>

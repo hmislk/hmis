@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,16 +14,16 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex mt-1 gap-2">
+        <div class="d-flex">
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}"  id="txtVal">
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cheque.totalValue}"  id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
                 <p:watermark value="Value" for="txtVal" />
             </h:panelGroup>
             
             <div class="" >
-                <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" id="chequNo">
+                <p:inputText autocomplete="off"  value="#{cc.attrs.paymentMethodData.cheque.no}" id="chequNo" class="mx-1">
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
             </div>
@@ -37,7 +37,7 @@
             </div>
             
             <div class="" >
-                <p:calendar value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                <p:calendar value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" class="mx-1 w-50" inputStyleClass="w-100">                            
                     <p:ajax process="@this" ></p:ajax>
                 </p:calendar>
             </div>

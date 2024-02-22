@@ -84,6 +84,73 @@ public class AgentReferenceBookController implements Serializable {
         saveAgentBook(ReferenceBookEnum.ChannelBook);
     }
 
+    public Boolean checkAgentReferenceNumber(Institution institution, String refNumber) {
+
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+        } catch (Exception e) {
+            return false;
+        }
+
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a where "
+                + " a.startingReferenceNumber<= :ag "
+                + " and a.endingReferenceNumber>= :ag "
+                + " and a.retired=false "
+                + " and a.deactivate=false "
+                + " and a.institution=:ins";
+
+        m.put("ins", institution);
+        m.put("ag", dbl);
+
+        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
+
+        if (agentReferenceBook == null) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    
+    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ah from AgentHistory ah join ah.bill b "
+                + " where "
+                + " b.retired=false "
+                + " and b.billType=:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.creditCompany=:ins "
+                + " and ((ah.referenceNo) like :rn) ";
+
+        m.put("bt", bt);
+        m.put("pm", pm);
+        m.put("ins", institution);
+        m.put("rn", "%" + refNumber.toUpperCase() + "%");
+
+        List<AgentHistory> ahs = agentHistoryFacade.findByJpql(sql, m);
+
+        if (ahs.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
@@ -369,7 +436,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

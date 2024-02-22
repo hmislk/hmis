@@ -29,6 +29,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -46,6 +47,8 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -134,6 +137,17 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
 
+    private boolean withProfessionalFee = false;
+
+    public boolean showProfessionalFee() {
+        if (withProfessionalFee == true) {
+            withProfessionalFee = false;
+        } else {
+            withProfessionalFee = true;
+        }
+        return withProfessionalFee;
+    }
+
     public void edit() {
         if (getBill() == null) {
             return;
@@ -175,6 +189,75 @@ public class InwardSearch implements Serializable {
         }
         personFacade.edit(getBill().getPatient().getPerson());
         JsfUtil.addSuccessMessage("Patient Details Updated.");
+    }
+
+    public String fillDataForInpatientsForFinalBill(String template, Bill bill) {
+        if (isInvalidInput(template, bill)) {
+            return "";
+        }
+
+        PatientEncounter pe = bill.getPatientEncounter();
+        Patient patient = pe.getPatient();
+        Person person = patient.getPerson();
+
+        String output = template
+                .replace("{dept_id}", String.valueOf(bill.getDeptId()))
+                .replace("{ins_id}", String.valueOf(bill.getInsId()))
+                .replace("{gross_total}", String.valueOf(bill.getTotal()))
+                .replace("{discount}", String.valueOf(bill.getDiscount()))
+                .replace("{net_total}", String.valueOf(bill.getNetTotal()))
+                .replace("{cancelled}", String.valueOf(bill.isRefunded()))
+                .replace("{returned}", String.valueOf(bill.isCancelled()))
+                .replace("{cashier_username}", bill.getCreater().getName())
+                .replace("{patient_nic}", person.getNic())
+                .replace("{patient_phn_number}", patient.getPhn())
+                .replace("{admission_number}", pe.getBhtNo())
+                .replace("{admission_date}", formatDate(pe.getDateOfAdmission(), sessionController))
+                .replace("{net_total_in_words}", "") // Assuming a method to convert net total to words
+                .replace("{bht}", "") // Assuming value for bht if required
+                .replace("{date_of_discharge}", formatDate(pe.getDateOfDischarge(), sessionController))
+                .replace("{admission_type}", getAdmissionType(pe))
+                .replace("{patient_name}", person.getNameWithTitle())
+                .replace("{patient_age}", patient.getAgeOnBilledDate(pe.getDateOfAdmission()))
+                .replace("{patient_sex}", person.getSex().name())
+                .replace("{patient_address}", person.getAddress())
+                .replace("{patient_phone}", person.getPhone())
+                .replace("{from_institution}", getInstitutionName(pe))
+                .replace("{to_institution}", getInstitutionName(pe))
+                .replace("{from_department}", getDepartmentName(pe))
+                .replace("{to_department}", getDepartmentName(pe))
+                .replace("{payment_method}", pe.getPaymentMethod().getLabel())
+                .replace("{bill_date}", formatDate(bill.getBillDate(), sessionController))
+                .replace("{bill_time}", formatTime(bill.getBillTime(), sessionController));
+
+        return output;
+    }
+
+    private String formatDate(Date date, SessionController sessionController) {
+        return date != null ? CommonFunctions.dateToString(date, sessionController.getApplicationPreference().getLongDateFormat()) : "";
+    }
+
+    private String formatTime(Date time, SessionController sessionController) {
+        return time != null ? CommonFunctions.dateToString(time, sessionController.getApplicationPreference().getLongDateFormat()) : "";
+    }
+
+    private String getAdmissionType(PatientEncounter pe) {
+        return pe.getAdmissionType() != null ? pe.getAdmissionType().getName() : "";
+    }
+
+    private String getInstitutionName(PatientEncounter pe) {
+        return pe.getInstitution() != null ? pe.getInstitution().getName() : "";
+    }
+
+    private String getDepartmentName(PatientEncounter pe) {
+        return pe.getDepartment() != null ? pe.getDepartment().getName() : "";
+    }
+
+    private boolean isInvalidInput(String template, Bill bill) {
+        return template == null || template.trim().isEmpty()
+                || bill == null || bill.getPatientEncounter() == null
+                || bill.getPatientEncounter().getPatient() == null
+                || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
 //    public void replace() {
@@ -234,31 +317,36 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToFinalBillForAdmission() {
-        if(admission==null){
+        if (admission == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+
         String jpql;
         Map temMap = new HashMap();
-        jpql = "select b from BilledBill b where"
+        jpql = "select b from Bill b where"
                 + " b.billType = :billType and "
-                + "and b.retired=false ";
+                + " b.retired=false ";
 
         jpql += " and  b.patientEncounter=:pe ";
         temMap.put("pe", admission);
 
         temMap.put("billType", BillType.InwardFinalBill);
         jpql += " order by b.id desc ";
-     
-        bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        if(bill==null){
+
+        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        bill = getBillFacade().findFirstByJpql(jpql, temMap);
+
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
+        withProfessionalFee = false;
+
         return "/inward/inward_reprint_bill_final";
     }
-    
-    public String navigateDoctorPayment(){
+
+    public String navigateDoctorPayment() {
         return "/inward/inward_bill_payment";
     }
 
@@ -1529,7 +1617,13 @@ public class InwardSearch implements Serializable {
     public void setAdmission(Admission admission) {
         this.admission = admission;
     }
-    
-    
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
+    }
 
 }

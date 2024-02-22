@@ -1,24 +1,23 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
-                    <h:panelGroup rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
-                        <p:panel header="Staff Payments" >
-
+                <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
+                    <p:panel header="Staff Payments" >
+                        <h:form>
                             <h:panelGrid columns="2" >
 
                                 <h:outputLabel  value="Select Speciality" ></h:outputLabel>
-                                
+
                                 <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.speciality}"
                                                 inputStyleClass="mx-1 w-100" class="mx-1 w-100"
                                                 id="acSpeciality"
@@ -28,7 +27,7 @@
                                 </p:autoComplete>
 
                                 <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
-                              
+
                                 <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.currentStaff}"
                                                 inputStyleClass="mx-1 w-100" class="mx-1 w-100 my-1"
                                                 id="scStaff"
@@ -39,7 +38,7 @@
 
 
                                 <h:outputLabel value="Payment Method" ></h:outputLabel>
-                               
+
                                 <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                 </p:selectOneMenu>
@@ -48,13 +47,14 @@
                                                                     </p:commandButton>-->  
                                 <p:commandButton value="Process" action="#{staffPaymentBillController.calculateDueFees}" ajax="false" icon="fa-solid fa-arrows-rotate"
                                                  class="w-100 ui-button-warning my-1" />
-                               
+
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
                                                  class="w-100 ui-button-success my-1 mx-2" >
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
                                 </p:commandButton>
                             </h:panelGrid>
-
+                        </h:form>
+                        <h:form>
                             <p:dataTable   id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                            selection="#{staffPaymentBillController.payingBillFees}"
                                            class="w-100"
@@ -81,14 +81,14 @@
 
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bill Id"/>
+                                        <h:outputLabel value="Bill ID"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.bill.insId}">
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bill Id"/>
+                                        <h:outputLabel value="Bill ID"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.refunded}">
                                     </h:outputLabel>
@@ -107,7 +107,7 @@
                                         <h:outputLabel value="Bill Date"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.bill.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -155,6 +155,8 @@
                                     </h:outputLabel>  
                                 </h:panelGrid>
                             </p:panel>
+                        </h:form>
+                        <h:form>
                             <div class="w-25">
                                 <p:commandButton id="btnPay" ajax="false" value="Pay" class="w-25 ui-button-success my-1"
                                                  action="#{staffPaymentBillController.settleBill()}" >
@@ -164,23 +166,19 @@
                                 <p:defaultCommand target="btnPay"/>
 
                             </div>
+                        </h:form>
 
 
-
-                        </p:panel>
-                    </h:panelGroup>
-
-
-                    <h:panelGroup  rendered="#{staffPaymentBillController.printPreview}">
-                        <p:commandButton id="btnNewPayment" ajax="false" value="New Payment" action="payment_staff_bill" actionListener="#{staffPaymentBillController.newPayment}"
-                                         />
-
-                        <bi:staffBill_1 controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
-                    </h:panelGroup>
-
-                </h:form>
+                    </p:panel>
+                </h:panelGroup>
 
 
+                <h:panelGroup id="pnlprintBill" rendered="#{staffPaymentBillController.printPreview}">
+                    <p:commandButton class="ui-button-success ml-2" icon="fas fa-plus" id="btnNewPayment" process="btnNewPayment" update="#{p:resolveFirstComponentWithId('panbilledit', view).clientId} :#{p:resolveFirstComponentWithId('pnlprintBill', view).clientId}" value="New Payment" action="#{staffPaymentBillController.newPayment}" oncomplete="location.reload(true);"
+                                     />
+
+                    <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                </h:panelGroup>
 
             </ui:define>
 

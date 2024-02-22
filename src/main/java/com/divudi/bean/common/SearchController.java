@@ -204,6 +204,15 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
+    
+    
+    public void clearBillList(){
+        if(bills == null){
+            return;
+        }else{
+            bills = new ArrayList<>();
+        }
+    }
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
@@ -573,7 +582,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/reportCashier/report_doctor_payment_opd.xhtml?faces-redirect=true";
+        return "/reportCashier/report_doctor_payment_opd_by_bill.xhtml?faces-redirect=true";
 
     }
 
@@ -2509,6 +2518,26 @@ public class SearchController implements Serializable {
 
     public void createInwardBHTForNotIssueTable() {
         createInwardBHTForIssueTable(true);
+    }
+
+    public String navigateToIssueForBhtRequests() {
+        bills = createInwardPharmacyRequests();
+        return "/ward/issue_for_bht_request_list";
+    }
+
+    public List<Bill> createInwardPharmacyRequests() {
+        String sql;
+        HashMap tmp = new HashMap();
+        tmp.put("admission", getPatientEncounter());
+        tmp.put("bTp", BillType.InwardPharmacyRequest);
+        sql = "Select b "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and  b.toDepartment=:toDep"
+                + " and b.billType=:bTp "
+                + " and b.patientEncounter=:admission ";
+        sql += " order by b.createdAt desc  ";
+        return getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
     }
 
     public void createInwardBHTForIssueOnlyTable() {
@@ -7501,6 +7530,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {

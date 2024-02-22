@@ -996,6 +996,8 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         getSaleBill().setInsId(getPreBill().getInsId());
         getSaleBill().setDeptId(getPreBill().getDeptId());
         getSaleBill().setComments(comment);
+        getSaleBill().setCashPaid(cashPaid);
+        getSaleBill().setBalance(balance);
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
 

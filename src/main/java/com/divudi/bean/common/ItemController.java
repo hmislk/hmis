@@ -129,7 +129,6 @@ public class ItemController implements Serializable {
     private InstitutionItemCount institutionItemCount;
 
     boolean masterItem;
-    
 
     ReportKeyWord reportKeyWord;
 
@@ -194,7 +193,7 @@ public class ItemController implements Serializable {
 
         // Get count of items without an institution
         Long countWithoutInstitution = itemFacade.countByJpql(jpqlWithoutIns, m);
-        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution","No Code", countWithoutInstitution);
+        InstitutionItemCount icWithout = new InstitutionItemCount(-1L, "No Institution", "No Code", countWithoutInstitution);
 
         // Get list of items with an institution
         List<InstitutionItemCount> withInsList = (List<InstitutionItemCount>) itemFacade.findLightsByJpql(jpqlWithIns, m);
@@ -386,7 +385,6 @@ public class ItemController implements Serializable {
         parameters.put("svc", Service.class);
 
         jpql += "ORDER BY i.name";
-
 
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         return lst;
@@ -598,8 +596,8 @@ public class ItemController implements Serializable {
             return null;
         }
     }
-    
-    public Item findItemByName(String name,String code, Department dept) {
+
+    public Item findItemByName(String name, String code, Department dept) {
         try {
             String jpql;
             Map m = new HashMap();
@@ -1222,6 +1220,35 @@ public class ItemController implements Serializable {
 
     }
 
+    public List<Item> completeAmps(String query) {
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where c.retired=false "
+                    + " and (type(c)= :amp) "
+                    + " and "
+                    + " (c.departmentType is null or c.departmentType!=:dep ) "
+                    + " and "
+                    + " ("
+                    + " (c.name) like :str "
+                    + " or "
+                    + " (c.code) like :str "
+                    + " or "
+                    + " (c.barcode) like :str ) "
+                    + "order by c.name";
+            tmpMap.put("dep", DepartmentType.Store);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("str", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
+    }
+
     public List<Item> completeAmpItemAll(String query) {
 //        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
 //        Class[] classes = new Class[]{Amp.class};
@@ -1391,6 +1418,28 @@ public class ItemController implements Serializable {
 //////// // System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+
+    }
+
+    public List<Item> completeAmpAndVmpItem(String query) {
+        List<Item> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            if (query.length() > 4) {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+            } else {
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+            }
+
+//////// // System.out.println(sql);
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("vmp", Vmp.class);
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;

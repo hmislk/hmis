@@ -119,6 +119,7 @@ public class PharmacySaleBhtController implements Serializable {
     BillItem editingBillItem;
     Double qty;
     Stock stock;
+    private Item item;
     private PatientEncounter patientEncounter;
     int activeIndex;
     boolean billPreview = false;
@@ -146,6 +147,11 @@ public class PharmacySaleBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+        
+        if(getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
 
@@ -702,6 +708,14 @@ public class PharmacySaleBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
+        
+        
+        if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
+            return;
+        }
+        
+        
         if (errorCheck()) {
             return;
         }
@@ -946,8 +960,8 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getQty() == null) {
-            errorMessage = "Quntity?";
-            UtilityController.addErrorMessage("Quentity?");
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
             return;
         }
 
@@ -1162,7 +1176,7 @@ public class PharmacySaleBhtController implements Serializable {
             handleSelectAction();
         } else if (!qry.trim().equals("") && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItems(qry, department);
-            if (itemsWithoutStocks != null) {
+            if (itemsWithoutStocks != null && !itemsWithoutStocks.isEmpty()) {
                 fillReplaceableStocksForAmp((Amp) itemsWithoutStocks.get(0));
             }
         }
@@ -1559,4 +1573,13 @@ public class PharmacySaleBhtController implements Serializable {
         this.errorMessage = errorMessage;
     }
 
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    
 }
