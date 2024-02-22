@@ -52,6 +52,8 @@ public class ServiceSession extends Item implements Serializable {
     Date startingTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date endingTime;
+    
+    private Integer numberOfDaysForAutomaticInstanceCreation;
 
     boolean refundable = false;
     int displayCount;
@@ -427,5 +429,15 @@ public class ServiceSession extends Item implements Serializable {
     public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
+
+    public Integer getNumberOfDaysForAutomaticInstanceCreation() {
+        return numberOfDaysForAutomaticInstanceCreation;
+    }
+
+    public void setNumberOfDaysForAutomaticInstanceCreation(Integer numberOfDaysForAutomaticInstanceCreation) {
+        this.numberOfDaysForAutomaticInstanceCreation = numberOfDaysForAutomaticInstanceCreation;
+    }
+    
+    
 
 }

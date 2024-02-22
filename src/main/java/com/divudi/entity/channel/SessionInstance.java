@@ -1,45 +1,28 @@
 package com.divudi.entity.channel;
 
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
-import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
-import com.divudi.entity.Service;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.lab.WorksheetItem;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -64,10 +47,10 @@ public class SessionInstance implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    Double total = 0.0;
+
+    private Double total = 0.0;
     private Double totalForForeigner = 0.0;
-    Boolean discountAllowed = false;
+    private Boolean discountAllowed = false;
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -75,23 +58,13 @@ public class SessionInstance implements Serializable {
     @ManyToOne
     Speciality speciality;
     @ManyToOne
-
     Staff staff;
     @ManyToOne
-
     Institution forInstitution;
     @ManyToOne
-
     Department forDepartment;
-    @Enumerated(EnumType.STRING)
-    BillType forBillType;
-    @ManyToOne
-    Item billedAs;
-    @ManyToOne
-    Item reportedAs;
-    
-    @ManyToOne
-    private Item masterItemReference;
+
+
     String name;
     String sname;
     String tname;
@@ -102,57 +75,28 @@ public class SessionInstance implements Serializable {
     String fullName;
     //Created Properties
     @ManyToOne
-
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-
     Date createdAt;
     //Retairing properties 
 //    
     boolean retired;
     @ManyToOne
-
     WebUser retirer;
-
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
-
     String retireComments;
     //Editer Properties
     @ManyToOne
-
     WebUser editer;
-
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
-    @ManyToOne
-
-    Item parentItem;
-    boolean userChangable;
-    @Enumerated(EnumType.STRING)
-    InwardChargeType inwardChargeType;
+    
     private double dblValue = 0.0f;
+    @Enumerated
     SessionNumberType sessionNumberType;
-    boolean priceByBatch;
-    @ManyToOne
-    MeasurementUnit measurementUnit;
-    @ManyToOne
-    Category worksheet;
-    @ManyToOne
-    Category reportFormat;
-    boolean billable;
-    boolean vatable;
-    boolean formatable;
-    boolean patientNotRequired;
-    boolean chargesVisibleForInward;
-    boolean requestForQuentity;
-    boolean marginNotAllowed;
-    @Column
-    boolean inactive = false;
-    @ManyToOne
-    Institution manufacturer;
-    @ManyToOne
-    Institution importer;
+
+
 
     @Lob
     String descreption;
@@ -160,15 +104,7 @@ public class SessionInstance implements Serializable {
     String comments;
     double vatPercentage;
 
-    @Enumerated(EnumType.STRING)
-    SymanticType symanticType;
-    @Enumerated(EnumType.STRING)
-    private DepartmentType departmentType;
-    @Transient
-    private double transBillItemCount;
-    @Transient
-    double transCheckedCount;
-
+    
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -222,16 +158,6 @@ public class SessionInstance implements Serializable {
     double channelOnCallFee;
 
     @Transient
-    String transName;
-
-    @Transient
-    private String transCodeFromName;
-
-    @Column(name = "DTYPE", insertable = false, updatable = false)
-    private String clazz;
-
-    
-    @Transient
     String dayString;
     @Transient
     String sessionText;
@@ -253,8 +179,6 @@ public class SessionInstance implements Serializable {
     ServiceSession afterSession;
     @ManyToOne
     SessionNumberGenerator sessionNumberGenerator;
-    @OneToOne(mappedBy = "afterSession")
-    ServiceSession beforeSession;
     /////Newly Added
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date startingTime;
@@ -266,12 +190,12 @@ public class SessionInstance implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
-//    int durationIncrementCount = 1;
-//    boolean showAppointmentCount = true;
-//    boolean oncallBookingsAllowed = true;
-//    long advanceAppointmentPeriod = 10;
-//    int advanceAPpointmentPeriodUnit = Calendar.DATE;
-//    boolean showAppointmentTime = true;
+    private int durationIncrementCount = 1;
+    private boolean showAppointmentCount = true;
+    private boolean oncallBookingsAllowed = true;
+    private long advanceAppointmentPeriod = 10;
+    private int advanceAPpointmentPeriodUnit = Calendar.DATE;
+    private boolean showAppointmentTime = true;
 
     //Deactivate Properties(Doctor Leave)
     boolean deactivated;
@@ -289,7 +213,7 @@ public class SessionInstance implements Serializable {
     @Transient
     Boolean arival;
     @Transient
-    boolean serviceSessionCreateForOriginatingSession=false;
+    boolean serviceSessionCreateForOriginatingSession = false;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -379,14 +303,6 @@ public class SessionInstance implements Serializable {
         this.afterSession = afterSession;
     }
 
-    public ServiceSession getBeforeSession() {
-        return beforeSession;
-    }
-
-    public void setBeforeSession(ServiceSession beforeSession) {
-        this.beforeSession = beforeSession;
-    }
-
     public Long getId() {
         return id;
     }
@@ -395,16 +311,8 @@ public class SessionInstance implements Serializable {
         this.id = id;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    
     public String getDayString() {
-        if (sessionWeekday==null) {
+        if (sessionWeekday == null) {
             return "";
         }
         switch (sessionWeekday) {
@@ -619,8 +527,6 @@ public class SessionInstance implements Serializable {
         this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
-    
-    
     public double getVatPercentage() {
         return 0;
     }
@@ -677,31 +583,10 @@ public class SessionInstance implements Serializable {
         this.effectiveFrom = effectiveFrom;
     }
 
-    public double getTransCheckedCount() {
-        return transCheckedCount;
-    }
+   
 
-    public void setTransCheckedCount(double transCheckedCount) {
-        this.transCheckedCount = transCheckedCount;
-    }
 
-    public boolean isMarginNotAllowed() {
-        return marginNotAllowed;
-    }
 
-    public void setMarginNotAllowed(boolean marginNotAllowed) {
-        this.marginNotAllowed = marginNotAllowed;
-    }
-
-    public boolean isInactive() {
-        return inactive;
-    }
-
-    public void setInactive(boolean inactive) {
-        this.inactive = inactive;
-    }
-
-       
     @Transient
     double hospitalFee;
     @Transient
@@ -725,12 +610,10 @@ public class SessionInstance implements Serializable {
     @Transient
     List<ItemFee> itemFees;
     private Boolean printFeesForBills;
-    
 
     @Transient
     private List<ItemFee> itemFeesActive;
 
-    
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
             itemFees = new ArrayList<>();
@@ -793,7 +676,6 @@ public class SessionInstance implements Serializable {
     @Transient
     ItemFee itemFee;
 
-    
     public Double getTotal() {
         return total;
     }
@@ -862,29 +744,11 @@ public class SessionInstance implements Serializable {
         this.forDepartment = forDepartment;
     }
 
-    public BillType getForBillType() {
-        return forBillType;
-    }
+    
 
-    public void setForBillType(BillType forBillType) {
-        this.forBillType = forBillType;
-    }
+   
 
-    public Item getBilledAs() {
-        return billedAs;
-    }
-
-    public void setBilledAs(Item billedAs) {
-        this.billedAs = billedAs;
-    }
-
-    public Item getReportedAs() {
-        return reportedAs;
-    }
-
-    public void setReportedAs(Item reportedAs) {
-        this.reportedAs = reportedAs;
-    }
+   
 
     public String getName() {
         return name;
@@ -998,77 +862,11 @@ public class SessionInstance implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public Item getParentItem() {
-        return parentItem;
-    }
+   
 
-    public void setParentItem(Item parentItem) {
-        this.parentItem = parentItem;
-    }
+    
 
-    public boolean isUserChangable() {
-        return userChangable;
-    }
-
-    public void setUserChangable(boolean userChangable) {
-        this.userChangable = userChangable;
-    }
-
-    public InwardChargeType getInwardChargeType() {
-        return inwardChargeType;
-    }
-
-    public void setInwardChargeType(InwardChargeType inwardChargeType) {
-        this.inwardChargeType = inwardChargeType;
-    }
-
-    public boolean isPriceByBatch() {
-        return priceByBatch;
-    }
-
-    public void setPriceByBatch(boolean priceByBatch) {
-        this.priceByBatch = priceByBatch;
-    }
-
-    public MeasurementUnit getMeasurementUnit() {
-        return measurementUnit;
-    }
-
-    public void setMeasurementUnit(MeasurementUnit measurementUnit) {
-        this.measurementUnit = measurementUnit;
-    }
-
-    public Category getWorksheet() {
-        return worksheet;
-    }
-
-    public void setWorksheet(Category worksheet) {
-        this.worksheet = worksheet;
-    }
-
-    public Category getReportFormat() {
-        return reportFormat;
-    }
-
-    public void setReportFormat(Category reportFormat) {
-        this.reportFormat = reportFormat;
-    }
-
-    public boolean isBillable() {
-        return billable;
-    }
-
-    public void setBillable(boolean billable) {
-        this.billable = billable;
-    }
-
-    public boolean isFormatable() {
-        return formatable;
-    }
-
-    public void setFormatable(boolean formatable) {
-        this.formatable = formatable;
-    }
+   
 
     public String getDescreption() {
         return descreption;
@@ -1078,21 +876,7 @@ public class SessionInstance implements Serializable {
         this.descreption = descreption;
     }
 
-    public SymanticType getSymanticType() {
-        return symanticType;
-    }
-
-    public void setSymanticType(SymanticType symanticType) {
-        this.symanticType = symanticType;
-    }
-
-    public boolean isPatientNotRequired() {
-        return patientNotRequired;
-    }
-
-    public void setPatientNotRequired(boolean patientNotRequired) {
-        this.patientNotRequired = patientNotRequired;
-    }
+  
 
     public SessionNumberType getSessionNumberType() {
         return sessionNumberType;
@@ -1150,13 +934,7 @@ public class SessionInstance implements Serializable {
         this.dblValue = dblValue;
     }
 
-    public DepartmentType getDepartmentType() {
-        return departmentType;
-    }
-
-    public void setDepartmentType(DepartmentType departmentType) {
-        this.departmentType = departmentType;
-    }
+   
 
     public double getProfitMargin() {
         return profitMargin;
@@ -1166,53 +944,12 @@ public class SessionInstance implements Serializable {
         this.profitMargin = profitMargin;
     }
 
-    public boolean isVatable() {
-        return vatable;
-    }
+  
 
-    public void setVatable(boolean vatable) {
-        this.vatable = vatable;
-    }
+  
 
-    public double getTransBillItemCount() {
-        return transBillItemCount;
-    }
 
-    public void setTransBillItemCount(double transBillItemCount) {
-        this.transBillItemCount = transBillItemCount;
-    }
-
-    public boolean isChargesVisibleForInward() {
-        return chargesVisibleForInward;
-    }
-
-    public void setChargesVisibleForInward(boolean chargesVisibleForInward) {
-        this.chargesVisibleForInward = chargesVisibleForInward;
-    }
-
-    public boolean isRequestForQuentity() {
-        return requestForQuentity;
-    }
-
-    public void setRequestForQuentity(boolean requestForQuentity) {
-        this.requestForQuentity = requestForQuentity;
-    }
-
-    public Institution getManufacturer() {
-        return manufacturer;
-    }
-
-    public void setManufacturer(Institution manufacturer) {
-        this.manufacturer = manufacturer;
-    }
-
-    public Institution getImporter() {
-        return importer;
-    }
-
-    public void setImporter(Institution importer) {
-        this.importer = importer;
-    }
+   
 
     public String getComments() {
         return comments;
@@ -1278,108 +1015,20 @@ public class SessionInstance implements Serializable {
         this.editedAt = editedAt;
     }
 
-    public String getTransName() {
-        return transName;
-    }
-
-    public void setTransName(String transName) {
-        this.transName = transName;
-    }
-
-
     public void setChannelStaffFee(double channelStaffFee) {
         this.channelStaffFee = channelStaffFee;
     }
 
-
     public void setChannelHosFee(double channelHosFee) {
         this.channelHosFee = channelHosFee;
-    }
-
-    public double getChannelAgentFee() {
-        if (!itemFeesAuto.isEmpty()) {
-            channelAgentFee = 0.0;
-            for (ItemFee i : itemFeesAuto) {
-                if (i.getName().equals("Agency Fee")) {
-                    channelAgentFee += i.fee;
-                }
-            }
-        }
-        return channelAgentFee;
     }
 
     public void setChannelAgentFee(double channelAgentFee) {
         this.channelAgentFee = channelAgentFee;
     }
 
-    public double getChannelOnCallFee() {
-        if (!itemFeesAuto.isEmpty()) {
-            channelOnCallFee = 0.0;
-            for (ItemFee i : itemFeesAuto) {
-                if (i.getName().equals("On-Call Fee")) {
-                    channelOnCallFee += i.fee;
-                }
-            }
-        }
-        return channelOnCallFee;
-    }
-
     public void setChannelOnCallFee(double channelOnCallFee) {
         this.channelOnCallFee = channelOnCallFee;
-    }
-
-    @Override
-    public int compareTo(Item o) {
-        if (o == null) {
-            return 0;
-        }
-
-        if (o.getName() == null) {
-            return 0;
-        }
-
-        if (this == null) {
-            return 0;
-        }
-
-        if (this.getName() == null) {
-            return 0;
-        }
-
-        return this.name.compareTo(o.name);
-    }
-
-    public ItemType getItemType() {
-        if (itemType == null) {
-            if (this instanceof Amp) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Ampp) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Atm) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Vmp) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Vmpp) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Vtm) {
-                itemType = ItemType.Medicine;
-            }
-            if (this instanceof Service) {
-                itemType = ItemType.Service;
-            }
-            if (this instanceof Investigation) {
-                itemType = ItemType.Investigation;
-            }
-            if (this instanceof Atm) {
-                itemType = ItemType.Medicine;
-            }
-        }
-        return itemType;
     }
 
     public void setItemType(ItemType itemType) {
@@ -1392,35 +1041,6 @@ public class SessionInstance implements Serializable {
 
     public void setHasMoreThanOneComponant(boolean hasMoreThanOneComponant) {
         this.hasMoreThanOneComponant = hasMoreThanOneComponant;
-    }
-
-    public ItemType getMedicineType() {
-
-        if (this instanceof Amp) {
-            medicineType = ItemType.Amp;
-        }
-        if (this instanceof Ampp) {
-            medicineType = ItemType.Ampp;
-        }
-        if (this instanceof Atm) {
-            medicineType = ItemType.Atm;
-        }
-        if (this instanceof Vmp) {
-            medicineType = ItemType.Vmp;
-        }
-        if (this instanceof Vmpp) {
-            medicineType = ItemType.Vmpp;
-        }
-        if (this instanceof Vtm) {
-            medicineType = ItemType.Vtm;
-        }
-        if (this instanceof Service) {
-            medicineType = ItemType.Service;
-        }
-        if (this instanceof Investigation) {
-            medicineType = ItemType.Investigation;
-        }
-        return medicineType;
     }
 
     public ReportItem getReportItem() {
@@ -1448,36 +1068,6 @@ public class SessionInstance implements Serializable {
 
     public void setTotalForForeigner(Double totalForForeigner) {
         this.totalForForeigner = totalForForeigner;
-    }
-
-    public List<ItemFee> getItemFeesActive() {
-        itemFeesActive = new ArrayList<>();
-        for (ItemFee tif : getItemFeesAuto()) {
-            if (!tif.retired) {
-                itemFeesActive.add(tif);
-            }
-        }
-        return itemFeesActive;
-    }
-
-    public String getTransCodeFromName() {
-        if (name == null) {
-            name = "";
-        }
-        transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
-        return transCodeFromName;
-    }
-
-    public void setTransCodeFromName(String transCodeFromName) {
-        this.transCodeFromName = transCodeFromName;
-    }
-
-    public Long getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
     }
 
     public MeasurementUnit getStrengthUnit() {
@@ -1528,474 +1118,20 @@ public class SessionInstance implements Serializable {
         this.baseUnitsPerIssueUnit = baseUnitsPerIssueUnit;
     }
 
-    public String getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(String clazz) {
-        this.clazz = clazz;
-    }
-
-    public boolean isIsMasterItem() {
-        return isMasterItem;
-    }
-
-    public void setIsMasterItem(boolean isMasterItem) {
-        this.isMasterItem = isMasterItem;
-    }
-
-    public boolean isHasReportFormat() {
-        return hasReportFormat;
-    }
-
-    public void setHasReportFormat(boolean hasReportFormat) {
-        this.hasReportFormat = hasReportFormat;
-    }
-
-    public Item getMasterItemReference() {
-        return masterItemReference;
-    }
-
-    public void setMasterItemReference(Item masterItemReference) {
-        this.masterItemReference = masterItemReference;
-    }
-
-    public Boolean getPrintFeesForBills() {
-        return printFeesForBills;
-    }
-
-    public void setPrintFeesForBills(Boolean printFeesForBills) {
-        this.printFeesForBills = printFeesForBills;
-    }
-    
-    
-    
-    
-    @Transient
-    String dayString;
-    @Transient
-    String sessionText;
-
-    Integer sessionWeekday;
-    @Temporal(javax.persistence.TemporalType.DATE)
-    Date sessionDate;
-    @Temporal(javax.persistence.TemporalType.TIME)
-    Date sessionTime;
-    @Temporal(javax.persistence.TemporalType.TIME)
-    Date sessionAt;
-    int startingNo;
-    int numberIncrement;
-    int maxNo;
-
-    boolean continueNumbers;
-
-    @OneToOne
-    ServiceSession afterSession;
-    @ManyToOne
-    SessionNumberGenerator sessionNumberGenerator;
-    @OneToOne(mappedBy = "afterSession")
-    ServiceSession beforeSession;
-    /////Newly Added
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date startingTime;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date endingTime;
-
-    boolean refundable = false;
-    int displayCount;
-    double displayPercent;
-    double duration;
-    int roomNo;
-//    int durationIncrementCount = 1;
-//    boolean showAppointmentCount = true;
-//    boolean oncallBookingsAllowed = true;
-//    long advanceAppointmentPeriod = 10;
-//    int advanceAPpointmentPeriodUnit = Calendar.DATE;
-//    boolean showAppointmentTime = true;
-
-    //Deactivate Properties(Doctor Leave)
-    boolean deactivated;
-    String deactivateComment;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    ServiceSession originatingSession;
-    @Transient
-    int transDisplayCountWithoutCancelRefund;
-    @Transient
-    int transCreditBillCount;
-
-    @Transient
-    int transRowNumber;
-    @Transient
-    Boolean arival;
-    @Transient
-    boolean serviceSessionCreateForOriginatingSession=false;
-
-    public SessionNumberGenerator getSessionNumberGenerator() {
-        return sessionNumberGenerator;
-    }
-
-    public void setSessionNumberGenerator(SessionNumberGenerator sessionNumberGenerator) {
-        this.sessionNumberGenerator = sessionNumberGenerator;
-    }
-
-    public ServiceSession getOriginatingSession() {
-        return originatingSession;
-    }
-
-    public void setOriginatingSession(ServiceSession originatingSession) {
-        this.originatingSession = originatingSession;
-    }
-
-    public Integer getSessionWeekday() {
-        return sessionWeekday;
-    }
-
-    public void setSessionWeekday(Integer sessionWeekday) {
-        this.sessionWeekday = sessionWeekday;
-    }
-
-    public Date getSessionDate() {
-        return sessionDate;
-    }
-
-    public void setSessionDate(Date sessionDate) {
-        this.sessionDate = sessionDate;
-    }
-
-    public Date getSessionTime() {
-        return sessionTime;
-    }
-
-    public void setSessionTime(Date sessionTime) {
-        this.sessionTime = sessionTime;
-    }
-
-    public Date getSessionAt() {
-        return sessionAt;
-    }
-
-    public void setSessionAt(Date sessionAt) {
-        this.sessionAt = sessionAt;
-    }
-
-    public int getStartingNo() {
-        return startingNo;
-    }
-
-    public void setStartingNo(int startingNo) {
-        this.startingNo = startingNo;
-    }
-
-    public int getNumberIncrement() {
-        return numberIncrement;
-    }
-
-    public void setNumberIncrement(int numberIncrement) {
-        this.numberIncrement = numberIncrement;
-    }
-
-    public int getMaxNo() {
-        return maxNo;
-    }
-
-    public void setMaxNo(int maxNo) {
-        this.maxNo = maxNo;
-    }
-
-    public boolean isContinueNumbers() {
-        return continueNumbers;
-    }
-
-    public void setContinueNumbers(boolean continueNumbers) {
-        this.continueNumbers = continueNumbers;
-    }
-
-    public ServiceSession getAfterSession() {
-        return afterSession;
-    }
-
-    public void setAfterSession(ServiceSession afterSession) {
-        this.afterSession = afterSession;
-    }
-
-    public ServiceSession getBeforeSession() {
-        return beforeSession;
-    }
-
-    public void setBeforeSession(ServiceSession beforeSession) {
-        this.beforeSession = beforeSession;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
         return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-
-        if (!(object instanceof ServiceSession)) {
-            return false;
-        }
-        ServiceSession other = (ServiceSession) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
     }
 
     @Override
     public String toString() {
-        return "com.divudi.entity.ServiceSession[ id=" + id + " ]";
-    }
-
-    public String getDayString() {
-        if (sessionWeekday==null) {
-            return "";
-        }
-        switch (sessionWeekday) {
-            case 1:
-                dayString = "Sunday";
-                break;
-            case 2:
-                dayString = "Monday";
-                break;
-            case 3:
-                dayString = "Tuesday";
-                break;
-            case 4:
-                dayString = "Wednesday";
-                break;
-            case 5:
-                dayString = "Thursday";
-                break;
-            case 6:
-                dayString = "Friday";
-                break;
-            case 7:
-                dayString = "Sutarday";
-                break;
-
-        }
-        return dayString;
-    }
-
-    public Date getStartingTime() {
-        return startingTime;
-    }
-
-    public Date getTransStartTime() {
-        Calendar st = Calendar.getInstance();
-        Calendar start = Calendar.getInstance();
-        if (sessionAt == null || startingTime == null) {
-            return null;
-        }
-        st.setTime(sessionAt);
-        start.setTime(startingTime);
-        st.set(Calendar.HOUR, start.get(Calendar.HOUR));
-        st.set(Calendar.MINUTE, start.get(Calendar.MINUTE));
-        st.set(Calendar.SECOND, start.get(Calendar.SECOND));
-        st.set(Calendar.MILLISECOND, start.get(Calendar.MILLISECOND));
-        return st.getTime();
-    }
-
-    public Date getTransEndTime() {
-        Calendar st = Calendar.getInstance();
-        Calendar ending = Calendar.getInstance();
-//        //// // System.out.println("sessionAt = " + sessionAt);
-        if (sessionAt == null || getEndingTime() == null) {
-            return null;
-        }
-        st.setTime(sessionAt);
-        ending.setTime(endingTime);
-        st.set(Calendar.HOUR, ending.get(Calendar.HOUR));
-        st.set(Calendar.MINUTE, ending.get(Calendar.MINUTE));
-        st.set(Calendar.SECOND, ending.get(Calendar.SECOND));
-        st.set(Calendar.MILLISECOND, ending.get(Calendar.MILLISECOND));
-        return st.getTime();
-    }
-
-    public void setStartingTime(Date startingTime) {
-        this.startingTime = startingTime;
-    }
-
-    public boolean isRefundable() {
-        return refundable;
-    }
-
-    public void setRefundable(boolean refundable) {
-        this.refundable = refundable;
-    }
-
-    public int getDisplayCount() {
-        return displayCount;
-    }
-
-    public void setDisplayCount(int displayCount) {
-        this.displayCount = displayCount;
-    }
-
-    public double getDisplayPercent() {
-        return displayPercent;
-    }
-
-    public void setDisplayPercent(double displayPercent) {
-        this.displayPercent = displayPercent;
-    }
-
-    public double getDuration() {
-        return duration;
-    }
-
-    public void setDuration(double duration) {
-        this.duration = duration;
-    }
-
-    public int getRoomNo() {
-        return roomNo;
-    }
-
-    public void setRoomNo(int roomNo) {
-        this.roomNo = roomNo;
-    }
-
-    public Date getEndingTime() {
-        if (endingTime == null) {
-            if (startingTime == null) {
-                endingTime = null;
-            } else {
-                Calendar e = Calendar.getInstance();
-                e.setTime(startingTime);
-                e.add(Calendar.HOUR, 2);
-                endingTime = e.getTime();
-            }
-        }
-        return endingTime;
-    }
-
-    public void setEndingTime(Date endingTime) {
-        this.endingTime = endingTime;
-    }
-
-    public int getTransDisplayCountWithoutCancelRefund() {
-        return transDisplayCountWithoutCancelRefund;
-    }
-
-    public void setTransDisplayCountWithoutCancelRefund(int transDisplayCountWithoutCancelRefund) {
-        this.transDisplayCountWithoutCancelRefund = transDisplayCountWithoutCancelRefund;
-    }
-
-    public int getTransCreditBillCount() {
-        return transCreditBillCount;
-    }
-
-    public void setTransCreditBillCount(int transCreditBillCount) {
-        this.transCreditBillCount = transCreditBillCount;
-    }
-
-    public boolean isDeactivated() {
-        return deactivated;
-    }
-
-    public void setDeactivated(boolean deactivated) {
-        this.deactivated = deactivated;
-    }
-
-    public int getTransRowNumber() {
-        return transRowNumber;
-    }
-
-    public void setTransRowNumber(int transRowNumber) {
-        this.transRowNumber = transRowNumber;
-    }
-
-    public String getDeactivateComment() {
-        return deactivateComment;
-    }
-
-    public void setDeactivateComment(String deactivateComment) {
-        this.deactivateComment = deactivateComment;
-    }
-
-    public String getSessionText() {
-        sessionText = "";
-        ServiceSession ses = this;
-        SimpleDateFormat dt1;
-        if (!ses.deactivated) {
-            dt1 = new SimpleDateFormat("E");
-            sessionText += dt1.format(ses.getSessionDate());
-            sessionText += " &nbsp;&nbsp;";
-            dt1 = new SimpleDateFormat("MMM/dd");
-            sessionText += dt1.format(ses.getSessionDate());
-            sessionText += " &nbsp;&nbsp;";
-            dt1 = new SimpleDateFormat("hh:mm a");
-            sessionText += dt1.format(ses.getStartingTime());
-            sessionText += " &nbsp;&nbsp;";
-            sessionText += CommonFunctions.round(ses.totalFee);
-            sessionText += " &nbsp;&nbsp;";
-            sessionText += "<font color='green'>";
-            sessionText += ses.getTransDisplayCountWithoutCancelRefund();
-            sessionText += "</font>";
-            sessionText += CommonFunctions.round(ses.totalFee);
-            if (ses.getMaxNo() != 0) {
-
-            }
-
-        }
-        return sessionText;
-    }
-
-    public void setSessionText(String sessionText) {
-        this.sessionText = sessionText;
-    }
-
-    public Boolean getArival() {
-        return arival;
-    }
-
-    public void setArival(Boolean arival) {
-        this.arival = arival;
-    }
-
-    public boolean isServiceSessionCreateForOriginatingSession() {
-        return serviceSessionCreateForOriginatingSession;
-    }
-
-    public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
-        this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
-    }
-
-    
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return "com.divudi.entity.SessionInstance[ id=" + id + " ]";
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof SessionInstance)) {
             return false;
         }
@@ -2006,9 +1142,97 @@ public class SessionInstance implements Serializable {
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "com.divudi.entity.channel.PatientAppointment[ id=" + id + " ]";
+    public int getDurationIncrementCount() {
+        return durationIncrementCount;
     }
+
+    public void setDurationIncrementCount(int durationIncrementCount) {
+        this.durationIncrementCount = durationIncrementCount;
+    }
+
+    public boolean isShowAppointmentCount() {
+        return showAppointmentCount;
+    }
+
+    public void setShowAppointmentCount(boolean showAppointmentCount) {
+        this.showAppointmentCount = showAppointmentCount;
+    }
+
+    public boolean isOncallBookingsAllowed() {
+        return oncallBookingsAllowed;
+    }
+
+    public void setOncallBookingsAllowed(boolean oncallBookingsAllowed) {
+        this.oncallBookingsAllowed = oncallBookingsAllowed;
+    }
+
+    public long getAdvanceAppointmentPeriod() {
+        return advanceAppointmentPeriod;
+    }
+
+    public void setAdvanceAppointmentPeriod(long advanceAppointmentPeriod) {
+        this.advanceAppointmentPeriod = advanceAppointmentPeriod;
+    }
+
+    public int getAdvanceAPpointmentPeriodUnit() {
+        return advanceAPpointmentPeriodUnit;
+    }
+
+    public void setAdvanceAPpointmentPeriodUnit(int advanceAPpointmentPeriodUnit) {
+        this.advanceAPpointmentPeriodUnit = advanceAPpointmentPeriodUnit;
+    }
+
+    public boolean isShowAppointmentTime() {
+        return showAppointmentTime;
+    }
+
+    public void setShowAppointmentTime(boolean showAppointmentTime) {
+        this.showAppointmentTime = showAppointmentTime;
+    }
+
+    public ItemType getMedicineType() {
+        return medicineType;
+    }
+
+    public void setMedicineType(ItemType medicineType) {
+        this.medicineType = medicineType;
+    }
+
+    public Boolean getPrintFeesForBills() {
+        return printFeesForBills;
+    }
+
+    public void setPrintFeesForBills(Boolean printFeesForBills) {
+        this.printFeesForBills = printFeesForBills;
+    }
+
+    public List<ItemFee> getItemFeesActive() {
+        return itemFeesActive;
+    }
+
+    public void setItemFeesActive(List<ItemFee> itemFeesActive) {
+        this.itemFeesActive = itemFeesActive;
+    }
+
+    public ItemType getItemType() {
+        return itemType;
+    }
+
+    public double getChannelStaffFee() {
+        return channelStaffFee;
+    }
+
+    public double getChannelHosFee() {
+        return channelHosFee;
+    }
+
+    public double getChannelAgentFee() {
+        return channelAgentFee;
+    }
+
+    public double getChannelOnCallFee() {
+        return channelOnCallFee;
+    }
+
     
 }
