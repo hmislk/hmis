@@ -614,7 +614,7 @@ public class ChannelBean {
                     return dateCompare;
                 } else {
                     // Assuming ServiceSession has a method to get a session identifier or name for comparison
-                    return s1.getOriginatingSession().getSessionAt().compareTo(s2.getOriginatingSession().getSessionAt());
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
                 }
             }
         });
