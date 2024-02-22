@@ -2859,6 +2859,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         calTotals();
     }
 
+    @Override
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
@@ -2870,6 +2871,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
