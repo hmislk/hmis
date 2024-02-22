@@ -230,7 +230,7 @@
                                     action="#{opdBillController.navigateToSearchPatients()}" 
                                     value="Patient Lookup &amp; Registration"
                                     rendered="true" />
-                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Detail" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
+                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Details" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
                         <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">

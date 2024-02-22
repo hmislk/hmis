@@ -1285,6 +1285,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (str == null || str.isEmpty()) {
             return str;
         }
+        
         StringBuilder result = new StringBuilder();
         String[] words = str.split("\\s");
         for (String word : words) {
@@ -2890,6 +2891,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         calTotals();
     }
 
+    @Override
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
@@ -2901,6 +2903,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }

@@ -28,6 +28,8 @@ import com.divudi.facade.SessionNumberGeneratorFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -548,28 +550,26 @@ public class ChannelBean {
                 Date workingDate = cWorkingDate.getTime();
                 boolean eligibleDate = false;
                 // Reset time components for sessionDate
-                Calendar cSessionDate = Calendar.getInstance();
-
-                cSessionDate.set(Calendar.HOUR_OF_DAY, 0);
-                cSessionDate.set(Calendar.MINUTE, 0);
-                cSessionDate.set(Calendar.SECOND, 0);
-                cSessionDate.set(Calendar.MILLISECOND, 0);
 
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(workingDate);
-                
+
                 if (ss.getSessionDate() == null) {
                     int workingDateWeekday = calendar.get(Calendar.DAY_OF_WEEK);
                     if (workingDateWeekday == ss.getSessionWeekday()) {
                         eligibleDate = true;
                     }
                 } else {
+                    Calendar cSessionDate = Calendar.getInstance();
+                    cSessionDate.setTime(ss.getSessionDate());
+                    cSessionDate.set(Calendar.HOUR_OF_DAY, 0);
+                    cSessionDate.set(Calendar.MINUTE, 0);
+                    cSessionDate.set(Calendar.SECOND, 0);
+                    cSessionDate.set(Calendar.MILLISECOND, 0);
                     if (cSessionDate.getTime().equals(workingDate)) {
                         eligibleDate = true;
                     }
                 }
-
-                
 
                 if (eligibleDate) {
                     String jpql = "select i "
@@ -606,6 +606,18 @@ public class ChannelBean {
                 cWorkingDate.add(Calendar.DATE, 1); // Increment the date
             }
         }
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
+                    // Assuming ServiceSession has a method to get a session identifier or name for comparison
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
         return sessionInstances;
     }
 
