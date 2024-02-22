@@ -43,7 +43,7 @@
                                     <p:column>
                                         <h:outputLabel value="#{myItem.patient.person.name}"/>
                                     </p:column>
-                                    <p:ajax process="@this"></p:ajax>
+<!--                                    <p:ajax process="@this"></p:ajax>-->
                                 </p:autoComplete> 
 
                                 <p:commandButton
@@ -209,7 +209,7 @@
                                                                             <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
                                                                         </p:autoComplete>-->
 
-                                    <p:outputLabel value="Refering Doctor"/>                            
+                                    <p:outputLabel value="Referring Doctor"/>                            
                                     <p:autoComplete inputStyleClass="w-100" id="acRefDoc" forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
                                                     completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                     itemLabel="#{ix.person.name}" itemValue="#{ix}"  
@@ -218,7 +218,7 @@
 
                                     <p:outputLabel value="Admission Type "/>
                                     <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
-                                    <h:outputLabel value="Select Payment method"/>
+                                    <h:outputLabel value="Select Payment Method"/>
                                     <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">                       
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         <p:ajax process="@this" update="crd" event="change" />
