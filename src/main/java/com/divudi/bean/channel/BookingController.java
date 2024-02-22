@@ -25,6 +25,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.ArrivalRecord;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -121,9 +122,10 @@ public class BookingController implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
     private ServiceSession selectedServiceSession;
+    private SessionInstance selectedSessionInstance;
     private BillSession selectedBillSession;
     private BillSession managingBillSession;
-    private List<ServiceSession> serviceSessions;
+    private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
@@ -307,7 +309,7 @@ public class BookingController implements Serializable {
         staff = null;
         selectedServiceSession = null;
         /////////////////////
-        serviceSessions = null;
+        sessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
     }
@@ -639,6 +641,7 @@ public class BookingController implements Serializable {
         }
     }
 
+    @Deprecated
     public void calculateFeeBooking(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
         for (ServiceSession ss : lstSs) {
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
@@ -672,9 +675,43 @@ public class BookingController implements Serializable {
             //For Settle bill
         }
     }
+    
+    public void calculateFeeForSessionInstances(List<SessionInstance> lstSs, PaymentMethod paymentMethod) {
+        for (SessionInstance ss : lstSs) {
+            Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
+            ss.setHospitalFee(dbl[0]);
+            ss.setHospitalFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setHospitalFee(dbl[0]);
+            ss.getOriginatingSession().setHospitalFfee(dbl[1]);
+            //For Settle bill
+            dbl = fetchFee(ss.getOriginatingSession(), FeeType.Staff);
+            ss.setProfessionalFee(dbl[0]);
+            ss.setProfessionalFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setProfessionalFee(dbl[0]);
+            ss.getOriginatingSession().setProfessionalFfee(dbl[1]);
+            //For Settle bill
+            dbl = fetchFee(ss.getOriginatingSession(), FeeType.Tax);
+            ss.setTaxFee(dbl[0]);
+            ss.setTaxFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setTaxFee(dbl[0]);
+            ss.getOriginatingSession().setTaxFfee(dbl[1]);
+            //For Settle bill
+            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
+            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
+            ss.setItemFees(fetchFee(ss.getOriginatingSession()));
+            //For Settle bill
+            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
+            //For Settle bill
+        }
+    }
 
     public void generateSessions() {
-        serviceSessions = new ArrayList<>();
+        sessionInstances = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
@@ -690,18 +727,18 @@ public class BookingController implements Serializable {
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());
             try {
-                serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
+                sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, sessionStartingDate);
             } catch (Exception e) {
             }
-            generateSessionEvents(serviceSessions);
+            generateSessionEvents(sessionInstances);
         }
     }
 
-    public void generateSessionEvents(List<ServiceSession> sss) {
+    public void generateSessionEvents(List<SessionInstance> sss) {
         eventModel = new DefaultScheduleModel();
-        for (ServiceSession s : sss) {
+        for (SessionInstance s : sss) {
             ChannelScheduleEvent e = new ChannelScheduleEvent();
-            e.setServiceSession(s);
+            e.setSessionInstance(s);
             e.setTitle(s.getName());
             e.setStartDate(CommonFunctions.convertDateToLocalDateTime(s.getTransStartTime()));
             e.setEndDate(CommonFunctions.convertDateToLocalDateTime(s.getTransEndTime()));
@@ -718,7 +755,7 @@ public class BookingController implements Serializable {
     public void generateSessionsFutureBooking(SelectEvent event) {
         date = null;
         date = ((Date) event.getObject());
-        serviceSessions = new ArrayList<>();
+        sessionInstances = new ArrayList<>();
         Map m = new HashMap();
 
         Date currenDate = new Date();
@@ -743,7 +780,7 @@ public class BookingController implements Serializable {
             m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
-            serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
+            sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(tmp, date);
         }
 
         billSessions = new ArrayList<>();
@@ -757,12 +794,12 @@ public class BookingController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public List<ServiceSession> getServiceSessions() {
-        return serviceSessions;
+    public List<SessionInstance> getServiceSessions() {
+        return sessionInstances;
     }
 
-    public void setServiceSessions(List<ServiceSession> serviceSessions) {
-        this.serviceSessions = serviceSessions;
+    public void setServiceSessions(List<SessionInstance> serviceSessions) {
+        this.sessionInstances = serviceSessions;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {
@@ -948,13 +985,13 @@ public class BookingController implements Serializable {
     }
 
     public void listnerSessionRowSelect() {
-        if (serviceSessions == null) {
+        if (sessionInstances == null) {
             selectedServiceSession = null;
             return;
         }
-        for (ServiceSession ss : serviceSessions) {
+        for (SessionInstance ss : sessionInstances) {
             if (ss.getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
-                selectedServiceSession = ss;
+                selectedSessionInstance = ss;
             }
         }
     }
@@ -1113,6 +1150,8 @@ public class BookingController implements Serializable {
     public ItemFeeFacade getItemFeeFacade() {
         return ItemFeeFacade;
     }
+    
+    
 
     public void setItemFeeFacade(ItemFeeFacade ItemFeeFacade) {
         this.ItemFeeFacade = ItemFeeFacade;
@@ -1226,6 +1265,22 @@ public class BookingController implements Serializable {
 
     public void setManagingBillSession(BillSession managingBillSession) {
         this.managingBillSession = managingBillSession;
+    }
+
+    public SessionInstance getSelectedSessionInstance() {
+        return selectedSessionInstance;
+    }
+
+    public void setSelectedSessionInstance(SessionInstance selectedSessionInstance) {
+        this.selectedSessionInstance = selectedSessionInstance;
+    }
+
+    public List<SessionInstance> getSessionInstances() {
+        return sessionInstances;
+    }
+
+    public void setSessionInstances(List<SessionInstance> sessionInstances) {
+        this.sessionInstances = sessionInstances;
     }
     
     
