@@ -208,6 +208,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToViewSessionData() {
         return "/channel/session_data";
     }
+    
+    public String navigateToConsultantRoom() {
+        return "/channel/consultant_room";
+    }
 
     public String navigateToManageBooking() {
         return "/channel/manage_booking";
