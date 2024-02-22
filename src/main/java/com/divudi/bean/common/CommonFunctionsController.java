@@ -23,6 +23,7 @@ import java.time.temporal.ChronoUnit;
 @Named(value = "commonFunctionsController")
 @ApplicationScoped
 public class CommonFunctionsController {
+    
 
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
