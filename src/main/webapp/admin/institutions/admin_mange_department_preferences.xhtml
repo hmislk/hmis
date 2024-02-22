@@ -187,7 +187,19 @@
                                         onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.printBarcodeInOpdBill}"/>
 
-
+                                    
+                                    <h:outputLabel
+                                        class="form-label w-100"
+                                        value="Change the case of the patient name "></h:outputLabel>
+                                    
+                                    <p:selectOneMenu
+                                        class="form-control"
+                                        value="#{sessionController.currentPreference.textCase}" >
+                                        <f:selectItem itemLabel="Please Select Case" />
+                                        <f:selectItems var="case" itemLabel="UPPERCASE" itemValue="UPPERCASE" value="UPPERCASE" ></f:selectItems>
+                                        <f:selectItems var="case" itemLabel="LOWERCASE" itemValue="LOWERCASE" value="LOWERCASE" ></f:selectItems>
+                                        <f:selectItems var="case" itemLabel="CAPITALIZE" itemValue="CAPITALIZE" value="CAPITALIZE" ></f:selectItems>
+                                    </p:selectOneMenu>
                                 </h:panelGrid>
 
 
