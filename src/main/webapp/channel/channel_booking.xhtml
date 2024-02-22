@@ -122,11 +122,11 @@
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
-                            value="#{bookingController.selectedServiceSession}" 
+                            value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
                             <f:selectItems 
-                                value="#{bookingController.serviceSessions}" 
+                                value="#{bookingController.sessionInstances}" 
                                 var="ses" 
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}"/>

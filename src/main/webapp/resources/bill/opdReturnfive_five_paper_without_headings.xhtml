@@ -18,16 +18,8 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
-
-
-
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill " style="page-break-after: always" >
-
-
-
-
             <div style="font-weight: bold;text-align: left;font-size: 12pt" class="row mt-2 d-flex align-items-center">
                 <div id="header" style="height: 1.2cm;">
 
@@ -35,8 +27,9 @@
                 <div class="col-5">
                     <div class="d-grid  align-items-center">
                         <div class="d-flex">
-                            <h:outputLabel value="REFUND - " rendered="#{cc.attrs.bill.refunded}"   /> 
-                            <h:outputLabel value="RECEIPT "   /> - <h:outputText value="#{cc.attrs.bill.department.name}" />
+                            <h:outputLabel value="REFUND RECEIPT" />
+                            - 
+                            <h:outputText value="#{cc.attrs.bill.department.name}" />
                         </div>
                        
                     </div>
@@ -48,9 +41,6 @@
                         </div>
                     </div>
                 </div>
-
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
 
             </div>
 

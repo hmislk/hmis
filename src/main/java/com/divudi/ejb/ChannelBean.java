@@ -18,10 +18,12 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +58,8 @@ public class ChannelBean {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
     @Inject
     SessionController sessionController;
     @Inject
@@ -114,7 +118,7 @@ public class ChannelBean {
 
     public int getBillSessionsCount(ServiceSession ss, Date date) {
         System.out.println("getBillSessionsCount");
-        
+
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs "
@@ -240,7 +244,6 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        
 
                         serviceSessions.add(newSs);
 
@@ -455,7 +458,7 @@ public class ChannelBean {
                         ServiceSession newSs = new ServiceSession();
                         newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                         if (newSs == null) {
-                            newSs = createServiceSessionForChannelShedule(ss, nowDate);
+//                            newSs = create
                         }
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
@@ -483,7 +486,7 @@ public class ChannelBean {
                         newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                         if (newSs == null) {
                             newSs = new ServiceSession();
-                            newSs = createServiceSessionForChannelShedule(ss, nowDate);
+//                            newSs = createSessionInstancesForServiceSession(ss, nowDate);
                         }
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
@@ -511,6 +514,101 @@ public class ChannelBean {
         return createdSessions;
     }
 
+    public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions, Date d) {
+        int sessionDayCount = 0;
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return sessionInstances;
+        }
+
+        for (ServiceSession ss : inputSessions) {
+            Date startDate = new Date();
+            Calendar cToDate = Calendar.getInstance();
+            int numberOfDaysInAdvance;
+            if (ss.getNumberOfDaysForAutomaticInstanceCreation() == null) {
+                numberOfDaysInAdvance = 30;
+            } else {
+                numberOfDaysInAdvance = ss.getNumberOfDaysForAutomaticInstanceCreation();
+            }
+            cToDate.add(Calendar.DATE, numberOfDaysInAdvance);
+            Date endDate = cToDate.getTime();
+
+            Calendar cWorkingDate = Calendar.getInstance();
+            cWorkingDate.setTime(startDate);
+
+            // Reset time components for startDate
+            cWorkingDate.set(Calendar.HOUR_OF_DAY, 0);
+            cWorkingDate.set(Calendar.MINUTE, 0);
+            cWorkingDate.set(Calendar.SECOND, 0);
+            cWorkingDate.set(Calendar.MILLISECOND, 0);
+
+            int rowIndex = 0;
+
+            while (cWorkingDate.getTime().before(endDate) || cWorkingDate.getTime().equals(endDate)) {
+                Date workingDate = cWorkingDate.getTime();
+                boolean eligibleDate = false;
+                // Reset time components for sessionDate
+                Calendar cSessionDate = Calendar.getInstance();
+
+                cSessionDate.set(Calendar.HOUR_OF_DAY, 0);
+                cSessionDate.set(Calendar.MINUTE, 0);
+                cSessionDate.set(Calendar.SECOND, 0);
+                cSessionDate.set(Calendar.MILLISECOND, 0);
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(workingDate);
+                
+                if (ss.getSessionDate() == null) {
+                    int workingDateWeekday = calendar.get(Calendar.DAY_OF_WEEK);
+                    if (workingDateWeekday == ss.getSessionWeekday()) {
+                        eligibleDate = true;
+                    }
+                } else {
+                    if (cSessionDate.getTime().equals(workingDate)) {
+                        eligibleDate = true;
+                    }
+                }
+
+                
+
+                if (eligibleDate) {
+                    String jpql = "select i "
+                            + " from SessionInstance i "
+                            + " where i.originatingSession=:os "
+                            + " and i.retired=:ret "
+                            + " and i.sessionDate=:sd";
+
+                    Map m = new HashMap();
+                    m.put("ret", false);
+                    m.put("os", ss);
+                    m.put("sd", workingDate);
+
+                    SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
+
+                    if (si == null) {
+                        si = createSessionInstancesForServiceSession(ss, workingDate);
+                        if (si.getId() == null) {
+                            sessionInstanceFacade.create(si);
+                        } else {
+                            sessionInstanceFacade.edit(si);
+                        }
+                    }
+
+                    si.setDisplayCount(getBillSessionsCount(ss, workingDate));
+                    si.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, workingDate));
+                    si.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, workingDate));
+                    si.setStaff(ss.getStaff());
+                    si.setTransRowNumber(rowIndex++);
+
+                    sessionInstances.add(si);
+                }
+
+                cWorkingDate.add(Calendar.DATE, 1); // Increment the date
+            }
+        }
+        return sessionInstances;
+    }
+
     public void createDocLeaveSession(List<ServiceSession> createdSessions, Date nDate, int rIndex) {
         ServiceSession newSs = new ServiceSession();
         newSs.setId(1l);
@@ -533,8 +631,8 @@ public class ChannelBean {
 
     }
 
-    public ServiceSession createServiceSessionForChannelShedule(ServiceSession ss, Date d) {
-        ServiceSession newSs = new ServiceSession();
+    public SessionInstance createSessionInstancesForServiceSession(ServiceSession ss, Date d) {
+        SessionInstance newSs = new SessionInstance();
         newSs.setOriginatingSession(ss);
         newSs.setName(ss.getName());
         newSs.setMaxNo(ss.getMaxNo());
@@ -555,13 +653,14 @@ public class ChannelBean {
         newSs.setRoomNo(ss.getRoomNo());
         newSs.setSessionNumberGenerator(saveSessionNumber(ss));
         try {
-            getServiceSessionFacade().create(newSs);
+            sessionInstanceFacade.create(newSs);
         } catch (Exception e) {
-            getServiceSessionFacade().edit(newSs);
+            sessionInstanceFacade.edit(newSs);
         }
         return newSs;
     }
 
+    @Deprecated
     public ServiceSession fetchCreatedServiceSession(Staff s, Date d, ServiceSession ss) {
         String sql;
         Map m = new HashMap();
