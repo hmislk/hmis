@@ -1562,6 +1562,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
 
         bs.setServiceSession(getSelectedSessionInstance().getOriginatingSession());
+        bs.setSessionInstance(getSelectedSessionInstance());
 //        bs.setServiceSession(getSelectedSessionInstance().getOriginatingSession());
         bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
