@@ -1074,7 +1074,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
+        System.out.println("hh = " + hh);
+        System.out.println("sql = " + sql);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+        
     }
 
     private boolean errorCheckForAddingNewBooking() {

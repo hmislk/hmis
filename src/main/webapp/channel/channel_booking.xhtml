@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pat="http://java.sun.com/jsf/composite/patient"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
@@ -131,9 +131,6 @@
                                 itemValue="#{ses}"
                                 itemLabel="#{ses.name}"/>
                             <p:column>
-                                <h:outputText value="#{s.originatingSession.id}" />
-                            </p:column>
-                            <p:column>
                                 <h:outputText value="#{s.name}" />
                             </p:column>
                             <p:column style="width: 20px!important; text-align: center;">
@@ -161,13 +158,14 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
-                            <p:ajax event="change" 
-                                    process="@this"
+                            <p:ajax 
+                                event="change" 
+                                process="@this"
                                 update="acBookings"
                                 listener="#{bookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
-                    
+
                     <div class="col-4" >
                         <p:watermark for="acBookings" value="Select Booking" ></p:watermark>
                         <p:selectOneListbox 
@@ -186,7 +184,7 @@
                             </p:column>
 
                             <p:column style="width: 20px!important;">
-                                
+
                                 <p:outputLabel class="badge badge-light" value="Credit" rendered="#{bs.bill.paidAmount eq 0}" style="color: green;"/>
                                 <p:outputLabel value="-On Call" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" style="color: green;"/>
                                 <p:outputLabel value="-Staff" rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" style="color: green;"/>
