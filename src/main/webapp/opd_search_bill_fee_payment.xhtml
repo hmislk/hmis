@@ -62,25 +62,24 @@
                                 <p:defaultCommand target="btnSearch" />
                                 <p:spacer height="10" width="5" ></p:spacer><!-- comment -->
                                 <h:panelGroup id="searchKeyword">
-                                    <p:inputText placeholder="Bill No" 
-                                                     autocomplete="off" 
+                                    <h:outputLabel value="Bill No"/>
+                                    <p:inputText autocomplete="off" 
                                                      class="w-100"
                                                      value="#{opdPreBillController.searchKeyword.billNo}" />
 
-
-                                        <p:inputText placeholder="Billed By" 
-                                                     class="form-control my-1"
+                                        <h:outputLabel value="Billed By"/>
+                                        <p:inputText class="form-control my-1"
                                                      autocomplete="off" 
                                                      value="#{opdPreBillController.searchKeyword.patientName}" />
                                         
-                                        <p:inputText placeholder="Balance" 
-                                                     class="form-control my-1"
+                                        <h:outputLabel value="Balance"/>
+                                        <p:inputText class="form-control my-1"
                                                      autocomplete="off"  
                                                      value="#{opdPreBillController.searchKeyword.total}"
                                                      />
 
-                                        <p:inputText placeholder="Net Total"   
-                                                     class="form-control"
+                                        <h:outputLabel value="Net Total"/>
+                                        <p:inputText class="form-control"
                                                      autocomplete="off"
                                                      value="#{opdPreBillController.searchKeyword.netTotal}"/>
                                 </h:panelGroup>
