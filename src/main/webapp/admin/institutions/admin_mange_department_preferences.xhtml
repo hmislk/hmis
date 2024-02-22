@@ -194,11 +194,12 @@
                                     
                                     <p:selectOneMenu
                                         class="form-control"
-                                        value="#{sessionController.currentPreference.textCase}" >
+                                        value="#{sessionController.currentPreference.changeTextCasesPatientName}"
+                                        >
                                         <f:selectItem itemLabel="Please Select Case" />
-                                        <f:selectItems var="case" itemLabel="UPPERCASE" itemValue="UPPERCASE" value="UPPERCASE" ></f:selectItems>
-                                        <f:selectItems var="case" itemLabel="LOWERCASE" itemValue="LOWERCASE" value="LOWERCASE" ></f:selectItems>
-                                        <f:selectItems var="case" itemLabel="CAPITALIZE" itemValue="CAPITALIZE" value="CAPITALIZE" ></f:selectItems>
+                                        <f:selectItem  itemLabel="UPPERCASE" itemValue="UPPERCASE"  />
+                                        <f:selectItem  itemLabel="LOWERCASE" itemValue="LOWERCASE" />
+                                        <f:selectItem  itemLabel="CAPITALIZE" itemValue="CAPITALIZE"  />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
 
