@@ -639,9 +639,9 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
         for (BillItem tbi : list) {
-            if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
-                continue;
-            }
+//            if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
+//                continue;
+//            }
 
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -960,8 +960,6 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
         
-        
-
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);

@@ -82,9 +82,9 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel value="Activities" />
-                                        <p:inputTextarea class="mx-2 w-100 my-1"  rows="4" />
+                                        <p:inputTextarea class="mx-2 w-100 my-1" rows="4" value="#{sheduleController.current.activities}" />
                                         <h:outputLabel value="Actions" />
-                                        <p:inputTextarea class="mx-2 w-100"  rows="4"/>
+                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{sheduleController.current.actions}"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
@@ -208,8 +208,8 @@
                                                 <p:outputLabel value="Refundable"/>
                                                 <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
 
-                                                <p:outputLabel value="Paid Payment Only"/>
-                                                <p:selectBooleanCheckbox />
+                                                <p:outputLabel value="Paid Appointment Only"/>
+                                                <p:selectBooleanCheckbox value="#{sheduleController.current.paidAppointmentsOnly}" />
 
                                                 <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
                                                 <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
@@ -237,7 +237,7 @@
                                                             <f:selectItem itemValue="4" itemLabel="Wednesday"/>
                                                             <f:selectItem itemValue="5" itemLabel="Thursday"/>
                                                             <f:selectItem itemValue="6" itemLabel="Friday"/>
-                                                            <f:selectItem itemValue="7" itemLabel="Sutarday"/>
+                                                            <f:selectItem itemValue="7" itemLabel="Saturday"/>
                                                         </p:selectOneMenu>
                                                     </p:tab>
                                                     <p:tab title="Other Day" >

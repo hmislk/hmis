@@ -188,6 +188,11 @@
                                         value="#{sessionController.currentPreference.printBarcodeInOpdBill}"/>
 
 
+                                    <h:outputLabel
+                                        class="form-label w-100"
+                                        value="Change the case of the patient name "></h:outputLabel>
+
+                                    <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
                                 </h:panelGrid>
 
 
@@ -228,12 +233,12 @@
                                     {bill_time}<br/>
                                     {net_total}<br/> 
                                     {net_total_in_words}<br/>
-                                    
+
                                     {bht}<br/>
                                     {date_of_admission}<br/>
                                     {date_of_discharge}<br/>
                                     {admission_type}<br/>
-                                    
+
                                 </h:panelGroup>
                             </p:tab>
                             <p:tab title="In-ward" >
@@ -246,7 +251,7 @@
                                         width: 80%;
                                     }
                                 </style>
-                                
+
                                 <h:panelGrid columns="2" styleClass="w-100 custom-panel-grid" columnClasses="first-col,second-col">
                                     <f:facet name="header" >
                                         Inward
