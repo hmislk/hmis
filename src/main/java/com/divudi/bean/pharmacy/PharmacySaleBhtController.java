@@ -37,10 +37,13 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.UserStock;
 import com.divudi.entity.pharmacy.UserStockContainer;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -149,8 +152,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill() == null) {
             return;
         }
-        
-        if(getPreBill().getBillItems().isEmpty()) {
+
+        if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("There are No Medicines/Devices to Bill!!!");
             return;
         }
@@ -708,14 +711,12 @@ public class PharmacySaleBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
-        
+
         if (getPreBill().getBillItems().isEmpty()) {
             UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
-        
-        
+
         if (errorCheck()) {
             return;
         }
@@ -1189,8 +1190,31 @@ public class PharmacySaleBhtController implements Serializable {
         System.out.println("usc = " + usc);
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
-            //// // System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
+        for (BillItem i : b.getBillItems()) {
+            if(i.getItem()==null){
+                System.out.println("No Item in Bill Item = " + i);
+                continue;
+            }
+            if(i.getQty()==null){
+                System.out.println("No Qty in Bill Item = " + i);
+                continue;
+            }
+            Item item = i.getItem();
+            Double requestingQty = i.getQty();
+            List<Stock> usedStocks = new ArrayList<>();
+
+            if(item instanceof Amp){
+                
+            }else if(item instanceof Vmp){
+                
+            }else if(item instanceof Ampp){
+                
+            }else if(item instanceof Vmpp){
+                
+            }
+            
+            
+//// // System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
             //// // System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
             //// // System.out.println("billedIssue = " + billedIssue);
@@ -1583,5 +1607,4 @@ public class PharmacySaleBhtController implements Serializable {
         this.item = item;
     }
 
-    
 }

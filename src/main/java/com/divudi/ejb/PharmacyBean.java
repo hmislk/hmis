@@ -633,6 +633,61 @@ public class PharmacyBean {
         return list;
     }
 
+    public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
+        List<StockQty> stocks = new ArrayList<>();
+        if (item == null) {
+            return stocks;
+        }
+        List<Amp> amps = findAmpsForVmp(item);
+        if (amps == null) {
+            return stocks;
+        }
+        for(Amp a:amps){
+            List<StockQty>  sq = getStockByQty(a, qty, department);
+           
+        }
+        return stocks;
+    }
+
+    public List<Amp> findAmpsForVmp(Vmp vmp) {
+        String jpql;
+        Map m = new HashMap();
+        m.put("vmp", vmp);
+        m.put("ret", false);
+        jpql = "select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.vmp=:vmp";
+        return ampFacade.findByJpql(jpql, m);
+    }
+
+    public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
+        if (qty <= 0) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("i", item);
+        m.put("d", department);
+        m.put("q", 1.0);
+        sql = "select s from Stock s where s.itemBatch.item=:i "
+                + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
+        List<StockQty> list = new ArrayList<>();
+        double toAddQty = qty;
+        for (Stock s : stocks) {
+            if (s.getStock() >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - s.getStock();
+                list.add(new StockQty(s, s.getStock()));
+                // //     deductFromStock(s.getItemBatch(), s.getStock(), department);
+            }
+        }
+        return list;
+    }
+
     public boolean deductFromStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
         if (stock == null) {
             return false;
@@ -1434,7 +1489,7 @@ public class PharmacyBean {
                 + "from Vmp v "
                 + "where v.name=:n "
                 + " and v.vtm=:v";
-        Vmp vmp=vmpFacade.findFirstByJpql(sql, m);
+        Vmp vmp = vmpFacade.findFirstByJpql(sql, m);
         if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
