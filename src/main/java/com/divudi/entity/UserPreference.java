@@ -227,6 +227,7 @@ public class UserPreference implements Serializable {
     @Lob
     private String inpatientFinalBillPrintHeader;
     
+    private String changeTextCasesPatientName;
     
 
     
@@ -1165,6 +1166,14 @@ public class UserPreference implements Serializable {
 
     public void setInpatientFinalBillPrintHeader(String inpatientFinalBillPrintHeader) {
         this.inpatientFinalBillPrintHeader = inpatientFinalBillPrintHeader;
+    }
+
+    public String getChangeTextCasesPatientName() {
+        return changeTextCasesPatientName;
+    }
+
+    public void setChangeTextCasesPatientName(String textCase) {
+        this.changeTextCasesPatientName = textCase;
     }
 
     

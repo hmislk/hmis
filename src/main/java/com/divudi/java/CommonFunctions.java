@@ -5,6 +5,7 @@
  */
 package com.divudi.java;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
@@ -24,6 +25,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -33,10 +35,14 @@ import org.joda.time.PeriodType;
  * @author buddhika
  */
 public class CommonFunctions {
-     
+
+    private SessionController sessionController;
+
     private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
     private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
     private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+
+   
 
     public static String convertToWord(double number) {
         if (number == 0) {
@@ -45,15 +51,14 @@ public class CommonFunctions {
 
         int intPart = (int) number;
         int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
-        
+
         //System.out.println(number);
         //System.out.println(number - intPart);
         System.out.println(intPart);
         //System.out.println(String.format("%.2f", number%1));
         System.out.println(decimalPart);
-        
-        // System.out.println(String.format("%.2f", decimalPart));
 
+        // System.out.println(String.format("%.2f", decimalPart));
         StringBuilder result = new StringBuilder();
 
         if (intPart >= 1000000) {
@@ -88,9 +93,7 @@ public class CommonFunctions {
             return units[number / 100] + " Hundred " + convert(number % 100);
         }
     }
-    
-    
-    
+
     public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
         if (phonenumber == null) {
             return null;
@@ -119,13 +122,12 @@ public class CommonFunctions {
         if (formatString == null || formatString.trim().equals("")) {
             formatString = "dd MMMM yyyy";
         }
-        String s ;
+        String s;
         DateFormat d = new SimpleDateFormat(formatString);
         s = d.format(date);
         return s;
     }
 
-    
     public static LocalDateTime convertDateToLocalDateTime(Date date) {
         if (date == null) {
             date = new Date();
@@ -135,8 +137,6 @@ public class CommonFunctions {
                 .toLocalDateTime();
     }
 
-    
-    
     public static Date convertDateToDbType(String argDate) {
         if (argDate == null) {
             return null; // Handle null input
@@ -917,4 +917,14 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+    
+    
 }

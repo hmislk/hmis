@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.dataStructure.ChannelFee;
+import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -56,7 +57,10 @@ public class BillSession implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
+    @Deprecated
     ServiceSession serviceSession;
+    @ManyToOne
+    private SessionInstance sessionInstance;
     @ManyToOne
     private ServiceSessionInstance serviceSessionInstance;
     @ManyToOne
@@ -110,13 +114,13 @@ public class BillSession implements Serializable {
         department = billSession.getDepartment();
         staff = billSession.getStaff();
         serviceSession = billSession.getServiceSession();
+        sessionInstance = billSession.getSessionInstance();
         category = billSession.getCategory();
         sessionDate = billSession.getSessionDate();
         sessionTime = billSession.getSessionTime();
         serialNo = billSession.getSerialNo();
         absent = billSession.isAbsent();
         patientEncounter = billSession.getPatientEncounter();
-
     }
 
 //    public double getQty() {
@@ -155,6 +159,8 @@ public class BillSession implements Serializable {
         return serviceSession;
     }
 
+    
+    
     public void setServiceSession(ServiceSession serviceSession) {
         this.serviceSession = serviceSession;
     }
@@ -454,7 +460,13 @@ public class BillSession implements Serializable {
     public void setServiceSessionInstance(ServiceSessionInstance serviceSessionInstance) {
         this.serviceSessionInstance = serviceSessionInstance;
     }
-    
-    
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
+    }
 
 }

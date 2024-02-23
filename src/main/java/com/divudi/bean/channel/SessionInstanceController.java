@@ -76,11 +76,9 @@ public class SessionInstanceController implements Serializable {
             SessionInstanceController controller = (SessionInstanceController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "sessionInstanceController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             return controller.getFacade().find(getKey(value));
