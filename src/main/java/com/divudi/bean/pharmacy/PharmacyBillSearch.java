@@ -1242,9 +1242,9 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can, Payment p) {
         for (BillItem nB : getBill().getBillItems()) {
-            BillItem b = new BillItem();
+            BillItem b = nB;
             b.setBill(can);
-            b.copy(nB);
+//            b.copy(nB);
             b.invertValue(nB);
 
             if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
