@@ -54,6 +54,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -601,21 +602,39 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        if (item instanceof Ampp) {
-            item = ((Ampp) item).getAmp();
-        }
-
+        System.out.println("getStockByQty");
+        System.out.println("department = " + department);
+        System.out.println("qty = " + qty);
+        System.out.println("item = " + item);
         if (qty <= 0) {
             return new ArrayList<>();
         }
-        String sql;
+        String sql ="";
         Map m = new HashMap();
-        m.put("i", item);
+
         m.put("d", department);
         m.put("q", 1.0);
-        sql = "select s from Stock s where s.itemBatch.item=:i "
-                + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+        if (item instanceof Amp) {
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item=:amp "
+                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+            m.put("amp", item);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item in :amps "
+                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+            m.put("amps", amps);
+        }else{
+            JsfUtil.addErrorMessage("Not supported yet");
+            return new ArrayList<>();
+        }
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
         List<Stock> stocks = getStockFacade().findByJpql(sql, m);
+        System.out.println("stocks = " + stocks);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -625,9 +644,9 @@ public class PharmacyBean {
             } else {
                 toAddQty = toAddQty - s.getStock();
                 list.add(new StockQty(s, s.getStock()));
-                // //     deductFromStock(s.getItemBatch(), s.getStock(), department);
             }
         }
+        System.out.println("list = " + list);
         return list;
     }
 
@@ -640,9 +659,9 @@ public class PharmacyBean {
         if (amps == null) {
             return stocks;
         }
-        for(Amp a:amps){
-            List<StockQty>  sq = getStockByQty(a, qty, department);
-           
+        for (Amp a : amps) {
+            List<StockQty> sq = getStockByQty(a, qty, department);
+
         }
         return stocks;
     }
