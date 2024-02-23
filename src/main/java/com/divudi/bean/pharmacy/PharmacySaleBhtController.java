@@ -653,7 +653,6 @@ public class PharmacySaleBhtController implements Serializable {
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
             }
-
             getPreBill().getBillItems().add(tbi);
         }
 
@@ -891,11 +890,7 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getBillItems();
-        for(BillItem b:getBillItems()){
-            System.out.println("b = " + b);
-            System.out.println("b qty = " + b.getQty());
-            System.out.println("c qty = " + b.getPharmaceuticalBillItem().getQty());
-        }
+        
         getPreBill().setBillItems(null);
 
         if (!getBillItems().isEmpty()) {
