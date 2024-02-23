@@ -259,7 +259,7 @@
                         <div class="col-6">
                             <div class="d-flex gap-3" style="float: right;">
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 18em;">
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper}" class="m-1" style="width: 18em;">
                                     <f:selectItem itemLabel="Please Select Paper Type" />
                                     <f:selectItems value="#{enumController.paperTypes}" />
                                 </p:selectOneMenu>
@@ -275,24 +275,24 @@
                         <h:panelGroup id="gpBillPreview">
 
                             <div class="d-flex justify-content-center">
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
                                         <bill:FiveFivePaymentBill bill="#{pp}" />                        
                                     </ui:repeat>
                                 </h:panelGroup> 
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
                                         <bill:A4PaperPaymentBill bill="#{pp}" />                        
                                     </ui:repeat>
                                 </h:panelGroup> 
 
-<!--                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+<!--                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4PrintedPaper'}" >
     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
         <bill:A4PaperPaymentBillWithoutHeading bill="#{pp}" />                        
     </ui:repeat>
 </h:panelGroup> -->
 
-                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" style="align-items: center;">
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}" style="align-items: center;">
                                     <ui:repeat value="#{inwardPaymentController.current}" var="pp" >
                                         <bill:posPaperPaymentBill bill="#{pp}"/>                        
                                     </ui:repeat>
