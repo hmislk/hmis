@@ -162,7 +162,6 @@ public class FinancialTransactionController implements Serializable {
         if (selectedBill != null) {
             System.out.println("selectedBill id = " + selectedBill.getId());
             System.out.println("currentBill id = " + currentBill.getId());
-            System.out.println("currentBill payment Size = " + currentBill.getPayments().size());
         }
         currentBillPayments = new ArrayList<>();
         System.out.println("selected bill payments = " + selectedBill.getPayments().size());
@@ -174,10 +173,8 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("p = " + p);
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
-            System.out.println("this = " + "payment Aded");
 
         }
-        System.out.println("this = " + "prepareToAddNewFundTransferReceiveBill working end");
     }
 
     // </editor-fold>  
@@ -257,7 +254,6 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         System.out.println("currentPayments = " + currentPayment.getPaidValue());
-        System.out.println("currentPayment method = " + currentPayment.getPaymentMethod());
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -403,7 +399,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTime(new Date());
 
         billController.save(currentBill);
-        System.out.println("currentBill payments = " + getCurrentBillPayments().size());
         for (Payment p : getCurrentBillPayments()) {
             System.out.println("p = " + p);
             System.out.println("p = " + p.getId());
@@ -412,7 +407,6 @@ public class FinancialTransactionController implements Serializable {
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
             System.out.println("p = " + p.getId());
-            System.out.println("p = " + p.getPaidValue());
         }
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
@@ -499,7 +493,6 @@ public class FinancialTransactionController implements Serializable {
                         totalOpdBillCanceled += p.getPaidValue();
                     }
                     if (p.getBill().getReferenceBill() != null) {
-                        System.out.println("p = " + p.getPaidValue());
                         totalBilledBillValue += p.getPaidValue();
                     }
                     if (p.getBill().getBillClassType() == BillClassType.BilledBill) {
@@ -747,13 +740,11 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromStaff(currentBill.getReferenceBill().getFromStaff());
         billController.save(currentBill);
-        System.out.println("currentBillPayments = " + getCurrentBillPayments().size());
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
-            System.out.println("p = " + p.getId());
         }
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());

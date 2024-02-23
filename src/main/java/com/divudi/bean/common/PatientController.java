@@ -356,7 +356,6 @@ public class PatientController implements Serializable {
         allPatientList = getFacade().findByJpql(j, m, 100000);
 
         for (Patient pt : allPatientList) {
-            System.out.println("pt = " + pt);
             if (pt.getPerson() == null) {
                 continue;
             }
@@ -1439,7 +1438,6 @@ public class PatientController implements Serializable {
         controller.setPatient(new Patient());
         controller.setPatientDetailsEditable(true);
         if (quickSearchPhoneNumber != null) {
-            System.out.println("quickSearchPhoneNumber = " + quickSearchPhoneNumber);
             controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
         }
     }

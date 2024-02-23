@@ -79,15 +79,12 @@ public class BillSessionController implements Serializable {
             BillSessionController controller = (BillSessionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "billSessionController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             BillSession found = controller.getFacade().find(getKey(value));
-            System.out.println("found = " + found);
             return found;
         }
 

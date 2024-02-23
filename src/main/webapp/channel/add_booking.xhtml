@@ -43,22 +43,22 @@
                             <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.channelHosFee}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>
-                            
+
                             <p:outputLabel value="Total Fee" ></p:outputLabel>
                             <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.total}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </p:outputLabel>
-                            
+
                             <p:outputLabel value="Session ID" ></p:outputLabel>
-                            #{bookingController.selectedSessionInstance.id}
-                            
-                            
+                                #{bookingController.selectedSessionInstance.id}
+
+
                             <p:outputLabel value="Original Session ID" ></p:outputLabel>
-                            #{bookingController.selectedSessionInstance.originatingSession.id}
+                                #{bookingController.selectedSessionInstance.originatingSession.id}
                         </p:panelGrid> 
                         <common:patient_details  
-                                    editable="true"
-                                    controller="#{bookingController}"/>
+                            editable="true"
+                            controller="#{bookingController}"/>
                     </div>
                     <div class="col-6" >
                         <h:panelGroup id="gdManageBookings" class="row p-1" style="height: 50vh;" layout="block">
@@ -166,9 +166,6 @@
                                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                 </p:selectOneMenu>
 
-
-
-
                                 <h:outputLabel id="lblCheque" value="Cheque No." style="display: #{bookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
                                 <p:inputText autocomplete="off"  value="#{bookingController.paymentMethodData.cheque.no}" id="chequNo" style="display: #{bookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
                                 <h:outputLabel id="lblBank" value="Select Bank" style="display: #{bookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
@@ -181,9 +178,6 @@
                                 <h:outputLabel id="lblChequeDate" value="Cheque Date" style="display: #{bookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
                                 <p:calendar   value="#{bookingController.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate" style="display: #{bookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
                                 </p:calendar>
-
-
-
 
                                 <h:outputLabel value="Select Bank" id="slipLblBank" style="display: #{bookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
                                 <p:selectOneMenu id="slipSelBank" value="#{bookingController.paymentMethodData.slip.institution}" style="display: #{bookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
@@ -201,7 +195,7 @@
                                 <f:facet name="header" >
 
                                 </f:facet>
-                                
+
                                 <h:panelGrid columns="3" style="min-width: 100%;">
                                     <p:commandButton   
                                         id="btnAdd" 
@@ -218,48 +212,61 @@
                                 </h:panelGrid>
 
                             </p:panel>
-
-
                         </h:panelGroup>
                     </div>
-
-
                 </div>
 
-
-
-
-
             </h:panelGroup>
 
+            <p:panel  rendered="#{bookingController.printPreview}" header="Bill View">
+                <div class="row">
+                    <div class="d-flex gap-2">
+                        <p:commandButton 
+                            value="New Bill" 
+                            icon="fa fa-plus"
+                            class="ui-button-success"
+                            action="#{bookingController.startNewChannelBooking()}" 
+                            ajax="false">
+                        </p:commandButton>
 
-
-            <h:panelGroup  rendered="#{bookingController.printPreview}">
-                <p:commandButton value="New Bill" action="#{bookingController.startNewChannelBooking()}" ajax="false"
-                                 ></p:commandButton>
-
-                <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
-                                 rendered="#{!bookingController.settleSucessFully}" 
-                                 ></p:commandButton>
-
-                <p:commandButton value="Print" ajax="false" action="#"
-                                 disabled="#{bookingController.printingBill.balance ne 0.0 or !bookingController.settleSucessFully}">
-                    <p:printer target="panelAddedBillPrint" ></p:printer>
-                </p:commandButton>
-
-                <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder"
-                              rendered="#{bookingController.settleSucessFully}" >
-                    <div >
-                        <ez:bmsChannelBill bill="#{bookingController.printingBill}"/>
+                        <p:commandButton 
+                            value="Back" 
+                            action="#" 
+                            class="ui-button-secondary"
+                            ajax="false" 
+                            icon="fa fa-back"
+                            oncomplete="PF('dlgAdd').hide();"
+                            rendered="#{!bookingController.settleSucessFully}">
+                        </p:commandButton>
+                        
+                        <p:commandButton 
+                            value="Print" 
+                            ajax="false" 
+                            class="ui-button-info"
+                            icon="fa fa-print"
+                            action="#"
+                            disabled="#{bookingController.printingBill.balance ne 0.0 or !bookingController.settleSucessFully}">
+                            <p:printer 
+                                target="panelAddedBillPrint" >
+                            </p:printer>
+                        </p:commandButton>
                     </div>
-                </h:panelGroup>
+                    <div class="d-flex justify-content-center">
+                        <h:panelGroup 
+                            id="panelAddedBillPrint" 
+                            class=""
+                            styleClass="noBorder"
+                            rendered="#{bookingController.settleSucessFully}" >
+                            
+                            <ez:bmsChannelBill bill="#{bookingController.printingBill}"/>
+                        </h:panelGroup>
+                    </div>
+                </div>
 
                 <h:panelGroup  styleClass="noBorder" rendered="#{!bookingController.settleSucessFully}" >
-                    <br/>
-                    <br/>
                     <p:outputLabel value="#{bookingController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
                 </h:panelGroup>
-            </h:panelGroup>
+            </p:panel>
 
         </h:form>
     </ui:define>

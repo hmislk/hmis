@@ -520,7 +520,6 @@ public class SheduleController implements Serializable {
     public void updateCreatedServicesesions(ServiceSession ss) {
         for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
             System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getInstitution() = " + i.getInstitution());
 
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -675,7 +674,6 @@ public class SheduleController implements Serializable {
                         System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
                         System.out.println("c.getFee().getName() = " + c.getFee().getName());
                         System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
-                        System.out.println("c.getFee().getFeeType() = " + c.getFee().getFeeType());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
