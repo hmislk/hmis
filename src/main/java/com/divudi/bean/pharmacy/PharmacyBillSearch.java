@@ -753,7 +753,6 @@ public class PharmacyBillSearch implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;
         }
-        System.out.println("End = ");
         return false;
     }
 
@@ -1243,9 +1242,9 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can, Payment p) {
         for (BillItem nB : getBill().getBillItems()) {
-            BillItem b = new BillItem();
+            BillItem b = nB;
             b.setBill(can);
-            b.copy(nB);
+//            b.copy(nB);
             b.invertValue(nB);
 
             if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
@@ -1700,25 +1699,21 @@ public class PharmacyBillSearch implements Serializable {
         setBill(cbill);
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
-                System.out.println("pharmacyErrorCheck");
                 return;
             }
 
             if (getBill().getBillType() != BillType.PharmacyPre && getBill().getBillType() != BillType.PharmacyWholesalePre) {
-                System.out.println("2 = ");
                 return;
             }
 
 
             if (checkDepartment(getBill())) {
-                System.out.println("3 = ");
                 return;
             }
             for (BillItem i : getBill().getBillItems()) {
                 System.out.println("i = " + i.getItem().getName());
                 i.getPharmaceuticalBillItem().setQty((double) (double) i.getQty());
                 if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
-                    System.out.println("4");
                     continue;
                 }
 
@@ -1740,11 +1735,11 @@ public class PharmacyBillSearch implements Serializable {
 
                 i.setPharmaceuticalBillItem(tmpPh);
                 getBillItemFacade().edit(i);
+                //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
 
                 //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
                 System.out.println("tmpPh = " + tmpPh.getBillItem().getItem().getName());
                 System.out.println("tmpPh.getStock() = " + tmpPh.getStock());
-                System.out.println("Math.abs(tmpPh.getQtyInUnit()) = " + Math.abs(tmpPh.getQtyInUnit()));
                 getPharmacyBean().addToStock(tmpPh.getStock(), Math.abs(tmpPh.getQtyInUnit()), tmpPh, getSessionController().getDepartment());
 
                 //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());

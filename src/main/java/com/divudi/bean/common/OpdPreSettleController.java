@@ -499,7 +499,6 @@ public class OpdPreSettleController implements Serializable {
     }
     
     public String toSettle(Bill args) {
-        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "

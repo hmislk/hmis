@@ -69,6 +69,7 @@ import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1226,7 +1227,6 @@ public class PharmacyItemExcelManager implements Serializable {
         Cell cell;
         InputStream in;
         UtilityController.addSuccessMessage(file.getFileName());
-        System.out.println("file input  = " + "file input");
         try {
             UtilityController.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
@@ -1364,7 +1364,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 if (!strCat.equals("")) {
-                    System.out.println("!strCat.equals = " + "!strCat.equals");
                     amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n "
                             + " AND c.vmp=:v", m);
                     if (amp == null) {
@@ -1437,7 +1436,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("temStr = " + "temStr");
                 try {
                     stockQty = Double.valueOf(temStr);
-                    System.out.println("stockQty = " + "stockQty");
                 } catch (NumberFormatException e) {
                     stockQty = 0;
                 }
@@ -1465,7 +1463,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 temStr = cell.getContents();
                 try {
                     doe = new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(temStr);
-                    System.out.println("doe = " + doe);
                 } catch (Exception e) {
                     doe = new Date();
                 }
@@ -1478,7 +1475,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                System.out.println("set current bill  = " + "return");
                 if (batch == null || batch.trim().equals("")) {
                     getPharmacyPurchaseController().setBatch();
                 } else {
@@ -1486,7 +1482,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 getPharmacyPurchaseController().addItem();
             }
-            System.out.println("return = " + "return");
             UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/pharmacy/pharmacy_purchase";
         } catch (IOException | BiffException ex) {
@@ -1597,7 +1592,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(doeCol, i);
                 temStr = cell.getContents();
                 try {
-                    doe = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH).parse(temStr);
+                    doe=CommonFunctions.convertDateToDbType(temStr);
                 } catch (Exception e) {
                     doe = new Date();
                 }
