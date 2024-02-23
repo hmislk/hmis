@@ -195,7 +195,6 @@ public class PharmacyBean {
             System.out.println("bItem = " + bItem.getItem().getName());
             BillItem newBillItem = new BillItem();
             newBillItem.copy(bItem);
-            System.out.println("After copy");
             newBillItem.invertValue(bItem);
             newBillItem.setBill(preBill);
             newBillItem.setReferanceBillItem(bItem);
@@ -243,7 +242,6 @@ public class PharmacyBean {
             UtilityController.addErrorMessage("Bill Already Cancelled");
             return null;
         }
-        System.out.println("1 = " + 1);
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 

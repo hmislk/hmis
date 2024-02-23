@@ -208,7 +208,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToViewSessionData() {
         return "/channel/session_data";
     }
-    
+
     public String navigateToConsultantRoom() {
         return "/channel/consultant_room";
     }
@@ -221,47 +221,56 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return "/channel/channel_booking";
     }
 
-    public String nurse() {
+    public String navigateToNurseView() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
-            return "channel_nurse_view";
+            return "/channel/channel_nurse_view";
         } else {
             return "";
         }
     }
 
-    public String doctor() {
+    public String navigateToDoctorView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
-            return "channel_doctor_view";
+            return "/channel/channel_doctor_view";
         } else {
             return "";
         }
     }
 
-    public String session() {
+    public String navigateToSessionView() {
         if (preSet()) {
-            return "channel_session_view";
+            return "/channel/channel_session_view";
         } else {
             return "";
         }
     }
 
-    public String phone() {
+    public String navigateToPhoneView() {
         if (preSet()) {
-            return "channel_phone_view";
+            return "/channel/channel_phone_view";
         } else {
             return "";
         }
     }
 
-    public String user() {
+    public String navigateToUserView() {
         if (preSet()) {
-            return "channel_user_view";
+            return "/channel/channel_user_view";
         } else {
             return "";
         }
     }
+
+    public String navigateToAllDoctorView() {
+        return "/channel/channel_patient_view_today";
+    }
+    
+    public String navigateToAllPatientView() {
+        return "/channel/channel_user_view";
+    }
+    
 
     public List<BillSession> getGetSelectedBillSession() {
         return getSelectedBillSession;
@@ -369,9 +378,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         printingBill = getBillFacade().find(printingBill.getId());
         System.out.println("printing bill retrieved");
         fillBillSessions();
-        System.out.println("bill sessions filled ");
         generateSessions();
-        System.out.println("going to send sms = ");
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -394,12 +401,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             smsFacade.create(e);
             String suc = smsManagerEjb.sendSmsByApplicationPreferenceNoAuthenticationReturnString(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
         } catch (Exception e) {
-            System.out.println("Error in SMS");
         }
     }
 
     private String chanellBookingSms(Bill b) {
-        System.out.println("chanellBookingSms");
         String s;
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
@@ -429,7 +434,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             time = CommonController.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
-            System.out.println("2. time = " + time);
         } else {
             //System.out.println("Null Error");
         }
@@ -973,7 +977,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public List<BillSession> getBillSessions() {
-        if(billSessions==null){
+        if (billSessions == null) {
             billSessions = new ArrayList<>();
         }
         return billSessions;
@@ -1078,10 +1082,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
-        System.out.println("hh = " + hh);
-        System.out.println("sql = " + sql);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
-        
+
     }
 
     private boolean errorCheckForAddingNewBooking() {
@@ -1283,9 +1285,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void createBillfees(SelectEvent event) {
-        System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
-        System.out.println("bs = " + bs);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select bf From BillFee bf where bf.retired=false"
@@ -1661,7 +1661,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
-        System.out.println("billSessions = " + billSessions);
         this.billSessions = billSessions;
     }
 
@@ -1737,7 +1736,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public BillSession getSelectedBillSession() {
-        System.out.println("getSelectedBillSession - selectedBillSession = " + selectedBillSession);
         if (selectedBillSession == null) {
             selectedBillSession = new BillSession();
             Bill b = new BilledBill();
@@ -1750,7 +1748,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
-        System.out.println("setSelectedBillSession : selectedBillSession = " + selectedBillSession);
         this.selectedBillSession = selectedBillSession;
         getChannelCancelController().resetVariablesFromBooking();
         getChannelCancelController().setBillSession(selectedBillSession);
@@ -1813,12 +1810,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public Boolean preSet() {
-        if (getSelectedServiceSession() == null) {
+        if (getSelectedSessionInstance() == null) {
             UtilityController.addErrorMessage("Please select Service Session");
             return false;
         }
-        getChannelReportController().setServiceSession(selectedServiceSession);
-
+        getChannelReportController().setSessionInstance(selectedSessionInstance);
         return true;
     }
 
@@ -1948,7 +1944,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public BillSession getManagingBillSession() {
-        System.out.println("managingBillSession = " + managingBillSession);
         return managingBillSession;
     }
 

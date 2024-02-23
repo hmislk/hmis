@@ -1046,16 +1046,16 @@
                                     <p:panel header="Selected Session">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Nurse View " 
-                                                             action="#{bookingController.nurse}" 
+                                                             action="#{bookingController.navigateToNurseView}" 
                                                              onclick="onSubmitButton();" >                                       
                                             </p:commandButton>
-                                            <p:commandButton value="Doctor View " action="#{bookingController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                            <p:commandButton value="Doctor View " action="#{bookingController.navigateToDoctorView}" ajax="false" onclick="onSubmitButton();">                                        
                                             </p:commandButton>
-                                            <p:commandButton value="Session View " action="#{bookingController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                            <p:commandButton value="Session View " action="#{bookingController.navigateToSessionView}" ajax="false" onclick="onSubmitButton();">                                        
                                             </p:commandButton>
-                                            <p:commandButton value="Phone View " action="#{bookingController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                            <p:commandButton value="Phone View " action="#{bookingController.navigateToPhoneView}" ajax="false" onclick="onSubmitButton();">                                        
                                             </p:commandButton>
-                                            <p:commandButton value="User View " action="#{bookingController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                            <p:commandButton value="User View " action="#{bookingController.navigateToUserView}" ajax="false" onclick="onSubmitButton();">                                        
                                             </p:commandButton>
                                         </h:panelGrid>
 
