@@ -124,11 +124,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ServiceSessionBean serviceSessionBean;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
-    @Inject
-    PriceMatrixController priceMatrixController;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
     /**
      * Controllers
      */
+    @Inject
+    PriceMatrixController priceMatrixController;
     @Inject
     PatientController patientController;
     @Inject
@@ -172,6 +174,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ServiceSession selectedServiceSession;
     private SessionInstance selectedSessionInstance;
     private BillSession selectedBillSession;
+    @Deprecated
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
@@ -206,25 +209,29 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToViewSessionData() {
-        return "/channel/session_data";
+        return "/channel/session_data?faces-redirect=true";
     }
 
     public String navigateToConsultantRoom() {
-        return "/channel/consultant_room";
+        return "/channel/consultant_room?faces-redirect=true";
     }
 
     public String navigateToManageBooking() {
-        return "/channel/manage_booking";
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+        return "/channel/manage_booking?faces-redirect=true";
     }
 
     public String navigateBackToBookings() {
-        return "/channel/channel_booking";
+        return "/channel/channel_booking?faces-redirect=true";
     }
 
     public String navigateToNurseView() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
-            return "/channel/channel_nurse_view";
+            return "/channel/channel_nurse_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -233,7 +240,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public String navigateToDoctorView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
-            return "/channel/channel_doctor_view";
+            return "/channel/channel_doctor_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -241,7 +248,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToSessionView() {
         if (preSet()) {
-            return "/channel/channel_session_view";
+            return "/channel/channel_session_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -249,7 +256,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToPhoneView() {
         if (preSet()) {
-            return "/channel/channel_phone_view";
+            return "/channel/channel_phone_view?faces-redirect=true";
         } else {
             return "";
         }
@@ -257,20 +264,19 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public String navigateToUserView() {
         if (preSet()) {
-            return "/channel/channel_user_view";
+            return "/channel/channel_user_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
     public String navigateToAllDoctorView() {
-        return "/channel/channel_patient_view_today";
+        return "/channel/channel_patient_view_today?faces-redirect=true";
     }
-    
+
     public String navigateToAllPatientView() {
-        return "/channel/channel_user_view";
+        return "/channel/channel_user_view?faces-redirect=true";
     }
-    
 
     public List<BillSession> getGetSelectedBillSession() {
         return getSelectedBillSession;
@@ -1302,12 +1308,29 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public List<ItemFee> findServiceSessionFees(ServiceSession ss) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and (f.serviceSession=:ses "
+                + " or f.item=:ses )"
+                + " order by f.id";
+        m.put("ses", ss);
+        return itemFeeFacade.findByJpql(sql, m);
+    }
+
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
-        for (ItemFee f : getSelectedSessionInstance().getOriginatingSession().getItemFees()) {
+        List<ItemFee> sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
+        if (sessionsFees == null) {
+            return billFeeList;
+        }
+        for (ItemFee f : sessionsFees) {
+            System.out.println("f = " + f);
             if (paymentMethod != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
                     continue;
@@ -1749,6 +1772,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
+        if (selectedBillSession != null) {
+            Bill bill = selectedBillSession.getBill();
+            if (bill != null) {
+                if (bill.getBillItems() != null) {
+                    bill.getBillItems().size();
+                }
+                if (bill.getBillFees() != null) {
+                    bill.getBillFees().size();
+                }
+            }
+        }
         getChannelCancelController().resetVariablesFromBooking();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
@@ -1943,11 +1977,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return channelStaffPaymentBillController;
     }
 
+    @Deprecated
     public BillSession getManagingBillSession() {
         return managingBillSession;
     }
 
+    @Deprecated
     public void setManagingBillSession(BillSession managingBillSession) {
+        if (managingBillSession != null) {
+            Bill bill = managingBillSession.getBill();
+            if (bill != null) {
+                if (bill.getBillItems() != null) {
+                    bill.getBillItems().size();
+                }
+                if (bill.getBillFees() != null) {
+                    bill.getBillFees().size();
+                }
+            }
+        }
         this.managingBillSession = managingBillSession;
     }
 
