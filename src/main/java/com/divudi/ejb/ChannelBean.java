@@ -119,7 +119,6 @@ public class ChannelBean {
     }
 
     public int getBillSessionsCount(ServiceSession ss, Date date) {
-        System.out.println("getBillSessionsCount");
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -613,7 +612,7 @@ public class ChannelBean {
                 if (dateCompare != 0) {
                     return dateCompare;
                 } else {
-                    // Assuming ServiceSession has a method to get a session identifier or name for comparison
+                    // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
                     return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
                 }
             }

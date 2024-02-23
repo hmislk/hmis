@@ -293,7 +293,6 @@ public class BillSearch implements Serializable {
 
         List<Object> objs = billFacade.findObjectByJpql(j, m, TemporalType.TIMESTAMP);
         billSummeries = new ArrayList<>();
-        System.out.println("billSummeries = " + billSummeries.size());
         Long i = 1l;
         for (Object o : objs) {
             BillSummery tbs = (BillSummery) o;
@@ -493,7 +492,6 @@ public class BillSearch implements Serializable {
         List<BillSummery> bss = (List<BillSummery>) billFacade.findLightsByJpql(queryString.toString(), parameters, TemporalType.TIMESTAMP);
         System.out.println("bss = " + bss.size());
         System.out.println("parameters = " + parameters);
-        System.out.println("JPQL = " + queryString.toString());
         if (bss == null || bss.isEmpty()) {
             return new ArrayList<>();
         }
@@ -560,14 +558,11 @@ public class BillSearch implements Serializable {
         m.put("td", toDate);
 
         System.out.println("j = " + j);
-        System.out.println("m = " + m);
 
         bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 
         if (bills != null) {
-            System.out.println("bills = " + bills.size());
         } else {
-            System.out.println("bills = " + bills);
         }
 
         if (filteredBillClassType == BillClassType.CancelledBill || filteredBillClassType == BillClassType.RefundBill) {
@@ -2398,7 +2393,6 @@ public class BillSearch implements Serializable {
                 + " and b.bill=:b";
         hm.put("b", getBillSearch());
         billItems = getBillItemFacede().findByJpql(sql, hm);
-        System.out.println("billItems = " + billItems.size());
 
         for (BillItem bi : billItems) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();

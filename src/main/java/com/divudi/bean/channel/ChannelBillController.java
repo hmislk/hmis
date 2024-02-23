@@ -200,7 +200,6 @@ public class ChannelBillController implements Serializable {
     }
 
     public void settleCredit() {
-        System.out.println("Settle Credit - new Date() = " + new Date());
         if (errorCheckForSettle()) {
             return;
         }
@@ -535,7 +534,6 @@ public class ChannelBillController implements Serializable {
     public void createBillfees(SelectEvent event) {
         System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
-        System.out.println("bs = " + bs);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select bf From BillFee bf where bf.retired=false"
@@ -613,12 +611,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;
         }
-        System.out.println("returning false");
         return false;
     }
 
     public void cancelCashFlowBill() {
-        System.out.println("cancelCashFlowBill");
         if (errorCheckCancelling()) {
             return;
         }
@@ -731,7 +727,6 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
-        System.out.println("going to cancel");
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
@@ -750,7 +745,6 @@ public class ChannelBillController implements Serializable {
         } else if (bill.getPaidBill() == null) {
             bill.setPaidBill(bill);
         }
-        System.out.println("paid bill changed");
 
         //dr. buddhika said
         if (bill.getPaidBill() == null) {
@@ -758,7 +752,6 @@ public class ChannelBillController implements Serializable {
         }
 
         if (bill.getPaidBill().equals(bill)) {
-            System.out.println("equal");
             CancelledBill cb = createCancelBill(bill);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
@@ -777,7 +770,6 @@ public class ChannelBillController implements Serializable {
             billSessionFacade.edit(billSession);
 
         } else {
-            System.out.println("not equal");
             CancelledBill cb = createCancelBill(bill);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
@@ -1436,7 +1428,6 @@ public class ChannelBillController implements Serializable {
         bookingController.fillBillSessions();
         System.out.println("bill sessions filled ");
         bookingController.generateSessions();
-        System.out.println("going to send sms = ");
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -1459,12 +1450,10 @@ public class ChannelBillController implements Serializable {
             getSmsFacade().create(e);
             boolean suc = smsManagerEjb.sendSms(comment, comment, agentRefNo, comment, patientTabId);
         } catch (Exception e) {
-            System.out.println("Error in SMS");
         }
     }
 
     private String chanellBookingSms(Bill b) {
-        System.out.println("chanellBookingSms");
         String s;
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
@@ -1494,7 +1483,6 @@ public class ChannelBillController implements Serializable {
             time = CommonController.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
-            System.out.println("2. time = " + time);
         } else {
             //System.out.println("Null Error");
         }

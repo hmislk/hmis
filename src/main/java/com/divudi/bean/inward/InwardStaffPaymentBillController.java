@@ -903,12 +903,10 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public double getTotalPaying() {
-        System.out.println("totalPaying = " + totalPaying);
         return totalPaying;
     }
 
     public void setTotalPaying(double totalPaying) {
-        System.out.println("setter totalPaying = " + totalPaying);
         this.totalPaying = totalPaying;
     }
 
@@ -981,9 +979,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             System.out.println("fee val is " + f.getFeeValue());
             System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            System.out.println("totalPaying after " + totalPaying);
         }
-        System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -1007,7 +1003,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 

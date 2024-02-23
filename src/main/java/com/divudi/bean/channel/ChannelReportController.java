@@ -36,6 +36,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Sms;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -70,7 +71,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ChannelReportController implements Serializable {
 
+    @Deprecated
     private ServiceSession serviceSession;
+    private SessionInstance sessionInstance;
     private double billedTotalFee;
     private double repayTotalFee;
     private double taxTotal;
@@ -3073,19 +3076,22 @@ public class ChannelReportController implements Serializable {
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
-        if (bookingController.getSelectedServiceSession() == null) {
+        if (sessionInstance == null) {
             UtilityController.addErrorMessage("Please Select Session");
             return;
         }
 
-        String sql = "Select bs From BillSession bs "
-                + " where bs.retired=false and "
-                + " type(bs.bill)=:class and "
-                //+ " bs.bill.refunded=false and "
-                + " bs.bill.billType in :tbs and "
-                + " bs.serviceSession.id=" + bookingController.getSelectedServiceSession().getId() + " order by bs.serialNo";
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false "
+                + " and type(bs.bill)=:class "
+                + " and bs.bill.billType in :tbs "
+                + " and bs.sessionInstance=:si"
+                + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
+        hh.put("si", sessionInstance);
+        
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelAgent);
         bts.add(BillType.ChannelCash);
@@ -3098,16 +3104,19 @@ public class ChannelReportController implements Serializable {
 
     public void fillDoctorView() {
         doctorViewSessions = new ArrayList<>();
-        if (serviceSession != null) {
-            String sql = "Select bs From BillSession bs "
-                    + " where bs.retired=false and "
-                    + " bs.bill.cancelled=false and "
-                    + " bs.bill.refunded=false and "
-                    + " bs.bill.billType in :tbs and "
-                    + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
+        if (sessionInstance != null) {
+            String sql = "Select bs "
+                    + " From BillSession bs "
+                    + " where bs.retired=false "
+                    + " and bs.bill.cancelled=false "
+                    + " and bs.bill.refunded=false "
+                    + " and bs.bill.billType in :tbs "
+                    + " and bs.sessionInstance=:si"
+                    + " and bs.sessionDate= :ssDate"
                     + " order by bs.serialNo";
             HashMap hh = new HashMap();
-            hh.put("ssDate", serviceSession.getSessionDate());
+            hh.put("ssDate", sessionInstance.getSessionDate());
+            hh.put("si", sessionInstance);
             List<BillType> bts = new ArrayList<>();
             bts.add(BillType.ChannelAgent);
             bts.add(BillType.ChannelCash);
@@ -3692,13 +3701,17 @@ public class ChannelReportController implements Serializable {
     public ChannelReportController() {
     }
 
+    @Deprecated
     public ServiceSession getServiceSession() {
         return serviceSession;
     }
 
+    @Deprecated
     public void setServiceSession(ServiceSession serviceSession) {
         this.serviceSession = serviceSession;
     }
+    
+    
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
@@ -3982,6 +3995,14 @@ public class ChannelReportController implements Serializable {
         this.newSessionDateTime = newSessionDateTime;
     }
 
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
+    }
+
     public class ChannelReportColumnModelBundle implements Serializable {
 
         List<ChannelReportColumnModel> rows;
@@ -4225,6 +4246,8 @@ public class ChannelReportController implements Serializable {
         public void setScanFee(double scanFee) {
             this.scanFee = scanFee;
         }
+        
+        
 
         public double getTax() {
             return tax;
@@ -4699,6 +4722,8 @@ public class ChannelReportController implements Serializable {
         public void setDate(Date date) {
             this.date = date;
         }
+        
+        
 
     }
 
