@@ -49,7 +49,12 @@
                     </p:commandButton>
                 </div>
 
-                <p:dataTable id="doctorView" value="#{channelReportController.doctorViewSessions}" var="bs" sortBy="#{bs.bill.billClass}">
+                <p:dataTable 
+                    id="doctorView" 
+                    value="#{channelReportController.doctorViewSessions}" 
+                    style="margin-left: 1%; margin-right: 1%;"
+                    var="bs" 
+                    sortBy="#{bs.bill.billClass}">
                     <f:facet name="header">
                         <div style="text-align: center;">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
