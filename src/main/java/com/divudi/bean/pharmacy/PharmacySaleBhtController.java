@@ -140,6 +140,7 @@ public class PharmacySaleBhtController implements Serializable {
     private Bill batchBill;
     @Inject
     private BillBeanController billBean;
+    private Stock tmpStock;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -226,7 +227,29 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
+
+        System.out.println("tmp Row= " + tmp.getItem().getName());
+        System.out.println("tmp Row xpiry= " + tmp.getPharmaceuticalBillItem().getDoe());
         onEdit(tmp);
+    }
+
+    public void onEditing(RowEditEvent event) {
+        BillItem tmp = (BillItem) event.getObject();
+
+        tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
+            setZeroToQty(tmp);
+            UtilityController.addErrorMessage("Can not enter a minus value");
+            return;
+        }
+        Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();    
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+            setZeroToQty(tmp);
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
+
+
     }
 
     private void setZeroToQty(BillItem tmp) {
@@ -592,9 +615,9 @@ public class PharmacySaleBhtController implements Serializable {
 
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
-            if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
-                continue;
-            }
+//            if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
+//                continue;
+//            }
 
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
@@ -630,7 +653,6 @@ public class PharmacySaleBhtController implements Serializable {
                 getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(tbi);
             }
-
             getPreBill().getBillItems().add(tbi);
         }
 
@@ -738,9 +760,9 @@ public class PharmacySaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Nothing To Settle.");
             return;
         }
-
+        System.out.println("BEfore = ");
         settleBhtIssueRequestAccept(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
-
+        System.out.println("After = ");
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
     }
 
@@ -789,11 +811,10 @@ public class PharmacySaleBhtController implements Serializable {
             return true;
         }
 
-        if (checkAllBillItem()) {
-            //  UtilityController.addErrorMessage("Please Set Room 33");
-            return true;
-        }
-
+//        if (checkAllBillItem()) {
+//            //  UtilityController.addErrorMessage("Please Set Room 33");
+//            return true;
+//        }
         return false;
     }
 
@@ -851,6 +872,13 @@ public class PharmacySaleBhtController implements Serializable {
 
     }
 
+    public void removeBillItem(BillItem b) {
+        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+        getPreBill().getBillItems().remove(b.getSearialNo());
+
+        calTotal();
+    }
+
     private void settleBhtIssueRequestAccept(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -862,6 +890,7 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setPaidAmount(0);
 
         List<BillItem> tmpBillItems = getBillItems();
+        
         getPreBill().setBillItems(null);
 
         if (!getBillItems().isEmpty()) {
@@ -1045,16 +1074,87 @@ public class PharmacySaleBhtController implements Serializable {
 
     @EJB
     private StockHistoryFacade stockHistoryFacade;
+    
+    public void addBillItemNew() {
+        errorMessage = null;
 
-    public void removeBillItem(BillItem b) {
-        if (b.getTransUserStock().isRetired()) {
-            UtilityController.addErrorMessage("This Item Already removed");
+        billItem = new BillItem();
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getTmpStock()== null) {
+            errorMessage = "Item?";
+            UtilityController.addErrorMessage("Item?");
+            return;
+        }
+        if (getTmpStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+            UtilityController.addErrorMessage("Please not select Expired Items");
+            return;
+        }
+        if (getQty() == null) {
+            errorMessage = "Quantity?";
+            UtilityController.addErrorMessage("Quantity?");
+            return;
+        }
+        if (getQty() == 0.0) {
+            errorMessage = "Quantity Zero?";
+            UtilityController.addErrorMessage("Quentity Zero?");
+            return;
+        }
+        if (getQty() > getTmpStock().getStock()) {
+            errorMessage = "No sufficient stocks.";
+            UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
-        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
+//        if (checkItemBatch()) {
+//            errorMessage = "This batch is already there in the bill.";
+//            UtilityController.addErrorMessage("Already added this item batch");
+//            return;
+//        }
+//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+//            errorMessage = "This batch is Expire With in 31 Days.";
+//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            return;
+//        }
+        //Checking User Stock Entity
+        if (!userStockController.isStockAvailable(getTmpStock(), getQty(), getSessionController().getLoggedUser())) {
+            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return;
+        }
 
-        getPreBill().getBillItems().remove(b.getSearialNo());
+        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (qty));
+        billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
+        billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
+       
+//        calculateBillItem();
+        ////System.out.println("Rate*****" + billItem.getRate());
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+
+        billItem.setItem(getTmpStock().getItemBatch().getItem());
+        billItem.setQty(qty);
+//        billItem.setBill(getPreBill());
+
+        billItem.setSearialNo(getBillItems().size() + 1);
+        getBillItems().add(billItem);
+
+        
+
+        qty = null;
+        tmpStock = null;
+        setActiveIndex(1);
+    }
+
+    public void removeBillItemFromBhtRequest(BillItem b) {
+        if(b==null){
+            UtilityController.addErrorMessage("Please selct item");
+            return ;
+        }
+        if(getBillItems()==null){
+            UtilityController.addErrorMessage("No items in the bill");
+            return ;
+        }
+        getBillItems().remove(b);
 
         calTotal();
     }
@@ -1301,12 +1401,13 @@ public class PharmacySaleBhtController implements Serializable {
                 }
             } else {
                 System.out.println("no stocks");
+                System.out.println("i.getItem() = " + i.getItem());
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 billItem.getPharmaceuticalBillItem().setQtyInUnit(issuableQty);
                 billItem.getPharmaceuticalBillItem().setStock(null);
                 billItem.getPharmaceuticalBillItem().setItemBatch(null);
-                billItem.setItem(null);
+                billItem.setItem(i.getItem());
                 billItem.setQty(issuableQty);
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -1661,6 +1762,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBhtRequestBill(Bill bhtRequestBill) {
         this.bhtRequestBill = bhtRequestBill;
+    }
+
+    public Stock getTmpStock() {
+        return tmpStock;
+    }
+
+    public void setTmpStock(Stock tmpStock) {
+        this.tmpStock = tmpStock;
     }
 
 }
