@@ -124,11 +124,13 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ServiceSessionBean serviceSessionBean;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
-    @Inject
-    PriceMatrixController priceMatrixController;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
     /**
      * Controllers
      */
+    @Inject
+    PriceMatrixController priceMatrixController;
     @Inject
     PatientController patientController;
     @Inject
@@ -172,6 +174,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private ServiceSession selectedServiceSession;
     private SessionInstance selectedSessionInstance;
     private BillSession selectedBillSession;
+    @Deprecated
     private BillSession managingBillSession;
     private List<SessionInstance> sessionInstances;
     private List<BillSession> billSessions;
@@ -206,61 +209,73 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToViewSessionData() {
-        return "/channel/session_data";
+        return "/channel/session_data?faces-redirect=true";
     }
-    
+
     public String navigateToConsultantRoom() {
-        return "/channel/consultant_room";
+        return "/channel/consultant_room?faces-redirect=true";
     }
 
     public String navigateToManageBooking() {
-        return "/channel/manage_booking";
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+        return "/channel/manage_booking?faces-redirect=true";
     }
 
     public String navigateBackToBookings() {
-        return "/channel/channel_booking";
+        return "/channel/channel_booking?faces-redirect=true";
     }
 
-    public String nurse() {
+    public String navigateToNurseView() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
-            return "channel_nurse_view";
+            return "/channel/channel_nurse_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
-    public String doctor() {
+    public String navigateToDoctorView() {
         if (preSet()) {
             getChannelReportController().fillDoctorView();
-            return "channel_doctor_view";
+            return "/channel/channel_doctor_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
-    public String session() {
+    public String navigateToSessionView() {
         if (preSet()) {
-            return "channel_session_view";
+            return "/channel/channel_session_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
-    public String phone() {
+    public String navigateToPhoneView() {
         if (preSet()) {
-            return "channel_phone_view";
+            return "/channel/channel_phone_view?faces-redirect=true";
         } else {
             return "";
         }
     }
 
-    public String user() {
+    public String navigateToUserView() {
         if (preSet()) {
-            return "channel_user_view";
+            return "/channel/channel_user_view?faces-redirect=true";
         } else {
             return "";
         }
+    }
+
+    public String navigateToAllDoctorView() {
+        return "/channel/channel_patient_view_today?faces-redirect=true";
+    }
+
+    public String navigateToAllPatientView() {
+        return "/channel/channel_user_view?faces-redirect=true";
     }
 
     public List<BillSession> getGetSelectedBillSession() {
@@ -369,9 +384,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         printingBill = getBillFacade().find(printingBill.getId());
         System.out.println("printing bill retrieved");
         fillBillSessions();
-        System.out.println("bill sessions filled ");
         generateSessions();
-        System.out.println("going to send sms = ");
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
@@ -394,12 +407,10 @@ public class BookingController implements Serializable, ControllerWithPatient {
             smsFacade.create(e);
             String suc = smsManagerEjb.sendSmsByApplicationPreferenceNoAuthenticationReturnString(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
         } catch (Exception e) {
-            System.out.println("Error in SMS");
         }
     }
 
     private String chanellBookingSms(Bill b) {
-        System.out.println("chanellBookingSms");
         String s;
         String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
@@ -429,7 +440,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
             time = CommonController.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
-            System.out.println("2. time = " + time);
         } else {
             //System.out.println("Null Error");
         }
@@ -973,7 +983,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public List<BillSession> getBillSessions() {
-        if(billSessions==null){
+        if (billSessions == null) {
             billSessions = new ArrayList<>();
         }
         return billSessions;
@@ -1078,10 +1088,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedSessionInstance().getSessionDate());
         hh.put("ss", getSelectedSessionInstance());
-        System.out.println("hh = " + hh);
-        System.out.println("sql = " + sql);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
-        
+
     }
 
     private boolean errorCheckForAddingNewBooking() {
@@ -1283,9 +1291,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void createBillfees(SelectEvent event) {
-        System.out.println("event = " + event);
         BillSession bs = ((BillSession) event.getObject());
-        System.out.println("bs = " + bs);
         String sql;
         HashMap hm = new HashMap();
         sql = "Select bf From BillFee bf where bf.retired=false"
@@ -1302,12 +1308,29 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public List<ItemFee> findServiceSessionFees(ServiceSession ss) {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select f from ItemFee f "
+                + " where f.retired=false "
+                + " and (f.serviceSession=:ses "
+                + " or f.item=:ses )"
+                + " order by f.id";
+        m.put("ses", ss);
+        return itemFeeFacade.findByJpql(sql, m);
+    }
+
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpDiscount = 0;
         double tmpGrossTotal = 0.0;
-        for (ItemFee f : getSelectedSessionInstance().getOriginatingSession().getItemFees()) {
+        List<ItemFee> sessionsFees = findServiceSessionFees(getSelectedSessionInstance().getOriginatingSession());
+        if (sessionsFees == null) {
+            return billFeeList;
+        }
+        for (ItemFee f : sessionsFees) {
+            System.out.println("f = " + f);
             if (paymentMethod != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
                     continue;
@@ -1661,7 +1684,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
-        System.out.println("billSessions = " + billSessions);
         this.billSessions = billSessions;
     }
 
@@ -1737,7 +1759,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public BillSession getSelectedBillSession() {
-        System.out.println("getSelectedBillSession - selectedBillSession = " + selectedBillSession);
         if (selectedBillSession == null) {
             selectedBillSession = new BillSession();
             Bill b = new BilledBill();
@@ -1750,8 +1771,18 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
-        System.out.println("setSelectedBillSession : selectedBillSession = " + selectedBillSession);
         this.selectedBillSession = selectedBillSession;
+        if (selectedBillSession != null) {
+            Bill bill = selectedBillSession.getBill();
+            if (bill != null) {
+                if (bill.getBillItems() != null) {
+                    bill.getBillItems().size();
+                }
+                if (bill.getBillFees() != null) {
+                    bill.getBillFees().size();
+                }
+            }
+        }
         getChannelCancelController().resetVariablesFromBooking();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
@@ -1813,12 +1844,11 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public Boolean preSet() {
-        if (getSelectedServiceSession() == null) {
+        if (getSelectedSessionInstance() == null) {
             UtilityController.addErrorMessage("Please select Service Session");
             return false;
         }
-        getChannelReportController().setServiceSession(selectedServiceSession);
-
+        getChannelReportController().setSessionInstance(selectedSessionInstance);
         return true;
     }
 
@@ -1947,12 +1977,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
         return channelStaffPaymentBillController;
     }
 
+    @Deprecated
     public BillSession getManagingBillSession() {
-        System.out.println("managingBillSession = " + managingBillSession);
         return managingBillSession;
     }
 
+    @Deprecated
     public void setManagingBillSession(BillSession managingBillSession) {
+        if (managingBillSession != null) {
+            Bill bill = managingBillSession.getBill();
+            if (bill != null) {
+                if (bill.getBillItems() != null) {
+                    bill.getBillItems().size();
+                }
+                if (bill.getBillFees() != null) {
+                    bill.getBillFees().size();
+                }
+            }
+        }
         this.managingBillSession = managingBillSession;
     }
 
