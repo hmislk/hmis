@@ -198,20 +198,20 @@
                                 </div>
 
                                 <div class="d-flex w-50 my-2">
-                                        <p:commandButton 
-                                            class="ui-button-success w-50" 
-                                            icon="fas fa-money-bill" 
-                                            id="btnPay" value="Pay" 
-                                            ajax="false" 
-                                            action="#{inwardPaymentController.pay}" />
-                                        <p:commandButton 
-                                            class="ui-button-danger mx-2 w-50" 
-                                            icon="fas fa-ban" 
-                                            value="Clear" 
-                                            ajax="false" 
-                                            action="#{inwardPaymentController.makeNull}" />
-                                        <p:defaultCommand target="btnPay"/>
-                                    
+                                    <p:commandButton 
+                                        class="ui-button-success w-50" 
+                                        icon="fas fa-money-bill" 
+                                        id="btnPay" value="Pay" 
+                                        ajax="false" 
+                                        action="#{inwardPaymentController.pay}" />
+                                    <p:commandButton 
+                                        class="ui-button-danger mx-2 w-50" 
+                                        icon="fas fa-ban" 
+                                        value="Clear" 
+                                        ajax="false" 
+                                        action="#{inwardPaymentController.makeNull}" />
+                                    <p:defaultCommand target="btnPay"/>
+
                                 </div>
 
                             </p:panel>
@@ -273,16 +273,18 @@
                     <div class="row">
 
                         <h:panelGroup id="gpBillPreview">
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                <ui:repeat value="#{inwardPaymentController.current}" var="pp">
-                                    <bill:FiveFivePaymentBill bill="#{pp}" />                        
-                                </ui:repeat>
-                            </h:panelGroup> 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
-                                <ui:repeat value="#{inwardPaymentController.current}" var="pp">
-                                    <bill:A4PaperPaymentBill bill="#{pp}" />                        
-                                </ui:repeat>
-                            </h:panelGroup> 
+
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                    <ui:repeat value="#{inwardPaymentController.current}" var="pp">
+                                        <bill:FiveFivePaymentBill bill="#{pp}" />                        
+                                    </ui:repeat>
+                                </h:panelGroup> 
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                    <ui:repeat value="#{inwardPaymentController.current}" var="pp">
+                                        <bill:A4PaperPaymentBill bill="#{pp}" />                        
+                                    </ui:repeat>
+                                </h:panelGroup> 
 
 <!--                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
     <ui:repeat value="#{inwardPaymentController.current}" var="pp">
@@ -290,14 +292,16 @@
     </ui:repeat>
 </h:panelGroup> -->
 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" style="align-items: center;">
-                                <ui:repeat value="#{inwardPaymentController.current}" var="pp" >
-                                    <bill:posPaperPaymentBill bill="#{pp}"/>                        
-                                </ui:repeat>
-                            </h:panelGroup>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" style="align-items: center;">
+                                    <ui:repeat value="#{inwardPaymentController.current}" var="pp" >
+                                        <bill:posPaperPaymentBill bill="#{pp}"/>                        
+                                    </ui:repeat>
+                                </h:panelGroup>
 
 <!--                        <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution ne 'Cooperative'}"/>
                         <bill:payment_coop bill="#{inwardPaymentController.current}" rendered="#{sessionController.departmentPreference.applicationInstitution eq 'Cooperative'}"/>-->
+                            </div>
+
                         </h:panelGroup>
                     </div>
 

@@ -137,6 +137,10 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
+    
+    @Enumerated(EnumType.STRING)
+    private PaperType inwardDepositPaymentBillPaper;
+    
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
@@ -1175,10 +1179,17 @@ public class UserPreference implements Serializable {
     public void setChangeTextCasesPatientName(String textCase) {
         this.changeTextCasesPatientName = textCase;
     }
+    
+    
+    public PaperType getInwardDepositPaymentBillPaper() {
+        if (inwardDepositPaymentBillPaper == null) {
+            inwardDepositPaymentBillPaper = PaperType.A4Paper;
+        }
+        return inwardDepositPaymentBillPaper;
+    }
 
-    
-    
-    
-    
+    public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
+        this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
+    }
 
 }
