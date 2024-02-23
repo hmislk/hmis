@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -153,6 +154,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     AgentReferenceBookController agentReferenceBookController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    BillController billController;
 
     /**
      * Properties
@@ -221,6 +224,34 @@ public class BookingController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
         }
+        if (selectedBillSession.getBill().getBillItems() == null) {
+            selectedBillSession.getBill().setBillItems(billController.billItemsOfBill(selectedBillSession.getBill()));
+        }
+
+        if (selectedBillSession.getBill().getBillItems() == null) {
+            JsfUtil.addErrorMessage("Bill Items Null");
+            return "";
+        }
+        
+        if (selectedBillSession.getBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Items");
+            return "";
+        }
+        
+        if (selectedBillSession.getBill().getBillFees()== null) {
+            selectedBillSession.getBill().setBillFees(billController.billFeesOfBill(selectedBillSession.getBill()));
+        }
+
+        if (selectedBillSession.getBill().getBillFees() == null) {
+            JsfUtil.addErrorMessage("Bill Fees Null");
+            return "";
+        }
+        
+        if (selectedBillSession.getBill().getBillFees().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Fees");
+            return "";
+        }
+
         return "/channel/manage_booking?faces-redirect=true";
     }
 
