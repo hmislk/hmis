@@ -72,6 +72,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.beanutils.BeanUtils;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
@@ -171,6 +172,8 @@ public class BillSearch implements Serializable {
     private List<Bill> billsToApproveCancellation;
     private List<Bill> billsApproving;
     private List<BillItem> refundingItems;
+    private List<BillFee> refundingFees;
+    private Bill refundingBill;
     private List<Bill> bills;
     private List<Bill> filteredBill;
     private List<BillEntry> billEntrys;
@@ -1210,7 +1213,108 @@ public class BillSearch implements Serializable {
             Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
             refundBillItems(rb, p);
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
-            
+
+            paymentFacade.edit(p);
+
+            calculateRefundBillFees(rb);
+
+            getBill().setRefunded(true);
+            getBill().setRefundedBill(rb);
+            getBillFacade().edit(getBill());
+            double feeTotalExceptCcfs = 0.0;
+            if (getBill().getBillType() == BillType.CollectingCentreBill) {
+                for (BillItem bi : refundingItems) {
+                    String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
+                    List<BillFee> rbf = getBillFeeFacade().findByJpql(sql);
+                    for (BillFee bf : rbf) {
+                        if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                            feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
+                        }
+                    }
+                }
+
+                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferenceNumber());
+            }
+
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                if (getBill().getToStaff() != null) {
+                    //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    staffBean.updateStaffCredit(getBill().getToStaff(), (rb.getNetTotal() + rb.getVat()));
+                    UtilityController.addSuccessMessage("Staff Credit Updated");
+                }
+            }
+
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+
+            bill = billFacade.find(rb.getId());
+            createCollectingCenterfees(bill);
+            printPreview = true;
+            //UtilityController.addSuccessMessage("Refunded");
+
+        } else {
+            UtilityController.addErrorMessage("No Bill to refund");
+            return "";
+        }
+        //  recreateModel();
+        return "";
+    }
+
+    public String refundOpdBill() {
+        if (refundingBill == null) {
+            UtilityController.addErrorMessage("There is no Bill to Refund");
+            return "";
+        }
+        if (refundingItems.isEmpty()) {
+            UtilityController.addErrorMessage("There is no item to Refund");
+            return "";
+        }
+        if (refundingFees.isEmpty()) {
+            UtilityController.addErrorMessage("There is no fees to Refund");
+            return "";
+        }
+        if (refundAmount == 0.0) {
+            UtilityController.addErrorMessage("There is no item to Refund");
+            return "";
+        }
+        if (comment == null || comment.trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a comment");
+            return "";
+        }
+
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (getBill().isCancelled()) {
+                UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
+                return "";
+            }
+
+            if (getBill().getBillType() == BillType.InwardBill) {
+                if (getBill().getCheckedBy() != null) {
+                    UtilityController.addErrorMessage("Please Uncheck Bill");
+                    return "";
+                }
+            }
+
+            if (!calculateRefundTotal()) {
+                return "";
+            }
+
+            if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
+                for (BillItem trbi : refundingItems) {
+                    if (patientInvestigationController.sampledForBillItem(trbi)) {
+                        UtilityController.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
+                        return "";
+                    }
+                }
+            }
+
+            RefundBill rb = (RefundBill) createRefundBill();
+            Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
+            refundBillItems(rb, p);
+            p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
+
             paymentFacade.edit(p);
 
             calculateRefundBillFees(rb);
@@ -2338,11 +2442,11 @@ public class BillSearch implements Serializable {
             return "";
         }
         paymentMethod = bill.getPaymentMethod();
-        createBillItems();
+        createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
-        return "/opd/bill_cancel";
+        return "/opd/bill_cancel?faces-redirect=true;";
     }
 
     public String navigateToViewOpdBill() {
@@ -2351,13 +2455,28 @@ public class BillSearch implements Serializable {
             return "";
         }
         paymentMethod = bill.getPaymentMethod();
-        createBillItems();
+        createBillItemsAndBillFees();
         billBean.checkBillItemFeesInitiated(bill);
 
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
-        return "/opd/bill_reprint";
+        return "/opd/bill_reprint?faces-redirect=true;";
+    }
+
+    public String navigateToViewCollectingCentreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItemsAndBillFees();
+        billBean.checkBillItemFeesInitiated(bill);
+
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview = false;
+        return "/collecting_centre/bill_reprint?faces-redirect=true;";
     }
 
     public String navigateToRefundOpdBill() {
@@ -2366,11 +2485,24 @@ public class BillSearch implements Serializable {
             return "";
         }
         paymentMethod = bill.getPaymentMethod();
-        createBillItems();
+        createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
-        return "/opd/bill_refund";
+        return "/opd/bill_refund?faces-redirect=true;";
+    }
+
+    public String navigateToRefundCollectingCentreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItemsAndBillFees();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview = false;
+        return "/collecting_centre/bill_refund?faces-redirect=true;";
     }
 
     public List<BillEntry> getBillEntrys() {
@@ -2385,26 +2517,67 @@ public class BillSearch implements Serializable {
         return billItems;
     }
 
-    private void createBillItems() {
-        String sql = "";
-        HashMap hm = new HashMap();
-        sql = "SELECT b FROM BillItem b"
-                + "  WHERE b.retired=false "
-                + " and b.bill=:b";
-        hm.put("b", getBillSearch());
-        billItems = getBillItemFacede().findByJpql(sql, hm);
+    private void createBillItemsAndBillFees() {
+        try {
+            refundingBill = new RefundBill();
+            BeanUtils.copyProperties(refundingBill, bill);
 
-        for (BillItem bi : billItems) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+            // Set unique properties for refundingBill
+            refundingBill.setBillClassType(BillClassType.RefundBill);
+            refundingBill.setBillDate(new Date());
+            refundingBill.setBillTime(new Date());
+            refundingBill.setCreatedAt(new Date());
+            refundingBill.setCreater(sessionController.getLoggedUser());
+            refundingBill.setDepartment(sessionController.getLoggedUser().getDepartment());
+            refundingBill.setInstitution(sessionController.getLoggedUser().getInstitution());
 
-            if (rbi != null) {
-                bi.setTransRefund(true);
-            } else {
-                bi.setTransRefund(false);
+            refundingBill.setPatient(bill.getPatient());
+            refundingBill.setReferenceInstitution(bill.getReferenceInstitution());
+            refundingBill.setReferredBy(bill.getReferredBy());
+            refundingBill.setReferredByInstitution(bill.getReferredByInstitution());
+            refundingBill.setBillClassType(BillClassType.RefundBill);
+            refundingBill.setBillDate(new Date());
+            refundingBill.setBillTime(new Date());
+            refundingBill.setBilledBill(bill);
+            refundingBill.setReferenceBill(bill);
+            refundingBill.setForwardReferenceBill(bill);
+            refundingBill.setId(null);
+
+            billItems = new ArrayList<>();
+            refundingFees = new ArrayList<>();
+            refundingItems = new ArrayList<>();
+
+            List<BillItem> billedBillItems = billController.billItemsOfBill(bill);
+
+            for (BillItem bi : billedBillItems) {
+                BillItem nbi = new BillItem();
+                BeanUtils.copyProperties(nbi, bi);
+                nbi.setBill(refundingBill);
+                nbi.setReferanceBillItem(bi);
+                nbi.setReferenceBill(bill);
+                nbi.setId(null);
+                List<BillFee> billBillFees = billController.billFeesOfBillItem(bi);
+                for (BillFee bf : billBillFees) {
+                    BillFee nbf = new BillFee();
+                    BeanUtils.copyProperties(nbf, bf);
+                    nbf.setBill(refundingBill);
+                    nbf.setBillItem(nbi);
+                    nbf.setId(null);
+                    nbf.setReferenceBillFee(nbf);
+                    nbf.setReferenceBillItem(nbi);
+                    nbf.setFeeValue(0.0);
+                    bi.getBillFees().add(nbf);
+                    refundingFees.add(nbf);
+                }
+                refundingBill.getBillItems().add(nbi);
+                refundingItems.add(nbi);
             }
-        }
 
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exceptions appropriately
+        }
     }
 
     private void createBillItemsForRetire() {
@@ -3127,6 +3300,22 @@ public class BillSearch implements Serializable {
 
     public void setOverallSummary(OverallSummary overallSummary) {
         this.overallSummary = overallSummary;
+    }
+
+    public List<BillFee> getRefundingFees() {
+        return refundingFees;
+    }
+
+    public void setRefundingFees(List<BillFee> refundingFees) {
+        this.refundingFees = refundingFees;
+    }
+
+    public Bill getRefundingBill() {
+        return refundingBill;
+    }
+
+    public void setRefundingBill(Bill refundingBill) {
+        this.refundingBill = refundingBill;
     }
 
     public class PaymentSummary {

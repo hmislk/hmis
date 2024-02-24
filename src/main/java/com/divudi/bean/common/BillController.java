@@ -1504,6 +1504,18 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
     }
+    
+    public List<BillFee> billFeesOfBillItem(BillItem billItem) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.billItem=:bi ";
+        m.put("bi", billItem);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
 
     public void cancellAllBillsOfBatchBill() {
         if (batchBill == null) {
