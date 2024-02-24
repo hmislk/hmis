@@ -1775,6 +1775,7 @@ public class BillSearch implements Serializable {
                 bill = billFacade.find(bill.getId());
                 createCollectingCenterfees(getBill());
                 printPreview = true;
+                comment= null;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
                 UtilityController.addSuccessMessage("Awaiting Cancellation");
