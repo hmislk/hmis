@@ -25,8 +25,8 @@
                     <p:commandButton value="Book Doctor" action="#{patientPortalController.docotrBooking}" ajax="false"/>
                 </p:panel>
             </h:panelGroup>
-            
-            <p:panel rendered="#{patientPortalController.bookDoctor}" style="height: 250px">
+
+            <p:panel class="mt-5" rendered="#{patientPortalController.bookDoctor}" >
                 <div>
                     <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
                     <p:selectOneListbox 
@@ -35,7 +35,7 @@
                         value="#{patientPortalController.selectedDoctor}"
                         class="w-100 fullHeightListbox"
                         >
-                      
+
                         <f:selectItems value="#{patientPortalController.doctors}"
                                        var="con" 
                                        itemValue="#{con}"
@@ -43,7 +43,25 @@
                     </p:selectOneListbox>
                 </div>
             </p:panel>
+            <p:commandButton value="fill" action="#{patientPortalController.fillChannelBookings()}" />
+            <p:panel class="mt-5" rendered="#{patientPortalController.bookDoctor}">
+                <div>
+                    <p:watermark for="scSession" value="Select Session" ></p:watermark>
+                    <p:selectOneListbox 
+                        id="scSession"
+                        filter="true"
+                        value="#{patientPortalController.selectedChannelSession}"
+                        class="w-100 fullHeightListbox"
+                        >
 
+                        <f:selectItems value="#{patientPortalController.channelSessions}"
+                                       var="cs" 
+                                       itemValue="#{cs}"
+                                       itemLabel="#{cs.name}"></f:selectItems>
+                    </p:selectOneListbox>
+                </div>
+            </p:panel>
+             <p:commandButton value="Book"  />
         </h:form>
     </ui:define>
 </ui:composition>
