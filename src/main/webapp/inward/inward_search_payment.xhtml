@@ -16,14 +16,33 @@
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">
-
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">
-
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">
                                 </p:calendar>
-                                <p:commandButton ajax="false" action="#{searchController.createInwardPaymentBills()}" value="Search"  class="ui-button-warning w-100 my-1" icon="fas fa-search"/>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{searchController.createInwardPaymentBills()}" 
+                                    value="Search"  
+                                    class="ui-button-warning w-100 my-1" 
+                                    icon="fas fa-search">
+                                </p:commandButton>
+
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                 <h:outputLabel value="BHT No"/>
@@ -37,24 +56,23 @@
                                 <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
                             </div>
+
                             <div class="col-10">
+
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bb">
-                                    <p:column>
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment"  >
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
-                                        </p:commandButton>
-                                    </p:column>
 
                                     <p:column headerText="Bill No"  >
                                         <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="BHT No" >
+                                    <p:column headerText="BHT No" width="50px">
                                         <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At" >   
-                                        <h:outputLabel value="#{bb.createdAt}" />
+                                        <h:outputLabel value="#{bb.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -64,7 +82,7 @@
                                         </h:panelGroup>                             
                                     </p:column>
 
-                                    <p:column headerText="Billed By">  
+                                    <p:column headerText="Billed By" width="50px">  
                                         <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                  
                                         <br/>
@@ -75,13 +93,13 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Client" >
+                                    <p:column headerText="Client">
                                         <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                                     </p:column>         
                                     <p:column headerText="Payment Method">                            
                                         <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                     </p:column>
-                                    <p:column headerText="Value" >                              
+                                    <p:column headerText="Value" width="100px;">                              
                                         <h:outputLabel value="#{bb.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                                  
@@ -91,6 +109,12 @@
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bb.cancelledBill ne null}" value="#{bb.cancelledBill.comments}" >
                                         </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Action" width="100px;">
+                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment"  >
+                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>
