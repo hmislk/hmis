@@ -7,7 +7,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.hr.ReportKeyWord;
@@ -29,7 +29,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -601,7 +601,7 @@ public class InwardReportController implements Serializable {
     public void updateOutSideBill(BillItem bi) {
         if (bi.getBill().isPaid()) {
             if (bi.getDescreption() == null || bi.getDescreption().equals("")) {
-                UtilityController.addErrorMessage("Please Enter Memo");
+                JsfUtil.addErrorMessage("Please Enter Memo");
                 return;
             }
             if (bi.getBill().getEditedAt() == null && bi.getBill().getEditor() == null) {
@@ -609,9 +609,9 @@ public class InwardReportController implements Serializable {
                 bi.getBill().setEditedAt(new Date());
                 getBillFacade().edit(bi.getBill());
                 getBillItemFacade().edit(bi);
-                UtilityController.addSuccessMessage("This Bill Mark as Paid");
+                JsfUtil.addSuccessMessage("This Bill Mark as Paid");
             } else {
-                UtilityController.addErrorMessage("Alreddy Mark as Paid");
+                JsfUtil.addErrorMessage("Alreddy Mark as Paid");
             }
         } else {
             bi.getBill().setEditor(null);
@@ -619,7 +619,7 @@ public class InwardReportController implements Serializable {
             getBillFacade().edit(bi.getBill());
             bi.setDescreption("");
             getBillItemFacade().edit(bi);
-            UtilityController.addSuccessMessage("This Bill Mark as Un Paid");
+            JsfUtil.addSuccessMessage("This Bill Mark as Un Paid");
         }
     }
 

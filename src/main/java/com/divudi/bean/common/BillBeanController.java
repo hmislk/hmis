@@ -4,7 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillType;
@@ -3232,11 +3232,11 @@ public class BillBeanController implements Serializable {
         ptIx.setPerformDepartment(e.getBillItem().getItem().getDepartment());
 
         if (e.getBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("No Bill Item Selected");
+            JsfUtil.addErrorMessage("No Bill Item Selected");
         } else if (e.getBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this investigation " + e.getBillItem().getItem().getName());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() == null) {
-            UtilityController.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
+            JsfUtil.addErrorMessage("Under administration, add an Institution for the department " + e.getBillItem().getItem().getDepartment());
         } else if (e.getBillItem().getItem().getDepartment().getInstitution() != wu.getInstitution()) {
             ptIx.setOutsourcedInstitution(e.getBillItem().getItem().getInstitution());
         }

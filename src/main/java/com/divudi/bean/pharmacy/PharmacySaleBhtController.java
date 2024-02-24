@@ -11,7 +11,7 @@ import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -164,7 +164,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (getBatchBill().getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -244,7 +244,7 @@ public class PharmacySaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -254,7 +254,7 @@ public class PharmacySaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -264,7 +264,7 @@ public class PharmacySaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Another User On Change Bill Item "
+            JsfUtil.addErrorMessage("Another User On Change Bill Item "
                     + " Qty value is resetted");
             return true;
         }
@@ -304,7 +304,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -714,7 +714,7 @@ public class PharmacySaleBhtController implements Serializable {
         Date toDate = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("Please add items to the bill.");
+            JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
 
@@ -735,7 +735,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("Nothing To Settle.");
+            JsfUtil.addErrorMessage("Nothing To Settle.");
             return;
         }
 
@@ -765,32 +765,32 @@ public class PharmacySaleBhtController implements Serializable {
 
     private boolean errorCheck() {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
-            UtilityController.addErrorMessage("Please Select a BHT");
+            JsfUtil.addErrorMessage("Please Select a BHT");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            UtilityController.addErrorMessage("Please Select Patient Room");
+            JsfUtil.addErrorMessage("Please Select Patient Room");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            UtilityController.addErrorMessage("Please Set Room");
+            JsfUtil.addErrorMessage("Please Set Room");
             return true;
         }
 
         if (getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
 
         if (getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Sorry this BHT was Settled !!!");
+            JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
             return true;
         }
 
         if (checkAllBillItem()) {
-            //  UtilityController.addErrorMessage("Please Set Room 33");
+            //  JsfUtil.addErrorMessage("Please Set Room 33");
             return true;
         }
 
@@ -800,7 +800,7 @@ public class PharmacySaleBhtController implements Serializable {
     private void settleBhtIssue(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
-            UtilityController.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
+            JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
@@ -827,7 +827,7 @@ public class PharmacySaleBhtController implements Serializable {
     private void settleBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
-            UtilityController.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
+            JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
@@ -854,7 +854,7 @@ public class PharmacySaleBhtController implements Serializable {
     private void settleBhtIssueRequestAccept(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
-            UtilityController.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
+            JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return;
         }
 
@@ -958,12 +958,12 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage = "Quantity?";
-            UtilityController.addErrorMessage("Quantity?");
+            JsfUtil.addErrorMessage("Quantity?");
             return;
         }
 
@@ -971,25 +971,25 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (getQty() > fetchStock.getStock()) {
             errorMessage = "No Sufficient Stocks?";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
-//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
@@ -1048,7 +1048,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void removeBillItem(BillItem b) {
         if (b.getTransUserStock().isRetired()) {
-            UtilityController.addErrorMessage("This Item Already removed");
+            JsfUtil.addErrorMessage("This Item Already removed");
             return;
         }
 
@@ -1264,7 +1264,7 @@ public class PharmacySaleBhtController implements Serializable {
 
                     //Checking User Stock Entity
                     if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
-                        UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+                        JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
                         continue;
                     }
                     billItem = new BillItem();
@@ -1331,7 +1331,7 @@ public class PharmacySaleBhtController implements Serializable {
 //
 //        if (flag) {
 //            billItems = null;
-//            UtilityController.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
+//            JsfUtil.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
 //        }
     }
 

@@ -36,7 +36,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -47,12 +47,12 @@ public class SessionInstanceController implements Serializable {
 //        }
 //        if (pa.getId() != null) {
 //            getFacade().edit(pa);
-//            UtilityController.addSuccessMessage("Updated Successfully.");
+//            JsfUtil.addSuccessMessage("Updated Successfully.");
 //        } else {
 //            pa.setCreatedAt(new Date());
 //            pa.setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(pa);
-//            UtilityController.addSuccessMessage("Saved Successfully");
+//            JsfUtil.addSuccessMessage("Saved Successfully");
 //        }
 //        recreateModel();
 //        getItems();

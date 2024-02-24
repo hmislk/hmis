@@ -9,12 +9,12 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -77,12 +77,12 @@ public class StoreAmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         items = null;
         // getItems();
@@ -128,9 +128,9 @@ public class StoreAmpController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -1,13 +1,11 @@
 package com.divudi.bean.common;
 
-import static com.divudi.bean.common.UtilityController.addErrorMessage;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.List;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
 import javax.faces.model.SelectItem;
 
 public class UtilityController implements Serializable {
@@ -63,8 +61,5 @@ public class UtilityController implements Serializable {
         return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
     }
 
-    public static Object getObjectFromRequestParameter(String requestParameterName, Converter converter, UIComponent component) {
-        String theId = UtilityController.getRequestParameter(requestParameterName);
-        return converter.getAsObject(FacesContext.getCurrentInstance(), component, theId);
-    }
+
 }

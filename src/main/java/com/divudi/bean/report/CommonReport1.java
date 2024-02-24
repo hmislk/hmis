@@ -13,7 +13,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -1988,7 +1988,7 @@ public class CommonReport1 implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            com.divudi.facade.util.JsfUtil.addErrorMessage("Please Select Deparment");
+            JsfUtil.addErrorMessage("Please Select Deparment");
             return;
         }
         biledBills = getLabBillsOwnBilled();
@@ -2001,7 +2001,7 @@ public class CommonReport1 implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            com.divudi.facade.util.JsfUtil.addErrorMessage("Please Select Deparment");
+            JsfUtil.addErrorMessage("Please Select Deparment");
             return;
         }
         billItems = getLabBillItemsOwnBilled();

@@ -4,7 +4,7 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -54,7 +54,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -240,7 +240,7 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
-            UtilityController.addErrorMessage("Bill Already Cancelled");
+            JsfUtil.addErrorMessage("Bill Already Cancelled");
             return null;
         }
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);

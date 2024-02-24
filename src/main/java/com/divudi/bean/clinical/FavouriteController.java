@@ -8,7 +8,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.clinical.PrescriptionTemplate;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.facade.PrescriptionTemplateFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

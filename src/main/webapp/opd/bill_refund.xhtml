@@ -95,7 +95,10 @@
                                         <h:outputLabel value="Bill Item Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
 
-                                    <table >
+
+
+
+                                    <table class="table table-primary">
                                         <tr>
                                             <th>
                                                 <p:outputLabel value="Item" ></p:outputLabel>
@@ -115,6 +118,7 @@
                                                 <td colspan="4">
                                                     <h:outputText value="#{bi.item.name}" ></h:outputText>
                                                 </td>
+
                                             </tr>
                                             <ui:repeat value="#{bi.billFees}" var="bf" >
                                                 <tr>
@@ -127,7 +131,9 @@
                                                     </td>
                                                     <td >
                                                         <p:inputText id="txtRefVal" value="#{bf.feeValue}" >
-                                                            <p:ajax event="blur" process="txtRefVal" update="panelItems" ></p:ajax>
+                                                            <p:ajax event="blur" process="txtRefVal" 
+                                                                    listener="#{billSearch.calculateRefundTotalForOpdBill}"
+                                                                    update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId}" ></p:ajax>
                                                         </p:inputText>
                                                     </td>
                                                 </tr>
@@ -136,65 +142,53 @@
                                     </table>
 
 
-                                    <ui:repeat value="#{billSearch.refundingFees}" var="bf" >
-                                        <tr>
-                                            <td >
-                                                <h:outputText value="#{bf.fee.name}" ></h:outputText>
-                                            </td>
-                                            <td >
-                                                <h:outputText value="#{bf.referenceBillFee.feeValue}" ></h:outputText>
-                                            </td>
-                                            <td >
-                                                <p:inputText value="#{bf.feeValue}" ></p:inputText>
-                                            </td>
-                                        </tr>
-                                    </ui:repeat>
 
 
 
-                                    <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
-                                                 rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
-
-
-                                        <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                        <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                        <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-
-                                        <p:column id="colSelect"   selectionMode="multiple"    >
-                                        </p:column>
-
-                                        <p:column >
-                                            <f:facet name="header">No</f:facet>
-                                            <h:outputLabel value="#{rowIndex+1}" />
-                                        </p:column>
-
-                                        <p:column >
-                                            <f:facet name="header">ID</f:facet>
-                                            <h:outputLabel value="#{b.id}"/>
-                                        </p:column>
-
-                                        <p:column >
-                                            <f:facet name="header">ID</f:facet>
-                                            <h:outputLabel value="#{b.id}"/>
-                                        </p:column>
-
-                                        <p:column >
-                                            <f:facet name="header">Item Name</f:facet>
-                                            <h:outputLabel value="#{b.item.name}"/>
-                                        </p:column>
-                                        <p:column >
-                                            <f:facet name="header">Fee Value</f:facet>
-                                            <h:outputLabel value="#{b.netValue}"/>
-                                        </p:column >
-                                        <p:column headerText="Refunded" >
-                                            <h:outputLabel  value="#{b.refunded}" />
-                                        </p:column>
-                                    </p:dataTable>
                                 </p:panel>
 
+
+                                <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="b" 
+                                             rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
+
+
+                                    <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
+                                    <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
+                                    <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
+
+                                    <p:column id="colSelect"   selectionMode="multiple"    >
+                                    </p:column>
+
+                                    <p:column >
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}" />
+                                    </p:column>
+
+                                    <p:column >
+                                        <f:facet name="header">ID</f:facet>
+                                        <h:outputLabel value="#{b.id}"/>
+                                    </p:column>
+
+                                    <p:column >
+                                        <f:facet name="header">ID</f:facet>
+                                        <h:outputLabel value="#{b.id}"/>
+                                    </p:column>
+
+                                    <p:column >
+                                        <f:facet name="header">Item Name</f:facet>
+                                        <h:outputLabel value="#{b.item.name}"/>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header">Fee Value</f:facet>
+                                        <h:outputLabel value="#{b.netValue}"/>
+                                    </p:column >
+                                    <p:column headerText="Refunded" >
+                                        <h:outputLabel  value="#{b.refunded}" />
+                                    </p:column>
+                                </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
 

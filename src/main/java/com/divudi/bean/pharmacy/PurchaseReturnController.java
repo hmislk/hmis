@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -144,7 +144,7 @@ public class PurchaseReturnController implements Serializable {
         double remain = getRemainingQty(tmp.getReferanceBillItem());
         if (tmp.getQty() > remain) {
             tmp.setQty(remain);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -287,7 +287,7 @@ public class PurchaseReturnController implements Serializable {
 
     public void settle() {
         if (checkGrnItems()) {
-            UtilityController.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
+            JsfUtil.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
             return;
 
         }
@@ -300,7 +300,7 @@ public class PurchaseReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
