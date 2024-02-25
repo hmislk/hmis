@@ -86,6 +86,22 @@
                                                 </h:outputLabel>
                                             </p:panelGrid>
                                         </p:panel>
+                                         <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                                <h:outputLabel value="Refund Details" class="mx-2"></h:outputLabel>
+                                            </f:facet>
+                                            <p:panelGrid columns="2">
+                                                <h:outputLabel value="Total :" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.refundingBill.total}" ></h:outputLabel>
+                                                <h:outputLabel value="Discount :" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.refundingBill.discount}" ></h:outputLabel>
+                                                <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.refundingBill.netTotal}" ></h:outputLabel>
+                                                <h:outputLabel style="font-weight: bold;" value="Total Refund" >
+                                                </h:outputLabel>
+                                            </p:panelGrid>
+                                        </p:panel>
                                     </div>
                                 </div>
 
