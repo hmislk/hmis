@@ -69,10 +69,12 @@ public class DoctorController implements Serializable {
         sql = " select p "
                 + " from Doctor p "
                 + " where p.retired=false "
-                + " and p.speciality=:spe "
                 + " order by p.person.name";
         HashMap hm = new HashMap();
-        hm.put("spe", speciality);
+        if (speciality != null) {
+            sql += " and p.speciality=:spe ";
+            hm.put("spe", speciality);
+        }
         suggestions = getFacade().findByJpql(sql, hm);
         return suggestions;
     }

@@ -197,6 +197,9 @@ public class BillSearch implements Serializable {
     String encryptedPatientReportId;
     String encryptedExpiary;
 
+    private boolean hospitalFeeRefund;
+    private boolean doctorFeeRefund;
+
     private OverallSummary overallSummary;
 
     public void preparePatientReportByIdForRequests() {
@@ -987,7 +990,16 @@ public class BillSearch implements Serializable {
         refundVatPlusTotal = 0;
         //billItems=null;
         tempbillItems = null;
+        double doctorfee=0;
+        double hospitalfee=0;
         for (BillItem i : getRefundingItems()) {
+            System.out.println("Working clculation");
+            for(BillFee bf:i.getProFees()){
+                if (bf.getFee().getFeeType() == FeeType.Staff) {
+                    doctorfee+=bf.getFeeValue();
+                    System.out.println("doctorfee = " + doctorfee);
+                }
+            }
             if (checkPaidIndividual(i)) {
                 UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
                 return false;
@@ -1003,8 +1015,23 @@ public class BillSearch implements Serializable {
             //
 
 //            if (!i.isRefunded()) {
-            refundTotal += i.getGrossValue();
-            refundAmount += i.getNetValue();
+            if (doctorFeeRefund) {
+                refundTotal += doctorfee;
+                refundAmount += i.getStaffFee();
+                System.out.println("refundTotal = " + refundTotal);
+            }
+            if (hospitalFeeRefund) {
+                refundTotal += i.getHospitalFee();
+                refundAmount += i.getHospitalFee();
+                System.out.println("refundTotal = " + refundTotal);
+            }
+
+            if (doctorFeeRefund == false || hospitalFeeRefund == false) {
+                refundTotal += i.getGrossValue();
+                refundAmount += i.getNetValue();
+                System.out.println("refundTotal = " + refundTotal);
+
+            }
             refundMargin += i.getMarginValue();
             refundDiscount += i.getDiscount();
             refundVat += i.getVat();
@@ -1210,7 +1237,7 @@ public class BillSearch implements Serializable {
             Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
             refundBillItems(rb, p);
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
-            
+
             paymentFacade.edit(p);
 
             calculateRefundBillFees(rb);
@@ -1285,7 +1312,7 @@ public class BillSearch implements Serializable {
         rb.setNetTotal(0 - refundAmount);
         rb.setVat(0 - refundVat);
         rb.setVatPlusNetTotal(0 - refundVatPlusTotal);
-
+        System.out.println("refundTotal = " + refundTotal);
         getBillFacade().create(rb);
 
         return rb;
@@ -1374,6 +1401,7 @@ public class BillSearch implements Serializable {
     }
 
     public void calculateRefundBillFees(RefundBill rb) {
+        System.out.println("rb = " + rb.getId());
         double s = 0.0;
         double b = 0.0;
         double p = 0.0;
@@ -1390,9 +1418,11 @@ public class BillSearch implements Serializable {
             }
 
         }
-        rb.setStaffFee(0 - s);
-        rb.setPerformInstitutionFee(0 - p);
+
+        rb.setStaffFee(0-s);
+        rb.setPerformInstitutionFee(0-p);
         getBillFacade().edit(rb);
+
     }
 
     public void refundBillItems(RefundBill rb) {
@@ -3130,6 +3160,22 @@ public class BillSearch implements Serializable {
         this.overallSummary = overallSummary;
     }
 
+    public boolean isHospitalFeeRefund() {
+        return hospitalFeeRefund;
+    }
+
+    public void setHospitalFeeRefund(boolean hospitalFeeRefund) {
+        this.hospitalFeeRefund = hospitalFeeRefund;
+    }
+
+    public boolean isDoctorFeeRefund() {
+        return doctorFeeRefund;
+    }
+
+    public void setDoctorFeeRefund(boolean doctorFeeRefund) {
+        this.doctorFeeRefund = doctorFeeRefund;
+    }
+
     public class PaymentSummary {
 
         private long idCounter = 0;
@@ -3304,6 +3350,7 @@ public class BillSearch implements Serializable {
         public void setBillTypeSummaries(List<BillTypeSummary> billTypeSummaries) {
             this.billTypeSummaries = billTypeSummaries;
         }
+
     }
 
 }
