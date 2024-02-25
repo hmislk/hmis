@@ -358,6 +358,10 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         
+        if(getCashPaid() < getPreBill().getNetTotal()){
+           JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+            return; 
+        }
         saveSaleBill();
         saveSaleBillItems();
 
@@ -632,7 +636,7 @@ public class OpdPreSettleController implements Serializable {
             //// // System.out.println("dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
-                    UtilityController.addErrorMessage("Can't Pay,This Bill cancelled");
+                    UtilityController.addErrorMessage("Can't Pay,This Bill Cancelled");
                 } else {
                     UtilityController.addErrorMessage("Some Bill cancelled This Batch Bill");
                 }
