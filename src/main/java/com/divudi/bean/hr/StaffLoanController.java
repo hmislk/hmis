@@ -5,7 +5,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
@@ -13,7 +13,7 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -59,31 +59,31 @@ public class StaffLoanController implements Serializable {
     private boolean errorCheck() {
 
         if (getCurrent().getPaysheetComponent() == null) {
-            UtilityController.addErrorMessage("Check Loan Name");
+            JsfUtil.addErrorMessage("Check Loan Name");
             return true;
         }
 //        if (getCurrent().getDa() == null) {
-//            UtilityController.addErrorMessage("Check Date");
+//            JsfUtil.addErrorMessage("Check Date");
 //            return true;
 //        }
 
         if (getCurrent().getStaff() == null) {
-            UtilityController.addErrorMessage("Check Staff");
+            JsfUtil.addErrorMessage("Check Staff");
             return true;
         }
 
         if (getCurrent().isCompleted() && getCurrent().getCompletedAt() == null) {
-            UtilityController.addErrorMessage("Check Completed Date");
+            JsfUtil.addErrorMessage("Check Completed Date");
             return true;
         }
 
         if (!getCurrent().isCompleted() && getCurrent().getCompletedAt() != null) {
-            UtilityController.addErrorMessage("You Can't Add Completed Date Without Completed");
+            JsfUtil.addErrorMessage("You Can't Add Completed Date Without Completed");
             return true;
         }
 
 //        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-//            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+//            JsfUtil.addErrorMessage("There is Some component in Same Date Range");
 //            return true;
 //        }
         return false;
@@ -140,7 +140,7 @@ public class StaffLoanController implements Serializable {
 
     public void saveSelected() {
         if (errorCheckSelected()) {
-            UtilityController.addErrorMessage("Please Check Cheque Date And Cheque No:");
+            JsfUtil.addErrorMessage("Please Check Cheque Date And Cheque No:");
             return;
         }
 
@@ -149,7 +149,7 @@ public class StaffLoanController implements Serializable {
             s.setChequePaidDate(new Date());
             getStaffPaysheetComponentFacade().edit(s);
         }
-        UtilityController.addSuccessMessage("Sucessffully Updated Selected");
+        JsfUtil.addSuccessMessage("Sucessffully Updated Selected");
 
     }
 

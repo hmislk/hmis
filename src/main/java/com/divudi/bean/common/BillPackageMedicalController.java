@@ -49,7 +49,7 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -353,7 +353,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         clearBillItemValues();
         //////// // System.out.println("33");
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }
 
@@ -474,23 +474,23 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         if (getPatientTabId().toString().equals("tabNewPt")) {
 
             if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
+                JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
             if (getPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+                JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
 
         }
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
@@ -504,11 +504,11 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
 //        if (paymentScheme.getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //        }
@@ -517,11 +517,11 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     private void addEntry(BillItem bi) {
         if (bi == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (bi.getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
 
@@ -537,7 +537,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         calTotals();
         if (bi.getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
+            JsfUtil.addErrorMessage("Please enter the rate");
             return;
         }
         //      clearBillItemValues();
@@ -546,7 +546,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public void addToBill() {
         if (getLstBillEntries().size() > 0) {
-            UtilityController.addErrorMessage("You can not add more than on package at a time create new bill");
+            JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
             return;
         }
 
@@ -554,7 +554,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         setCreditCompany(getCurrentBillItem().getItem().getForInstitution());
         for (Item i : itemList) {
             if (i.getDepartment() == null) {
-                UtilityController.addErrorMessage("Under administration, add a Department for item " + i.getName());
+                JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                 return;
             }
 
@@ -564,7 +564,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         }
 
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void createBillItems(Item item) {

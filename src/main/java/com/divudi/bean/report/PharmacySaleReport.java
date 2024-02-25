@@ -8,7 +8,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -6583,7 +6583,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         if (department == null) {
-            UtilityController.addErrorMessage("Select Department");
+            JsfUtil.addErrorMessage("Select Department");
             return;
         }
         paymentSchemeSummerys = new ArrayList<>();

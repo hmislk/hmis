@@ -6,7 +6,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.table.String1Value1;
@@ -585,11 +585,11 @@ public class InstitutionLabSumeryController implements Serializable {
         Date startTime = new Date();
         
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Payment Methord...!");
+            JsfUtil.addErrorMessage("Payment Methord...!");
             return;
         }
         if (institution == null) {
-            UtilityController.addErrorMessage("Institution...!");
+            JsfUtil.addErrorMessage("Institution...!");
             return;
         }
 
@@ -860,7 +860,7 @@ public class InstitutionLabSumeryController implements Serializable {
         Date startTime = new Date();
 
         if (institution == null) {
-            UtilityController.addErrorMessage("Select Institution");
+            JsfUtil.addErrorMessage("Select Institution");
         }
         String sql;
         Map tm = new HashMap();

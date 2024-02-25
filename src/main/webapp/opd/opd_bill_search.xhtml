@@ -219,7 +219,7 @@
                                         </h:commandLink>  
                                     </p:column>-->
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
-                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBill}" value="#{bill.backwardReferenceBill.insId}">
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
                                     </p:column>

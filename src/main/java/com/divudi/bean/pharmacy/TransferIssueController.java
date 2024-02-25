@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -89,7 +89,7 @@ public class TransferIssueController implements Serializable {
 
     public void remove(BillItem billItem) {
         if (billItem.getTransUserStock().isRetired()) {
-            UtilityController.addErrorMessage("This Item Already removed");
+            JsfUtil.addErrorMessage("This Item Already removed");
             return;
         }
 
@@ -154,7 +154,7 @@ public class TransferIssueController implements Serializable {
 
                 //Checking User Stock Entity
                 if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
-                    UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+                    JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
                     continue;
                 }
 
@@ -199,14 +199,14 @@ public class TransferIssueController implements Serializable {
 
         if (flag) {
             billItems = null;
-            UtilityController.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
+            JsfUtil.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
         }
 
     }
 
     public void settle() {
         if (getIssuedBill().getToStaff() == null) {
-            UtilityController.addErrorMessage("Please Select Staff");
+            JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
 
@@ -338,13 +338,13 @@ public class TransferIssueController implements Serializable {
 
         if (availableStock < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(0.0);
-            UtilityController.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
         }
 
         //Check Is There Any Other User using same Stock
         if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
             tmp.setTmpQty(0.0);
-            UtilityController.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
+            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
         }
 
         userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());

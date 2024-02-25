@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.InvestigationFacade;
@@ -74,16 +74,16 @@ public class LabWorksheetController implements Serializable {
 
     public void addWorksheetItem(){
         if(current==null){
-            UtilityController.addErrorMessage("No worksheet");
+            JsfUtil.addErrorMessage("No worksheet");
             return;
         }
         if(investigation==null){
-            UtilityController.addErrorMessage("No Ix");
+            JsfUtil.addErrorMessage("No Ix");
             return;
         }
         getInvestigation().getWorksheetItems().add(current);
         getIxFacade().edit(investigation);
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         current=null;
     }
     
@@ -92,16 +92,16 @@ public class LabWorksheetController implements Serializable {
     
         public void removeWorksheetItem(){
         if(current==null){
-            UtilityController.addErrorMessage("No worksheet");
+            JsfUtil.addErrorMessage("No worksheet");
             return;
         }
         if(investigation==null){
-            UtilityController.addErrorMessage("No Ix");
+            JsfUtil.addErrorMessage("No Ix");
             return;
         }
         getInvestigation().getWorksheetItems().remove(current);
         getIxFacade().edit(investigation);
-        UtilityController.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed");
         current=null;
     }
 
@@ -112,7 +112,7 @@ public class LabWorksheetController implements Serializable {
         getWiFacade().edit(wsi);
     }
     getIxFacade().edit(investigation);
-    UtilityController.addSuccessMessage("Updated");
+    JsfUtil.addSuccessMessage("Updated");
 }
 
 

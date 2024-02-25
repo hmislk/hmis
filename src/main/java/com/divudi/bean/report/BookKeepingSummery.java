@@ -9,8 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.inward.AdmissionTypeController;
+import com.divudi.bean.common.util.JsfUtil;import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -3876,7 +3875,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
 //        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement};
@@ -4256,7 +4255,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
+            JsfUtil.addErrorMessage("Date Range is too Long");
             return;
         }
 
@@ -4389,7 +4388,7 @@ public class BookKeepingSummery implements Serializable {
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
 //        if (Math.abs(lng) > 32) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};

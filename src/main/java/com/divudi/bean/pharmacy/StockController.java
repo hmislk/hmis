@@ -9,7 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
@@ -138,7 +138,7 @@ public class StockController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Manufacturer");
+            JsfUtil.addErrorMessage("Please Select Manufacturer");
             return true;
         }
         return false;
@@ -151,10 +151,10 @@ public class StockController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -198,9 +198,9 @@ public class StockController implements Serializable {
 
         if (current != null) {
             getFacade().remove(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

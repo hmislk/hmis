@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -32,7 +32,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -805,12 +805,12 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Please Select Stocke");
+            JsfUtil.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
-            UtilityController.addErrorMessage("Select Item Batch");
+            JsfUtil.addErrorMessage("Select Item Batch");
             return true;
         }
         return false;
@@ -819,15 +819,15 @@ public class PharmacyAdjustmentController implements Serializable {
     private boolean errorCheckAll() {
 
         if (getItem() == null) {
-            UtilityController.addErrorMessage("Select Item");
+            JsfUtil.addErrorMessage("Select Item");
             return true;
         }
         if (getStocks().isEmpty()) {
-            UtilityController.addErrorMessage("No Stocks");
+            JsfUtil.addErrorMessage("No Stocks");
             return true;
         }
         if (qty == null || qty == 0.0) {
-            UtilityController.addErrorMessage("Please Select Correct Stock");
+            JsfUtil.addErrorMessage("Please Select Correct Stock");
             return true;
         }
 
@@ -837,19 +837,19 @@ public class PharmacyAdjustmentController implements Serializable {
     private boolean errorCheckAllZero() {
 
         if (getItem() == null) {
-            UtilityController.addErrorMessage("Select Item");
+            JsfUtil.addErrorMessage("Select Item");
             return true;
         }
         if (getStocks().isEmpty()) {
-            UtilityController.addErrorMessage("No Stocks");
+            JsfUtil.addErrorMessage("No Stocks");
             return true;
         }
         if (qty == null) {
-            UtilityController.addErrorMessage("Please Select Correct Stock");
+            JsfUtil.addErrorMessage("Please Select Correct Stock");
             return true;
         }
         if (qty != 0.0) {
-            UtilityController.addErrorMessage("Please Select Correct Stock Qty");
+            JsfUtil.addErrorMessage("Please Select Correct Stock Qty");
             return true;
         }
 
