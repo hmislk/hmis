@@ -1024,31 +1024,14 @@ public class BillSearch implements Serializable {
         return true;
     }
 
-    public boolean billFeesAreAlreadyPaidToStaff(Bill refundingBill) {
-        boolean paid = false;
-        if (refundingBill == null) {
-            return paid;
-        }
-        List<BillItem> bis = billController.billItemsOfBill(bill);
-        if (bis == null || bis.isEmpty()) {
-            return paid;
-        }
-        for (BillItem bi : bis) {
-            List<BillFee> bfs = billController.billFeesOfBillItem(bi);
-            if (bfs == null || bfs.isEmpty()) {
-                return paid;
-            }
-            for (BillFee bf : bi.getBillFees()) {
-                if (bf.getReferenceBillFee().) {
-                    paid = true;
-                }
-            }
-        }
-        return paid;
+    
+    
+    public void calculateRefundTotalForOpdBillForAjex() {
+        calculateRefundTotalForOpdBill();
     }
 
     public boolean calculateRefundTotalForOpdBill() {
-        System.out.println("calculateRefundTotalForOpdBill");
+
         refundAmount = 0;
         refundDiscount = 0;
         refundTotal = 0;
@@ -1083,6 +1066,12 @@ public class BillSearch implements Serializable {
             getTempbillItems().add(i);
 
         }
+
+        getRefundingBill().setNetTotal(refundAmount);
+        getRefundingBill().setNetTotal(refundTotal);
+        getRefundingBill().setMargin(refundMargin);
+        getRefundingBill().setDiscount(refundDiscount);
+        getRefundingBill().setVat(refundVat);
 
         return true;
     }
@@ -1366,83 +1355,41 @@ public class BillSearch implements Serializable {
             return "";
         }
 
-        if (!calculateRefundTotalForOpdBill()) {
-            JsfUtil.addErrorMessage("Error. Please Check Bill");
+        boolean reundTotalCalculationsSuccess = calculateRefundTotalForOpdBill();
+        if (!reundTotalCalculationsSuccess) {
+            JsfUtil.addErrorMessage("Error in calculations. Please Check Bill");
             return "";
         }
-
-        calculateRefundTotalForOpdBill();
 
         if (refundingBill.getNetTotal() == 0.0) {
             JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
 
-        boolean billFeesAreAvailableForReturn = invertBillValuesAndCalculate(refundingBill);
-        if (!billFeesAreAvailableForReturn) {
-            JsfUtil.addErrorMessage("Error in Bill Value Calculations");
+        boolean billValueInversionIsSuccess = invertBillValuesAndCalculate(refundingBill);
+        if (!billValueInversionIsSuccess) {
+            JsfUtil.addErrorMessage("Error in Bill Value Inversion");
             return "";
         }
 
-        if (refundingBill.getId() == null) {
-            getBillFacade().create(refundingBill);
-        } else {
-            getBillFacade().edit(refundingBill);
-        }
-
+        saveRefundBill(refundingBill);
         Payment p = getOpdPreSettleController().createPayment(refundingBill, paymentMethod);
 
-        refundBillItemsForOpdBill((RefundBill) refundingBill, p);
-
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-
-            p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
-
-            paymentFacade.edit(p);
-
-            calculateRefundBillFees(rb);
-
-            getBill().setRefunded(true);
-            getBill().setRefundedBill(rb);
-            getBillFacade().edit(getBill());
-            double feeTotalExceptCcfs = 0.0;
-            if (getBill().getBillType() == BillType.CollectingCentreBill) {
-                for (BillItem bi : refundingItems) {
-                    String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
-                    List<BillFee> rbf = getBillFeeFacade().findByJpql(sql);
-                    for (BillFee bf : rbf) {
-                        if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                            feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
-                        }
-                    }
-                }
-
-                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferenceNumber());
+        //TODO: Create Payments for Bill Items
+        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            if (getBill().getToStaff() != null) {
+                staffBean.updateStaffCredit(getBill().getToStaff(), (refundingBill.getNetTotal() + refundingBill.getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+            } else if (getBill().getCreditCompany() != null) {
+                //TODO : Update Credit COmpany Bill
             }
-
-            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
-                if (getBill().getToStaff() != null) {
-                    //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
-                    staffBean.updateStaffCredit(getBill().getToStaff(), (rb.getNetTotal() + rb.getVat()));
-                    JsfUtil.addSuccessMessage("Staff Credit Updated");
-                }
-            }
-
-            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
-            getSessionController().setLoggedUser(wb);
-
-            bill = billFacade.find(rb.getId());
-            createCollectingCenterfees(bill);
-            printPreview = true;
-            //JsfUtil.addSuccessMessage("Refunded");
-
-        } else {
-            JsfUtil.addErrorMessage("No Bill to refund");
-            return "";
+        } else if (getBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            //TODO: Update Patient Deposit
         }
-        //  recreateModel();
+
+        //TODO - Update Bill Payment Values
+        //TODO - Update Bill Paid Value
+        printPreview = true;
         return "";
     }
 
@@ -1521,8 +1468,7 @@ public class BillSearch implements Serializable {
                 billController.saveBillFee(bf);
             }
         }
-        return rb;
-
+        return true;
     }
 
     private Bill createRefundBill() {
@@ -1683,31 +1629,6 @@ public class BillSearch implements Serializable {
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 
             returnBillFee(rb, rbi, tmp);
-
-        }
-    }
-
-    public void refundBillItemsForOpdBill(RefundBill rb, Payment p) {
-        for (BillItem bi : rb.getBillItems()) { //set Bill Item as Refunded //set Bill Item as Refunded
-            bi.invertValue(bi);
-            if (bi.getId() == null) {
-                getBillItemFacede().create(bi);
-            } else {
-                getBillItemFacede().edit(bi);
-            }
-            bi.getReferanceBillItem().setRefunded(Boolean.TRUE);
-
-            getBillItemFacede().edit(bi.getReferanceBillItem());
-
-            returnBillFeeForOpd(bi.getBillFees());
-
-            //create BillFeePayments For Refund
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + rbi.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
-            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(rb, tmpC, p);
-            //
-
-            rb.getBillItems().add(rbi);
 
         }
     }

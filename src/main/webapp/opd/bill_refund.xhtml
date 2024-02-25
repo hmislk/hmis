@@ -86,7 +86,7 @@
                                                 </h:outputLabel>
                                             </p:panelGrid>
                                         </p:panel>
-                                         <p:panel>
+                                        <p:panel id="panelRefundBillDetails">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                                 <h:outputLabel value="Refund Details" class="mx-2"></h:outputLabel>
@@ -148,8 +148,8 @@
                                                     <td >
                                                         <p:inputText id="txtRefVal" value="#{bf.feeValue}" >
                                                             <p:ajax event="blur" process="txtRefVal" 
-                                                                    listener="#{billSearch.calculateRefundTotalForOpdBill}"
-                                                                    update=":#{p:resolveFirstComponentWithId('panelItems',view).clientId}" ></p:ajax>
+                                                                    listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
+                                                                    update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" ></p:ajax>
                                                         </p:inputText>
                                                     </td>
                                                 </tr>
