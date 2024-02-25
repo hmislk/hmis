@@ -25,8 +25,6 @@
                                 <!-- Command Buttons -->
                                 <div class="d-flex" style="float: right;">
                                    
-                                    
-
                                     <p:commandButton value="New OPD Bill" 
                                                      class="ui-button-primary mx-1"
                                                      icon="fa fa-plus"
@@ -75,7 +73,14 @@
                                         <p:printer target="groupPrint" />
                                     </p:commandButton> 
                                 </div> 
-                                
+                                            <ui:repeat value="#{cc.attrs.payments}" var="ps">
+                <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
+                </h:panelGroup>
+            </ui:repeat>
+
                                 <h:panelGroup id="groupPrint" >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                         <ui:repeat value="#{opdBillController.bills}" var="ffb">

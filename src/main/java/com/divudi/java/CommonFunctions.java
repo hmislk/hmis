@@ -5,6 +5,7 @@
  */
 package com.divudi.java;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
@@ -12,6 +13,7 @@ import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -33,6 +36,64 @@ import org.joda.time.PeriodType;
  */
 public class CommonFunctions {
 
+    private SessionController sessionController;
+
+    private static final String[] units = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
+    private static final String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
+    private static final String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
+
+   
+
+    public static String convertToWord(double number) {
+        if (number == 0) {
+            return "Zero";
+        }
+
+        int intPart = (int) number;
+        int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
+
+        //System.out.println(number);
+        //System.out.println(number - intPart);
+        System.out.println(intPart);
+        //System.out.println(String.format("%.2f", number%1));
+        System.out.println(decimalPart);
+
+        // System.out.println(String.format("%.2f", decimalPart));
+        StringBuilder result = new StringBuilder();
+
+        if (intPart >= 1000000) {
+            result.append(convert(intPart / 1000000)).append(" Million ");
+            intPart %= 1000000;
+        }
+
+        if (intPart >= 1000) {
+            result.append(convert(intPart / 1000)).append(" Thousand ");
+            intPart %= 1000;
+        }
+
+        if (intPart > 0) {
+            result.append(convert(intPart));
+        }
+
+        if (decimalPart > 0) {
+            result.append(" and ").append(convert(decimalPart)).append(" Cents");
+        }
+
+        return result.toString().trim();
+    }
+
+    private static String convert(int number) {
+        if (number < 10) {
+            return units[number];
+        } else if (number < 20) {
+            return teens[number - 10];
+        } else if (number < 100) {
+            return tens[number / 10] + " " + units[number % 10];
+        } else {
+            return units[number / 100] + " Hundred " + convert(number % 100);
+        }
+    }
+
     public static Long removeSpecialCharsInPhonenumber(String phonenumber) {
         if (phonenumber == null) {
             return null;
@@ -40,6 +101,40 @@ public class CommonFunctions {
         String cleandPhoneNumber = phonenumber.replaceAll("[\\s+\\-()]", "");
         Long convertedPhoneNumber = Long.parseLong(cleandPhoneNumber);
         return convertedPhoneNumber;
+    }
+
+    public static Date convertLocalDateTimeToDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    //----------Date Time Formats
+    public static String getDateFormat(Date date) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
+        s = d.format(date);
+        return s;
+    }
+
+    public static String getDateFormat(Date date, String formatString) {
+        if (date == null) {
+            date = new Date();
+        }
+        if (formatString == null || formatString.trim().equals("")) {
+            formatString = "dd MMMM yyyy";
+        }
+        String s;
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+
+    public static LocalDateTime convertDateToLocalDateTime(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     public static Date convertDateToDbType(String argDate) {
@@ -264,6 +359,10 @@ public class CommonFunctions {
         code = name.replaceAll(" ", "_");
         code = code.toLowerCase();
         return code;
+    }
+
+    public static String dateToString(Date date, String ddMMyyyy) {
+        return formatDate(date, ddMMyyyy);
     }
 
     public Date getFirstDayOfYear(Date date) {
@@ -818,4 +917,14 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+    
+    
 }

@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
@@ -43,6 +45,32 @@ public class BarcodeController {
 
     public PatientController getPatientController() {
         return patientController;
+    }
+
+    public StreamedContent getCreateBarcodeCode128() {
+        StreamedContent barcode = null;
+        String code;
+        FacesContext context = FacesContext.getCurrentInstance();
+        code = context.getExternalContext().getRequestParameterMap().get("code");
+
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            return new DefaultStreamedContent();
+        }
+        if (code == null || code.trim().equals("")) {
+            return null;
+        }
+        File barcodeFile = new File(code);
+        try {
+            BarcodeImageHandler.saveJPEG(BarcodeFactory.createCode128(code), barcodeFile);
+            FileInputStream stream = new FileInputStream(barcodeFile);
+            barcode = DefaultStreamedContent.builder()
+                    .contentType("image/jpeg")
+                    .stream(() -> stream)
+                    .build();
+        } catch (Exception ex) {
+        }
+
+        return barcode;
     }
 
     public void setPatientController(PatientController patientController) {
@@ -103,8 +131,6 @@ public class BarcodeController {
 
         return barcode;
     }
-
-    
 
     public byte[] getBarcodeBytes(String code) {
         Barcode39 code39 = new Barcode39();

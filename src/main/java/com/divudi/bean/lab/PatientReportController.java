@@ -1501,7 +1501,6 @@ public class PatientReportController implements Serializable {
                     e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                     e.setSentSuccessfully(false);
                     getSmsFacade().create(e);
-                    System.out.println("Partial payment allowed KML Sms sended "+currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() );
                 }
             }
         }else{
@@ -1521,7 +1520,6 @@ public class PatientReportController implements Serializable {
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
-                System.out.println("Full Paid"+currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber() );
             }
         }
         if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {

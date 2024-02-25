@@ -127,7 +127,7 @@ public class WebUserController implements Serializable {
 
     private List<Department> departmentsOfSelectedUsersInstitution;
     
-    boolean testRun = true;
+    boolean testRun = false;
 
     public String navigateToRemoveMultipleUsers() {
         return "/admin/users/user_remove_multiple";

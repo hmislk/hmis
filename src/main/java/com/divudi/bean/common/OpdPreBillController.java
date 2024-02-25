@@ -27,6 +27,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
@@ -162,6 +163,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private PaymentMethodData paymentMethodData;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
+    private SearchKeyword searchKeyword;
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
@@ -386,26 +388,56 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        printPreview = true;
 //
 //    }
-    public void createBillFeePayments() {
-        Date startTime = new Date();
-        billFeePayments = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
+   public void createBillFeePayments() {
+    Date startTime = new Date();
+    billFeePayments = new ArrayList<>();
+    String sql;
+    Map m = new HashMap();
 
-        sql = " select bfp from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.createdAt between :fd and :td "
-                + " order by bfp.billFee.bill.deptId ";
+    sql = "select bfp from BillFeePayment bfp where "
+            + "bfp.retired=false "
+            + "and bfp.createdAt between :fd and :td ";
 
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
-
+    if (getSearchKeyword() != null && getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().isEmpty()) {
+        sql += "and bfp.creater.webUserPerson.name like :patientName ";
+        m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
     }
 
+    if (getSearchKeyword() != null && getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+        sql += "and bfp.billFee.bill.deptId like :billNo ";
+        m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+    }
+
+    if (getSearchKeyword() != null && getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+        sql += "and ((bfp.billFee.bill.netTotal) like :netTotal) ";
+        m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+    }
+
+    if (getSearchKeyword() != null && getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().isEmpty()) {
+        sql += "and ((bfp.billFee.bill.balance) like :total) ";
+        m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+    }
+
+    sql += "order by bfp.billFee.bill.deptId";
+
+    m.put("fd", fromDate);
+    m.put("td", toDate);
+
+    billFeePayments = getBillFeePaymentFacade().findByJpql(sql, m);
+
+    commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
+}
+
+    
+    public void clearPreBillSearchData() {
+        getSearchKeyword().setPatientName(null);
+        getSearchKeyword().setPatientPhone(null);
+        getSearchKeyword().setTotal(null);
+        getSearchKeyword().setNetTotal(null);
+        getSearchKeyword().setBillNo(null);
+
+    }
+    
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
     }
@@ -487,6 +519,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -495,6 +530,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
@@ -1368,48 +1406,34 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     private void addStaffToBillFees(List<BillFee> tmpBfs) {
-        System.out.println("addStaffToBillFees");
         if (tmpBfs == null) {
-            System.out.println("1");
             return;
         }
         if (tmpBfs.isEmpty()) {
-            System.out.println("2");
             return;
         }
         if (getCurrentlyWorkingStaff().isEmpty()) {
-            System.out.println("3");
             return;
         }
         for (BillFee bf : tmpBfs) {
-            System.out.println("bf = " + bf);
             if (bf.getFee() == null) {
-                System.out.println("4");
                 continue;
             }
             if (bf.getFee().getFeeType() == null) {
-                System.out.println("5");
                 continue;
             }
             if (bf.getFee().getSpeciality() == null) {
-                System.out.println("6");
                 bf.setStaff(getSelectedCurrentlyWorkingStaff());
                 continue;
             }
             if (bf.getFee().getFeeType() == FeeType.Staff) {
-                System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
                 if (bf.getFee().getSpeciality().equals(getSelectedCurrentlyWorkingStaff().getSpeciality())) {
-                    System.out.println("7");
                     if (bf.getFee().getStaff() == null) {
-                        System.out.println("8");
                         bf.setStaff(getSelectedCurrentlyWorkingStaff());
                     }
                 } else {
-                    System.out.println("9");
                     for (Staff s : currentlyWorkingStaff) {
-                        System.out.println("10");
                         if (bf.getFee().getSpeciality().equals(s.getSpeciality())) {
-                            System.out.println("11");
                             bf.setStaff(s);
                         }
                     }
@@ -2026,5 +2050,18 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
+
+    public SearchKeyword getSearchKeyword() {
+         if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+    
+    
 
 }

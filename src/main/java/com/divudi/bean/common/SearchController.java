@@ -204,6 +204,15 @@ public class SearchController implements Serializable {
     private Long currentBillId;
     private Bill preBill;
     boolean billPreview;
+    
+    
+    public void clearBillList(){
+        if(bills == null){
+            return;
+        }else{
+            bills = new ArrayList<>();
+        }
+    }
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
@@ -224,16 +233,13 @@ public class SearchController implements Serializable {
         String action;
         if (currentBill == null) {
             Token t = tokenController.findToken(currentBillId);
-            System.out.println("t = " + t);
             if (t != null) {
-                System.out.println("t.getBill() = " + t.getBill());
                 if (t.getBill() != null) {
 
                     currentBill = t.getBill();
                 }
             }
         }
-        System.out.println("currentBill = " + currentBill);
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
@@ -249,7 +255,6 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill args) {
-        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "

@@ -244,7 +244,7 @@ public class Api {
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
+//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_forign_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, true)));
@@ -661,7 +661,7 @@ public class Api {
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
+//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_is_leaved", s.isDeactivated());

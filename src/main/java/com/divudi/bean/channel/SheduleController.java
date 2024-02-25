@@ -1,24 +1,19 @@
 /*
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
-import com.divudi.ejb.ChannelBean;
-
-import com.divudi.ejb.FinalVariables;
-import com.divudi.ejb.StockHistoryRecorder;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -33,12 +28,10 @@ import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -53,9 +46,6 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class SheduleController implements Serializable {
 
-    /**
-     * EJBs
-     */
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -68,22 +58,8 @@ public class SheduleController implements Serializable {
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
-    @EJB
-    StockHistoryRecorder stockHistoryRecorder;
-    @EJB
-    ChannelBean channelBean;
-    @EJB
-    FinalVariables finalVariables;
-    /**
-     * Controllers
-     */
     @Inject
     private SessionController sessionController;
-
-    CommonFunctions commonFunctions;
-    /**
-     * Class Variables
-     */
     private Speciality speciality;
     ServiceSession current;
     private Staff currentStaff;
@@ -128,7 +104,6 @@ public class SheduleController implements Serializable {
         stf.setFeeType(FeeType.Staff);
         stf.setFee(0.0);
         stf.setFfee(0.0);
-        stf.setDiscountAllowed(false);
         stf.setInstitution(getCurrent().getInstitution());
         stf.setSpeciality(speciality);
         stf.setStaff(currentStaff);
@@ -140,11 +115,14 @@ public class SheduleController implements Serializable {
         ItemFee hos = new ItemFee();
         hos.setName("Hospital Fee");
         hos.setFeeType(FeeType.OwnInstitution);
-        hos.setDiscountAllowed(true);
         hos.setFee(0.0);
         hos.setFfee(0.0);
         hos.setInstitution(getCurrent().getInstitution());
-        hos.setDepartment(current.getDepartment());
+        if (getCurrent().getDepartment() != null) {
+            hos.setDepartment(getCurrent().getDepartment());
+        }else{
+            hos.setDepartment(getSessionController().getDepartment());
+        }
         hos.setServiceSession(current);
 
         return hos;
@@ -196,38 +174,21 @@ public class SheduleController implements Serializable {
         currentStaff = null;
         filteredValue = null;
         itemFees = null;
-        prepareAdd();
     }
 
     public List<Staff> completeStaff(String query) {
         List<Staff> suggestions;
         String sql;
         Map m = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
+        m.put("name", "%" + query.toUpperCase() + "%");
+        m.put("code", "%" + query.toUpperCase() + "%");
+        if (getSpeciality() != null) {
+            sql = "select p from Staff p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) and p.speciality =:sp order by p.person.name";
+            m.put("sp", speciality);
         } else {
-            if (getSpeciality() != null) {
-                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
-
-                    sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
-                            + " and pi.type=:typ "
-                            + " and pi.institution=:ins "
-                            + " and ((pi.staff.person.name) like '%" + query.toUpperCase() + "%'or  (pi.staff.code) like '%" + query.toUpperCase() + "%' )"
-                            + " and pi.staff.speciality=:spe "
-                            + " order by pi.staff.person.name ";
-
-                    m.put("ins", getSessionController().getInstitution());
-                    m.put("spe", getSpeciality());
-                    m.put("typ", PersonInstitutionType.Channelling);
-                } else {
-                    sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
-                }
-            } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-            }
-            //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql, m);
+            sql = "select p from Staff p where p.retired=false and ((p.person.name) like :name or  (p.code) like :code ) order by p.person.name";
         }
+        suggestions = getStaffFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -240,7 +201,7 @@ public class SheduleController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
         }
-        //////// // System.out.println(sql);
+        ////System.out.println(sql);
         suggestions = getStaffFacade().findByJpql(sql);
 
         return suggestions;
@@ -342,23 +303,6 @@ public class SheduleController implements Serializable {
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
         items = getFacade().findByJpql(sql, hm);
-        List<ServiceSession> tmp = new ArrayList<>();
-        for (ServiceSession i : items) {
-            if (i.getSessionDate() != null) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(i.getSessionDate());
-                Calendar calNow = Calendar.getInstance();
-                if (cal.get(Calendar.YEAR) <= calNow.get(Calendar.YEAR)) {
-                    if (cal.get(Calendar.MONTH) <= calNow.get(Calendar.MONTH)) {
-                        if (cal.get(Calendar.DATE) < calNow.get(Calendar.DATE)) {
-                            tmp.add(i);
-                        }
-                    }
-                }
-
-            }
-        }
-        items.removeAll(tmp);
 
         return items;
     }
@@ -382,10 +326,8 @@ public class SheduleController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = new ServiceSession();
-        current.setInstitution(getSessionController().getInstitution());
-        current.setDepartment(getSessionController().getDepartment());
-        itemFees = new ArrayList<>();
+        current = null;
+        itemFees = null;
         createFees();
     }
 
@@ -445,11 +387,6 @@ public class SheduleController implements Serializable {
             return true;
         }
 
-        if (current.getSessionWeekday() != null && getCurrent().getSessionDate() != null) {
-            UtilityController.addErrorMessage("Ycan Select Only Weekday or Date");
-            return true;
-        }
-
         if (speciality == null) {
             UtilityController.addErrorMessage("Plaese Select Specility");
             return true;
@@ -457,12 +394,6 @@ public class SheduleController implements Serializable {
 
         if (currentStaff == null) {
             UtilityController.addErrorMessage("Plaese Select Doctor");
-            return true;
-        }
-
-        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                && current.getForBillType() == null) {
-            UtilityController.addErrorMessage("Plaese Select Channel Type");
             return true;
         }
 
@@ -474,11 +405,11 @@ public class SheduleController implements Serializable {
         Map m = new HashMap();
         sql = " select bs.serviceSession from BillSession bs where "
                 + " bs.retired=false "
-                + " and bs.serviceSession.originatingSession=:ss "
-                + " and bs.serviceSession.sessionDate>=:nd";
+                + " and bs.sessionDate>:td "
+                + " and bs.serviceSession.originatingSession=:ss ";
         m.put("ss", ss);
-        m.put("nd", new Date());
-        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.DATE);
+        m.put("td", new Date());
+        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         return sss.size() > 0;
     }
@@ -489,7 +420,7 @@ public class SheduleController implements Serializable {
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and type(s)=:class "
-                + " and s.sessionNumberGenerator=:sg "
+                + " and s.sessionNumberGenerator=:sg"
                 + " and s!=:ss "
                 + " and s.originatingSession is null "
                 + " order by s.sessionWeekday,s.startingTime ";
@@ -553,7 +484,7 @@ public class SheduleController implements Serializable {
     }
 
     public void saveSelected() {
-        ////// // System.out.println("session name"+current.getName());
+        //System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
         }
@@ -563,17 +494,15 @@ public class SheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
+
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getCurrent().setEditer(getSessionController().getLoggedUser());
-            getCurrent().setEditedAt(new Date());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            generateSessions(currentStaff);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
 
@@ -588,187 +517,9 @@ public class SheduleController implements Serializable {
         getItems();
     }
 
-    public void createFutureSessionsManually() {
-        if (currentStaff == null) {
-            JsfUtil.addErrorMessage("Pease Select Doctor");
-            return;
-        }
-        generateSessions(currentStaff);
-    }
-
-    public void generateSessions(Staff staff) {
-        String sql;
-        Map m = new HashMap();
-        m.put("staff", staff);
-        m.put("class", ServiceSession.class);
-        if (staff != null) {
-            sql = "Select s.id From ServiceSession s "
-                    + " where s.retired=false "
-                    + " and s.staff=:staff "
-                    + " and s.originatingSession is null "
-                    + " and type(s)=:class "
-                    + " order by s.sessionWeekday,s.startingTime ";
-            List<Long> serviceSessionIds = new ArrayList<>();
-            serviceSessionIds = serviceSessionFacade.findLongList(sql, m);
-
-            if (serviceSessionIds.isEmpty()) {
-                return;
-            }
-            generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(serviceSessionIds, null);
-        }
-    }
-
-    public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessionIds, Date d) {
-        int sessionDayCount = 0;
-        List<ServiceSessionInstance> createdSessions = new ArrayList<>();
-
-        if (inputSessionIds == null || inputSessionIds.isEmpty()) {
-            return;
-        }
-        Date nowDate;
-        if (d == null) {
-            nowDate = Calendar.getInstance().getTime();
-        } else {
-            nowDate = d;
-        }
-
-        Calendar c = Calendar.getInstance();
-        c.setTime(nowDate);
-        c.add(Calendar.MONTH, 2);
-        Date toDate = c.getTime();
-        Integer tmp = 0;
-        int rowIndex = 0;
-        List<ServiceSession> sessions = new ArrayList<>();
-        int finalSessionDayCount = 10;
-        while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
-            if (sessions.isEmpty()) {
-                for (Long s : inputSessionIds) {
-                    ServiceSession ss = serviceSessionFacade.find(s);
-                    sessions.add(ss);
-                    if (ss.getSessionDate() != null) {
-                        Calendar sessionDate = Calendar.getInstance();
-                        sessionDate.setTime(ss.getSessionDate());
-                        Calendar nDate = Calendar.getInstance();
-                        nDate.setTime(nowDate);
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSessionInstance newSs = new ServiceSessionInstance();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            if (newSs == null) {
-                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
-                            }
-                            //Temprory
-//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
-//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
-                            newSs.setStaff(ss.getStaff());
-//                            newSs.setTransRowNumber(rowIndex++);
-                            //add to list
-
-                            createdSessions.add(newSs);
-//                            checkDoctorArival(newSs);
-//                            ss.setServiceSessionCreateForOriginatingSession(true);
-                            if (Objects.equals(tmp, ss.getSessionWeekday())) {
-                                sessionDayCount++;
-                            }
-                        }
-                    } else {
-                        Calendar wdc = Calendar.getInstance();
-                        wdc.setTime(nowDate);
-                        if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSessionInstance newSs =  channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            if (newSs == null) {
-                                newSs = new ServiceSessionInstance();
-//                            System.err.println("Cretate New");
-                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
-                            }
-//                        //// // System.out.println("newSs = " + newSs);
-                            //Temprory
-//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
-//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
-//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
-                            newSs.setTransRowNumber(rowIndex++);
-                            //add to list
-                            createdSessions.add(newSs);
-//                            checkDoctorArival(newSs);
-//                            ss.setServiceSessionCreateForOriginatingSession(true);
-                            if (!Objects.equals(tmp, ss.getSessionWeekday())) {
-                                sessionDayCount++;
-                            }
-                        }
-                    }
-                }
-            } else {
-                for (ServiceSession ss : sessions) {
-
-                    if (ss.getSessionDate() != null) {
-                        Calendar sessionDate = Calendar.getInstance();
-                        sessionDate.setTime(ss.getSessionDate());
-                        Calendar nDate = Calendar.getInstance();
-                        nDate.setTime(nowDate);
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            if (newSs == null) {
-                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
-                            }
-                            //Temprory
-//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
-//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
-                            newSs.setStaff(ss.getStaff());
-//                            newSs.setTransRowNumber(rowIndex++);
-                            //add to list
-                            createdSessions.add(newSs);
-//                            checkDoctorArival(newSs);
-//                            ss.setServiceSessionCreateForOriginatingSession(true);
-                            if (Objects.equals(tmp, ss.getSessionWeekday())) {
-                                sessionDayCount++;
-                            }
-                        }
-                    } else {
-                        Calendar wdc = Calendar.getInstance();
-                        wdc.setTime(nowDate);
-                        if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            if (newSs == null) {
-                                newSs = new ServiceSessionInstance();
-//                            System.err.println("Cretate New");
-                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
-                            }
-//                        //// // System.out.println("newSs = " + newSs);
-                            //Temprory
-//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
-//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
-//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
-//                            newSs.setTransRowNumber(rowIndex++);
-                            //add to list
-                            createdSessions.add(newSs);
-////                            checkDoctorArival(newSs);
-//                            ss.setServiceSessionCreateForOriginatingSession(true);
-                            if (!Objects.equals(tmp, ss.getSessionWeekday())) {
-                                sessionDayCount++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            Calendar nc = Calendar.getInstance();
-            nc.setTime(nowDate);
-            nc.add(Calendar.DATE, 1);
-            nowDate = nc.getTime();
-
-        }
-
-    }
-
     public void updateCreatedServicesesions(ServiceSession ss) {
-        //// // System.out.println("ss.getName() = " + ss.getName());
-        //// // System.out.println("ss.getInstitution() = " + ss.getInstitution());
         for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
-            //// // System.out.println("i.getName() = " + i.getName());
-            //// // System.out.println("i.getInstitution() = " + i.getInstitution());
-            //// // System.out.println("i.getDepartment() = " + i.getDepartment());
-            //// // System.out.println("i.getStartingTime() = " + i.getStartingTime());
+            System.out.println("i.getName() = " + i.getName());
 
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -807,7 +558,7 @@ public class SheduleController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("ss", ss);
         m.put("class", ServiceSession.class);
-        m.put("sd", commonFunctions.getStartOfDay());
+        m.put("sd", CommonFunctions.getStartOfDay());
         items = getFacade().findByJpql(sql, m);
         return items;
     }
@@ -819,90 +570,28 @@ public class SheduleController implements Serializable {
                 + " where f.retired=false "
                 + " and f.serviceSession is not null ";
         List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findByJpql(sql);
-        for (ServiceSession s : serviceSessionsAll) {
-
-        }
-        List<ServiceSession> tmpList = new ArrayList<>();
-        tmpList.addAll(serviceSessionsAll);
-        tmpList.removeAll(fetchSessionByFee("On-Call Fee", FeeType.OwnInstitution));
-        createFeesForServiceSessionList(tmpList, "On-Call Fee", FeeType.OwnInstitution);
-
-        tmpList.addAll(serviceSessionsAll);
-        tmpList.removeAll(fetchSessionByFee("Scan Fee", FeeType.Service));
-        createFeesForServiceSessionList(tmpList, "Scan Fee", FeeType.Service);
-
-        tmpList.addAll(serviceSessionsAll);
-        tmpList.removeAll(fetchSessionByFee("Agency Fee", FeeType.OtherInstitution));
-        createFeesForServiceSessionList(tmpList, "Agency Fee", FeeType.OtherInstitution);
-
-        tmpList.addAll(serviceSessionsAll);
-        tmpList.removeAll(fetchSessionByFee("Hospital Fee", FeeType.OwnInstitution));
-        createFeesForServiceSessionList(tmpList, "Hospital Fee", FeeType.OwnInstitution);
-
-        tmpList.addAll(serviceSessionsAll);
-        tmpList.removeAll(fetchSessionByFee("Doctor Fee", FeeType.Staff));
-        createFeesForServiceSessionList(tmpList, "Doctor Fee", FeeType.Staff);
-
-//        List<ServiceSession> serviceSessions = serviceSessionFacade.findByJpql(sql, m);
-//        //// // System.out.println("serviceSessions.size() = " + serviceSessions.size());
-//        serviceSessionsAll.removeAll(serviceSessions);
-//        for (ServiceSession ss : serviceSessionsAll) {
-//            ItemFee onc = new ItemFee();
-//            onc.setName("On-Call Fee");
-//            onc.setFeeType(FeeType.OwnInstitution);
-//            onc.setFee(0.0);
-//            onc.setFfee(0.0);
-//            onc.setInstitution(ss.getInstitution());
-//            onc.setServiceSession(ss);
-//            onc.setItem(ss);
-//            itemFeeFacade.create(onc);
-//        }
-    }
-
-    public List<ServiceSession> fetchSessionByFee(String feeName, FeeType feeType) {
-        List<ServiceSession> list = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
-
         sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
                 + " where f.retired=false "
                 + " and f.serviceSession is not null "
                 + " and f.feeType=:fType "
-                + " and f.name='" + feeName + "'"
+                + " and f.name=:name "
                 + " order by f.id";
-        m.put("fType", feeType);
-        list = serviceSessionFacade.findByJpql(sql, m);
-        return list;
-
-    }
-
-    public void createFee(ServiceSession ss, String name, FeeType ft) {
-        ItemFee itemFee = new ItemFee();
-        itemFee.setName(name);
-        itemFee.setFeeType(ft);
-        itemFee.setFee(0.0);
-        itemFee.setFfee(0.0);
-        itemFee.setInstitution(getCurrent().getInstitution());
-        itemFee.setServiceSession(ss);
-        if (ft == FeeType.Staff) {
-            try {
-                if (ss.getStaff() != null && ss.getStaff().getSpeciality() != null) {
-                    itemFee.setSpeciality(ss.getStaff().getSpeciality());
-                    itemFee.setStaff(ss.getStaff());
-                } else {
-                    return;
-                }
-            } catch (Exception e) {
-                return;
-            }
+        m.put("name", "On-Call Fee");
+        m.put("fType", FeeType.OwnInstitution);
+        List<ServiceSession> serviceSessions = serviceSessionFacade.findByJpql(sql, m);
+        serviceSessionsAll.removeAll(serviceSessions);
+        for (ServiceSession ss : serviceSessionsAll) {
+            ItemFee onc = new ItemFee();
+            onc.setName("On-Call Fee");
+            onc.setFeeType(FeeType.OwnInstitution);
+            onc.setFee(0.0);
+            onc.setFfee(0.0);
+            onc.setInstitution(ss.getInstitution());
+            onc.setServiceSession(ss);
+            onc.setItem(ss);
+            itemFeeFacade.create(onc);
         }
-        itemFeeFacade.create(itemFee);
-    }
 
-    public void createFeesForServiceSessionList(List<ServiceSession> serviceSessions, String name, FeeType ft) {
-        for (ServiceSession ss : serviceSessions) {
-            createFee(ss, name, ft);
-        }
     }
 
     private double calTot() {
@@ -936,7 +625,7 @@ public class SheduleController implements Serializable {
     }
 
     public void saveFeeChanges() {
-        Date nowDate = getCommonFunctions().getEndOfDay(new Date());
+        Date nowDate = CommonFunctions.getEndOfDay(new Date());
         if (nowDate.before(effectiveDate)) {
             JsfUtil.addErrorMessage("Please Select Future Date");
             return;
@@ -982,12 +671,9 @@ public class SheduleController implements Serializable {
                             && (fc.getValidFrom().getTime() == c.getValidFrom().getTime())) {
                         JsfUtil.addErrorMessage("This Fee Already Add - " + c.getFee().getName() + " , " + c.getFee().getFeeType() + " , " + c.getValidFrom());
                     } else {
-                        //// // System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
-                        //// // System.out.println("c.getFee().getName() = " + c.getFee().getName());
-                        //// // System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
-                        //// // System.out.println("c.getFee().getFeeType() = " + c.getFee().getFeeType());
-                        //// // System.out.println("fc.getValidFrom() = " + fc.getValidFrom());
-                        //// // System.out.println("c.getValidFrom() = " + c.getValidFrom());
+                        System.out.println("fc.getFee().getName() = " + fc.getFee().getName());
+                        System.out.println("c.getFee().getName() = " + c.getFee().getName());
+                        System.out.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
@@ -1087,9 +773,9 @@ public class SheduleController implements Serializable {
 
     public Date getEffectiveDate() {
         if (effectiveDate == null) {
-            effectiveDate = getCommonFunctions().getEndOfDay(new Date());
+            effectiveDate = CommonFunctions.getEndOfDay(new Date());
         } else {
-            effectiveDate = getCommonFunctions().getEndOfDay(effectiveDate);
+            effectiveDate = CommonFunctions.getEndOfDay(effectiveDate);
         }
         return effectiveDate;
     }
@@ -1109,13 +795,7 @@ public class SheduleController implements Serializable {
         this.feeChanges = feeChanges;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
+    
 
     public FeeChangeFacade getFeeChangeFacade() {
         return feeChangeFacade;
