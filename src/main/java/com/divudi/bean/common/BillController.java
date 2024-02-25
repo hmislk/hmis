@@ -353,6 +353,32 @@ public class BillController implements Serializable {
             getFacade().edit(sb);
         }
     }
+    
+    public void saveBillItem(BillItem sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getBillItemFacade().create(sb);
+        }else{
+            getBillItemFacade().edit(sb);
+        }
+    }
+    
+    public void saveBillFee(BillFee sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getBillFeeFacade().create(sb);
+        }else{
+            getBillFeeFacade().edit(sb);
+        }
+    }
 
     public void saveBillPharmacyCredit() {
 

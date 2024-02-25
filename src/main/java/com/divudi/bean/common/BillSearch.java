@@ -3,6 +3,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -1346,27 +1347,30 @@ public class BillSearch implements Serializable {
             return "";
         }
 
+        boolean billFeesAreAvailableForReturn = invertBillValuesAndCalculate(refundingBill);
+
+        if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
+            if (sampleHasBeenCollected(refundingBill)) {
+                JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
+                return "";
+            }
+        }
+
+        if (billFeeIsAlreadyRefunded(refundingBill)) {
+            JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already refunded. Can not refund again.");
+            return "";
+        }
+
         if (!calculateRefundTotalForOpdBill()) {
             JsfUtil.addErrorMessage("Error. Please Check Bill");
             return "";
         }
 
-        if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
-            for (BillItem trbi : refundingItems) {
-                if (patientInvestigationController.sampledForBillItem(trbi)) {
-                    JsfUtil.addErrorMessage("One or more bill Item has been already undersone process at the Lab. Can not return.");
-                    return "";
-                }
-            }
+        if (!billFeesAreAvailableForReturn) {
+            JsfUtil.addErrorMessage("Error in Bill Value Calculations");
+            return "";
         }
 
-        boolean billFeesAreAvailableForReturn = invertBillValuesAndCalculate(refundingBill);
-
-        if(!billFeesAreAvailableForReturn){
-            
-            Jsf
-        }
-        
         if (refundingBill.getId() == null) {
             getBillFacade().create(refundingBill);
         } else {
@@ -1427,6 +1431,68 @@ public class BillSearch implements Serializable {
         }
         //  recreateModel();
         return "";
+    }
+
+    public boolean sampleHasBeenCollected(Bill rf) {
+        boolean oneItemIsSampled = false;
+        for (BillItem bi : rf.getBillItems()) {
+            double refVal = bi.getNetValue();
+            refVal = Math.abs(refVal);
+            if (refVal > 0.0) {
+                boolean sampled = patientInvestigationController.sampledForBillItem(bi.getReferanceBillItem());
+                if (sampled) {
+                    oneItemIsSampled = true;
+                }
+            }
+        }
+        return oneItemIsSampled;
+    }
+
+    public boolean billFeeIsAlreadyRefunded(Bill rf) {
+        boolean oneItemIsAlreadyRefunded = false;
+        for (BillItem bi : rf.getBillItems()) {
+            for (BillFee bf : bi.getBillFees()) {
+                double refVal = bi.getNetValue();
+                refVal = Math.abs(refVal);
+                if (refVal > 0.0) {
+                    boolean sampled = billController.hasRefunded(bf.getReferenceBillFee());
+                    if (sampled) {
+                        oneItemIsAlreadyRefunded = true;
+                    }
+                }
+            }
+        }
+        return oneItemIsAlreadyRefunded;
+    }
+
+    private boolean saveRefundBill(Bill rb) {
+        if (rb == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return false;
+        }
+        if (rb.getBilledBill() == null) {
+            rb.setBilledBill(getBill());
+        }
+        Date bd = Calendar.getInstance().getTime();
+        rb.setBillDate(bd);
+        rb.setBillTime(bd);
+        rb.setCreatedAt(bd);
+        rb.setCreater(getSessionController().getLoggedUser());
+        rb.setDepartment(getSessionController().getDepartment());
+        rb.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        rb.setComments(comment);
+        rb.setPaymentMethod(paymentMethod);
+        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
+        rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
+        billController.save(rb);
+        for (BillItem bi : rb.getBillItems()) {
+            billController.saveBillItem(bi);
+            for (BillFee bf : bi.getBillFees()) {
+                billController.saveBillFee(bf);
+            }
+        }
+        return rb;
+
     }
 
     private Bill createRefundBill() {
@@ -2593,12 +2659,16 @@ public class BillSearch implements Serializable {
         paymentMethod = bill.getPaymentMethod();
         try {
             createBillItemsAndBillFeesForOpdRefund();
+
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(BillSearch.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BillSearch.class
+                    .getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage(ex.getMessage());
             return "";
+
         } catch (InvocationTargetException ex) {
-            Logger.getLogger(BillSearch.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BillSearch.class
+                    .getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
@@ -3476,27 +3546,46 @@ public class BillSearch implements Serializable {
             return false;
         }
         double billTotal = 0.0;
+
+        refundAmount = 0;
+        refundDiscount = 0;
+        refundTotal = 0;
+        refundMargin = 0;
+        refundVat = 0;
+        refundVatPlusTotal = 0;
+
         for (BillItem bi : b.getBillItems()) {
             double billItemTotal = 0.0;
             for (BillFee bf : bi.getBillFees()) {
                 if (bf.getFeeValue() != 0.0) {
                     double bfv = bf.getFeeValue();
                     bfv = Math.abs(bfv);
-                    bf.setFeeValue(0-bfv);
-                    billItemTotal+=bfv;
+                    bf.setFeeValue(0 - bfv);
+                    billItemTotal += bfv;
                 }
             }
-            if(billItemTotal==0.0){
-                b.getBillItems().remove(bi);
-            }else{
-                b.setNetTotal(billItemTotal);
-                b.setTotal(billItemTotal);
-                billTotal+=billItemTotal;
-            }
+            bi.setNetValue(billItemTotal);
+            bi.setGrossValue(billItemTotal);
+            bi.setMarginValue(0);
+            bi.setDiscount(0);
+            bi.setVat(0);
+            bi.setVatPlusNetValue(billItemTotal);
+            refundTotal += bi.getGrossValue();
+            refundAmount += bi.getNetValue();
+            refundMargin += bi.getMarginValue();
+            refundDiscount += bi.getDiscount();
+            refundVat += bi.getVat();
+            refundVatPlusTotal += bi.getVatPlusNetValue();
         }
         b.setTotal(billTotal);
         b.setNetTotal(billTotal);
+        b.setTotal(refundTotal);
+        b.setDiscount(refundDiscount);
+        b.setNetTotal(refundAmount);
+        b.setVat(refundVat);
+        b.setVatPlusNetTotal(refundVatPlusTotal);
         return true;
+
     }
 
     public class PaymentSummary {
