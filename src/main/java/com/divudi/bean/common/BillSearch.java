@@ -1024,6 +1024,29 @@ public class BillSearch implements Serializable {
         return true;
     }
 
+    public boolean billFeesAreAlreadyPaidToStaff(Bill refundingBill) {
+        boolean paid = false;
+        if (refundingBill == null) {
+            return paid;
+        }
+        List<BillItem> bis = billController.billItemsOfBill(bill);
+        if (bis == null || bis.isEmpty()) {
+            return paid;
+        }
+        for (BillItem bi : bis) {
+            List<BillFee> bfs = billController.billFeesOfBillItem(bi);
+            if (bfs == null || bfs.isEmpty()) {
+                return paid;
+            }
+            for (BillFee bf : bi.getBillFees()) {
+                if (bf.getReferenceBillFee().) {
+                    paid = true;
+                }
+            }
+        }
+        return paid;
+    }
+
     public boolean calculateRefundTotalForOpdBill() {
         System.out.println("calculateRefundTotalForOpdBill");
         refundAmount = 0;
@@ -1032,8 +1055,6 @@ public class BillSearch implements Serializable {
         refundMargin = 0;
         refundVat = 0;
         refundVatPlusTotal = 0;
-        //billItems=null;
-        tempbillItems = null;
         if (getRefundingBill() == null) {
             return false;
         }
@@ -1053,21 +1074,6 @@ public class BillSearch implements Serializable {
             i.setNetValue(refundingValue);
             i.setGrossValue(refundingValue);
             i.setDiscount(0.0);
-            if (checkPaidIndividual(i)) {
-                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
-                return false;
-            }
-            //Add for check refund is already done
-            String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + i.getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
-
-            if (rbi != null) {
-                JsfUtil.addErrorMessage("This Bill Item Already Refunded");
-                return false;
-            }
-            //
-
-//            if (!i.isRefunded()) {
             refundTotal += i.getGrossValue();
             refundAmount += i.getNetValue();
             refundMargin += i.getMarginValue();
@@ -1075,7 +1081,6 @@ public class BillSearch implements Serializable {
             refundVat += i.getVat();
             refundVatPlusTotal += i.getVatPlusNetValue();
             getTempbillItems().add(i);
-//            }
 
         }
 
@@ -1333,10 +1338,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
-        if (refundAmount == 0.0) {
-            JsfUtil.addErrorMessage("There is no item to Refund");
-            return "";
-        }
+
         if (comment == null || comment.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return "";
@@ -1346,8 +1348,6 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
             return "";
         }
-
-        boolean billFeesAreAvailableForReturn = invertBillValuesAndCalculate(refundingBill);
 
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
             if (sampleHasBeenCollected(refundingBill)) {
@@ -1361,11 +1361,24 @@ public class BillSearch implements Serializable {
             return "";
         }
 
+        if (billFeeIsAlreadyPaidToStaff(refundingBill)) {
+            JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already paid to Service Provider. Can not refund again.");
+            return "";
+        }
+
         if (!calculateRefundTotalForOpdBill()) {
             JsfUtil.addErrorMessage("Error. Please Check Bill");
             return "";
         }
 
+        calculateRefundTotalForOpdBill();
+
+        if (refundingBill.getNetTotal() == 0.0) {
+            JsfUtil.addErrorMessage("There is no item to Refund");
+            return "";
+        }
+
+        boolean billFeesAreAvailableForReturn = invertBillValuesAndCalculate(refundingBill);
         if (!billFeesAreAvailableForReturn) {
             JsfUtil.addErrorMessage("Error in Bill Value Calculations");
             return "";
@@ -1455,14 +1468,31 @@ public class BillSearch implements Serializable {
                 double refVal = bi.getNetValue();
                 refVal = Math.abs(refVal);
                 if (refVal > 0.0) {
-                    boolean sampled = billController.hasRefunded(bf.getReferenceBillFee());
-                    if (sampled) {
+                    boolean refunded = billController.hasRefunded(bf.getReferenceBillFee());
+                    if (refunded) {
                         oneItemIsAlreadyRefunded = true;
                     }
                 }
             }
         }
         return oneItemIsAlreadyRefunded;
+    }
+
+    public boolean billFeeIsAlreadyPaidToStaff(Bill rf) {
+        boolean oneItemIsAlreadyPaid = false;
+        for (BillItem bi : rf.getBillItems()) {
+            for (BillFee bf : bi.getBillFees()) {
+                double refVal = bi.getNetValue();
+                refVal = Math.abs(refVal);
+                if (refVal > 0.0) {
+                    boolean refunded = billController.hasPaidToStaff(bf.getReferenceBillFee());
+                    if (refunded) {
+                        oneItemIsAlreadyPaid = true;
+                    }
+                }
+            }
+        }
+        return oneItemIsAlreadyPaid;
     }
 
     private boolean saveRefundBill(Bill rb) {
@@ -2036,7 +2066,7 @@ public class BillSearch implements Serializable {
                 bill = billFacade.find(bill.getId());
                 createCollectingCenterfees(getBill());
                 printPreview = true;
-                comment= null;
+                comment = null;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");

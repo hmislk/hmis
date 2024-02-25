@@ -361,6 +361,17 @@ public class BillController implements Serializable {
         }
         return refunded;
     }
+    
+    public boolean hasPaidToStaff(BillFee bf) {
+        boolean paid=false;
+        if (bf == null) {
+            return paid;
+        }
+        if(bf.getPaidValue()>0.0){
+            paid= true;
+        }
+        return paid;
+    }
 
     public void save(Bill sb) {
         if (sb == null) {
