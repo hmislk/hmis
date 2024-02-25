@@ -54,6 +54,13 @@
                                         <f:selectItem itemLabel="Select paymentMethod"/>
                                         <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                     </p:selectOneMenu>
+
+                                    <div>
+                                        <h:outputText value="Refund DoctorFee Only"/>
+                                        <p:selectBooleanCheckbox value="#{billSearch.doctorFeeRefund}"/>
+                                         <h:outputText value="Refund HospitalFee Only"/>
+                                         <p:selectBooleanCheckbox value="#{billSearch.hospitalFeeRefund}"/>
+                                    </div>
                                 </p:panel>
 
 
@@ -170,24 +177,24 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
 
-                                   <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>                      
+                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>                      
 
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
 
-                                   <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>                       
+                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>                       
 
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
 
-                                     <bi:opdReturnfive_five_paper_without_headings 
+                                    <bi:opdReturnfive_five_paper_without_headings 
                                         bill="#{billSearch.bill}" 
                                         payments="#{opdBillController.payments}"/>                     
 
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
 
-                                   <bi:opdReturnfive_five_paper_without_headings 
+                                    <bi:opdReturnfive_five_paper_without_headings 
                                         bill="#{billSearch.bill}" 
                                         payments="#{opdBillController.payments}"/>                       
 
