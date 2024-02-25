@@ -6,6 +6,7 @@
 package com.divudi.data.channel;
 
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.channel.SessionInstance;
 import org.primefaces.model.DefaultScheduleEvent;
 /**
  *
@@ -13,6 +14,7 @@ import org.primefaces.model.DefaultScheduleEvent;
  */
 public class ChannelScheduleEvent extends DefaultScheduleEvent{
     ServiceSession serviceSession;
+    private SessionInstance sessionInstance;
 
     public ServiceSession getServiceSession() {
         return serviceSession;
@@ -21,6 +23,16 @@ public class ChannelScheduleEvent extends DefaultScheduleEvent{
     public void setServiceSession(ServiceSession serviceSession) {
         this.serviceSession = serviceSession;
     }
+
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
+    }
+    
+    
     
     
 }

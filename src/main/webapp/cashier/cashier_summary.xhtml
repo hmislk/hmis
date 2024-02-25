@@ -26,13 +26,13 @@
                                 <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                             </p:calendar>
                             <h:outputLabel value="Institution"/>                                
-                            <p:selectOneMenu class="w-100 " value="#{billSearch.institution}" >
+                            <p:selectOneMenu class="w-100 " value="#{billSearch.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{billSearch.department}" >
+                            <p:selectOneMenu class="w-100 "  value="#{billSearch.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
@@ -91,11 +91,13 @@
                             <ui:repeat value="#{billSearch.overallSummary.billTypeSummaries}" var="billTypeSummary">
                                 <tr  style="font-weight: bolder">
                                     <td>#{billTypeSummary.billType.label}</td>
+                                    <td>#{billTypeSummary.billClassType}</td>
                                 </tr>
 
                                 <ui:repeat value="#{billTypeSummary.paymentSummaries}" var="paymentSummary">
 
                                     <tr >
+                                       
                                         <td></td>
                                         <td></td>
                                         <td>#{paymentSummary.paymentMethod}</td>
@@ -109,7 +111,10 @@
                                     <td>Total</td>
                                     <td></td>
                                     <td></td>
+
+
                                     <td></td>
+
                                     <td style="font-weight: bolder;text-align: right">RS: </td>
                                     <td style="font-weight: bolder;text-align: right">#{billTypeSummary.billTypeTotal}</td>
                                 </tr>

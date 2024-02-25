@@ -85,6 +85,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -1267,8 +1268,42 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         this.commonFunctions = commonFunctions;
     }
 
+    public String changeTextCases(String nm, String tc) {
+        switch (tc) {
+            case "UPPERCASE":
+                return nm.toUpperCase();
+            case "LOWERCASE":
+                return nm.toLowerCase();
+            case "CAPITALIZE":
+                return capitalizeFirstLetter(nm);
+            default:
+                return nm;
+        }
+    }
+
+    public String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        
+        StringBuilder result = new StringBuilder();
+        String[] words = str.split("\\s");
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1)).append(" ");
+            }
+        }
+        return result.toString().trim();
+    }
+
     private void savePatient() {
         if (getPatient().getId() == null) {
+            if (getPatient().getPerson().getName() != null) {
+                String updatedPatientName;
+                updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getLoggedPreference().getChangeTextCasesPatientName());
+                System.out.println("updatedPatientName = " + updatedPatientName);
+                getPatient().getPerson().setName(updatedPatientName);
+            }
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -2045,7 +2080,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
                 JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
             }
-            if(cashPaid==0.0){
+            if (cashPaid == 0.0) {
                 setCashPaid(multiplePaymentMethodTotalValue);
             }
 
@@ -2133,7 +2168,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            UtilityController.addErrorMessage("Please correct item fee");
             return;
         }
 
@@ -2856,6 +2891,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         calTotals();
     }
 
+    @Override
     public Patient getPatient() {
         if (patient == null) {
             patient = new Patient();
@@ -2867,6 +2903,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         return patient;
     }
 
+    @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
     }

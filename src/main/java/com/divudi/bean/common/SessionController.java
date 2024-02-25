@@ -585,7 +585,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Department getDepartment() {
         if(department==null){
-            if(loggedUser!=null){
+            if(loggedUser==null){
                 if(loggedUser.getDepartment()!=null){
                     department = loggedUser.getDepartment();
                 }
