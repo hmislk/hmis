@@ -31,7 +31,7 @@
                                         <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                     </p:commandButton>  
                                     
-                                    <h:outputLabel value="Opd Bill No"/>
+                                    <h:outputLabel value="OPD Bill No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
                                     <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
@@ -58,11 +58,8 @@
                                         </p:column>
 
                                         <p:column headerText="Speciality">
-                                            <h:commandLink action="payment_staff_bill" >
                                                 <h:outputLabel value="#{bf.staff.speciality.name}">
                                                 </h:outputLabel>
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
                                         </p:column>
 
                                         <p:column headerText="Doctor" >
@@ -74,11 +71,7 @@
                                         </p:column>
 
                                         <p:column headerText="Patient" >
-                                            <h:commandLink action="payment_staff_bill" >
                                                 <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
-
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
                                         </p:column>
 
                                         <p:column headerText="Bill No">
@@ -89,36 +82,24 @@
                                             </h:commandLink>
                                         </p:column>
 
-                                        <p:column headerText="Payment Methord">
-                                            <h:commandLink action="payment_staff_bill" >
+                                        <p:column headerText="Payment Method">
                                                 <h:outputLabel value="#{bf.bill.paymentMethod}">
                                                 </h:outputLabel>
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
                                         </p:column>
 
-                                        <p:column headerText="BilledAt" >
-                                            <h:commandLink action="payment_staff_bill" >
+                                        <p:column headerText="Billed At" >
                                                 <h:outputLabel value="#{bf.bill.createdAt}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                                </h:outputLabel>
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
+                                                </h:outputLabel>    
                                         </p:column>
 
 
                                         <p:column headerText="Test" >
-                                            <h:commandLink action="payment_staff_bill" >
                                                 <h:outputLabel value="#{bf.billItem.item.name}" />
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
                                         </p:column>
 
                                         <p:column headerText="Charge" styleClass="averageNumericColumn">
-                                            <h:commandLink action="payment_staff_bill" >
                                                 <h:outputLabel value="#{bf.feeValue}" />
-                                                <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
-                                            </h:commandLink>
                                         </p:column>
 
                                     </p:dataTable>
