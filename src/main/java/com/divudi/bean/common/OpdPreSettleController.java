@@ -637,7 +637,9 @@ public class OpdPreSettleController implements Serializable {
             //// // System.out.println("dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
+
                     JsfUtil.addErrorMessage("Can't Pay,This Bill Cancelled");
+
                 } else {
                     JsfUtil.addErrorMessage("Some Bill cancelled This Batch Bill");
                 }
