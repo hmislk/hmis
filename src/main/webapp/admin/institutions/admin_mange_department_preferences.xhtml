@@ -72,7 +72,7 @@
 
                                 <h:panelGrid columns="2"  class="w-100">
 
-                                    <h:outputLabel 
+                                    <h:outputLabel
                                         class="form-label"
                                         value="Can settle without a phone number"></h:outputLabel>
                                     <p:selectBooleanButton 
@@ -191,7 +191,6 @@
                                     <h:outputLabel
                                         class="form-label w-100"
                                         value="Change the case of the patient name "></h:outputLabel>
-
                                     <p:inputText value="#{sessionController.currentPreference.changeTextCasesPatientName}"/>
                                 </h:panelGrid>
 
@@ -266,7 +265,7 @@
                                         <f:selectItem itemLabel="Please Select Paper Type" />
                                         <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
-                                    
+
                                     <h:outputLabel 
                                         value="Inward Deposit Payment Bill Paper" 
                                         class="form-label"></h:outputLabel>
