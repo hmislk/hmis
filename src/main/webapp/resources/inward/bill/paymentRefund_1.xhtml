@@ -42,7 +42,8 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Refund Receipt"   />    
+                <h:outputLabel value="Refund Receipt"   /> 
+                <br />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
@@ -231,8 +232,7 @@
                         </td>
                     </tr>
                 </table>
-                <p:spacer></p:spacer>
-                <p:spacer></p:spacer>
+
                 
                 <div style=" top: 5%!important;
                          left: 5%!important;
