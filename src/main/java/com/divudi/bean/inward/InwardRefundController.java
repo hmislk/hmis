@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -78,11 +78,11 @@ public class InwardRefundController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
         if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 
@@ -94,7 +94,7 @@ public class InwardRefundController implements Serializable {
             double different = Math.abs(Math.abs((getPaidAmount()) - Math.abs(getCurrent().getTotal())));
 
             if (different > 0.1) {
-                UtilityController.addErrorMessage("Check Refuning Amount");
+                JsfUtil.addErrorMessage("Check Refuning Amount");
                 return true;
             }
         }
@@ -125,7 +125,7 @@ public class InwardRefundController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Payment Bill Saved");
     }
 
     @Inject

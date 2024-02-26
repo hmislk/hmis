@@ -5,7 +5,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationReportType;
@@ -48,7 +48,7 @@ import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -813,12 +813,12 @@ public class PatientInvestigationController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -925,7 +925,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void sendSms() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to send sms");
+            JsfUtil.addErrorMessage("Nothing to send sms");
             return;
         }
         Bill bill = current.getBillItem().getBill();
@@ -970,7 +970,7 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(current);
             getCurrent().getBillItem().getBill().getSentSmses().add(s);
             billFacade.edit(getCurrent().getBillItem().getBill());
-            UtilityController.addSuccessMessage("Sms send");
+            JsfUtil.addSuccessMessage("Sms send");
         } else {
             s.setSentSuccessfully(false);
             s.setReceivedMessage(sent.getReceivedMessage());
@@ -982,7 +982,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void markAsSampled() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to sample");
+            JsfUtil.addErrorMessage("Nothing to sample");
             return;
         }
 
@@ -998,9 +998,9 @@ public class PatientInvestigationController implements Serializable {
             getCurrent().setCollected(Boolean.TRUE);
             getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Marked as Sampled");
+            JsfUtil.addSuccessMessage("Marked as Sampled");
         } else {
-            UtilityController.addErrorMessage("Empty");
+            JsfUtil.addErrorMessage("Empty");
         }
         setSampledOutsideDate(Calendar.getInstance().getTime());
 
@@ -1009,7 +1009,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void revertMarkedSample() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to Revert");
+            JsfUtil.addErrorMessage("Nothing to Revert");
             return;
         }
         getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
@@ -1020,9 +1020,9 @@ public class PatientInvestigationController implements Serializable {
             getCurrent().setDataEntered(Boolean.FALSE);
             getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Revert Sample Successfully");
+            JsfUtil.addSuccessMessage("Revert Sample Successfully");
         } else {
-            UtilityController.addErrorMessage("Empty");
+            JsfUtil.addErrorMessage("Empty");
         }
         setSampledOutsideDate(Calendar.getInstance().getTime());
 
@@ -1590,9 +1590,9 @@ public class PatientInvestigationController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

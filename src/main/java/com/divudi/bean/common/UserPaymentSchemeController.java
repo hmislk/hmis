@@ -26,7 +26,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -85,12 +85,12 @@ public  class UserPaymentSchemeController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -129,9 +129,9 @@ public  class UserPaymentSchemeController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -141,11 +141,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
     public void addPaymentSchemeForUser() {
         if (selectedUser == null) {
-            UtilityController.addSuccessMessage("Select A User");
+            JsfUtil.addSuccessMessage("Select A User");
             return;
         }
         if (currentPaymentScheme == null) {
-            UtilityController.addSuccessMessage("Select a PaymentScheme");
+            JsfUtil.addSuccessMessage("Select a PaymentScheme");
             return;
         }
 

@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -100,7 +100,7 @@ public  class ItemForItemController implements Serializable {
 
     public void addItem(){
         if (parentItem==null || childItem ==null){
-            UtilityController.addErrorMessage("Please select");
+            JsfUtil.addErrorMessage("Please select");
             return;
         }
         ItemForItem temIi = new ItemForItem();
@@ -115,7 +115,7 @@ public  class ItemForItemController implements Serializable {
     
     public void removeItem(){
         if (current==null){
-            UtilityController.addErrorMessage("Please select one to remove");
+            JsfUtil.addErrorMessage("Please select one to remove");
             return;
         }
         current.setRetired(true);
@@ -127,12 +127,12 @@ public  class ItemForItemController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -172,9 +172,9 @@ public  class ItemForItemController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

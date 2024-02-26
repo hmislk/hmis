@@ -55,7 +55,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -277,11 +277,11 @@ public class BillController implements Serializable {
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -341,6 +341,38 @@ public class BillController implements Serializable {
 
     }
 
+    public boolean hasRefunded(BillFee bf) {
+        boolean refunded = false;
+        if (bf == null) {
+            return refunded;
+        }
+        String jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=:ret "
+                + " and bf.referenceBillFee=:bf "
+                + " and bf.billItem.retired=:ret "
+                + " and bf.bill.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        if (rbf != null) {
+            refunded = true;
+        }
+        return refunded;
+    }
+
+    public boolean hasPaidToStaff(BillFee bf) {
+        boolean paid = false;
+        if (bf == null) {
+            return paid;
+        }
+        if (bf.getPaidValue() > 0.0) {
+            paid = true;
+        }
+        return paid;
+    }
+
     public void save(Bill sb) {
         if (sb == null) {
             return;
@@ -348,9 +380,39 @@ public class BillController implements Serializable {
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
-            getFacade().create(sb);
-        }else{
+            try {
+                getFacade().create(sb);
+            } catch (Exception e) {
+                getFacade().edit(sb);
+            }
+        } else {
             getFacade().edit(sb);
+        }
+    }
+
+    public void saveBillItem(BillItem sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getBillItemFacade().create(sb);
+        } else {
+            getBillItemFacade().edit(sb);
+        }
+    }
+
+    public void saveBillFee(BillFee sb) {
+        if (sb == null) {
+            return;
+        }
+        if (sb.getId() == null) {
+            sb.setCreatedAt(new Date());
+            sb.setCreater(sessionController.getLoggedUser());
+            getBillFeeFacade().create(sb);
+        } else {
+            getBillFeeFacade().edit(sb);
         }
     }
 
@@ -359,11 +421,11 @@ public class BillController implements Serializable {
         BilledBill temp = new BilledBill();
 
         if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
             return;
         }
         if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
             return;
         }
 
@@ -629,7 +691,6 @@ public class BillController implements Serializable {
 
         return tmps;
     }
-    
 
     public List<Bill> fillPatientSurgeryBills(PatientEncounter pe) {
         String jpql;
@@ -1330,10 +1391,10 @@ public class BillController implements Serializable {
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             staffBean.updateStaffCredit(toStaff, netPlusVat);
-            UtilityController.addSuccessMessage("User Credit Updated");
+            JsfUtil.addSuccessMessage("User Credit Updated");
         }
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
@@ -1480,7 +1541,7 @@ public class BillController implements Serializable {
         m.put("bb", batchBill);
         return billFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillItem> billItemsOfBill(Bill bill) {
         String jpql;
         Map m = new HashMap();
@@ -1492,7 +1553,7 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billItemFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillFee> billFeesOfBill(Bill bill) {
         String jpql;
         Map m = new HashMap();
@@ -1501,6 +1562,18 @@ public class BillController implements Serializable {
                 + " where bf.retired=:ret"
                 + " and bf.bill=:b ";
         m.put("b", bill);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
+
+    public List<BillFee> billFeesOfBillItem(BillItem billItem) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf"
+                + " where bf.retired=:ret"
+                + " and bf.billItem=:bi ";
+        m.put("bi", billItem);
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
     }
@@ -1629,11 +1702,11 @@ public class BillController implements Serializable {
     private boolean checkPatientAgeSex() {
         if (getPatientTabId().equals("tabNewPt")) {
             if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+                JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
             if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
+                JsfUtil.addErrorMessage("Mismatch in Title and Gender. Please Check the Title, Age and Sex");
                 return true;
             }
         }
@@ -1656,39 +1729,39 @@ public class BillController implements Serializable {
 
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("No Items are added to the bill to settle");
+            JsfUtil.addErrorMessage("No Items are added to the bill to settle");
             return true;
         }
 
         if (getPatientTabId().equals("tabSearchPt")) {
             if (getSearchedPatient() == null) {
-                UtilityController.addErrorMessage("Plese Select Patient");
+                JsfUtil.addErrorMessage("Plese Select Patient");
                 return true;
             }
         }
 
         if (getPatientTabId().equals("tabNewPt")) {
             if (getNewPatient() == null) {
-                UtilityController.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
+                JsfUtil.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
                 return true;
             }
             if (getNewPatient().getPerson() == null) {
-                UtilityController.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
+                JsfUtil.addErrorMessage("New Patient's Person is NULL. Programming Error. Contact Developer.");
                 return true;
             }
             if (getNewPatient().getPerson().getName() == null
                     || getNewPatient().getPerson().getName().trim().equals("")) {
-                UtilityController.addErrorMessage("Can not bill without a name for the new Patient !");
+                JsfUtil.addErrorMessage("Can not bill without a name for the new Patient !");
                 return true;
             }
 
             if (!sessionController.getApplicationPreference().isOpdSettleWithoutPatientPhoneNumber()) {
                 if (getNewPatient().getPerson().getPhone() == null) {
-                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    JsfUtil.addErrorMessage("Please Enter a Phone Number");
                     return true;
                 }
                 if (getNewPatient().getPerson().getPhone().trim().equals("")) {
-                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    JsfUtil.addErrorMessage("Please Enter a Phone Number");
                     return true;
                 }
             }
@@ -1700,18 +1773,18 @@ public class BillController implements Serializable {
 //            for (BillEntry be : getLstBillEntries()) {
 //                if (be.getBillItem().getItem() instanceof Investigation) {
 //                    if (referredBy == null && referredByInstitution == null) {
-//                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        JsfUtil.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
 //                        return true;
 //                    }
 //                }
 //            }
 //        }
 //            if (getStrTenderedValue() == null) {
-//                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
+//                JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
 //                return true;
 //            }
 //            if (cashPaid < (vat + netTotal)) {
-//                UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
+//                JsfUtil.addErrorMessage("Please Enter Correct Tenderd Amount");
 //                return true;
 //            }
 //        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
@@ -1739,7 +1812,7 @@ public class BillController implements Serializable {
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Scheme");
+            JsfUtil.addErrorMessage("Select Payment Scheme");
             return true;
         }
 
@@ -1749,29 +1822,29 @@ public class BillController implements Serializable {
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
             if (toStaff == null && creditCompany == null && collectingCentre == null) {
-                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
+                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
             if (toStaff != null && creditCompany != null) {
-                UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
                 return true;
             }
             if (toStaff != null) {
                 if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    UtilityController.addErrorMessage("No enough walfare credit.");
+                    JsfUtil.addErrorMessage("No enough walfare credit.");
                     return true;
                 }
             }
         }
 
 //        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-//            UtilityController.addErrorMessage("Check Payment method");
+//            JsfUtil.addErrorMessage("Check Payment method");
 //            return true;
 //        }
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 
             if (cashPaid == 0.0) {
-                UtilityController.addErrorMessage("Please enter the paid amount");
+                JsfUtil.addErrorMessage("Please enter the paid amount");
                 return true;
             }
 
@@ -1845,25 +1918,25 @@ public class BillController implements Serializable {
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an Item");
+            JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please corect item fee");
+            JsfUtil.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set Department to Item");
+            JsfUtil.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please set Category to Item");
+            JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
         if (getCurrentBillItem().getItem().getPriority() != null) {
@@ -1901,12 +1974,12 @@ public class BillController implements Serializable {
             calTotals();
 
             if (bi.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {

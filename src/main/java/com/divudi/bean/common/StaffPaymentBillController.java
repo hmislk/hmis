@@ -42,7 +42,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -399,16 +399,16 @@ public class StaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -444,7 +444,7 @@ public class StaffPaymentBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
 
@@ -547,9 +547,9 @@ public class StaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();

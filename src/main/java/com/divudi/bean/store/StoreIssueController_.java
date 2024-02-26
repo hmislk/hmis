@@ -7,7 +7,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -35,7 +35,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -187,7 +187,7 @@ public class StoreIssueController_ implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -197,7 +197,7 @@ public class StoreIssueController_ implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -207,7 +207,7 @@ public class StoreIssueController_ implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+            JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
             return true;
         }
 
@@ -256,7 +256,7 @@ public class StoreIssueController_ implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -372,7 +372,7 @@ public class StoreIssueController_ implements Serializable {
 
     private boolean errorCheckForPreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
             return true;
         }
         return false;
@@ -559,12 +559,12 @@ public class StoreIssueController_ implements Serializable {
         }
         if (getStock() == null) {
             errorMessage="Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
             errorMessage="Please enter a quentity";
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
@@ -572,18 +572,18 @@ public class StoreIssueController_ implements Serializable {
 
         if (getQty() > fetchStock.getStock()) {
             errorMessage="No sufficient stocks. Please enter a quentity which is qeual or less thatn the available stock quentity.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!getStoreBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage="Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 

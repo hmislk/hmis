@@ -9,7 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -150,7 +150,7 @@ public class PharmacyPreSettleController implements Serializable {
             Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
             if (b != null) {
-                UtilityController.addErrorMessage("Allready Paid");
+                JsfUtil.addErrorMessage("Allready Paid");
                 return "";
             } else {
                 setPreBill(args);
@@ -158,7 +158,7 @@ public class PharmacyPreSettleController implements Serializable {
             }
         } else {
             searchController.makeListNull();
-            UtilityController.addErrorMessage("Please Search Again and Refund Bill");
+            JsfUtil.addErrorMessage("Please Search Again and Refund Bill");
             return "";
         }
     }
@@ -289,14 +289,17 @@ public class PharmacyPreSettleController implements Serializable {
         }
 
         if (getPaymentSchemeController().errorCheckPaymentMethod(getPreBill().getPaymentMethod(), paymentMethodData));
-
+        if ((getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
+            JsfUtil.addErrorMessage("Please select tendered amount correctly");
+            return true;
+        }
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //        }
@@ -811,7 +814,7 @@ public class PharmacyPreSettleController implements Serializable {
             Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
             if (b != null) {
-                UtilityController.addErrorMessage("Allready Paid");
+                JsfUtil.addErrorMessage("Allready Paid");
                 return "";
             } else {
                 setPreBill(args);
@@ -819,7 +822,7 @@ public class PharmacyPreSettleController implements Serializable {
             }
         } else {
             searchController.makeListNull();
-            UtilityController.addErrorMessage("Please Search Again and Accept Bill");
+            JsfUtil.addErrorMessage("Please Search Again and Accept Bill");
             return "";
         }
     }
