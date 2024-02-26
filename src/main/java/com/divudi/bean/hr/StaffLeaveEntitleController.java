@@ -9,7 +9,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.LeaveType;
 
 import com.divudi.ejb.HumanResourceBean;
@@ -97,12 +97,12 @@ public class StaffLeaveEntitleController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getFromDate() == null) {
-            UtilityController.addErrorMessage("Please Select From Date");
+            JsfUtil.addErrorMessage("Please Select From Date");
             return;
         }
 
         if (getCurrent().getToDate() == null) {
-            UtilityController.addErrorMessage("Please Select To Date");
+            JsfUtil.addErrorMessage("Please Select To Date");
             return;
         }
 
@@ -110,12 +110,12 @@ public class StaffLeaveEntitleController implements Serializable {
 //        current.setToDate(toDate);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
 //        getItems();
@@ -194,9 +194,9 @@ public class StaffLeaveEntitleController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -268,7 +268,7 @@ public class StaffLeaveEntitleController implements Serializable {
         StaffLeaveEntitle staffLeaveEntitle = leaveApplicationFormController.fetchLeaveEntitle(getCurrent().getStaff(), LeaveType.Annual, getCurrent().getFromDate());
 
         if (staffLeaveEntitle == null) {
-            UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
+            JsfUtil.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
             return;
         }
 

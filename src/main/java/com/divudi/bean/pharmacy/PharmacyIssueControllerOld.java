@@ -6,7 +6,7 @@
 package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -161,7 +161,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         if (newQty > getStockByBillItem(tmp)) {
             tmp.setQty(oldQty);
             getBillItemFacade().edit(tmp);
-            UtilityController.addErrorMessage("No Sufficient Stocks");
+            JsfUtil.addErrorMessage("No Sufficient Stocks");
             return;
         }
 
@@ -307,7 +307,7 @@ public class PharmacyIssueControllerOld implements Serializable {
 
     private boolean errorCheckForPreBill() {
         if (getPreBill().getBillItems().isEmpty()) {
-            UtilityController.addErrorMessage("No Items added to bill to sale");
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
             return true;
         }
         return false;
@@ -505,15 +505,15 @@ public class PharmacyIssueControllerOld implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
         if (getQty() > getStock().getStock()) {
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 

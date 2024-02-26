@@ -7,7 +7,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -35,7 +35,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -503,7 +503,7 @@ public class ChannelReportTempController implements Serializable {
         a.setEditedAt(new Date());
         getAgentReferenceBookFacade().edit(a);
 
-        UtilityController.addSuccessMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated");
         createAgentReferenceBooks();
     }
 

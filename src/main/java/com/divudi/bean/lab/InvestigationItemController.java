@@ -10,7 +10,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.CssFontStyle;
 import com.divudi.data.CssTextAlign;
 import com.divudi.data.CssTextDecoration;
@@ -34,7 +34,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ReportItemFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -573,7 +573,7 @@ public class InvestigationItemController implements Serializable {
 
     public void moveUpAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -582,12 +582,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Moved Successfully");
+        JsfUtil.addSuccessMessage("Moved Successfully");
     }
 
     public void moveLeftAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -596,12 +596,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Moved Successfully");
+        JsfUtil.addSuccessMessage("Moved Successfully");
     }
 
     public void moveDownAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -610,12 +610,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Moved Successfully");
+        JsfUtil.addSuccessMessage("Moved Successfully");
     }
 
     public void fixWidthAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -624,12 +624,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Fixed the width");
+        JsfUtil.addSuccessMessage("Fixed the width");
     }
 
     public void fixHeightAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -638,12 +638,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Fixed the width");
+        JsfUtil.addSuccessMessage("Fixed the width");
     }
 
     public void moveRightAllReportItems() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to move");
+            JsfUtil.addErrorMessage("There is No items to move");
             return;
         }
 
@@ -652,12 +652,12 @@ public class InvestigationItemController implements Serializable {
             riFacade.edit(ri);
         }
 
-        UtilityController.addSuccessMessage("Moved Successfully");
+        JsfUtil.addSuccessMessage("Moved Successfully");
     }
 
     public void updateAllFontValues() {
         if (getSelectedItemsToChange().isEmpty()) {
-            UtilityController.addErrorMessage("There is No items to update font");
+            JsfUtil.addErrorMessage("There is No items to update font");
             return;
         }
         for (ReportItem ri : getSelectedItemsToChange()) {
@@ -672,7 +672,7 @@ public class InvestigationItemController implements Serializable {
             }
         }
 
-        UtilityController.addSuccessMessage("Update Success");
+        JsfUtil.addSuccessMessage("Update Success");
 
     }
 
@@ -783,11 +783,11 @@ public class InvestigationItemController implements Serializable {
 
     public void addValueToIxItem() {
         if (current == null) {
-            UtilityController.addErrorMessage("Please select an Ix");
+            JsfUtil.addErrorMessage("Please select an Ix");
             return;
         }
         if (addingString.trim().equals("")) {
-            UtilityController.addErrorMessage("Enter a value");
+            JsfUtil.addErrorMessage("Enter a value");
             return;
         }
         InvestigationItemValue i = new InvestigationItemValue();
@@ -795,7 +795,7 @@ public class InvestigationItemController implements Serializable {
         i.setInvestigationItem(current);
         current.getInvestigationItemValues().add(i);
         getEjbFacade().edit(current);
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
         addingString = "";
     }
 
@@ -1174,7 +1174,7 @@ public class InvestigationItemController implements Serializable {
     public void addNewTest() {
         addingNewTest = false;
         if (currentInvestigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
 
@@ -1491,7 +1491,7 @@ public class InvestigationItemController implements Serializable {
 
     public void addNewLabel() {
         if (currentInvestigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         current = new InvestigationItem();
@@ -1564,12 +1564,12 @@ public class InvestigationItemController implements Serializable {
     public void removeInvestigationItemValue() {
         ////System.out.println("1");
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to Remove");
+            JsfUtil.addErrorMessage("Nothing to Remove");
             return;
         }
         ////System.out.println("1");
         if (removingItem == null) {
-            UtilityController.addErrorMessage("Nothing to Remove");
+            JsfUtil.addErrorMessage("Nothing to Remove");
             return;
         }
         ////System.out.println("3");
@@ -1580,12 +1580,12 @@ public class InvestigationItemController implements Serializable {
         getEjbFacade().edit(current);
         ////System.out.println("6");
 
-        UtilityController.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void addNewValue() {
         if (currentInvestigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         current = new InvestigationItem();
@@ -1608,7 +1608,7 @@ public class InvestigationItemController implements Serializable {
 
     public void addNewCalculation() {
         if (currentInvestigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         current = new InvestigationItem();
@@ -1639,7 +1639,7 @@ public class InvestigationItemController implements Serializable {
 
     public void addNewFlag() {
         if (currentInvestigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         current = new InvestigationItem();
@@ -1682,12 +1682,12 @@ public class InvestigationItemController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
             getCurrentInvestigation().getReportItems().add(current);
             getIxFacade().edit(currentInvestigation);
         }

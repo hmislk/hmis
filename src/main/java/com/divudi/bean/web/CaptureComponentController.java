@@ -10,7 +10,7 @@ import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.web.CaptureComponent;
 import com.divudi.entity.web.DesignComponent;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.facade.web.CaptureComponentFacade;
 import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;

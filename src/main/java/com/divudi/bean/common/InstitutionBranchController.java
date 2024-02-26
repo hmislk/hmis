@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
@@ -104,11 +104,11 @@ public class InstitutionBranchController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Instituion Type");
+            JsfUtil.addErrorMessage("Select Instituion Type");
             return;
         }
         if (getCurrent().getInstitution() == null) {
-            UtilityController.addErrorMessage("Select Main Institution");
+            JsfUtil.addErrorMessage("Select Main Institution");
             return;
         }
         getCurrent().getInstitution().getBranch().add(getCurrent());
@@ -160,9 +160,9 @@ public class InstitutionBranchController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         current = null;

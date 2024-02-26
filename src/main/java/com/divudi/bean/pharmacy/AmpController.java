@@ -11,7 +11,9 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
+import com.divudi.bean.common.util.JsfUtil;
+//import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
 import com.divudi.data.ItemType;
@@ -29,7 +31,7 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.facade.util.JsfUtil;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -300,7 +302,7 @@ public class AmpController implements Serializable {
             double qty = fetchStockQty(s);
 
             if (qty != 0) {
-                UtilityController.addErrorMessage(s.getName() + " NOT Removed Beacause there is stock");
+                JsfUtil.addErrorMessage(s.getName() + " NOT Removed Beacause there is stock");
                 continue;
             }
 
@@ -620,25 +622,25 @@ public class AmpController implements Serializable {
 
     private boolean errorCheck() {
 //        if (getCurrent().getInstitution() == null) {
-//            UtilityController.addErrorMessage("Please Select Manufacturer");
+//            JsfUtil.addErrorMessage("Please Select Manufacturer");
 //            return true;
 //        }
 
 //        listnerCategorySelect();
         if (current.getCategory() == null) {
 //            listnerCategorySelect();
-            UtilityController.addErrorMessage("Please Select Category");
+            JsfUtil.addErrorMessage("Please Select Category");
             return true;
         }
 
         if (getTabId().toString().equals("tabVmp")) {
             if (getCurrent().getVmp() == null) {
-                UtilityController.addErrorMessage("Please Select VMP");
+                JsfUtil.addErrorMessage("Please Select VMP");
                 return true;
             }
         }
         if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
-            UtilityController.addErrorMessage("Code Empty.You Can't Save Item without Code.");
+            JsfUtil.addErrorMessage("Code Empty.You Can't Save Item without Code.");
             return true;
         }
 
@@ -650,7 +652,7 @@ public class AmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getVtm() == null) {
-            UtilityController.addErrorMessage("Select Vtm");
+            JsfUtil.addErrorMessage("Select Vtm");
             return true;
         }
 
@@ -658,15 +660,15 @@ public class AmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getStrength() == 0.0) {
-            UtilityController.addErrorMessage("Type Strength");
+            JsfUtil.addErrorMessage("Type Strength");
             return true;
         }
         if (currentVmp.getCategory() == null) {
-            UtilityController.addErrorMessage("Select Category");
+            JsfUtil.addErrorMessage("Select Category");
             return true;
         }
         if (addingVtmInVmp.getStrengthUnit() == null) {
-            UtilityController.addErrorMessage("Select Strenth Unit");
+            JsfUtil.addErrorMessage("Select Strenth Unit");
             return true;
         }
 
@@ -733,12 +735,12 @@ public class AmpController implements Serializable {
 
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         // getItems();
@@ -773,12 +775,12 @@ public class AmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         // getItems();
@@ -838,9 +840,9 @@ public class AmpController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

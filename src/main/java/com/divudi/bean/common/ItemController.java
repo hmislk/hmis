@@ -30,7 +30,7 @@ import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -2191,9 +2191,9 @@ public class ItemController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         allItems = null;

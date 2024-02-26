@@ -34,7 +34,7 @@ import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -684,7 +684,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (login()) {
             return "/index1.xhtml";
         } else {
-            UtilityController.addErrorMessage("Login Failure. Please try again");
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
             return "";
         }
     }
@@ -696,7 +696,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (l) {
             return "/index1.xhtml?faces-redirect=true";
         } else {
-            UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
+            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
     }
@@ -704,7 +704,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean login() {
         getApplicationEjb().recordAppStart();
         if (userName.trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a username");
+            JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
         if (isFirstVisit()) {
@@ -712,7 +712,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             return true;
         } else {
             if (department == null) {
-                UtilityController.addErrorMessage("Please select a department");
+                JsfUtil.addErrorMessage("Please select a department");
                 return false;
             }
             return checkUsers();
@@ -752,11 +752,11 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String registeUser() {
         if (!userNameAvailable(newUserName)) {
-            UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
+            JsfUtil.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not matching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not matching");
             return "";
         }
 
@@ -776,43 +776,43 @@ public class SessionController implements Serializable, HttpSessionListener {
         user.setActivated(Boolean.TRUE);
 
         uFacade.create(user);
-        UtilityController.addSuccessMessage("New User Registered.");
+        JsfUtil.addSuccessMessage("New User Registered.");
         return "";
     }
 
     public void changePassword() {
         WebUser user = getLoggedUser();
         if (!getSecurityController().matchPassword(passord, user.getWebUserPassword())) {
-            UtilityController.addErrorMessage("The old password you entered is incorrect");
+            JsfUtil.addErrorMessage("The old password you entered is incorrect");
             return;
         }
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
 
         user.setWebUserPassword(getSecurityController().hash(newPassword));
         uFacade.edit(user);
         //
-        UtilityController.addSuccessMessage("Password changed");
+        JsfUtil.addSuccessMessage("Password changed");
 
     }
 
     public void changeCurrentUserPassword() {
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Select a User");
+            JsfUtil.addErrorMessage("Select a User");
             return;
         }
         WebUser user = getCurrent();
 
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return;
         }
 
         user.setWebUserPassword(getSecurityController().hash(newPassword));
         uFacade.edit(user);
-        UtilityController.addSuccessMessage("Password changed");
+        JsfUtil.addSuccessMessage("Password changed");
     }
 
     public Boolean userNameAvailable(String userName) {
@@ -830,7 +830,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         String j = "Select w from WebUser w order by w.id";
         WebUser ws = getFacede().findFirstByJpql(j);
         if (ws == null) {
-            UtilityController.addSuccessMessage("First Visit");
+            JsfUtil.addSuccessMessage("First Visit");
             return true;
         } else {
             return false;
@@ -845,11 +845,11 @@ public class SessionController implements Serializable, HttpSessionListener {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
                     if (!canLogToDept(u, department)) {
-                        UtilityController.addErrorMessage("No privilage to Login This Department");
+                        JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
                     }
                     if (getApplicationController().isLogged(u) != null) {
-                        UtilityController.addErrorMessage("This user already logged. Other instances will be logged out now.");
+                        JsfUtil.addErrorMessage("This user already logged. Other instances will be logged out now.");
                     }
 
                     u.setDepartment(department);
@@ -914,7 +914,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     recordLogin();
 
-                    UtilityController.addSuccessMessage("Logged successfully");
+                    JsfUtil.addSuccessMessage("Logged successfully");
                     return true;
                 }
             }
@@ -1048,7 +1048,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         departments = departmentController.fillAllItems();
                     }
                     if (departments.isEmpty()) {
-                        UtilityController.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
+                        JsfUtil.addErrorMessage("This user has no privilage to login to any Department. Please conact system administrator.");
                         return false;
                     }
                     boolean f = false;
@@ -1100,11 +1100,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     }
                     setUserPreference(uf);
 
-                    UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
-                    UtilityController.addSuccessMessage(setGreetingMsg());
+                    JsfUtil.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
+                    JsfUtil.addSuccessMessage(setGreetingMsg());
 
                     if (getApplicationController().isLogged(u) != null) {
-                        UtilityController.addErrorMessage("This user is already logged.");
+                        JsfUtil.addErrorMessage("This user is already logged.");
                     }
                     return true;
                 }
@@ -1181,7 +1181,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 //        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
 //            long i = searchController.createInwardBHTForIssueBillCount();
 //            if (i > 0) {
-//                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+//                JsfUtil.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
 //            }
 //        }
         sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";

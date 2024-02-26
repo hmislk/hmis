@@ -8,7 +8,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -166,7 +166,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return true;
         }
 
@@ -174,7 +174,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return true;
         }
 
@@ -184,7 +184,7 @@ public class StoreSaleBhtController implements Serializable {
             setZeroToQty(tmp);
             onEditCalculation(tmp);
 
-            UtilityController.addErrorMessage("Another User On Change Bill Item "
+            JsfUtil.addErrorMessage("Another User On Change Bill Item "
                     + " Qty value is resetted");
             return true;
         }
@@ -224,7 +224,7 @@ public class StoreSaleBhtController implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
-            UtilityController.addErrorMessage("Can not enter a minus value");
+            JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         this.qty = qty;
@@ -489,12 +489,12 @@ public class StoreSaleBhtController implements Serializable {
     private void settleBhtIssue(BillType btp, BillNumberSuffix billNumberSuffix) {
 
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
-            UtilityController.addErrorMessage("Please Select a BHT");
+            JsfUtil.addErrorMessage("Please Select a BHT");
             return;
         }
         
         if(getPatientEncounter().isDischarged()){
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -610,26 +610,26 @@ public class StoreSaleBhtController implements Serializable {
             return;
         }
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Item?");
+            JsfUtil.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
-            UtilityController.addErrorMessage("Quentity?");
+            JsfUtil.addErrorMessage("Quentity?");
             return;
         }
 
         if (getQty() > getStock().getStock()) {
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
-            UtilityController.addErrorMessage("Already added this item batch");
+            JsfUtil.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!getStoreBean().isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
 

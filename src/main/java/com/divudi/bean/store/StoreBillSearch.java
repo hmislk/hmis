@@ -6,7 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -146,17 +146,17 @@ public class StoreBillSearch implements Serializable {
 
     private boolean errorCheckForEdit() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
@@ -218,7 +218,7 @@ public class StoreBillSearch implements Serializable {
         BillFee tmp = (BillFee) event.getObject();
 
         if (tmp.getPaidValue() != 0.0) {
-            UtilityController.addErrorMessage("Already Staff FeePaid");
+            JsfUtil.addErrorMessage("Already Staff FeePaid");
             return;
         }
 
@@ -254,7 +254,7 @@ public class StoreBillSearch implements Serializable {
         tempbillItems = null;
         for (BillItem i : getRefundingItems()) {
             if (checkPaidIndividual(i)) {
-                UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
                 return false;
             }
 
@@ -343,22 +343,22 @@ public class StoreBillSearch implements Serializable {
 
     public String refundBill() {
         if (refundingItems.isEmpty()) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
 
         }
         if (refundAmount == 0.0) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
 
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
                 return "";
             }
             if (!calculateRefundTotal()) {
@@ -376,10 +376,10 @@ public class StoreBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             printPreview = true;
-            //UtilityController.addSuccessMessage("Refunded");
+            //JsfUtil.addSuccessMessage("Refunded");
 
         } else {
-            UtilityController.addErrorMessage("No Bill to refund");
+            JsfUtil.addErrorMessage("No Bill to refund");
             return "";
         }
         //  recreateModel();
@@ -433,22 +433,22 @@ public class StoreBillSearch implements Serializable {
 
     public String returnBill() {
         if (refundingItems.isEmpty()) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
 
         }
         if (refundAmount == 0.0) {
-            UtilityController.addErrorMessage("There is no item to Refund");
+            JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
 
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not Refund again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
                 return "";
             }
             if (!calculateRefundTotal()) {
@@ -464,10 +464,10 @@ public class StoreBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             printPreview = true;
-            //UtilityController.addSuccessMessage("Refunded");
+            //JsfUtil.addSuccessMessage("Refunded");
 
         } else {
-            UtilityController.addErrorMessage("No Bill to refund");
+            JsfUtil.addErrorMessage("No Bill to refund");
             return "";
         }
         //  recreateModel();
@@ -628,36 +628,36 @@ public class StoreBillSearch implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getBill().getPaidAmount() != 0.0) {
-            UtilityController.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Credit Company Paid For This Bill. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (checkCollectedReported()) {
-            UtilityController.addErrorMessage("Sample Already collected can't cancel or report already issued");
+            JsfUtil.addErrorMessage("Sample Already collected can't cancel or report already issued");
             return true;
         }
 
         if (getBill().getBillType() != BillType.LabBill && getBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment scheme.");
+            JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -666,33 +666,33 @@ public class StoreBillSearch implements Serializable {
 
     private boolean pharmacyErrorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().getBillType() == BillType.StoreOrderApprove) {
             if (checkGrn()) {
-                UtilityController.addErrorMessage("Grn already head been Come u can't bill ");
+                JsfUtil.addErrorMessage("Grn already head been Come u can't bill ");
                 return true;
             }
         }
 
         if (getBill().getBillType() == BillType.StoreGrnBill) {
             if (checkGrnReturn()) {
-                UtilityController.addErrorMessage("Grn had been Returned u can't cancell bill ");
+                JsfUtil.addErrorMessage("Grn had been Returned u can't cancell bill ");
                 return true;
             }
         }
 
         if (getBill().getBillType() == BillType.StoreTransferIssue) {
             if (getBill().checkActiveForwardReference()) {
-                UtilityController.addErrorMessage("Item for this bill already recieve");
+                JsfUtil.addErrorMessage("Item for this bill already recieve");
                 return true;
             }
         }
 
         if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -1155,12 +1155,12 @@ public class StoreBillSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1175,7 +1175,7 @@ public class StoreBillSearch implements Serializable {
         }
 
         if (bill.getDepartment().getId() != getSessionController().getDepartment().getId()) {
-            UtilityController.addErrorMessage("Billed Department Is Defferent than Logged Department");
+            JsfUtil.addErrorMessage("Billed Department Is Defferent than Logged Department");
             return true;
         }
 
@@ -1221,12 +1221,12 @@ public class StoreBillSearch implements Serializable {
 //            }
             getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1282,7 +1282,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (getBill().checkActiveReturnBhtIssueBills()) {
-                UtilityController.addErrorMessage("There some return Bill for this please cancel that bills first");
+                JsfUtil.addErrorMessage("There some return Bill for this please cancel that bills first");
                 return;
             }
 
@@ -1305,12 +1305,12 @@ public class StoreBillSearch implements Serializable {
 //                getBill().getReferenceBill().setReferenceBill(null);
 //                getBillFacade().edit(getBill().getReferenceBill());
 //            }
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1335,21 +1335,21 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             //       //System.err.println("Bill : "+getBill().getBillType());
 //            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
     public void pharmacyPoRequestCancel() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().getReferenceBill() != null && !getBill().getReferenceBill().isCancelled()) {
-                UtilityController.addErrorMessage("Sorry You cant Cancell Approved Bill");
+                JsfUtil.addErrorMessage("Sorry You cant Cancell Approved Bill");
                 return;
             }
 
@@ -1363,14 +1363,14 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             //       //System.err.println("Bill : "+getBill().getBillType());
 //            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1424,7 +1424,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
@@ -1442,12 +1442,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1482,12 +1482,12 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
                 return;
             }
 
             if (getBill().getPaidAmount() != 0) {
-                UtilityController.addErrorMessage("Payments for this GRN Already Given ");
+                JsfUtil.addErrorMessage("Payments for this GRN Already Given ");
                 return;
             }
 
@@ -1512,12 +1512,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1545,12 +1545,12 @@ public class StoreBillSearch implements Serializable {
 //            getBill().setBackwardReferenceBill(null);
 //            getBill().setForwardReferenceBill(null);
 //            getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1561,7 +1561,7 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("Items for this Note Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("Items for this Note Already issued so you can't cancel ");
                 return;
             }
 
@@ -1577,12 +1577,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1593,12 +1593,12 @@ public class StoreBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
                 return;
             }
 
             if (getBill().getPaidAmount() != 0) {
-                UtilityController.addErrorMessage("Payments for this GRN Already Given ");
+                JsfUtil.addErrorMessage("Payments for this GRN Already Given ");
                 return;
             }
 
@@ -1621,7 +1621,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
@@ -1629,7 +1629,7 @@ public class StoreBillSearch implements Serializable {
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 
@@ -1657,12 +1657,12 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
 

@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -124,7 +124,7 @@ public class PurchaseOrderController implements Serializable {
 
     public String approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Paymentmethod");
+            JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
         }
 

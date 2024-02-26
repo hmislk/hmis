@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
@@ -121,21 +121,21 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void saveSelected() {
 
         if (fromPrice == toPrice) {
-            UtilityController.addErrorMessage("Check prices");
+            JsfUtil.addErrorMessage("Check prices");
             return;
         }
         if (toPrice == 0) {
-            UtilityController.addErrorMessage("Check prices");
+            JsfUtil.addErrorMessage("Check prices");
             return;
         }
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         if (category == null) {
-            UtilityController.addErrorMessage("Please select a category");
+            JsfUtil.addErrorMessage("Please select a category");
             return;
         }
 
@@ -153,7 +153,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         if (a.getId() == null) {
             getFacade().create(a);
         }
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
 //        createItems();
     }
@@ -264,9 +264,9 @@ public class InwardPriceAdjustmntController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
         getItems();
