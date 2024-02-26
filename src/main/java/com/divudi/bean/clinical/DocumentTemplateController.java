@@ -1,13 +1,13 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.DocumentTemplateType;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.clinical.DocumentTemplate;
 import com.divudi.facade.DocumentTemplateFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,12 +156,12 @@ public class DocumentTemplateController implements Serializable {
     private void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
         items = null;
     }
@@ -192,9 +192,9 @@ public class DocumentTemplateController implements Serializable {
         if (current != null) {
             current.setRetired(true);
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         items = null;
         current = null;

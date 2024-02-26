@@ -201,20 +201,26 @@
                                              >
                                     <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
                                               sortBy="#{bill.id}"
+                                              rendered="false"
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
-                                                       value="#{bill.insId}" 
+                                                       value="#{bill.deptId}" 
                                                        action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+<!--                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
                                         <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </h:commandLink>  
+                                    </p:column>-->
+                                    <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}"  >

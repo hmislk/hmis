@@ -21,7 +21,7 @@
                                 <div class="d-flex m-1 col-6">
                                     <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.refunded}" class="ui-button-warning m-1 w-25" icon="fa fa-money-bill-wave">                          
+                                    <p:commandButton ajax="false" value="To Refund" action="#{billSearch.navigateToRefundOpdBill()}" disabled="#{billSearch.bill.cancelled}" class="ui-button-warning m-1 w-25" icon="fa fa-money-bill-wave">                          
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" class="w-50 m-1"
                                                      onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
@@ -83,17 +83,19 @@
                                 <h:panelGroup id="groupPrint" >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="ffb">
-                                            <prints:five_five_paper_with_headings bill="#{ffb}"/>                        
+                                            <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
                                         </ui:repeat>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="ffpp">
-                                            <prints:five_five_paper_without_headings bill="#{ffpp}" />
+                                            <prints:five_five_paper_without_headings 
+                                                duplicate="true"
+                                                bill="#{ffpp}" payments="#{opdBillController.payments}" />
                                         </ui:repeat>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                         <ui:repeat value="#{billSearch.bill}" var="pp">
-                                            <prints:posOpdBill bill="#{pp}" duplicate="false"/>                        
+                                            <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
                                         </ui:repeat>
                                     </h:panelGroup>
                                 </h:panelGroup>

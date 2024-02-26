@@ -16,12 +16,12 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <div class="posbill" style="text-align: left!important; page-break-after: always;">
+        <div class="posbill" style="text-align: left!important; page-break-after: always; width: 400px;" >
             <div style="position: absolute; padding-left: 165px;">
                 <p:graphicImage style="width: 2.7cm!important;height: 2.7cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="prabdhodha-logo-plain.jpg" ></p:graphicImage>
             </div>
             <div style="text-align: center;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center;"></h:outputLabel>
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}" style="text-align: center;"></h:outputLabel>
             </div>
             <div style="text-align: center;">
                 <h:outputLabel value="#{cc.attrs.bill.department.address} " style="text-align: center;"></h:outputLabel>
@@ -32,74 +32,27 @@
             </div>
             <p:spacer height="15"/>
             <div style="font-weight: bold; text-align: center;">
-                <h:outputLabel value="Channell Bill"   style="text-align: center;"/>    
+                <h:outputLabel value="Channel Payment Receipt"   style="text-align: center;"/><br/>
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="text-align: center;"/> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
                 <br></br>
-                <h:outputLabel value="Duplicate"  rendered="#{cc.attrs.dup eq true}" style="text-align: center;"/> 
-                <br></br>
-                <h:outputLabel value="(Customer Copy)"   style="text-align: center;"/> 
+                <!--                <h:outputLabel value="(Customer Copy)" style="text-align: center;"/> -->
             </div>
-            <div style="text-align: center;">
-                <h:outputLabel value="--------------------------" style="text-align: center;"></h:outputLabel>
-            </div>
-            <p:spacer height="30"/>
+            <div style="text-align: center;"> 
+                <h:outputLabel value="--------------------------------------------" style="text-align: center;"></h:outputLabel>
+            </div> 
 
-            <table >
+            <div class="d-flex justify-content-center">
+                <b>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                        <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:40px !important; width: 70px; height: 70px; font-weight: bold; border: 1px solid black; color: red; border-radius: 50px; text-align: center; text-align-last: center; margin-top: 10px;" ></h:outputLabel>
+                    </ui:repeat>
+                </b>
+            </div> 
 
-                <tr>
-                    <td>
-                        <b>
-                            <h:outputLabel value="Number" ></h:outputLabel>
-                        </b>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <b>
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
-                                <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important;  font-weight: bold; margin: 5px;padding: 5px;border: 1px solid black; color: red;" ></h:outputLabel>
-                            </ui:repeat>
-                        </b>
-                    </td>
+            <p:spacer height="10"/>
 
-                </tr>
-
-
-                <tr>
-                    <td>
-                        <h:outputLabel value="Name" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
-                    </td>
-
-                </tr>
-
-                <tr>
-                    <td>
-                        <h:outputLabel value="Phone" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
-                    </td>
-                </tr>
-
+            <table style="margin-left: 6%">
 
 
                 <tr>
@@ -189,8 +142,6 @@
 
                 </tr>
 
-
-
                 <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                     <tr>
                         <td>
@@ -210,14 +161,33 @@
                     </tr>
                 </ui:repeat>
 
+                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Total" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <p:spacer width="10" ></p:spacer>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </td>
 
+                    </tr>
+
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.discount gt 1}" >
 
                     <tr>
                         <td>
                             <b>
-                                <h:outputLabel value="Gross Total ***" ></h:outputLabel>
+                                <h:outputLabel value="Gross Total" ></h:outputLabel>
                             </b>
                         </td>
                         <td>
@@ -277,38 +247,56 @@
                         </td>
 
                     </tr>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{cc.attrs.bill.discount lt 1}" >
-                    <tr>
-                        <td>
-                            <b>
-                                <h:outputLabel value="Total***" ></h:outputLabel>
-                            </b>
-                        </td>
-                        <td>
-                            <p:spacer width="10" ></p:spacer>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" ></h:outputLabel>
-                        </td>
-                        <td>
-                            <b>
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </b>
-                        </td>
-
-                    </tr>
 
                 </h:panelGroup>
 
 
+                <tr>
+                    <td>
+                        <h:outputLabel value="Name" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" ></h:outputLabel>
+                    </td>
 
+                </tr>
 
+                <tr>
+                    <td>
+                        <h:outputLabel value="Gender / Age " ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.sex} (#{cc.attrs.bill.patient.person.ageAsString})" ></h:outputLabel>
+                    </td>
 
+                </tr>
 
+                <tr>
+                    <td>
+                        <h:outputLabel value="Phone" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" ></h:outputLabel>
+                    </td>
+                </tr>
 
                 <tr>
                     <td>
@@ -325,7 +313,20 @@
                     </td>
                 </tr>
 
-
+                <tr>
+                    <td>
+                        <h:outputLabel value="Bill No" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.insId}"></h:outputLabel>
+                    </td>
+                </tr>
 
                 <tr>
                     <td>
@@ -346,22 +347,6 @@
 
                 <tr>
                     <td>
-                        <h:outputLabel value="Cashier Sign." ></h:outputLabel>
-                    </td>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>
-                    <td>
-                        <h:outputLabel value=":" ></h:outputLabel>
-                    </td>
-                    <td>
-                        <h:outputLabel value="...............................">
-                        </h:outputLabel>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
                         <h:outputLabel value="Cashier Name" ></h:outputLabel>
                     </td>
                     <td>
@@ -372,61 +357,66 @@
                     </td>
                     <td>
                         <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.code}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
                     </td>
                 </tr>
+
                 <tr>
-                    <td colspan="4" >
-                        <p:graphicImage cache="false" value="#{barcodeController.createBarcodeCode128}" 
-                                        style="max-width: 7.5cm; padding: 10px; margin: 10px;" >
-                            <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
-                        </p:graphicImage>
+                    <td>
+                        <h:outputLabel value="Cashier Sign" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" style="width: 10px; text-align: center;"></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="...............................">
+                        </h:outputLabel>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
-                <tr>
-                    <td>
-                        <p:spacer width="10" ></p:spacer>
-                    </td>                            
-                </tr>
+
             </table>
 
+            <div class="d-flex justify-content-center">
+                <p:graphicImage 
+                    cache="false" 
+                    value="#{barcodeController.createBarcodeCode128}" 
+                    style="max-width: 7.5cm; padding: 10px; margin: 10px;" >
+                    <f:param name="code" value="#{cc.attrs.bill.patient.phn}" />
+                </p:graphicImage>
+            </div>
+
+            <div style="margin-left: 6%">
+                <div style="font-size: 8pt">
+                    <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputLabel>
+                </div>
+
+                <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="Paid by : Credit Card :"/>
+                    <h:outputText
+                        class="mx-1"
+                        style="font-size: 8pt"  
+                        value="#{cc.attrs.bill.paidAmount}">
+                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                    <h:outputText 
+                        style="font-size: 8pt"  
+                        value="(Card Last 4 Digits:#{cc.attrs.bill.creditCardRefNo})"/>
+                </h:panelGroup>
+            </div>
+
+            <div style="text-align: center;"> 
+                <h:outputLabel value="--------------------------------------------" style="text-align: center;"></h:outputLabel>
+            </div>
+
+            <p:spacer width="20" ></p:spacer>
+
         </div>
-
-
     </cc:implementation>
 </html>

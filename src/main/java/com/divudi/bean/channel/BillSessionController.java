@@ -49,12 +49,12 @@ public class BillSessionController implements Serializable {
 //        }
 //        if (pa.getId() != null) {
 //            getFacade().edit(pa);
-//            UtilityController.addSuccessMessage("Updated Successfully.");
+//            JsfUtil.addSuccessMessage("Updated Successfully.");
 //        } else {
 //            pa.setCreatedAt(new Date());
 //            pa.setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(pa);
-//            UtilityController.addSuccessMessage("Saved Successfully");
+//            JsfUtil.addSuccessMessage("Saved Successfully");
 //        }
 //        recreateModel();
 //        getItems();
@@ -79,15 +79,12 @@ public class BillSessionController implements Serializable {
             BillSessionController controller = (BillSessionController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "billSessionController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             BillSession found = controller.getFacade().find(getKey(value));
-            System.out.println("found = " + found);
             return found;
         }
 

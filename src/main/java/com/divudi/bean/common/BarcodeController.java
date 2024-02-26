@@ -56,7 +56,6 @@ public class BarcodeController {
         if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
             return new DefaultStreamedContent();
         }
-        System.out.println("code = " + code);
         if (code == null || code.trim().equals("")) {
             return null;
         }
@@ -69,7 +68,6 @@ public class BarcodeController {
                     .stream(() -> stream)
                     .build();
         } catch (Exception ex) {
-            System.out.println("ex = " + ex.getMessage());
         }
 
         return barcode;

@@ -10,7 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.WebLanguage;
 import com.divudi.facade.WebLanguageFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -197,9 +197,9 @@ public class WebLanguageController implements Serializable {
         if (selected != null) {
             selected.setRetired(true);
             getFacade().edit(selected);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

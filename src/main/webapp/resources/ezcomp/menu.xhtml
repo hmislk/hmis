@@ -230,7 +230,7 @@
                                     action="#{opdBillController.navigateToSearchPatients()}" 
                                     value="Patient Lookup &amp; Registration"
                                     rendered="true" />
-                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Detail" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
+                        <p:menuitem  ajax="false"  action="#{admissionController.navigateToEditAdmission()}" value="Edit Admission Details" actionListener="#{bhtEditController.prepereForNew()}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" ></p:menuitem>                                                                          
                         <p:menuitem  ajax="false"  action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" value="Inward Appointment" rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" ></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Room" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
@@ -811,6 +811,7 @@
                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                     <p:menuitem ajax="false" action="/reportCashier/report_cashier?faces-redirect=true" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
 
                 </p:submenu>
 
@@ -825,9 +826,9 @@
                                rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="OPD">
                             <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments-due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/opd_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                         value="Payments-done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
+                                         value="Payments Done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
                         </p:submenu>
                         <p:submenu label="Inward">
                             <p:menuitem  ajax="false" action="/inward/inward_bill_staff_payment?faces-redirect=true" value="Pay Doctor"  />

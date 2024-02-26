@@ -76,7 +76,7 @@
                                 </p:commandButton>
                             </p:column>
                             <p:column >
-                                <p:commandButton ajax="false" value="Issue" action="ward_pharmacy_bht_issue" actionListener="#{pharmacySaleBhtController.generateBillComponent(p)}"
+                                <p:commandButton ajax="false" value="Issue" action="ward_pharmacy_bht_issue" actionListener="#{pharmacySaleBhtController.generateIssueBillComponentsForBhtRequest(p)}"
                                                  disabled="#{p.cancelled eq true}">
                                 </p:commandButton>
                             </p:column>

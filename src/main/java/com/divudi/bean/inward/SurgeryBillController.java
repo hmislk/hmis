@@ -8,7 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -155,7 +155,7 @@ public class SurgeryBillController implements Serializable {
         }
 
         if (encounterComponent.getBillFee().getPaidValue() != 0) {
-            UtilityController.addErrorMessage("Staff Payment Already Paid U cant Remove");
+            JsfUtil.addErrorMessage("Staff Payment Already Paid U cant Remove");
             return;
         }
 
@@ -454,7 +454,7 @@ public class SurgeryBillController implements Serializable {
             saveProfessionalBill();
         }
         getBillBean().updateBatchBill(getSurgeryBill());
-        UtilityController.addSuccessMessage("Surgery Detail Added");
+        JsfUtil.addSuccessMessage("Surgery Detail Added");
         bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
         resetSurgeryBillValues();
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Add surgories/Save Surgery Detail(/faces/theater/inward_bill_surgery.xhtml)");
@@ -601,16 +601,16 @@ public class SurgeryBillController implements Serializable {
 
     private boolean generalChecking() {
         if (getSurgeryBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Admission ?");
+            JsfUtil.addErrorMessage("Admission ?");
             return true;
         }
         if (getSurgeryBill().getProcedure().getItem() == null) {
-            UtilityController.addErrorMessage("Select Surgery");
+            JsfUtil.addErrorMessage("Select Surgery");
             return true;
         }
 
         if (getSurgeryBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Final Payment is Finalized");
+            JsfUtil.addErrorMessage("Final Payment is Finalized");
             return true;
         }
 
@@ -624,7 +624,7 @@ public class SurgeryBillController implements Serializable {
         }
 
         if (getProEncounterComponent().getBillFee().getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff ");
+            JsfUtil.addErrorMessage("Select Staff ");
             return;
         }
 

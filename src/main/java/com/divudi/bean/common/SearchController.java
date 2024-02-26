@@ -49,7 +49,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -233,16 +233,13 @@ public class SearchController implements Serializable {
         String action;
         if (currentBill == null) {
             Token t = tokenController.findToken(currentBillId);
-            System.out.println("t = " + t);
             if (t != null) {
-                System.out.println("t.getBill() = " + t.getBill());
                 if (t.getBill() != null) {
 
                     currentBill = t.getBill();
                 }
             }
         }
-        System.out.println("currentBill = " + currentBill);
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return "";
@@ -258,7 +255,6 @@ public class SearchController implements Serializable {
     }
 
     public String toSettle(Bill args) {
-        System.out.println("bill = " + args.getId());
         String sql = "Select b from BilledBill b"
                 + " where b.referenceBill=:bil"
                 + " and b.retired=false "
@@ -268,7 +264,7 @@ public class SearchController implements Serializable {
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
+            JsfUtil.addErrorMessage("Allready Paid");
             return "";
         } else {
 
@@ -5463,7 +5459,7 @@ public class SearchController implements Serializable {
 
     public void fillPatientBillsToPay() {
         if (patient == null) {
-            UtilityController.addErrorMessage("Please select a Patient");
+            JsfUtil.addErrorMessage("Please select a Patient");
             return;
         }
         fillPatientPreBills(BillType.OpdPreBill, patient, true, null);
@@ -5471,7 +5467,7 @@ public class SearchController implements Serializable {
 
     public void fillPatientBillsPaid() {
         if (patient == null) {
-            UtilityController.addErrorMessage("Please select a Patient");
+            JsfUtil.addErrorMessage("Please select a Patient");
             return;
         }
         fillPatientPreBills(BillType.OpdPreBill, patient, null, false);
@@ -5479,7 +5475,7 @@ public class SearchController implements Serializable {
 
     public void fillPatientBillsPaidAndToPay() {
         if (patient == null) {
-            UtilityController.addErrorMessage("Please select a Patient");
+            JsfUtil.addErrorMessage("Please select a Patient");
             return;
         }
         fillPatientPreBills(BillType.OpdPreBill, patient, null, null);

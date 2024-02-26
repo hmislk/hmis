@@ -76,7 +76,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -415,7 +415,6 @@ public class DataUploadController implements Serializable {
     }
 
     public void uploadCollectingCentreItemsAndFees() {
-        System.out.println("uploadCollectingCentreItemsAndFees");
         pollActive = true;
         items = new ArrayList<>();
         if (file != null) {
@@ -998,7 +997,6 @@ public class DataUploadController implements Serializable {
             rowIterator.next();
         }
 
-        System.out.println("2");
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             System.out.println("row = " + row);
@@ -1079,13 +1077,11 @@ public class DataUploadController implements Serializable {
             item = itemController.findItemByName(name, code, department);
             System.out.println("item = " + item);
             if (item != null) {
-                System.out.println("skipping 1");
                 itemsSkipped.add(item);
                 continue;
             }
 
             Item masterItem = itemController.findMasterItemByName(name);
-            System.out.println("masterItem = " + masterItem);
 
             Cell printingNameCell = row.getCell(1);
             if (printingNameCell != null && printingNameCell.getCellType() == CellType.STRING) {

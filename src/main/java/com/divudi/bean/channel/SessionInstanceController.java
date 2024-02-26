@@ -47,12 +47,12 @@ public class SessionInstanceController implements Serializable {
 //        }
 //        if (pa.getId() != null) {
 //            getFacade().edit(pa);
-//            UtilityController.addSuccessMessage("Updated Successfully.");
+//            JsfUtil.addSuccessMessage("Updated Successfully.");
 //        } else {
 //            pa.setCreatedAt(new Date());
 //            pa.setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(pa);
-//            UtilityController.addSuccessMessage("Saved Successfully");
+//            JsfUtil.addSuccessMessage("Saved Successfully");
 //        }
 //        recreateModel();
 //        getItems();
@@ -76,11 +76,9 @@ public class SessionInstanceController implements Serializable {
             SessionInstanceController controller = (SessionInstanceController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "sessionInstanceController");
             if (controller == null) {
-                System.out.println("controller is null");
                 return null;
             }
             if (controller.getFacade() == null) {
-                System.out.println("controller is null");
                 return null;
             }
             return controller.getFacade().find(getKey(value));

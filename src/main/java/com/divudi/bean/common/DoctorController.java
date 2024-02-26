@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
@@ -69,10 +69,12 @@ public class DoctorController implements Serializable {
         sql = " select p "
                 + " from Doctor p "
                 + " where p.retired=false "
-                + " and p.speciality=:spe "
                 + " order by p.person.name";
         HashMap hm = new HashMap();
-        hm.put("spe", speciality);
+        if (speciality != null) {
+            sql += " and p.speciality=:spe ";
+            hm.put("spe", speciality);
+        }
         suggestions = getFacade().findByJpql(sql, hm);
         return suggestions;
     }
@@ -204,9 +206,9 @@ public class DoctorController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -232,19 +234,19 @@ public class DoctorController implements Serializable {
 
     public void saveSelected() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson() == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
         if (current.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a doctor name");
+            JsfUtil.addErrorMessage("Please enter a doctor name");
             return;
         }
         if (current.getSpeciality() == null) {
-            UtilityController.addErrorMessage("Please Select Speciality for Doctor");
+            JsfUtil.addErrorMessage("Please Select Speciality for Doctor");
             return;
         }
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
@@ -254,12 +256,12 @@ public class DoctorController implements Serializable {
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         current = new Doctor();
         recreateModel();

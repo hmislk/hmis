@@ -6,7 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -95,7 +95,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void approve() {
         if (getBill().getReferenceBill() != null) {
-            UtilityController.addErrorMessage("Already Approved");
+            JsfUtil.addErrorMessage("Already Approved");
             return;
         }
         BilledBill newBill = new BilledBill();
@@ -125,7 +125,7 @@ public class DealorPaymentBillSearch implements Serializable {
             billItemFacede.edit(bi);
         }
 
-        UtilityController.addSuccessMessage("Succesfully Approved");
+        JsfUtil.addSuccessMessage("Succesfully Approved");
     }
 
     public WebUser getUser() {
@@ -266,22 +266,22 @@ public class DealorPaymentBillSearch implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -355,18 +355,18 @@ public class DealorPaymentBillSearch implements Serializable {
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
-                UtilityController.addSuccessMessage("Cancelled");
+                JsfUtil.addSuccessMessage("Cancelled");
 
                 WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
-                UtilityController.addSuccessMessage("Awaiting Cancellation");
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
     }
@@ -377,7 +377,7 @@ public class DealorPaymentBillSearch implements Serializable {
     public void approveCancellation() {
 
         if (billsApproving == null) {
-            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
+            JsfUtil.addErrorMessage("Select Bill to Approve Cancell");
             return;
         }
         for (Bill b : billsApproving) {
@@ -396,7 +396,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
             ejbApplication.getBillsToCancel().remove(b);
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
         }
 

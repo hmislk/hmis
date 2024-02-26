@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -81,12 +81,12 @@ public class InwardAdditionalChargeController implements Serializable {
     
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Where Item From");
+            JsfUtil.addErrorMessage("Select Where Item From");
             return true;
         }
 
@@ -95,12 +95,12 @@ public class InwardAdditionalChargeController implements Serializable {
         }
 
         if (getCurrent().getTotal() < 1) {
-            UtilityController.addErrorMessage("Enter Added Charge Correctly");
+            JsfUtil.addErrorMessage("Enter Added Charge Correctly");
             return true;
         }
 
         if (getCurrent().getComments().isEmpty()) {
-            UtilityController.addErrorMessage("Enter Discription");
+            JsfUtil.addErrorMessage("Enter Discription");
             return true;
         }
 
@@ -118,7 +118,7 @@ public class InwardAdditionalChargeController implements Serializable {
         getCurrent().setSingleBillItem(b);
         getBilledBillFacade().edit(current);
 
-        UtilityController.addSuccessMessage("Additional Charges Added");
+        JsfUtil.addSuccessMessage("Additional Charges Added");
         makeNull();
         
     }
