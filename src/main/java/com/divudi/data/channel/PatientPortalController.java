@@ -119,6 +119,8 @@ public class PatientPortalController {
             System.out.println("sessionInstances = " + sessionInstances.size());
         }
     }
+    
+    
 
     public String getPatientphoneNumber() {
         return PatientphoneNumber;
