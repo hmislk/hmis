@@ -12,7 +12,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -405,21 +405,21 @@ public class DepartmentController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent() == null || getCurrent().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
         if (getCurrent().getInstitution() == null) {
-            UtilityController.addErrorMessage("Please select an institution");
+            JsfUtil.addErrorMessage("Please select an institution");
             return;
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         fillSearchItems();
@@ -524,9 +524,9 @@ public class DepartmentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

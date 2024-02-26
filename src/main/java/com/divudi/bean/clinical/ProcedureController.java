@@ -9,11 +9,11 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SymanticType;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -143,12 +143,12 @@ public class ProcedureController implements Serializable {
         current.setSymanticType(SymanticType.Therapeutic_Procedure);
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
         recreateModel();
         getItems();
@@ -195,9 +195,9 @@ public class ProcedureController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

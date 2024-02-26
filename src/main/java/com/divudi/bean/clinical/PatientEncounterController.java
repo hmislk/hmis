@@ -13,7 +13,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.SymanticType;
@@ -50,7 +50,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PrescriptionFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -568,15 +568,15 @@ public class PatientEncounterController implements Serializable {
 
     public void addEncounterProcedure() {
         if (current == null) {
-            UtilityController.addErrorMessage("Please select a visit");
+            JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
         if (encounterProcedure == null) {
-            UtilityController.addErrorMessage("Please select a procedure");
+            JsfUtil.addErrorMessage("Please select a procedure");
             return;
         }
         if (encounterProcedure.getItemValue() == null) {
-            UtilityController.addErrorMessage("Please select a procedure");
+            JsfUtil.addErrorMessage("Please select a procedure");
             return;
         }
         if (encounterProcedure.getId() == null) {
@@ -593,7 +593,7 @@ public class PatientEncounterController implements Serializable {
 
         encounterProcedure = null;
 
-        UtilityController.addSuccessMessage("Procedure added");
+        JsfUtil.addSuccessMessage("Procedure added");
 
     }
 
@@ -629,15 +629,15 @@ public class PatientEncounterController implements Serializable {
 
     public void addEncounterInvestigation() {
         if (current == null) {
-            UtilityController.addErrorMessage("Please select a visit");
+            JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
         if (encounterInvestigation == null) {
-            UtilityController.addErrorMessage("Please select a procedure");
+            JsfUtil.addErrorMessage("Please select a procedure");
             return;
         }
         if (encounterInvestigation.getItemValue() == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         if (encounterInvestigation.getId() == null) {
@@ -653,17 +653,17 @@ public class PatientEncounterController implements Serializable {
 
         encounterInvestigation = null;
 
-        UtilityController.addSuccessMessage("Investigation added");
+        JsfUtil.addSuccessMessage("Investigation added");
 
     }
 
     public void addDx() {
         if (diagnosis == null) {
-            UtilityController.addErrorMessage("Please select a diagnosis");
+            JsfUtil.addErrorMessage("Please select a diagnosis");
             return;
         }
         if (current == null) {
-            UtilityController.addErrorMessage("Please select a visit");
+            JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
@@ -679,16 +679,16 @@ public class PatientEncounterController implements Serializable {
         diagnosis = null;
         diagnosisComments = "";
         encounterDiagnoses = fillEncounterDiagnoses(current);
-        UtilityController.addSuccessMessage("Diagnosis added");
+        JsfUtil.addSuccessMessage("Diagnosis added");
     }
 
     public void addDxAndRx() {
         if (diagnosis == null) {
-            UtilityController.addErrorMessage("Please select a diagnosis");
+            JsfUtil.addErrorMessage("Please select a diagnosis");
             return;
         }
         if (current == null) {
-            UtilityController.addErrorMessage("Please select a visit");
+            JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
@@ -787,7 +787,7 @@ public class PatientEncounterController implements Serializable {
 
         diagnosis = null;
         diagnosisComments = "";
-        UtilityController.addSuccessMessage("Diagnosis and Medicines added");
+        JsfUtil.addSuccessMessage("Diagnosis and Medicines added");
 //        setCurrent(getFacade().find(current.getId()));
     }
 
@@ -801,11 +801,11 @@ public class PatientEncounterController implements Serializable {
 
     public void addRxWithoutDx() {
 //        if (diagnosis == null) {
-//            UtilityController.addErrorMessage("Please select a diagnosis");
+//            JsfUtil.addErrorMessage("Please select a diagnosis");
 //            return;
 //        }
 //        if (current == null) {
-//            UtilityController.addErrorMessage("Please select a visit");
+//            JsfUtil.addErrorMessage("Please select a visit");
 //            return;
 //        }
 //        List<PrescriptionTemplate> dxitems;
@@ -899,7 +899,7 @@ public class PatientEncounterController implements Serializable {
 //
 //        diagnosis = null;
 //        diagnosisComments = "";
-//        UtilityController.addSuccessMessage("Medicines for Diagnosis added.");
+//        JsfUtil.addSuccessMessage("Medicines for Diagnosis added.");
 ////        setCurrent(getFacade().find(current.getId()));
     }
 
@@ -1513,11 +1513,11 @@ public class PatientEncounterController implements Serializable {
 
     public void removeCfv() {
         if (current == null) {
-            UtilityController.addErrorMessage("No Patient Encounter");
+            JsfUtil.addErrorMessage("No Patient Encounter");
             return;
         }
         if (removingCfv == null) {
-            UtilityController.addErrorMessage("No Finding selected to remove");
+            JsfUtil.addErrorMessage("No Finding selected to remove");
             return;
         }
         current.getClinicalFindingValues().remove(removingCfv);
@@ -1528,7 +1528,7 @@ public class PatientEncounterController implements Serializable {
         
         getEncounterFindingValues().remove(removingCfv);
         fillCurrentEncounterLists(current);
-        UtilityController.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed");
     }
 
     public void removeEncounterProcedure() {
@@ -1919,21 +1919,21 @@ public class PatientEncounterController implements Serializable {
                 current.setEncounterDate(new Date());
             }
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setEncounterDate(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void saveEncounter(PatientEncounter pe) {
         if (pe.getId() != null && pe.getId() > 0) {
             getFacade().edit(pe);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(pe);
         }
@@ -2077,9 +2077,9 @@ public class PatientEncounterController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

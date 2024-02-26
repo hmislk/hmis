@@ -6,7 +6,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Staff;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.StaffFacade;
@@ -43,7 +43,7 @@ public class StaffGroupController implements Serializable {
    
     public void add() {
         if (checkGroup()) {
-            UtilityController.addErrorMessage("This Staff allready in a Group");
+            JsfUtil.addErrorMessage("This Staff allready in a Group");
             currentStaff = null;
             return;
         }
@@ -81,12 +81,12 @@ public class StaffGroupController implements Serializable {
 //
 //        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
 //            getFacade().edit(current);
-//            UtilityController.addSuccessMessage("Updated Successfully.");
+//            JsfUtil.addSuccessMessage("Updated Successfully.");
 //        } else {
 //            current.setCreatedAt(new Date());
 //            current.setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(current);
-//            UtilityController.addSuccessMessage("Saved Successfully");
+//            JsfUtil.addSuccessMessage("Saved Successfully");
 //        }
 //
 //        recreateModel();
@@ -107,9 +107,9 @@ public class StaffGroupController implements Serializable {
 //            current.setRetiredAt(new Date());
 //            current.setRetirer(getSessionController().getLoggedUser());
 //            getFacade().edit(current);
-//            UtilityController.addSuccessMessage("Deleted Successfully");
+//            JsfUtil.addSuccessMessage("Deleted Successfully");
 //        } else {
-//            UtilityController.addSuccessMessage("Nothing to Delete");
+//            JsfUtil.addSuccessMessage("Nothing to Delete");
 //        }
 //        recreateModel();
 //        getItems();

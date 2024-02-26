@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -38,7 +39,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.util.JsfUtil;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -261,11 +262,11 @@ public class OpdPreSettleController implements Serializable {
 
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
+//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
 //                return true;
 //            }
 //        }
@@ -512,7 +513,7 @@ public class OpdPreSettleController implements Serializable {
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
+            JsfUtil.addErrorMessage("Allready Paid");
             return "";
         } else {
             setPreBill(args);
@@ -570,7 +571,7 @@ public class OpdPreSettleController implements Serializable {
             return true;
         }
         if (getBilledBill() == null) {
-            UtilityController.addErrorMessage("Nothing To Pay");
+            JsfUtil.addErrorMessage("Nothing To Pay");
             return true;
         }
         return false;
@@ -636,9 +637,11 @@ public class OpdPreSettleController implements Serializable {
             //// // System.out.println("dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
-                    UtilityController.addErrorMessage("Can't Pay,This Bill Cancelled");
+
+                    JsfUtil.addErrorMessage("Can't Pay,This Bill Cancelled");
+
                 } else {
-                    UtilityController.addErrorMessage("Some Bill cancelled This Batch Bill");
+                    JsfUtil.addErrorMessage("Some Bill cancelled This Batch Bill");
                 }
                 continue;
             }
@@ -650,7 +653,7 @@ public class OpdPreSettleController implements Serializable {
                     BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
                     if (rbi != null) {
-                        UtilityController.addErrorMessage("Some Bill Item Already Refunded");
+                        JsfUtil.addErrorMessage("Some Bill Item Already Refunded");
                         continue;
                     }
 

@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.MonthEndRecord;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.WeekDayWork;
@@ -51,7 +51,7 @@ import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -480,7 +480,7 @@ public class HrReportController implements Serializable {
         Date startTime = new Date();
 
         if (selectedFingerPrintRecords == null) {
-            UtilityController.addErrorMessage("Select Fingerprint");
+            JsfUtil.addErrorMessage("Select Fingerprint");
             return;
         }
 
@@ -1739,7 +1739,7 @@ public class HrReportController implements Serializable {
         Date toDate = null;
 
         if (getReportKeyWord().getStaff() == null) {
-            UtilityController.addErrorMessage("Please Select  Staff");
+            JsfUtil.addErrorMessage("Please Select  Staff");
             return;
         }
         staffShiftsNormal = humanResourceBean.fetchStaffShiftNormal(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getReportKeyWord().getStaff());
@@ -3102,7 +3102,7 @@ public class HrReportController implements Serializable {
 
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         if (dateCount > 8) {
-            UtilityController.addErrorMessage("Check Date Range .Date range should be within 8 days");
+            JsfUtil.addErrorMessage("Check Date Range .Date range should be within 8 days");
             return;
         }
 
@@ -3497,7 +3497,7 @@ public class HrReportController implements Serializable {
         Long dateCount = commonFunctions.getDayCount(getFromDate(), getToDate());
         //System.out.println("From Date() = " + getFromDate());
         if (dateCount > 8) {
-            UtilityController.addErrorMessage("Check Date Range .Date range should be within 8 days");
+            JsfUtil.addErrorMessage("Check Date Range .Date range should be within 8 days");
             return;
         }
 

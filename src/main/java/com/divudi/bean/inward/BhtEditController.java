@@ -11,7 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -194,13 +194,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         }
 
         if (checkPaymentIsMade()) {
-            UtilityController.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
+            JsfUtil.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
             return;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
             ////// // System.out.println("comment = " + comment);
-            UtilityController.addErrorMessage("Type a Comment");
+            JsfUtil.addErrorMessage("Type a Comment");
             return;
         }
 
@@ -219,7 +219,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         current.setComments(comment);
         getEjbFacade().edit(current);
 
-        UtilityController.addSuccessMessage("Bht Successfully Cancelled");
+        JsfUtil.addSuccessMessage("Bht Successfully Cancelled");
         prepereForNew();
     }
 
@@ -297,9 +297,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         prepereForNew();
         getItems();
@@ -333,9 +333,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         getEjbFacade().edit(current);
         if (current.getFinalBill() != null) {
             getBillFacade().edit(current.getFinalBill());
-            UtilityController.addSuccessMessage("Final Bill Updated");
+            JsfUtil.addSuccessMessage("Final Bill Updated");
         }
-        UtilityController.addSuccessMessage("Detail Updated");
+        JsfUtil.addSuccessMessage("Detail Updated");
         prepereForNew();
     }
     
@@ -344,7 +344,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
         getPersonFacade().edit(getCurrent().getPatient().getPerson());
         getPersonFacade().edit(getCurrent().getGuardian());
         getEjbFacade().edit(current);
-        UtilityController.addSuccessMessage("Detail Updated");
+        JsfUtil.addSuccessMessage("Detail Updated");
     }
     
 
@@ -456,7 +456,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     
     public void displayDetails() {
     if (getCurrent() == null || getCurrent().getId() == null) {
-        UtilityController.addErrorMessage("Please select an admission to display details.");
+        JsfUtil.addErrorMessage("Please select an admission to display details.");
         return;
     }
 
@@ -464,9 +464,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient  {
     current = getFacade().find(getCurrent().getId());
 
     if (current != null) {
-        UtilityController.addSuccessMessage("Details displayed successfully.");
+        JsfUtil.addSuccessMessage("Details displayed successfully.");
     } else {
-        UtilityController.addErrorMessage("Failed to fetch admission details.");
+        JsfUtil.addErrorMessage("Failed to fetch admission details.");
     }
 }
 

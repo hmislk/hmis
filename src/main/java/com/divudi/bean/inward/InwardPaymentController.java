@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -74,7 +74,7 @@ public class InwardPaymentController implements Serializable {
 
     public void bhtListener() {
         if (current.getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return;
         }
         due = getFinalBillDue();
@@ -118,17 +118,17 @@ public class InwardPaymentController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Payment Method");
+            JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 
         if (getCurrent().getTotal() == 0.0) {
-            UtilityController.addErrorMessage("Please enter paying amount");
+            JsfUtil.addErrorMessage("Please enter paying amount");
             return true;
         }
         if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
@@ -141,7 +141,7 @@ public class InwardPaymentController implements Serializable {
 //                double different = Math.abs((due - getCurrent().getTotal()));
 //
 //                if (different > 0.1) {
-//                    UtilityController.addErrorMessage("U cant recieve payment thenn due");
+//                    JsfUtil.addErrorMessage("U cant recieve payment thenn due");
 //                    return true;
 //                }
 //            }
@@ -256,7 +256,7 @@ public class InwardPaymentController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Payment Bill Saved");
         printPreview = true;
     }
 
@@ -272,7 +272,7 @@ public class InwardPaymentController implements Serializable {
 
         saveBill();
         saveBillItem();
-        UtilityController.addSuccessMessage("Payment Bill Saved");
+        JsfUtil.addSuccessMessage("Payment Bill Saved");
 
         Bill curr = getCurrent();
 

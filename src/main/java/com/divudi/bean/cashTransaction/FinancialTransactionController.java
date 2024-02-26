@@ -11,7 +11,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;

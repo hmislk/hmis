@@ -44,7 +44,7 @@ public class BillItem implements Serializable {
     @ManyToOne
     private BillItem parentBillItem;
 
-     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private PharmaceuticalBillItem pharmaceuticalBillItem;
 
     static final long serialVersionUID = 1L;
@@ -667,21 +667,23 @@ public class BillItem implements Serializable {
         this.transUserStock = transUserStock;
     }
 
-    public List<BillFee> getBillFees() {
-        List<BillFee> tmp = new ArrayList<>();
-        if (billFees == null) {
-            return new ArrayList<>();
-        } else {
-            for (BillFee bf : billFees) {
-                if (!bf.isRetired()) {
-                    tmp.add(bf);
-                }
-            }
-        }
-
-        return tmp;
-    }
-
+//    public List<BillFee> getBillFees() {
+//        System.out.println("getBillFees");
+//        List<BillFee> tmp = new ArrayList<>();
+//        System.out.println("billFees = " + billFees);
+//        if (billFees == null) {
+//            billFees= new ArrayList<>();
+//            return billFees;
+//        } else {
+//            for (BillFee bf : billFees) {
+//                if (!bf.isRetired()) {
+//                    tmp.add(bf);
+//                }
+//            }
+//        }
+//        System.out.println("tmp = " + tmp);
+//        return tmp;
+//    }
     public void setBillFees(List<BillFee> billFees) {
         this.billFees = billFees;
     }
@@ -843,7 +845,12 @@ public class BillItem implements Serializable {
     public void setCollectingCentreFee(double collectingCentreFee) {
         this.collectingCentreFee = collectingCentreFee;
     }
-    
-    
+
+    public List<BillFee> getBillFees() {
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
+        return billFees;
+    }
 
 }

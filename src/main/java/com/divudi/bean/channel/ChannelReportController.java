@@ -5,7 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -47,7 +47,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -3063,21 +3063,21 @@ public class ChannelReportController implements Serializable {
 
     public void markAsAbsent() {
         if (selectedBillSessions == null) {
-            UtilityController.addSuccessMessage("Please Select Sessions");
+            JsfUtil.addSuccessMessage("Please Select Sessions");
             return;
         }
 
         for (BillSession bs : selectedBillSessions) {
             bs.setAbsent(true);
             billSessionFacade.edit(bs);
-            UtilityController.addSuccessMessage("Marked Succesful");
+            JsfUtil.addSuccessMessage("Marked Succesful");
         }
     }
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
         if (sessionInstance == null) {
-            UtilityController.addErrorMessage("Please Select Session");
+            JsfUtil.addErrorMessage("Please Select Session");
             return;
         }
 
