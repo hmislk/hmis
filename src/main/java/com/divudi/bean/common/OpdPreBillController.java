@@ -68,7 +68,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.facade.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -293,11 +293,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        BilledBill temp = new BilledBill();
 //
 //        if (opdPaymentCredit == 0) {
-//            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
 //            return;
 //        }
 //        if (opdPaymentCredit > opdBill.getBalance()) {
-//            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
 //            return;
 //        }
 //
@@ -342,11 +342,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        BilledBill temp = new BilledBill();
 //
 //        if (opdPaymentCredit == 0) {
-//            JsfUtil.addErrorMessage("Please Select Correct Paid Amount");
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
 //            return;
 //        }
 //        if (opdPaymentCredit > (opdBill.getNetTotal()-opdBill.getPaidAmount())) {
-//            JsfUtil.addErrorMessage("Please Enter Correct Paid Amount");
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
 //            return;
 //        }
 //
@@ -757,9 +757,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
 //        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
 //            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("User Credit Updated");
+//            UtilityController.addSuccessMessage("User Credit Updated");
 //        }
-        JsfUtil.addSuccessMessage("Bill Saved");
+        UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
@@ -985,15 +985,15 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 
     private boolean checkPatientAgeSex() {
         if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
-            JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
             return true;
         }
         if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
-            JsfUtil.addErrorMessage("Check Title,Age,Sex");
+            UtilityController.addErrorMessage("Check Title,Age,Sex");
             return true;
         }
         if (getPatient().getPerson().getPhone().length() < 1) {
-            JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
+            UtilityController.addErrorMessage("Phone Number is Required it should be fill");
             return true;
         }
         return false;
@@ -1016,17 +1016,17 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private boolean errorCheck() {
 
         if (patient.getPerson().getArea() == null) {
-            JsfUtil.addErrorMessage("Please Add Patient Area");
+            UtilityController.addErrorMessage("Please Add Patient Area");
             return true;
         }
 
         if (getLstBillEntries().isEmpty()) {
-            JsfUtil.addErrorMessage("No Items added to the bill.");
+            UtilityController.addErrorMessage("No Items added to the bill.");
             return true;
         }
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
             if (getPatient() == null) {
-                JsfUtil.addErrorMessage("Plese Select Patient");
+                UtilityController.addErrorMessage("Plese Select Patient");
                 return true;
             }
             boolean checkAge = false;
@@ -1042,33 +1042,33 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method.");
+            UtilityController.addErrorMessage("Select Payment Method.");
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
-            return true;
-        }
+//        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+//            return true;
+//        }
 
-        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-                return true;
-            }
-            if (toStaff != null && creditCompany != null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-                return true;
-            }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return true;
-                }
-            }
-        }
+//        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
+//            if (toStaff == null && creditCompany == null) {
+//                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
+//                return true;
+//            }
+//            if (toStaff != null && creditCompany != null) {
+//                UtilityController.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+//                return true;
+//            }
+//            if (toStaff != null) {
+//                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
+//                    UtilityController.addErrorMessage("No enough walfare credit.");
+//                    return true;
+//                }
+//            }
+//        }
 
         if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-            JsfUtil.addErrorMessage("Check Payment method");
+            UtilityController.addErrorMessage("Check Payment method");
             return true;
         }
 
@@ -1143,25 +1143,25 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
-            JsfUtil.addErrorMessage("Nothing to add");
+            UtilityController.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            JsfUtil.addErrorMessage("Please select an Item");
+            UtilityController.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            JsfUtil.addErrorMessage("Please corect item fee");
+            UtilityController.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            JsfUtil.addErrorMessage("Please set Department to Item");
+            UtilityController.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            JsfUtil.addErrorMessage("Please set Category to Item");
+            UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
 
@@ -1188,11 +1188,11 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
+            UtilityController.addErrorMessage("Please enter the rate");
             return;
         }
         clearBillItemValues();
-        //JsfUtil.addSuccessMessage("Item Added");
+        //UtilityController.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
