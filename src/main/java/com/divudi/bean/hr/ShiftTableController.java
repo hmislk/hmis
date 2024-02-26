@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.dataStructure.ShiftTable;
 import com.divudi.data.hr.DayType;
 
@@ -352,7 +352,7 @@ public class ShiftTableController implements Serializable {
             return;
         }
         if (staff == null) {
-            UtilityController.addErrorMessage("Plaese Select Staff");
+            JsfUtil.addErrorMessage("Plaese Select Staff");
             return;
         }
 
@@ -392,7 +392,7 @@ public class ShiftTableController implements Serializable {
 //            }
             List<StaffShift> ss = getHumanResourceBean().fetchStaffShift(nowDate, staff);
             if (ss == null) {
-                UtilityController.addErrorMessage("No Staff Shift");
+                JsfUtil.addErrorMessage("No Staff Shift");
                 return;
             } else {
                 netT.getStaffShift().addAll(ss);

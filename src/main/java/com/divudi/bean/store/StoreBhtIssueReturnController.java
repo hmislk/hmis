@@ -6,7 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
@@ -78,11 +78,11 @@ public class StoreBhtIssueReturnController implements Serializable {
         }
 
 //        if (getSessionController().getDepartment().getId() != bill.getDepartment().getId()) {
-//            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+//            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
 //            return;
 //        }
         if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
             return;
         }
 
@@ -120,7 +120,7 @@ public class StoreBhtIssueReturnController implements Serializable {
 
         if (tmp.getQty() > getPharmacyRecieveBean().calQty3(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -242,7 +242,7 @@ public class StoreBhtIssueReturnController implements Serializable {
     public void settle() {
 
 //        if (getBill().getCheckedBy() != null) {
-//            UtilityController.addErrorMessage("Checked Bill. Can not Return");
+//            JsfUtil.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
         saveReturnBill();
@@ -257,7 +257,7 @@ public class StoreBhtIssueReturnController implements Serializable {
 
         /// setOnlyReturnValue();
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 
