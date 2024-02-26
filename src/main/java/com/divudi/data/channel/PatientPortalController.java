@@ -2,11 +2,8 @@ package com.divudi.data.channel;
 
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
@@ -14,7 +11,6 @@ import com.divudi.entity.Staff;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +20,6 @@ import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import org.primefaces.event.SelectEvent;
 
 /**
  *
