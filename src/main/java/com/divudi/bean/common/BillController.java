@@ -341,6 +341,38 @@ public class BillController implements Serializable {
 
     }
 
+    public boolean hasRefunded(BillFee bf) {
+        boolean refunded = false;
+        if (bf == null) {
+            return refunded;
+        }
+        String jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=:ret "
+                + " and bf.referenceBillFee=:bf "
+                + " and bf.billItem.retired=:ret "
+                + " and bf.bill.retired=:ret ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        if (rbf != null) {
+            refunded = true;
+        }
+        return refunded;
+    }
+
+    public boolean hasPaidToStaff(BillFee bf) {
+        boolean paid = false;
+        if (bf == null) {
+            return paid;
+        }
+        if (bf.getPaidValue() > 0.0) {
+            paid = true;
+        }
+        return paid;
+    }
+
     public void save(Bill sb) {
         if (sb == null) {
             return;
@@ -348,12 +380,16 @@ public class BillController implements Serializable {
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
-            getFacade().create(sb);
-        }else{
+            try {
+                getFacade().create(sb);
+            } catch (Exception e) {
+                getFacade().edit(sb);
+            }
+        } else {
             getFacade().edit(sb);
         }
     }
-    
+
     public void saveBillItem(BillItem sb) {
         if (sb == null) {
             return;
@@ -362,11 +398,11 @@ public class BillController implements Serializable {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
             getBillItemFacade().create(sb);
-        }else{
+        } else {
             getBillItemFacade().edit(sb);
         }
     }
-    
+
     public void saveBillFee(BillFee sb) {
         if (sb == null) {
             return;
@@ -375,7 +411,7 @@ public class BillController implements Serializable {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
             getBillFeeFacade().create(sb);
-        }else{
+        } else {
             getBillFeeFacade().edit(sb);
         }
     }
@@ -655,7 +691,6 @@ public class BillController implements Serializable {
 
         return tmps;
     }
-    
 
     public List<Bill> fillPatientSurgeryBills(PatientEncounter pe) {
         String jpql;
@@ -1506,7 +1541,7 @@ public class BillController implements Serializable {
         m.put("bb", batchBill);
         return billFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillItem> billItemsOfBill(Bill bill) {
         String jpql;
         Map m = new HashMap();
@@ -1518,7 +1553,7 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billItemFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillFee> billFeesOfBill(Bill bill) {
         String jpql;
         Map m = new HashMap();
@@ -1530,7 +1565,7 @@ public class BillController implements Serializable {
         m.put("ret", false);
         return billFeeFacade.findByJpql(jpql, m);
     }
-    
+
     public List<BillFee> billFeesOfBillItem(BillItem billItem) {
         String jpql;
         Map m = new HashMap();
