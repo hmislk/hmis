@@ -2,12 +2,9 @@ package com.divudi.data.channel;
 
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
-import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Speciality;
@@ -17,9 +14,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +24,6 @@ import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import org.primefaces.event.SelectEvent;
-import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
 /**
@@ -118,6 +111,10 @@ public class PatientPortalController {
             sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
             System.out.println("sessionInstances = " + sessionInstances.size());
         }
+    }
+    
+    public void fillBookingHistory(){
+        
     }
     
     
