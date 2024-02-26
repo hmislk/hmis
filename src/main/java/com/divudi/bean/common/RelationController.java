@@ -4,8 +4,8 @@ import com.divudi.entity.Relation;
 
 
 import com.divudi.facade.RelationFacade;
-import com.divudi.facade.util.JsfUtil;
-import com.divudi.facade.util.JsfUtil.PersistAction;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil.PersistAction;
 
 
 

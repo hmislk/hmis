@@ -9,7 +9,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
@@ -25,7 +25,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -267,11 +267,11 @@ public class ChannellingFeeController implements Serializable {
 
     public void saveCharge() {
         if (session == null) {
-            UtilityController.addErrorMessage("Please select a session");
+            JsfUtil.addErrorMessage("Please select a session");
             return;
         }
         if (fee == null) {
-            UtilityController.addErrorMessage("Please select a fee");
+            JsfUtil.addErrorMessage("Please select a fee");
             return;
         }
         fee.setItem(session);
@@ -279,10 +279,10 @@ public class ChannellingFeeController implements Serializable {
             fee.setCreatedAt(new Date());
             fee.setCreater(getSessionController().getLoggedUser());
             getItemFeeFacade().create(fee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getItemFeeFacade().edit(fee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
         fillFees();
         session.setTotal(calTot());
@@ -307,9 +307,9 @@ public class ChannellingFeeController implements Serializable {
             removingFee.setRetiredAt(new Date());
             removingFee.setRetirer(getSessionController().getLoggedUser());
             getItemFeeFacade().edit(removingFee);
-            UtilityController.addSuccessMessage("Deleted Successfull");
+            JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing To Delete");
+            JsfUtil.addSuccessMessage("Nothing To Delete");
         }
         fillFees();
         session.setTotal(calTot());

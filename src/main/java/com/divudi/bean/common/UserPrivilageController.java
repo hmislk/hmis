@@ -17,7 +17,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -520,11 +520,11 @@ public class UserPrivilageController implements Serializable {
 
     public void savePrivileges() {
         if (currentWebUser == null) {
-            UtilityController.addErrorMessage("Please select a user");
+            JsfUtil.addErrorMessage("Please select a user");
             return;
         }
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         saveWebUserPrivileges();

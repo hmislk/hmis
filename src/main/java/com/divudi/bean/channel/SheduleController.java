@@ -5,7 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
@@ -24,7 +24,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -362,9 +362,9 @@ public class SheduleController implements Serializable {
                 current.getSessionNumberGenerator().setRetirer(getSessionController().getLoggedUser());
                 sessionNumberGeneratorFacade.edit(current.getSessionNumberGenerator());
             }
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         getItems();
@@ -374,26 +374,26 @@ public class SheduleController implements Serializable {
 
     private boolean checkError() {
         if (current.getStartingTime() == null) {
-            UtilityController.addErrorMessage("Starting time Must be Filled");
+            JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
         }
         if (current.getName() == null || current.getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please Select Session Name");
+            JsfUtil.addErrorMessage("Please Select Session Name");
             return true;
         }
 
         if (current.getSessionWeekday() == null && getCurrent().getSessionDate() == null) {
-            UtilityController.addErrorMessage("Set Weekday or Date");
+            JsfUtil.addErrorMessage("Set Weekday or Date");
             return true;
         }
 
         if (speciality == null) {
-            UtilityController.addErrorMessage("Plaese Select Specility");
+            JsfUtil.addErrorMessage("Plaese Select Specility");
             return true;
         }
 
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Plaese Select Doctor");
+            JsfUtil.addErrorMessage("Plaese Select Doctor");
             return true;
         }
 
@@ -498,12 +498,12 @@ public class SheduleController implements Serializable {
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         saveFees(getCurrent());
