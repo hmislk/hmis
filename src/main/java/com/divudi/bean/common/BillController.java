@@ -342,11 +342,11 @@ public class BillController implements Serializable {
     }
 
     public boolean hasRefunded(BillFee bf) {
-        boolean refunded=false;
+        boolean refunded = false;
         if (bf == null) {
             return refunded;
         }
-        String jpql="select bf "
+        String jpql = "select bf "
                 + " from BillFee bf "
                 + " where bf.retired=:ret "
                 + " and bf.referenceBillFee=:bf "
@@ -356,19 +356,19 @@ public class BillController implements Serializable {
         m.put("ret", false);
         m.put("bf", bf);
         BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
-        if(rbf!=null){
-            refunded= true;
+        if (rbf != null) {
+            refunded = true;
         }
         return refunded;
     }
-    
+
     public boolean hasPaidToStaff(BillFee bf) {
-        boolean paid=false;
+        boolean paid = false;
         if (bf == null) {
             return paid;
         }
-        if(bf.getPaidValue()>0.0){
-            paid= true;
+        if (bf.getPaidValue() > 0.0) {
+            paid = true;
         }
         return paid;
     }
@@ -380,7 +380,11 @@ public class BillController implements Serializable {
         if (sb.getId() == null) {
             sb.setCreatedAt(new Date());
             sb.setCreater(sessionController.getLoggedUser());
-            getFacade().create(sb);
+            try {
+                getFacade().create(sb);
+            } catch (Exception e) {
+                getFacade().edit(sb);
+            }
         } else {
             getFacade().edit(sb);
         }

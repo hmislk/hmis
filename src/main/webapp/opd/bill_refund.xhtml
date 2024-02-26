@@ -80,10 +80,10 @@
                                                 <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
                                                 <h:outputLabel value="Net Total :" ></h:outputLabel>
                                                 <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
-                                                <h:outputLabel style="font-weight: bold;" value="Total Refund" >
+<!--                                                <h:outputLabel style="font-weight: bold;" value="Total Refund" >
                                                 </h:outputLabel>
                                                 <h:outputLabel id="txtTotal" style="font-weight: bold;" value="#{billSearch.refundAmount}" >
-                                                </h:outputLabel>
+                                                </h:outputLabel>-->
                                             </p:panelGrid>
                                         </p:panel>
                                         <p:panel id="panelRefundBillDetails">
@@ -92,14 +92,8 @@
                                                 <h:outputLabel value="Refund Details" class="mx-2"></h:outputLabel>
                                             </f:facet>
                                             <p:panelGrid columns="2">
-                                                <h:outputLabel value="Total :" ></h:outputLabel>
-                                                <h:outputLabel value="#{billSearch.refundingBill.total}" ></h:outputLabel>
-                                                <h:outputLabel value="Discount :" ></h:outputLabel>
-                                                <h:outputLabel value="#{billSearch.refundingBill.discount}" ></h:outputLabel>
-                                                <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                                <h:outputLabel value="Refunding Total :" ></h:outputLabel>
                                                 <h:outputLabel value="#{billSearch.refundingBill.netTotal}" ></h:outputLabel>
-                                                <h:outputLabel style="font-weight: bold;" value="Total Refund" >
-                                                </h:outputLabel>
                                             </p:panelGrid>
                                         </p:panel>
                                     </div>
@@ -147,7 +141,7 @@
                                                     </td>
                                                     <td >
                                                         <p:inputText id="txtRefVal" value="#{bf.feeValue}" >
-                                                            <p:ajax event="blur" process="txtRefVal" 
+                                                            <p:ajax event="keyup" process="txtRefVal" 
                                                                     listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
                                                                     update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" ></p:ajax>
                                                         </p:inputText>
@@ -168,13 +162,7 @@
                                              rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
 
 
-                                    <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                    <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                    <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-
+                                   
                                     <p:column id="colSelect"   selectionMode="multiple"    >
                                     </p:column>
 
