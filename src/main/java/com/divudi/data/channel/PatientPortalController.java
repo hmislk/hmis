@@ -2,7 +2,7 @@ package com.divudi.data.channel;
 
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Consultant;
