@@ -9,7 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.Sex;
 import com.divudi.entity.lab.Investigation;
@@ -18,7 +18,7 @@ import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -288,12 +288,12 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         //////// // System.out.println("going to save");
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -337,9 +337,9 @@ public class InvestigationItemDynamicLabelController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -365,19 +365,19 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public void saveForDynamicLabel() {
         if (investigation == null) {
-            UtilityController.addErrorMessage("Please select an investigation");
+            JsfUtil.addErrorMessage("Please select an investigation");
             return;
         }
         if (investigationItemofDynamicLabelType == null) {
-            UtilityController.addErrorMessage("Please select a dynamic label");
+            JsfUtil.addErrorMessage("Please select a dynamic label");
             return;
         }
         if (sex == null) {
-            UtilityController.addErrorMessage("Please select a sex");
+            JsfUtil.addErrorMessage("Please select a sex");
             return;
         }
         if (toAge == 0) {
-            UtilityController.addErrorMessage("Please select a dynamic label");
+            JsfUtil.addErrorMessage("Please select a dynamic label");
             return;
         }
         InvestigationItemValueFlag i = new InvestigationItemValueFlag();
@@ -406,7 +406,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         } else {
             getEjbFacade().edit(i);
         }
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void saveFlags() {

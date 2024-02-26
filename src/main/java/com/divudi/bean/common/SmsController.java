@@ -15,7 +15,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.SmsFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 
 import java.util.ArrayList;
@@ -183,13 +183,13 @@ public class SmsController implements Serializable {
         e.setSentSuccessfully(false);
         getSmsFacade().create(e);
         smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        UtilityController.addSuccessMessage("SMS Sent");
+        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     public void createSmsTable() {
         long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
         if (Math.abs(lng) > 2 && !getReportKeyWord().isAdditionalDetails()) {
-            UtilityController.addErrorMessage("Date Range is too Long");
+            JsfUtil.addErrorMessage("Date Range is too Long");
             return;
         }
         String sql;

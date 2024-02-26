@@ -14,7 +14,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -49,7 +49,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -400,7 +400,7 @@ public class BillBhtController implements Serializable {
         printPreview = true;
         saveBatchBill();
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
 
     }
 
@@ -439,7 +439,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -506,24 +506,24 @@ public class BillBhtController implements Serializable {
     public void logicalDischage() {
         getPatientEncounter().getCurrentPatientRoom().setDischarged(true);
         getPatientEncounter().getCurrentPatientRoom().setDischargedBy(getSessionController().getLoggedUser());
-        UtilityController.addSuccessMessage("Logically Dischaged Success");
+        JsfUtil.addSuccessMessage("Logically Dischaged Success");
     }
 
     private boolean errorCheck() {
         if (getLstBillEntries().isEmpty()) {
 
-            UtilityController.addErrorMessage("No investigations are added to the bill to settle");
+            JsfUtil.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please select Bht Number");
+            JsfUtil.addErrorMessage("Please select Bht Number");
             return true;
         }
 
         //Check Staff
         if (checkStaff()) {
-            UtilityController.addErrorMessage("Please select Staff");
+            JsfUtil.addErrorMessage("Please select Staff");
             return true;
         }
 
@@ -536,7 +536,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
 
@@ -559,17 +559,17 @@ public class BillBhtController implements Serializable {
     private boolean errorCheckForPatientRoomDepartment() {
 
         if (getPatientEncounter().getCurrentPatientRoom() == null) {
-            UtilityController.addErrorMessage("Please Set Room or Bed For This Patient");
+            JsfUtil.addErrorMessage("Please Set Room or Bed For This Patient");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
-            UtilityController.addErrorMessage("Please Set Room or Bed For This Patient");
+            JsfUtil.addErrorMessage("Please Set Room or Bed For This Patient");
             return true;
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-            UtilityController.addErrorMessage("Under administration, add a Department for this Room " + getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
+            JsfUtil.addErrorMessage("Under administration, add a Department for this Room " + getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
             return true;
         }
 
@@ -578,32 +578,32 @@ public class BillBhtController implements Serializable {
 
     private boolean errorCheckForAdding() {
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select BHT");
+            JsfUtil.addErrorMessage("Please Select BHT");
             return true;
         }
 
         if (getCurrentBillItem() == null) {
-            UtilityController.addErrorMessage("Nothing to add");
+            JsfUtil.addErrorMessage("Nothing to add");
             return true;
         }
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please select an investigation or Services");
+            JsfUtil.addErrorMessage("Please select an investigation or Services");
             return true;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please set To Department to This item");
+            JsfUtil.addErrorMessage("Please set To Department to This item");
             return true;
         }
 
         if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
-                    UtilityController.addErrorMessage("Please set Time To This Investigation");
+                    JsfUtil.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
 //                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
-//                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
+//                    JsfUtil.addErrorMessage("Please set Discription To This Investigation");
 //                    return true;
 //                }
             }
@@ -613,7 +613,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
+            JsfUtil.addErrorMessage("Under administration, add Category For Item : " + getCurrentBillItem().getItem().getName());
             return true;
         }
 
@@ -648,13 +648,13 @@ public class BillBhtController implements Serializable {
 
             calTotals();
             if (bItem.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
 
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
@@ -681,7 +681,7 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getFromDepartment() == null) {
-            UtilityController.addErrorMessage("There is no Department to for Matrix please set Department to surgery add again surgery ");
+            JsfUtil.addErrorMessage("There is no Department to for Matrix please set Department to surgery add again surgery ");
             return;
         }
 
@@ -701,13 +701,13 @@ public class BillBhtController implements Serializable {
 
             calTotals();
             if (bItem.getNetValue() == 0.0) {
-                UtilityController.addErrorMessage("Please enter the rate");
+                JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
         }
 
         clearBillItemValues();
-        //UtilityController.addSuccessMessage("Item Added");
+        //JsfUtil.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {

@@ -27,7 +27,7 @@ import com.divudi.facade.WebUserDashboardFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -200,16 +200,16 @@ public class WebUserController implements Serializable {
         }
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
     public void removeUser() {
         if (selected == null) {
-            UtilityController.addErrorMessage("Select a user to remove");
+            JsfUtil.addErrorMessage("Select a user to remove");
             return;
         }
         selected.getWebUserPerson().setRetired(true);
@@ -223,7 +223,7 @@ public class WebUserController implements Serializable {
         getFacade().edit(selected);
         selected = null;
         fillLightUsers();
-        UtilityController.addErrorMessage("User Removed");
+        JsfUtil.addErrorMessage("User Removed");
     }
 
     public List<WebUser> completeUser(String qry) {
@@ -446,15 +446,15 @@ public class WebUserController implements Serializable {
 
     public String saveNewUser() {
         if (current == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return "";
         }
         if (createOnlyUserForExsistingUser && getStaff() == null) {
-            UtilityController.addErrorMessage("Select Staff");
+            JsfUtil.addErrorMessage("Select Staff");
             return "";
         }
         if (userNameAvailable(getCurrent().getName())) {
-            UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
+            JsfUtil.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
         getCurrent().setActivated(true);
@@ -500,11 +500,11 @@ public class WebUserController implements Serializable {
         getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
         if (createOnlyUser) {
-            UtilityController.addSuccessMessage("Add New User Only");
+            JsfUtil.addSuccessMessage("Add New User Only");
         } else if (createOnlyUserForExsistingUser) {
-            UtilityController.addSuccessMessage("Add New User To Exsisting Staff");
+            JsfUtil.addSuccessMessage("Add New User To Exsisting Staff");
         } else {
-            UtilityController.addSuccessMessage("Add New User & Staff");
+            JsfUtil.addSuccessMessage("Add New User & Staff");
         }
         recreateModel();
         selectText = "";
@@ -576,9 +576,9 @@ public class WebUserController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(sessionController.loggedUser);
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successful");
+            JsfUtil.addSuccessMessage("Deleted Successful");
         } else {
-            UtilityController.addErrorMessage("Nothing To Delete");
+            JsfUtil.addErrorMessage("Nothing To Delete");
         }
         recreateModel();
         getItems();
@@ -883,17 +883,17 @@ public class WebUserController implements Serializable {
 
     public String changeCurrentUserPassword() {
         if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Select a User");
+            JsfUtil.addErrorMessage("Select a User");
             return "";
         }
         if (!newPassword.equals(newPasswordConfirm)) {
-            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            JsfUtil.addErrorMessage("Password and Re-entered password are not maching");
             return "";
         }
 
         current.setWebUserPassword(getSecurityController().hash(newPassword));
         getFacade().edit(current);
-        UtilityController.addSuccessMessage("Password changed");
+        JsfUtil.addSuccessMessage("Password changed");
         return navigateToListUsers();
     }
 
