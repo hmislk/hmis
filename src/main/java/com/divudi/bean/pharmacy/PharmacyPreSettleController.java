@@ -289,7 +289,10 @@ public class PharmacyPreSettleController implements Serializable {
         }
 
         if (getPaymentSchemeController().errorCheckPaymentMethod(getPreBill().getPaymentMethod(), paymentMethodData));
-
+        if ((getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
+            JsfUtil.addErrorMessage("Please select tendered amount correctly");
+            return true;
+        }
 //        if (getPreBill().getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
 //            if (cashPaid == 0.0) {
 //                JsfUtil.addErrorMessage("Please select tendered amount correctly");
