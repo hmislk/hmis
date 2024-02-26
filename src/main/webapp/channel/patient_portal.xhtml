@@ -1,76 +1,148 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pat="http://java.sun.com/jsf/composite/patient"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <ui:define name="content">
         <h:form id="form">
-            <h:panelGroup>
-                <p:inputText value="#{patientPortalController.patientphoneNumber}" />
-                <p:commandButton value="Send Now" ajax="false" />
-            </h:panelGroup>
-
-
-            <h:panelGroup>
-                <p:panel rendered="#{patientPortalController.patientphoneNumber ne null}">
-                    <p:commandButton value="Book Doctor" action="#{patientPortalController.docotrBooking}" ajax="false"/>
-                </p:panel>
-            </h:panelGroup>
-
-            <p:panel class="mt-5" rendered="#{patientPortalController.bookDoctor}" >
-                <div>
-                    <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
-                    <p:selectOneListbox 
-                        id="scStaff"
-                        filter="true"
-                        value="#{patientPortalController.selectedDoctor}"
-                        class="w-100 fullHeightListbox"
-                        >
-
-                        <f:selectItems value="#{patientPortalController.doctors}"
-                                       var="con" 
-                                       itemValue="#{con}"
-                                       itemLabel="#{con.name}"></f:selectItems>
-                    </p:selectOneListbox>
+            <p:inputText value="#{patientPortalController.patientphoneNumber}" />
+            <p:panel>
+                <div class="d-flex justify-content-center align-items-center">
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Book" 
+                        icon="fas fa-plus"
+                        class="ui-button-success"
+                        action="#{patientPortalController.docotrBooking}"
+                        />
                 </div>
-                <p:commandButton value="fill" ajax="false" action="#{patientPortalController.fillChannelBookings()}" />
-            </p:panel>
-            <p:panel class="mt-5" rendered="#{patientPortalController.bookDoctor}">
-                <div>
-                    <p:watermark for="scSession" value="Select Session" ></p:watermark>
-                    <p:selectOneListbox 
-                        id="scSession"
-                        filter="true"
-                        filterMatchMode="contains"
-                        value="#{patientPortalController.selectedChannelSession}"
-                        var="ss"
-                        class="w-100 fullHeightListbox"
-                        >
+                <div class="row">
+                    <div class="col-2">
+                        <div>
+                            <p:watermark for="scStaff" value="Select Consultant" ></p:watermark>
+                            <p:selectOneListbox 
+                                id="scStaff"
+                                filter="true"
+                                value="#{patientPortalController.selectedConsultant}"
+                                class="w-100 fullHeightListbox"
+                                >
+                                <p:ajax  
+                                    process="@this" 
+                                    update="acSessions sessionDates"  
+                                    listener="#{patientPortalController.fillChannelSessions}"/>
+                                <f:selectItems value="#{patientPortalController.consultants}"
+                                               var="con" 
+                                               itemValue="#{con}"
+                                               itemLabel="#{con.name}"></f:selectItems>
+                            </p:selectOneListbox>
+                        </div>
+                    </div>
 
-                        <f:selectItems value="#{patientPortalController.channelSessions}"
-                                       var="cs" 
-                                       itemValue="#{cs}"
-                                       />
+                    <div class="col-md-4 p-0" >
+                        <p:watermark for="acSessions" value="Select Session" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="acSessions"
+                            filter="true"
+                            value="#{patientPortalController.selectedChannelSession}" 
+                            class="w-100 fullHeightListbox"
+                            var="s">
+                            <p:ajax  
+                                process="@this" 
+                                update=":#{p:resolveFirstComponentWithId('sessionDates',view).clientId}"  
+                                listener="#{patientPortalController.fillSessionInstance()}"/>
+                            <f:selectItems 
+                                value="#{patientPortalController.channelSessions}" 
+                                var="ses" 
+                                itemValue="#{ses}"
+                                itemLabel="#{ses.name}"/>
+                            <p:column>
+                                <h:outputText value="#{s.name}" />
+                            </p:column>
 
-                        <p:column style="width: 5px!important;">
-                            <h:outputText value="#{ss.name}" />
-                        </p:column>
-                        <p:column style="width: 5px!important;">
-                            <h:outputText value="#{ss.sessionDate}" />
-                        </p:column>
-                    </p:selectOneListbox>
+                        </p:selectOneListbox>
+                    </div>
+
+                    <div class="col-md-4 p-0" >
+                        <p:watermark for="sessionDates" value="Select Session" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="sessionDates"
+                            filter="true"
+                            value="#{bookingController.selectedSessionInstance}" 
+                            class="w-100 fullHeightListbox"
+                            var="s">
+                            <f:selectItems 
+                                value="#{patientPortalController.sessionInstances}" 
+                                var="ses" 
+                                itemValue="#{ses}"
+                                itemLabel="#{ses.name}"/>
+                            <p:column>
+                                <h:outputText value="#{s.name}" />
+                            </p:column>
+                            <p:column style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.maxNo}" rendered="#{s.maxNo ne 0}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 20px!important; text-align: center;">
+                                <h:outputText value="#{s.displayCount}">
+                                    <f:convertNumber pattern="00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{s.sessionDate}">
+                                    <f:convertDateTime pattern="dd MMM"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.startingTime}">
+                                    <f:convertDateTime pattern="hh:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 40px!important; text-align: center;">
+                                <h:outputText value="#{s.totalFee}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+
+                        </p:selectOneListbox>
+                    </div>
+
                 </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Watch Booking History" 
+                        icon="fas fa-plus"
+                        class="ui-button-success"
+                        action="#{patientPortalController.docotrBooking}"
+                        />
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Watch Payment History" 
+                        icon="fas fa-plus"
+                        class="ui-button-success"
+                        action="#{patientPortalController.docotrBooking}"
+                        />
+                     <p:commandButton 
+                        ajax="false" 
+                        value="Book" 
+                        icon="fas fa-plus"
+                        class="ui-button-danger"
+                        action="#{patientPortalController.docotrBooking}"
+                        />
+                </div>
+                
+                
+
             </p:panel>
-            <p:commandButton value="Book"  />
         </h:form>
     </ui:define>
 </ui:composition>
