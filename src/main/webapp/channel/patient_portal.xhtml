@@ -14,6 +14,16 @@
     <ui:define name="content">
         <h:form id="form">
             <p:inputText value="#{patientPortalController.patientphoneNumber}" />
+            <p:commandButton ajax="false" 
+                        value="Send Now" 
+                        class="ui-button-success"
+                        action="#{patientPortalController.sendOtp}"/>
+            
+             <p:inputText value="#{patientPortalController.patientEnteredOtp}" />
+            <p:commandButton ajax="false" 
+                        value="Verify" 
+                        class="ui-button-success"
+                        action="#{patientPortalController.sendOtp}"/> 
             <p:panel>
                 <div class="d-flex justify-content-center align-items-center">
                     <p:commandButton 

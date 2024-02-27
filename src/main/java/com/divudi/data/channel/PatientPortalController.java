@@ -2,23 +2,31 @@ package com.divudi.data.channel;
 
 import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.MessageType;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Payment;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
@@ -48,8 +56,12 @@ public class PatientPortalController {
     private Date date;
     private List<SessionInstance> sessionInstances;
     private Date sessionStartingDate;
-    ScheduleModel eventModel;
+    private String messageForSms;
+    private String otp;
+    private String patientEnteredOtp;
+    private boolean otpVerify;
 
+    ScheduleModel eventModel;
     Staff staff;
     ServiceSession serviceSession;
 
@@ -61,11 +73,17 @@ public class PatientPortalController {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private SmsFacade SmsFacade;
+    @EJB
+    SmsManagerEjb smsManager;
 
     @Inject
     private SessionController sessionController;
     @Inject
     DoctorController doctorController;
+    @Inject
+    SmsController smsController;
 
     private ChannelBean channelBean;
 
@@ -112,12 +130,54 @@ public class PatientPortalController {
             System.out.println("sessionInstances = " + sessionInstances.size());
         }
     }
-    
-    public void fillBookingHistory(){
-        
+
+    public void otpCodeConverter() {
+        String numbers = "0123456789";
+
+        Random random = new Random();
+        StringBuilder otpBuilder = new StringBuilder();
+
+        for (int i = 0; i < 4; i++) {
+            int index = random.nextInt(numbers.length());
+            otpBuilder.append(numbers.charAt(index));
+        }
+        otp=otpBuilder.toString();
+        System.out.println("otp = " + otp);
+    }
+
+    public void sendOtp() {
+        otpCodeConverter();
+        if (PatientphoneNumber == null) {
+            JsfUtil.addErrorMessage("Pleace Enter Phone Number");
+            return;
+        }
+
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setSmsType(MessageType.LabReport);
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(PatientphoneNumber);
+        e.setSendingMessage("Your authentication code is " + otp);
+        e.setDepartment(getSessionController().getDepartment());
+        e.setInstitution(getSessionController().getInstitution());
+        e.setPending(false);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
     }
     
-    
+    public void findPatients(){
+        if (otpVerify) {
+            
+        }
+    }
+
+    public void otpVerification(){
+        
+    }
 
     public String getPatientphoneNumber() {
         return PatientphoneNumber;
@@ -276,5 +336,47 @@ public class PatientPortalController {
     public void setSessionStartingDate(Date sessionStartingDate) {
         this.sessionStartingDate = sessionStartingDate;
     }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public String getMessageForSms() {
+        return messageForSms;
+    }
+
+    public void setMessageForSms(String messageForSms) {
+        this.messageForSms = messageForSms;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return SmsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade SmsFacade) {
+        this.SmsFacade = SmsFacade;
+    }
+
+    public String getPatientEnteredOtp() {
+        return patientEnteredOtp;
+    }
+
+    public void setPatientEnteredOtp(String patientEnteredOtp) {
+        this.patientEnteredOtp = patientEnteredOtp;
+    }
+
+    public boolean isOtpVerify() {
+        return otpVerify;
+    }
+
+    public void setOtpVerify(boolean otpVerify) {
+        this.otpVerify = otpVerify;
+    }
+    
+    
 
 }
