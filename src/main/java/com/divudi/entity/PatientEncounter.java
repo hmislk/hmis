@@ -153,10 +153,10 @@ public class PatientEncounter implements Serializable {
     private Long dbp = null;
     private Double bmi = null;
     private Long pr = null;
-    private Double height;
-    private Integer pulseRate;
-    private Integer pfr;
-    private Double saturation;
+    private Double height = null;
+    private Integer pulseRate = null;
+    private Integer pfr = null;
+    private Double saturation = null;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -165,10 +165,7 @@ public class PatientEncounter implements Serializable {
     private Staff referringConsultant;
     @ManyToOne
     private Staff referringStaff;
-    
-    
-    
-    
+
     // Transient method for BP
     public String getBp() {
         if (getSbp() != null && getDbp() != null) {
@@ -176,11 +173,11 @@ public class PatientEncounter implements Serializable {
         }
         return ""; // or some default value
     }
-    
+
     public void setBp(Long sdp, Long dbp) {
         this.sbp = sdp;
         this.dbp = dbp;
-        
+
     }
 
     // Transient method for BMI
@@ -955,8 +952,6 @@ public class PatientEncounter implements Serializable {
         this.weight = weight;
         calculateBmi();
     }
-    
-    
 
     private void calculateBmi() {
         if (this.height == null || this.weight == null) {

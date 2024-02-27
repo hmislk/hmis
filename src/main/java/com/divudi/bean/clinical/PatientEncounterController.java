@@ -1142,6 +1142,7 @@ public class PatientEncounterController implements Serializable {
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
         encounterDocuments = fillEncounterDocuments(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
+        encounterPlanOfActions = fillPlanOfAction(encounter);
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1169,6 +1170,9 @@ public class PatientEncounterController implements Serializable {
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
+        String pulseRate = e.getPulseRate()+" bpm";
+        String pfr = e.getPfr()+"";
+        String saturation = e.getSaturation()+"";
         if (comments == null) {
             comments = "";
         }
@@ -1227,6 +1231,11 @@ public class PatientEncounterController implements Serializable {
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
             ixAsString += ix.getItemValue().getName() + "<br/>";
         }
+        
+        String paAsString = "Pa" + "<br/>";
+        for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
+            paAsString += pa.getItemValue().getName() + "<br/>";
+        }
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
@@ -1271,6 +1280,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
@@ -1278,7 +1288,10 @@ public class PatientEncounterController implements Serializable {
                 .replace("{height}", height)
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
-                .replace("{bp}", bp);
+                .replace("{bp}", bp)
+                .replace("{pr}",pulseRate)
+                .replace("{pfr}",pfr)
+                .replace("{sat}", saturation);
         return output;
 
     }

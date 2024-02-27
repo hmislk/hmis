@@ -105,6 +105,7 @@ public class DocumentTemplateController implements Serializable {
                 + "{outdoor}<br/>"
                 + "{indoor}<br/>"
                 + "{ix}<br/>"
+                + "{pa}<br/>"
                 + "{past-dx}<br/>"
                 + "{routine-medicines}<br/>"
                 + "{allergies}<br/>"
@@ -112,7 +113,10 @@ public class DocumentTemplateController implements Serializable {
                 + "{height}<br/>"
                 + "{weight}<br/>"
                 + "{bmi}<br/>"
-                + "{bp}";
+                + "{bp}<br/>"
+                + "{pr}<br/>"
+                + "{pfr}<br/>"
+                + "{sat}<br/>";
         return contents;
     }
 
