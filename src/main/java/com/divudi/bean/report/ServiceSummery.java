@@ -8,7 +8,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -926,7 +926,7 @@ public class ServiceSummery implements Serializable {
         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
+            JsfUtil.addErrorMessage("Date Range is too Long");
             return;
         }
         List<BillType> bts = new ArrayList<>();
@@ -1003,7 +1003,7 @@ public class ServiceSummery implements Serializable {
         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
-            UtilityController.addErrorMessage("Date Range is too Long");
+            JsfUtil.addErrorMessage("Date Range is too Long");
             return;
         }
 

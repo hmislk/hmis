@@ -28,7 +28,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author safrin
@@ -70,18 +70,18 @@ public class IncomeExpensessBillController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Methord");
+            JsfUtil.addErrorMessage("Please select Payment Methord");
             return true;
         }
 
         if (getCurrent().getComments() == null || "".equals(getCurrent().getComments())) {
-            UtilityController.addErrorMessage("Please Enter Discription");
+            JsfUtil.addErrorMessage("Please Enter Discription");
             return true;
         }
 
         if (getCurrent().getPaymentMethod() != null && getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
             if (getCurrent().getBank() == null || getCurrent().getChequeRefNo() == null || getCurrent().getChequeDate() == null) {
-                UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
+                JsfUtil.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
 
@@ -92,7 +92,7 @@ public class IncomeExpensessBillController implements Serializable {
         }
 
         if (getAmount() < 1) {
-            UtilityController.addErrorMessage("Type Amount");
+            JsfUtil.addErrorMessage("Type Amount");
             return true;
         }
 
@@ -102,22 +102,22 @@ public class IncomeExpensessBillController implements Serializable {
     
     private boolean errorCheckCancel() {
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select Payment Methord");
+            JsfUtil.addErrorMessage("Please select Payment Methord");
             return true;
         }
 
         if (getComment() == null || "".equals(getComment())) {
-            UtilityController.addErrorMessage("Please Enter Discription");
+            JsfUtil.addErrorMessage("Please Enter Discription");
             return true;
         }
 
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
@@ -172,7 +172,7 @@ public class IncomeExpensessBillController implements Serializable {
 
 //        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
 //        getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
@@ -223,14 +223,14 @@ public class IncomeExpensessBillController implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
     }

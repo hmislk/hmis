@@ -24,7 +24,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

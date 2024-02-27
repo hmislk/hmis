@@ -8,7 +8,7 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValue;
@@ -26,7 +26,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.IOException;
 import java.io.Serializable;
@@ -2959,7 +2959,7 @@ public class CashierReportController implements Serializable {
             workbook.close();
             context.responseComplete();
 
-            UtilityController.addSuccessMessage("Download Successfully");
+            JsfUtil.addSuccessMessage("Download Successfully");
 
         } catch (IOException e) {
             // Handle any exceptions

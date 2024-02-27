@@ -34,7 +34,6 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill"></h:outputText>
@@ -167,35 +166,21 @@
 
                             <h:panelGroup id="printPreview">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>
+                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}" />
                                 </h:panelGroup>
-
 
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                     <bi:opdReturnfive_five_paper_without_headings 
                                         bill="#{billSearch.bill}" 
-                                        duplicate="#{opdBillController.duplicatePrint}"
                                         payments="#{opdBillController.payments}"/>
 
                                 </h:panelGroup>
-
-
                             </h:panelGroup>
-
-
-
-
-
-
-
-
                         </p:panel>
-
                     </h:form>
                 </h:panelGroup>   
 
             </ui:define>
-
         </ui:composition>
 
     </h:body>

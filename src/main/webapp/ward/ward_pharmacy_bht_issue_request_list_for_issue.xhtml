@@ -111,8 +111,9 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
 
-                            </p:column>                 
-                            <p:column headerText="Requested By" style="width: 5%;" >                      
+                            </p:column>   
+                            <p:column headerText="Requested By" style="width: 5%;" >    
+                                
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                          
                                 <br/>
@@ -127,9 +128,9 @@
                                     class="ui-button-success" 
                                     ajax="false" 
                                     value="To Issue" 
-                                    action="ward_pharmacy_bht_issue" 
-                                    actionListener="#{pharmacySaleBhtController.generateBillComponent(p)}"
+                                    action="#{pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest()}"
                                     disabled="#{p.cancelled eq true}">
+                                    <f:setPropertyActionListener value="#{p}" target="#{pharmacySaleBhtController.bhtRequestBill}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </p:column>
 

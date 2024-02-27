@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SystemTimeStamp;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.ReportKeyWord;
@@ -28,7 +28,7 @@ import com.divudi.facade.HrFormFacade;
 import com.divudi.facade.SalaryCycleFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -1087,7 +1087,7 @@ public class StaffAdditionalFormController implements Serializable {
         Shift shift = null;
 
         if (currentAdditionalForm.getStaffShift() == null) {
-            UtilityController.addErrorMessage("Please Un Select Staff Shift");
+            JsfUtil.addErrorMessage("Please Un Select Staff Shift");
             return;
         }
         DayType dayType;
@@ -1375,12 +1375,12 @@ public class StaffAdditionalFormController implements Serializable {
 
 //    public void fetchShift() {
 //        if (getCurrentAdditionalForm().getStaff() == null) {
-//            UtilityController.addErrorMessage("Please Select Staff");
+//            JsfUtil.addErrorMessage("Please Select Staff");
 //            return;
 //        }
 //
 //        if (getDate() == null) {
-//            UtilityController.addErrorMessage("Please Select Date");
+//            JsfUtil.addErrorMessage("Please Select Date");
 //            return;
 //        }
 //

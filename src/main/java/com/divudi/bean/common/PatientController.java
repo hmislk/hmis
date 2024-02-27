@@ -54,7 +54,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -353,10 +353,9 @@ public class PatientController implements Serializable {
                 + " order by p.id desc";
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        allPatientList = getFacade().findByJpql(j, m,100000);
+        allPatientList = getFacade().findByJpql(j, m, 100000);
 
         for (Patient pt : allPatientList) {
-            System.out.println("pt = " + pt);
             if (pt.getPerson() == null) {
                 continue;
             }
@@ -779,13 +778,12 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission?faces-redirect=true;";
     }
-    
-    public String navigatePatientAdmit(){
-        Admission ad=new Admission();
+
+    public String navigatePatientAdmit() {
+        Admission ad = new Admission();
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
         return "/inward/inward_admission?faces-redirect=true;";
-    
 
     }
 
@@ -867,7 +865,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-                
+
         return "/opd/patient?faces-redirect=true;";
     }
 
@@ -964,7 +962,7 @@ public class PatientController implements Serializable {
         }
         getFacade().edit(patient);
 
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
@@ -1439,6 +1437,9 @@ public class PatientController implements Serializable {
         quickSearchPatientList = null;
         controller.setPatient(new Patient());
         controller.setPatientDetailsEditable(true);
+        if (quickSearchPhoneNumber != null) {
+            controller.getPatient().setPhoneNumberStringTransient(quickSearchPhoneNumber);
+        }
     }
 
     public void selectQuickOneFromQuickSearchPatient(ControllerWithPatient controller) {
@@ -1700,24 +1701,24 @@ public class PatientController implements Serializable {
 
         if (familyMember.getFullName() == null || familyMember.getFullName().equals("")) {
             loggedIn = false;
-            UtilityController.addErrorMessage("Please enter full name");
+            JsfUtil.addErrorMessage("Please enter full name");
             return;
 
         }
         if (familyMember.getSex() == null) {
             loggedIn = false;
-            UtilityController.addErrorMessage("Please enter gender");
+            JsfUtil.addErrorMessage("Please enter gender");
             return;
 
         }
         if (familyMember.getNic() == null || familyMember.getNic().equals("")) {
             loggedIn = false;
-            UtilityController.addErrorMessage("Please enter NIC no");
+            JsfUtil.addErrorMessage("Please enter NIC no");
             return;
         }
         if (familyMember.getDob() == null) {
             loggedIn = false;
-            UtilityController.addErrorMessage("Please enter Date Of Birth");
+            JsfUtil.addErrorMessage("Please enter Date Of Birth");
             return;
         }
         familyMember.setSerealNumber(familyMembers.size());
@@ -1877,9 +1878,9 @@ public class PatientController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfull");
+            JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -1991,15 +1992,15 @@ public class PatientController implements Serializable {
 
     public void saveSelected(Patient p) {
         if (p == null) {
-            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return;
         }
         if (p.getPerson() == null) {
-            UtilityController.addErrorMessage("No Person. Not Saved");
+            JsfUtil.addErrorMessage("No Person. Not Saved");
             return;
         }
         if (p.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
         if (p.getPerson().getId() == null) {
@@ -2046,17 +2047,17 @@ public class PatientController implements Serializable {
 
     public void save(Patient p) {
         if (p == null) {
-            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return;
         }
 
         if (p.getPerson() == null) {
-            UtilityController.addErrorMessage("No Person. Not Saved");
+            JsfUtil.addErrorMessage("No Person. Not Saved");
             return;
         }
 
         if (p.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
 
@@ -2073,7 +2074,7 @@ public class PatientController implements Serializable {
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().create(p);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         } else {
             getFacade().edit(p);
         }
@@ -2086,15 +2087,15 @@ public class PatientController implements Serializable {
 
     public String saveAndNavigateToProfile() {
         if (current == null) {
-            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return "";
         }
         if (current.getPerson() == null) {
-            UtilityController.addErrorMessage("No Person. Not Saved");
+            JsfUtil.addErrorMessage("No Person. Not Saved");
             return "";
         }
         if (current.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            JsfUtil.addErrorMessage("Please enter a name");
             return "";
         }
         if (current.getPerson().getId() == null) {
@@ -2138,10 +2139,10 @@ public class PatientController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved as a new patient successfully.");
+            JsfUtil.addSuccessMessage("Saved as a new patient successfully.");
         } else {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated the patient details successfully.");
+            JsfUtil.addSuccessMessage("Updated the patient details successfully.");
         }
         if (getCurrent().getPhn() == null || getCurrent().getPhn().trim().equals("")) {
             getCurrent().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
@@ -2396,49 +2397,49 @@ public class PatientController implements Serializable {
 
     private boolean errorCheck(Patient p) {
         if (p == null) {
-            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
         }
         if (p.getPerson() == null) {
-            UtilityController.addErrorMessage("No Person. Not Saved");
+            JsfUtil.addErrorMessage("No Person. Not Saved");
             return true;
         }
         if (p.getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please Enter a Name");
+            JsfUtil.addErrorMessage("Please Enter a Name");
             return true;
         }
         if (p.getPerson().getSex() == null) {
-            UtilityController.addErrorMessage("Please Select Sex");
+            JsfUtil.addErrorMessage("Please Select Sex");
             return true;
         }
         if (p.getPerson().getDob() == null) {
-            UtilityController.addErrorMessage("Please Pic a Birth Day");
+            JsfUtil.addErrorMessage("Please Pic a Birth Day");
             return true;
         }
         if (p.getPerson().getAddress() == null || p.getPerson().getAddress().equals("")) {
-            UtilityController.addErrorMessage("Please Enter a Address");
+            JsfUtil.addErrorMessage("Please Enter a Address");
             return true;
         }
         if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
             if (p.getPerson().getArea() == null) {
-                UtilityController.addErrorMessage("Please Enter a Area");
+                JsfUtil.addErrorMessage("Please Enter a Area");
                 return true;
             }
         }
         if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
             if (p.getPerson().getPhone() == null || p.getPerson().getPhone().equals("")) {
-                UtilityController.addErrorMessage("Please Enter a Phone Number");
+                JsfUtil.addErrorMessage("Please Enter a Phone Number");
                 return true;
             }
         }
         if (sessionController.getApplicationPreference().isNeedNicForPatientRegistration()) {
             if (p.getPerson().getNic() == null || p.getPerson().getNic().equals("")) {
-                UtilityController.addErrorMessage("Please Enter a Nic No");
+                JsfUtil.addErrorMessage("Please Enter a Nic No");
                 return true;
             }
         }
 //        if (getCurrent().getPhn().equals("")) {
-//            UtilityController.addErrorMessage("Please Enter PHN number");
+//            JsfUtil.addErrorMessage("Please Enter PHN number");
 //            return;
 //        }
         return false;

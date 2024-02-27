@@ -5,9 +5,9 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.UtilityController;
-import com.divudi.data.hr.LeaveType;
 
+import com.divudi.data.hr.LeaveType;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.hr.Grade;
 import com.divudi.entity.hr.StaffLeave;
@@ -53,7 +53,7 @@ public class StaffLeaveController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getLeaveType() == null) {
-            UtilityController.addErrorMessage("Please select Leave Type");
+            JsfUtil.addErrorMessage("Please select Leave Type");
             return true;
         }
 
@@ -67,7 +67,7 @@ public class StaffLeaveController implements Serializable {
 
         getStaffLeaveFacade().create(getCurrent());
         current = null;
-        UtilityController.addSuccessMessage("Staff Leave Added");
+        JsfUtil.addSuccessMessage("Staff Leave Added");
     }
 
     public void clear() {

@@ -6,7 +6,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
@@ -264,7 +264,7 @@ public class BookingPastController implements Serializable {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     if (serialNo == bi.getBillSession().getSerialNo()) {
                         alreadyExists = true;
-                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                     }
                 }
             }
@@ -277,14 +277,14 @@ public class BookingPastController implements Serializable {
     public boolean errorCheck() {
         boolean flag = false;
         if (serialNo == 0) {
-            UtilityController.addErrorMessage("Cant Add This Number");
+            JsfUtil.addErrorMessage("Cant Add This Number");
             return true;
         }
         for (BillSession bs : billSessions) {
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     if (serialNo == bi.getBillSession().getSerialNo()) {
-                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                         flag = true;
                     }
                 }
@@ -310,12 +310,12 @@ public class BookingPastController implements Serializable {
 
         getBillSessionFacade().edit(getSelectedBillSession());
         //System.out.println(getSelectedBillSession().getBill().getPatient());
-        UtilityController.addSuccessMessage("Serial Updated");
+        JsfUtil.addSuccessMessage("Serial Updated");
     }
 
     public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
-        UtilityController.addSuccessMessage("Patient Updated");
+        JsfUtil.addSuccessMessage("Patient Updated");
     }
 
 //    public void fillBillSessions(SelectEvent event) {
@@ -373,7 +373,7 @@ public class BookingPastController implements Serializable {
 
         Date currenDate = new Date();
         if (getDate().after(currenDate)) {
-            UtilityController.addErrorMessage("Please Select Before Date");
+            JsfUtil.addErrorMessage("Please Select Before Date");
             return;
         }
 
@@ -811,7 +811,7 @@ public class BookingPastController implements Serializable {
 
     public Boolean preSet() {
         if (getSelectedServiceSession() == null) {
-            UtilityController.addErrorMessage("Please select Service Session");
+            JsfUtil.addErrorMessage("Please select Service Session");
             return false;
         }
 

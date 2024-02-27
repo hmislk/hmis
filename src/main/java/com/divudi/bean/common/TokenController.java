@@ -19,7 +19,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.TokenFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -208,7 +208,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com"; // Add conditions to filter out tokens that are in progress or completed
         if (selectedCounter != null) {
-            System.out.println("selectedCounter = " + selectedCounter.getName());
             j += " and t.counter =:ct";
             m.put("ct", selectedCounter);
         }
@@ -247,7 +246,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
         System.out.println("m = " + m);
         System.out.println("j = " + j);
         Token st = tokenFacade.findFirstByJpql(j, m);
-        System.out.println("st = " + st);
         return st;
     }
 
@@ -325,7 +323,6 @@ public class TokenController implements Serializable, ControllerWithPatient {
             return "";
         }
         if (!currentToken.getBill().getBillType().equals(BillType.PharmacyPre)) {
-            System.out.println("currentToken.getBill().getBillType() = " + currentToken.getBill().getBillType());
             JsfUtil.addErrorMessage("Wrong Bill Type");
             return "";
         }

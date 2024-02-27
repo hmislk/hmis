@@ -5,7 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmaceuticalItemController;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.data.BillClassType;
@@ -101,7 +101,7 @@ public class StoreGoodsReturnController implements Serializable {
 
         if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > storeCalculation.calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
-            UtilityController.addErrorMessage("You cant return over than ballanced Qty ");
+            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
         calTotal();
@@ -197,7 +197,7 @@ public class StoreGoodsReturnController implements Serializable {
 
     public void settle() {
         if (checkGrnItems()) {
-            UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
+            JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
             return;
         }
 
@@ -208,7 +208,7 @@ public class StoreGoodsReturnController implements Serializable {
         getBillFacade().edit(getReturnBill());
 
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 

@@ -2,7 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -12,7 +12,7 @@ import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value1;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
@@ -903,12 +903,10 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public double getTotalPaying() {
-        System.out.println("totalPaying = " + totalPaying);
         return totalPaying;
     }
 
     public void setTotalPaying(double totalPaying) {
-        System.out.println("setter totalPaying = " + totalPaying);
         this.totalPaying = totalPaying;
     }
 
@@ -981,9 +979,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             System.out.println("fee val is " + f.getFeeValue());
             System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            System.out.println("totalPaying after " + totalPaying);
         }
-        System.out.println("total pay is " + totalPaying);
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -1007,7 +1003,6 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -1059,16 +1054,16 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
 //        performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -1097,7 +1092,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //   ////// // System.out.println("Paid");
     }
 
@@ -1185,9 +1180,9 @@ public class InwardStaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(sessionController.getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
