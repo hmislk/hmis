@@ -165,6 +165,7 @@ public class PastPatientEncounterController implements Serializable {
     private ClinicalFindingValue encounterMedicalCertificate;
     private ClinicalFindingValue encounterReferral;
     private ClinicalFindingValue encounterPrescreption;
+    private ClinicalFindingValue encounterPlanOfAction;
 
     private List<ClinicalFindingValue> encounterMedicines;
     private List<ClinicalFindingValue> encounterDiagnosticImages;
@@ -175,6 +176,7 @@ public class PastPatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterDocuments;
     private List<ClinicalFindingValue> encounterPrescreptions;
     private List<ClinicalFindingValue> encounterFindingValues;
+    private List<ClinicalFindingValue> encounterPlanOfActions;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -1134,6 +1136,9 @@ public class PastPatientEncounterController implements Serializable {
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
+        String pulseRate = e.getPulseRate()+" bpm";
+        String pfr = e.getPfr()+"";
+        String saturation = e.getSaturation()+"";
 
         for (ClinicalFindingValue cf : getPatientDiagnoses()) {
             cf.getItemValue().getName();
@@ -1189,6 +1194,11 @@ public class PastPatientEncounterController implements Serializable {
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
             ixAsString += ix.getItemValue().getName() + "<br/>";;
         }
+        
+        String paAsString = "Pa" + "<br/>";
+        for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
+            paAsString += pa.getItemValue().getName() + "<br/>";
+        }
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
@@ -1213,6 +1223,7 @@ public class PastPatientEncounterController implements Serializable {
             }
         }
 
+        
         String diagnosesAsString = "";
         for (ClinicalFindingValue dx : getPatientDiagnoses()) {
             if (dx != null) {
@@ -1233,6 +1244,7 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
@@ -1240,7 +1252,10 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{height}", height)
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
-                .replace("{bp}", bp);
+                .replace("{bp}", bp)
+                .replace("{pr}",pulseRate)
+                .replace("{pfr}",pfr)
+                .replace("{sat}", saturation);
         return output;
 
     }
@@ -2718,6 +2733,25 @@ public class PastPatientEncounterController implements Serializable {
     public void setEncounterFindingValues(List<ClinicalFindingValue> encounterFindingValues) {
         this.encounterFindingValues = encounterFindingValues;
     }
+    
+    public ClinicalFindingValue getEncounterPlanOfAction() {
+        if (encounterPlanOfAction == null) {
+            encounterPlanOfAction = new ClinicalFindingValue();
+            encounterPlanOfAction.setEncounter(current);
+            encounterPlanOfAction.setClinicalFindingValueType(ClinicalFindingValueType.PlanOfAction);
+            if (current != null) {
+                encounterPlanOfAction.setPatient(current.getPatient());
+            }
+            if (current.getPatient() != null) {
+                encounterPlanOfAction.setPerson(current.getPatient().getPerson());
+            }
+        }
+        return encounterPlanOfAction;
+    }
+
+    public void setEncounterPlanOfAction(ClinicalFindingValue encounterPlanOfAction) {
+        this.encounterPlanOfAction = encounterPlanOfAction;
+    }
 
     public void uploadPhoto(FileUploadEvent event) {
         if (getCurrent() == null || getCurrent().getId() == null) {
@@ -2804,6 +2838,14 @@ public class PastPatientEncounterController implements Serializable {
 
     public void setSelectedDocumentTemplate(DocumentTemplate selectedDocumentTemplate) {
         this.selectedDocumentTemplate = selectedDocumentTemplate;
+    }
+
+    public List<ClinicalFindingValue> getEncounterPlanOfActions() {
+        return encounterPlanOfActions;
+    }
+
+    public void setEncounterPlanOfActions(List<ClinicalFindingValue> encounterPlanOfActions) {
+        this.encounterPlanOfActions = encounterPlanOfActions;
     }
 
     
