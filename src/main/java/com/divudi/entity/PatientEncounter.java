@@ -154,6 +154,9 @@ public class PatientEncounter implements Serializable {
     private Double bmi = null;
     private Long pr = null;
     private Double height;
+    private Integer pulseRate;
+    private Integer pfr;
+    private Double saturation;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -996,6 +999,30 @@ public class PatientEncounter implements Serializable {
 
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
+    }
+
+    public Integer getPulseRate() {
+        return pulseRate;
+    }
+
+    public void setPulseRate(Integer pulseRate) {
+        this.pulseRate = pulseRate;
+    }
+
+    public Integer getPfr() {
+        return pfr;
+    }
+
+    public void setPfr(Integer pfr) {
+        this.pfr = pfr;
+    }
+
+    public Double getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(Double saturation) {
+        this.saturation = saturation;
     }
 
 }
