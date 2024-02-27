@@ -1046,26 +1046,26 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             return true;
         }
 
-        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
-            return true;
-        }
+//        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+//            return true;
+//        }
 
-        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null) {
-                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
-                return true;
-            }
-            if (toStaff != null && creditCompany != null) {
-                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
-                return true;
-            }
-            if (toStaff != null) {
-                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
-                    JsfUtil.addErrorMessage("No enough walfare credit.");
-                    return true;
-                }
-            }
-        }
+//        if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
+//            if (toStaff == null && creditCompany == null) {
+//                JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
+//                return true;
+//            }
+//            if (toStaff != null && creditCompany != null) {
+//                JsfUtil.addErrorMessage("Both staff member and a company is selected. Please select either Staff Member under welfare or credit company.");
+//                return true;
+//            }
+//            if (toStaff != null) {
+//                if (toStaff.getAnnualWelfareUtilized() + netTotal > toStaff.getAnnualWelfareQualified()) {
+//                    JsfUtil.addErrorMessage("No enough walfare credit.");
+//                    return true;
+//                }
+//            }
+//        }
 
         if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
             JsfUtil.addErrorMessage("Check Payment method");
