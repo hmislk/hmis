@@ -868,6 +868,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getComment() == null || getComment().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please enter a comment");
+                return;
+            }
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -915,6 +920,13 @@ public class InwardSearch implements Serializable {
             }
             return true;
         }
+    }
+    
+    public String getRowStyleClass(BillItem bip) {
+        if (bip.getNetValue() != 0) {
+            return "non-zero-value-row";
+        }
+        return null; // Return null for rows with netValue equal to 0
     }
 
     public boolean checkBathcReferenceBillTimeService() {
