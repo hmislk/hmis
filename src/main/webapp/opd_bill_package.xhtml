@@ -17,6 +17,7 @@
 
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
+                <p:growl id="msg"/>
                 <p:focus id="focusIx" for="acIx" />
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
                     <p:panel class="w-100" >
@@ -44,19 +45,20 @@
                                                 id="acIx"
                                                 class="w-100"
                                                 scrollHeight="200"
+                                                converter="itemLightConverter"
                                                 value="#{billPackageController.itemLight}" var="ix" >
                                                 <f:selectItems value="#{billPackageController.opdPackages}"
                                                                var="package" 
                                                                itemLabel="#{package.name}"
                                                                itemValue="#{package}" >
                                                 </f:selectItems>
-                                                <p:ajax listener="#{opdBillController.fillBillSessions}" process="acIx"></p:ajax>
                                                 <p:column>
                                                     #{ix.name}
                                                 </p:column>
                                                 <p:column>
                                                     #{ix.total}
                                                 </p:column>
+
 
                                             </p:selectOneListbox>
 
@@ -65,10 +67,9 @@
                                                 value="Add" 
                                                 class="my-2 ui-button-success"
                                                 icon="fas fa-plus"
-                                                action="#{billPackageController.addToBill()}" >
-                                                <f:ajax 
-                                                    execute="acIx btnAddIx" 
-                                                    render="focusIx tblBillItem pBillDetails pIxAdd" />
+                                                action="#{billPackageController.addToBill()}"
+                                                 process="acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
                                             </p:commandButton>
                                         </p:panel>
                                     </div>

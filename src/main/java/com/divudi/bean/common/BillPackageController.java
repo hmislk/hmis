@@ -111,6 +111,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemApplicationController itemApplicationController;
     @Inject
     PaymentSchemeController paymentSchemeController;
+    @Inject
+    ItemController itemController;
 
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -420,8 +422,18 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void addToBill() {
+        System.out.println("getCurrentBillItem = " + getCurrentBillItem());
+        System.out.println("getCurrentBillItem.item = " + getCurrentBillItem().getItem().getName());
         if (getLstBillEntries().size() > 0) {
             JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
+            return;
+        }
+        if (getCurrentBillItem() == null) {
+            JsfUtil.addErrorMessage("Nothing to add");
+            return;
+        }
+        if (getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
 
@@ -541,9 +553,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public Patient getPatient() {
-        if(patient==null){
+        if (patient == null) {
             patient = new Patient();
-            patientDetailsEditable=true;
+            patientDetailsEditable = true;
         }
         return patient;
     }
@@ -950,13 +962,19 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public ItemLight getItemLight() {
-
+        if (getCurrentBillItem().getItem() != null) {
+            itemLight = new ItemLight(getCurrentBillItem().getItem());
+        }
+        System.out.println("itemLight 2 = " + itemLight);
         return itemLight;
     }
 
     public void setItemLight(ItemLight itemLight) {
-
         this.itemLight = itemLight;
+        System.out.println("itemLight = " + itemLight);
+        if (itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        }
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
