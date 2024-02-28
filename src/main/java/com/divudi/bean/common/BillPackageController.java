@@ -422,8 +422,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void addToBill() {
-        System.out.println("getCurrentBillItem = " + getCurrentBillItem());
-        System.out.println("getCurrentBillItem.item = " + getCurrentBillItem().getItem().getName());
+//        System.out.println("getCurrentBillItem = " + getCurrentBillItem());
+//        System.out.println("getCurrentBillItem.item = " + getCurrentBillItem().getItem().getName());
         if (getLstBillEntries().size() > 0) {
             JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
             return;
@@ -590,8 +590,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (opdPackages == null) {
             opdPackages = itemApplicationController.getPackages();
         }
-        //System.out.println("Packege : " + opdPackages);
-
         return opdPackages;
     }
 
@@ -963,20 +961,19 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public ItemLight getItemLight() {
         if (getCurrentBillItem().getItem() != null) {
-            itemLight = new ItemLight(getCurrentBillItem().getItem());
+            this.itemLight = new ItemLight(getCurrentBillItem().getItem());
         }
-        System.out.println("itemLight 2 = " + itemLight);
         return itemLight;
     }
 
     public void setItemLight(ItemLight itemLight) {
-        this.itemLight = itemLight;
-        System.out.println("itemLight = " + itemLight);
-        if (itemLight != null) {
-            getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+        System.out.println("itemLight Mee= " + itemLight);
+        this.itemLight=itemLight;
+        if (this.itemLight != null) {
+            getCurrentBillItem().setItem(itemController.findItem(this.itemLight.getId()));
         }
     }
-
+  
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }

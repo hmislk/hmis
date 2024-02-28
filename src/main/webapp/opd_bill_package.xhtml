@@ -46,12 +46,13 @@
                                                 class="w-100"
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
-                                                value="#{billPackageController.itemLight}" var="ix" >
+                                                value="#{billPackageController.itemLight}"  var="ix">
                                                 <f:selectItems value="#{billPackageController.opdPackages}"
-                                                               var="package" 
-                                                               itemLabel="#{package.name}"
-                                                               itemValue="#{package}" >
+                                                               var="packege" 
+                                                               itemLabel="#{packege.name}"
+                                                               itemValue="#{packege}" >
                                                 </f:selectItems>
+                                                
                                                 <p:column>
                                                     #{ix.name}
                                                 </p:column>
