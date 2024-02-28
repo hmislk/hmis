@@ -618,13 +618,17 @@ public class PharmacyBean {
             sql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item=:amp "
-                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+                    + " and s.department=:d and s.stock >=:q "
+                    + " and s.itemBatch.dateOfExpire > :doe "
+                    + " order by s.itemBatch.dateOfExpire ";
             m.put("amp", item);
+            m.put("doe", new Date());
         } else if (item instanceof Vmp) {
             List<Amp> amps = findAmpsForVmp((Vmp) item);
             sql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item in :amps "
+                    + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
             m.put("amps", amps);
         }else{
