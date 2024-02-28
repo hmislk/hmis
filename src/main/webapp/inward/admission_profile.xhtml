@@ -17,6 +17,13 @@
                 <f:facet name="header" >
                     <h:outputText styleClass="fa fa-id-card"></h:outputText>
                     <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+                    <p:commandButton 
+                        value="Back to Search Admission" 
+                        action="#{admissionController.navigateToSearchAdmissions()}" 
+                        style="float: right;"
+                        class="ui-button-warning"
+                        icon="fa fa-arrow-left">
+                    </p:commandButton>
                 </f:facet>
                 <div class="row" >
                     <div class="col-3" >

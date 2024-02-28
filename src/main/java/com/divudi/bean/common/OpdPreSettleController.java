@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -38,7 +39,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -358,6 +359,10 @@ public class OpdPreSettleController implements Serializable {
             return;
         }
         
+        if(getCashPaid() < getPreBill().getNetTotal()){
+           JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
+            return; 
+        }
         saveSaleBill();
         saveSaleBillItems();
 
@@ -632,7 +637,9 @@ public class OpdPreSettleController implements Serializable {
             //// // System.out.println("dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
-                    JsfUtil.addErrorMessage("Can't Pay,This Bill cancelled");
+
+                    JsfUtil.addErrorMessage("Can't Pay,This Bill Cancelled");
+
                 } else {
                     JsfUtil.addErrorMessage("Some Bill cancelled This Batch Bill");
                 }
