@@ -361,6 +361,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToSearchInwardBills() {
         return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
     }
+    
+    public String navigateToSearchAdmissions() {
+        return "/inward/inpatient_search?faces-redirect=true";
+    }
 
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
