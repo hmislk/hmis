@@ -65,7 +65,7 @@ public class PatientPortalController {
     private String otp;
     private String patientEnteredOtp;
     private boolean otpVerify;
-    List<Patient> searchedPatients;
+    private List<Patient> searchedPatients;
     private Patient patient;
     boolean searchedPatientIsNull;
     private SessionInstance selectedSessionInstance;
@@ -75,7 +75,6 @@ public class PatientPortalController {
     ServiceSession serviceSession;
     CommonController commonController;
     BookingController bookingController;
-
 
     @EJB
     private StaffFacade staffFacade;
@@ -132,6 +131,7 @@ public class PatientPortalController {
     }
 
     public void fillSessionInstance() {
+        System.out.println("working");
         if (channelSessions != null) {
             sessionInstances = new ArrayList<>();
             sessionStartingDate = new Date();
@@ -193,7 +193,7 @@ public class PatientPortalController {
         if (otpVerify) {
             searchedPatients = new ArrayList<>();
             String j;
-           Long PatientphoneNumberLong=commonController.convertStringToLong(PatientphoneNumber);
+            Long PatientphoneNumberLong = commonController.convertStringToLong(PatientphoneNumber);
             Map m = new HashMap();
             j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
             m.put("pp", PatientphoneNumberLong);
@@ -222,7 +222,7 @@ public class PatientPortalController {
         m.put("oc", patientEnteredOtp);
         smss = smsFacade.findByJpql(j, m);
         System.out.println("smss = " + smss.size());
-        if (smss.isEmpty() || smss.size()>1) {
+        if (smss.isEmpty() || smss.size() > 1) {
             JsfUtil.addErrorMessage("Enter correct authentication code");
             return;
         } else {
@@ -230,16 +230,22 @@ public class PatientPortalController {
             findPatients();
         }
     }
-    
-    public void addBooking(){
-        if (patient != null) {
+
+    public void addBooking() {
+        System.out.println("this = " + patient.getPerson().getName());
+        if (patient == null) {
             bookingController.setPatient(patient);
+            return;
         }
-        if (selectedConsultant != null) {
-             bookingController.setStaff(selectedConsultant);
+        if (selectedConsultant == null) {
+            bookingController.setStaff(selectedConsultant);
+            System.out.println("this = " + "selectedConsultant null");
+            return;
         }
-        if (selectedSessionInstance != null) {
+        if (selectedSessionInstance == null) {
             bookingController.setSelectedSessionInstance(selectedSessionInstance);
+            System.out.println("this = " + "selectedSessionInstance null");
+            return;
         }
         bookingController.add();
     }
@@ -457,7 +463,13 @@ public class PatientPortalController {
     public void setSelectedSessionInstance(SessionInstance selectedSessionInstance) {
         this.selectedSessionInstance = selectedSessionInstance;
     }
-    
-    
+
+    public List<Patient> getSearchedPatients() {
+        return searchedPatients;
+    }
+
+    public void setSearchedPatients(List<Patient> searchedPatients) {
+        this.searchedPatients = searchedPatients;
+    }
 
 }

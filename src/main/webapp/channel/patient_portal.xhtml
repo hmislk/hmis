@@ -15,15 +15,36 @@
         <h:form id="form">
             <p:inputText value="#{patientPortalController.patientphoneNumber}" />
             <p:commandButton ajax="false" 
-                        value="Send Now" 
-                        class="ui-button-success"
-                        action="#{patientPortalController.sendOtp}"/>
-            
-             <p:inputText value="#{patientPortalController.patientEnteredOtp}" />
+                             value="Send Now" 
+                             class="ui-button-success"
+                             action="#{patientPortalController.sendOtp}"/>
+
+            <p:inputText value="#{patientPortalController.patientEnteredOtp}" />
             <p:commandButton ajax="false" 
-                        value="Verify" 
-                        class="ui-button-success"
-                        action="#{patientPortalController.otpVerification}"/> 
+                             value="Verify" 
+                             class="ui-button-success"
+                             action="#{patientPortalController.otpVerification}"/> 
+
+            <div class="row">
+                <div class="col-2">
+                    <div>
+                        <p:watermark for="scStaff" value="Select Patient" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="spt"
+                            filter="true"
+                            value="#{patientPortalController.patient}"
+                            class="w-100 fullHeightListbox"
+                            >
+
+                            <f:selectItems value="#{patientPortalController.searchedPatients}"
+                                           var="con" 
+                                           itemValue="#{con}"
+                                           itemLabel="#{con.person.nameWithInitials}"></f:selectItems>
+                        </p:selectOneListbox>
+                    </div>
+                </div>
+            </div>
+
             <p:panel>
                 <div class="d-flex justify-content-center align-items-center">
                     <p:commandButton 
@@ -45,9 +66,9 @@
                                 class="w-100 fullHeightListbox"
                                 >
                                 <p:ajax  
-                                process="@this" 
-                                update="sessionDates"  
-                                listener="#{patientPortalController.fillSessionInstance()}"/>
+                                    process="@this" 
+                                    update="acSessions"  
+                                    listener="#{patientPortalController.fillChannelSessions()}"/>
                                 <f:selectItems value="#{patientPortalController.consultants}"
                                                var="con" 
                                                itemValue="#{con}"
@@ -55,7 +76,31 @@
                             </p:selectOneListbox>
                         </div>
                     </div>
-                    
+
+                    <div class="col-md-4 p-0" >
+                        <p:watermark for="acSessions" value="Select Session" ></p:watermark>
+                        <p:selectOneListbox 
+                            id="acSessions"
+                            filter="true"
+                            value="#{patientPortalController.selectedChannelSession}" 
+                            class="w-100 fullHeightListbox"
+                            var="s">
+                            <p:ajax  
+                                process="@this" 
+                                update=":#{p:resolveFirstComponentWithId('sessionDates',view).clientId}"  
+                                listener="#{patientPortalController.fillSessionInstance()}"/>
+                            <f:selectItems 
+                                value="#{patientPortalController.channelSessions}" 
+                                var="ses" 
+                                itemValue="#{ses}"
+                                itemLabel="#{ses.name}"/>
+                            <p:column>
+                                <h:outputText value="#{s.name}" />
+                            </p:column>
+
+                        </p:selectOneListbox>
+                    </div>
+
                     <div class="col-md-4 p-0" >
                         <p:watermark for="sessionDates" value="Select Session" ></p:watermark>
                         <p:selectOneListbox 
@@ -102,11 +147,11 @@
                     </div>
                 </div>
                 <p:commandButton 
-                        ajax="false" 
-                        value="Book" 
-                        class="ui-button-success"
-                        action="#{patientPortalController.addBooking}"
-                        />
+                    ajax="false" 
+                    value="Book" 
+                    class="ui-button-success"
+                    action="#{patientPortalController.addBooking}"
+                    />
                 <div class="d-flex justify-content-center align-items-center">
                     <p:commandButton 
                         ajax="false" 
@@ -122,7 +167,7 @@
                         class="ui-button-success"
                         action="#{patientPortalController.docotrBooking}"
                         />
-                     <p:commandButton 
+                    <p:commandButton 
                         ajax="false" 
                         value="Book" 
                         icon="fas fa-plus"
@@ -130,8 +175,8 @@
                         action="#{patientPortalController.docotrBooking}"
                         />
                 </div>
-                
-                
+
+
 
             </p:panel>
         </h:form>
