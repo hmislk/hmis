@@ -154,7 +154,6 @@ public class PatientEncounter implements Serializable {
     private Double bmi = null;
     private Long pr = null;
     private Double height = null;
-    @Deprecated(forRemoval = true, since = "PR is already there")
     private Integer pulseRate = null;
     private Integer pfr = null;
     private Double saturation = null;

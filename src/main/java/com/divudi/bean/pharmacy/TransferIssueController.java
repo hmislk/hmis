@@ -75,6 +75,27 @@ public class TransferIssueController implements Serializable {
     private List<BillItem> billItems;
     UserStockContainer userStockContainer;
 
+    public String navigateToPharmacyIssueForRequests() {
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        createRequestIssueBillItems(requestedBill);
+        return "/pharmacy/pharmacy_transfer_issue";
+    }
+    
+    public String navigateToListPharmacyIssueRequests(){
+        return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
+    }
+
+    public String navigateToDirectPharmacyIssue() {
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        return "/pharmacy/pharmacy_transfer_issue_direct";
+    }
+
     public UserStockContainer getUserStockContainer() {
         if (userStockContainer == null) {
             userStockContainer = new UserStockContainer();
@@ -124,7 +145,11 @@ public class TransferIssueController implements Serializable {
         return requestedBill;
     }
 
-    public void setRequestedBill(Bill requestedBill) {
+    
+    
+    
+    
+    public void createRequestIssueBillItems(Bill requestedBill) {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         makeNull();
         this.requestedBill = requestedBill;
@@ -143,7 +168,6 @@ public class TransferIssueController implements Serializable {
             double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.PharmacyTransferIssue);
 
             double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
-
 
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
 
@@ -481,6 +505,10 @@ public class TransferIssueController implements Serializable {
 
     public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
         this.pharmacyCalculation = pharmacyCalculation;
+    }
+
+    public void setRequestedBill(Bill requestedBill) {
+        this.requestedBill = requestedBill;
     }
 
 }

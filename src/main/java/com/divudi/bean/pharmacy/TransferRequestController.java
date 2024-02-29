@@ -83,12 +83,12 @@ public class TransferRequestController implements Serializable {
         dealor = null;
         billItems = null;
         printPreview = false;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
-        
+
     }
-    
-    public void changeDepartment(){
+
+    public void changeDepartment() {
         billItems = null;
         bill.setToDepartment(null);
     }
@@ -127,8 +127,8 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
-        
-        if (getBillItems().size()>=10) {
+
+        if (getBillItems().size() >= 10) {
             JsfUtil.addErrorMessage("You Can Only Add 10 Items For this Request.");
             return true;
         }
@@ -220,15 +220,24 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Select Requested Department");
             return;
         }
+        getBill().setToInstitution(getBill().getToDepartment().getInstitution());
 
-        if (getBill().getToDepartment() == getSessionController().getDepartment()) {
-            JsfUtil.addErrorMessage("U cant request ur department itself");
+        getBill().setFromDepartment(getSessionController().getDepartment());
+        getBill().setFromInstitution(getSessionController().getInstitution());
+
+        if (getBill().getToDepartment().equals(getBill().getFromDepartment())) {
+            JsfUtil.addErrorMessage("You cant request from you own department.");
+            return;
+        }
+
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items Requested");
             return;
         }
 
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() == 0.0) {
-                JsfUtil.addErrorMessage("Check Items Qty");
+                JsfUtil.addErrorMessage("Some Items Have Zero Quantities");
                 return;
             }
         }
