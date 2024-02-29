@@ -26,7 +26,10 @@
                         <p>Select Department</p>
                     </div>
                     <div>
-                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" class="w-100 form-select form-select-lg p-1">
+                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" 
+                                         filter="true"
+                                         filterMatchMode="contains"
+                                         class="w-100 form-select form-select-lg p-1">
                             <f:selectItems value="#{sessionController.departments}"
                                            var="dept"
                                            itemLabel="#{dept.name}"
