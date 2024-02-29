@@ -9,7 +9,7 @@
     <ui:define name="subcontent">
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl />
+                <p:growl id="msg"/>
                 <p:panel header="Manage Package Item Fees" >
                     <p:panelGrid columns="1" styleClass="alignTop">
                         <p:panelGrid columns="2" >
@@ -68,7 +68,7 @@
                                     <h:inputText autocomplete="off" id="txtFee" value="#{packageItemFeeController.currentFee.fee}"/>
                                     <h:outputText value=""/>
                                     <h:commandButton id="btnAddTo" value="Add" action="#{packageItemFeeController.saveCharge}" styleClass="buttons">
-                                        <f:ajax render="dtbFee gpVeda" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
+                                        <f:ajax render="dtbFee gpVeda msg" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
                                     </h:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
                                 </h:panelGrid>
