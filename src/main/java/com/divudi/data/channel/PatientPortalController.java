@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.MessageType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
@@ -67,14 +68,13 @@ public class PatientPortalController {
     private boolean otpVerify;
     private List<Patient> searchedPatients;
     private Patient patient;
-    boolean searchedPatientIsNull;
+    private boolean searchedPatientIsNull;
     private SessionInstance selectedSessionInstance;
+    private boolean selectPatient;
 
     ScheduleModel eventModel;
     Staff staff;
     ServiceSession serviceSession;
-    CommonController commonController;
-    BookingController bookingController;
 
     @EJB
     private StaffFacade staffFacade;
@@ -101,21 +101,32 @@ public class PatientPortalController {
     SmsController smsController;
     @Inject
     PatientController patientController;
+    @Inject
+    BookingController bookingController;
+    @Inject
+    CommonController commonController;
 
     private ChannelBean channelBean;
 
     public void docotrBooking() {
         bookDoctor = true;
         fillConsultants();
-
     }
 
-    public void fillConsultants() {
+    public void reset() {
+        patient = null;
+        searchedPatients = null;
+        otpVerify = false;
+        searchedPatientIsNull=false;
+    }
+
+    public List<Staff> fillConsultants() {
         consultants = null;
         Map m = new HashMap();
         String sql = "select p from Staff p where p.retired=false and type(p)=:stype";
         m.put("stype", Consultant.class);
         consultants = staffFacade.findByJpql(sql, m);
+        return consultants;
     }
 
     public void fillChannelSessions() {
@@ -200,16 +211,12 @@ public class PatientPortalController {
             searchedPatients = patientFacade.findByJpql(j, m);
             System.out.println("searchedPatients = " + searchedPatients.size());
 
-            if (searchedPatients == null) {
-                searchedPatientIsNull = true;
+            if (searchedPatients == null || searchedPatients.isEmpty()) {
+                selectPatient = false;
                 patient = new Patient();
             }
-
-            if (searchedPatients.size() == 1) {
-                for (Patient p : searchedPatients) {
-                    patient = p;
-                }
-            }
+            
+            selectPatient=true;
         }
     }
 
@@ -233,20 +240,11 @@ public class PatientPortalController {
 
     public void addBooking() {
         System.out.println("this = " + patient.getPerson().getName());
-        if (patient == null) {
-            bookingController.setPatient(patient);
-            return;
-        }
-        if (selectedConsultant == null) {
-            bookingController.setStaff(selectedConsultant);
-            System.out.println("this = " + "selectedConsultant null");
-            return;
-        }
-        if (selectedSessionInstance == null) {
-            bookingController.setSelectedSessionInstance(selectedSessionInstance);
-            System.out.println("this = " + "selectedSessionInstance null");
-            return;
-        }
+        bookingController.setPatient(patient);
+        bookingController.setPaymentMethod(PaymentMethod.Credit);
+        bookingController.setStaff(selectedConsultant);
+        bookingController.setSelectedSessionInstance(selectedSessionInstance);
+        bookingController.setSelectedServiceSession(selectedChannelSession);
         bookingController.add();
     }
 
@@ -472,4 +470,23 @@ public class PatientPortalController {
         this.searchedPatients = searchedPatients;
     }
 
+    public boolean isSearchedPatientIsNull() {
+        return searchedPatientIsNull;
+    }
+
+    public void setSearchedPatientIsNull(boolean searchedPatientIsNull) {
+        this.searchedPatientIsNull = searchedPatientIsNull;
+    }
+
+    public boolean isSelectPatient() {
+        return selectPatient;
+    }
+
+    public void setSelectPatient(boolean selectPatient) {
+        this.selectPatient = selectPatient;
+    }
+    
+    
+
+    
 }
