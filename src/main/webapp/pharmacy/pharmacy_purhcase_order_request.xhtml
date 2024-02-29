@@ -159,6 +159,14 @@
                                 </p:inputText>
                             </h:panelGroup>
                         </p:column>  
+                        
+                         <p:column headerText="Stock" styleClass="averageNumericColumn" >  
+                            <h:panelGroup id="stock">
+                                <p:outputLabel  value="#{pharmacyController.findStock(bi.item)}">
+                                    <f:convertNumber pattern="#00.00"/>
+                                </p:outputLabel>
+                            </h:panelGroup>
+                        </p:column>  
 
                         <p:column headerText="Total" styleClass="averageNumericColumn" >  
                             <h:panelGroup id="total">
@@ -217,6 +225,7 @@
                                     <th>Free Qty</th>
                                     <th>Purchase Rate</th>
                                     <th>Purchase Value</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>

@@ -95,6 +95,8 @@ public class PharmacyController implements Serializable {
     ImporterController importerController;
     @Inject
     DiscardCategoryController discardCategoryController;
+    @Inject
+    VmpController vmpController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -122,7 +124,7 @@ public class PharmacyController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
-  
+
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -257,7 +259,6 @@ public class PharmacyController implements Serializable {
                 parameters.put("fi", institution);
             }
 
-
             bills = billFacade.findByJpql(jpql.toString(), parameters, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
@@ -305,18 +306,19 @@ public class PharmacyController implements Serializable {
         atmController.getCurrent();
         return "/pharmacy/admin/atm?faces-redirect=true";
     }
-    
+
     public String navigateToManufacturers() {
         manufaturerController.getItems();
         manufaturerController.getCurrent();
         return "/pharmacy/pharmacy_manufacturer?faces-redirect=true";
     }
+
     public String navigateToDiscardCategory() {
         discardCategoryController.getItems();
         discardCategoryController.getCurrent();
         return "/pharmacy/pharmacy_discard_category?faces-redirect=true";
     }
-    
+
     public String navigateToImporters() {
         importerController.getItems();
         importerController.getCurrent();
@@ -1179,6 +1181,52 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public double findStock(Item item) {
+        return findStock(null, item);
+    }
+
+    public double findStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return PharmacyController.this.findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    public double findStock(Institution institution, Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findStock(institution, amps);
+    }
+
+    public double findStock(Institution institution, List<Amp> amps) {
+        Double stock = null;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (institution == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("ins", institution);
+            jpql += " where i.department.institution=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = getBillItemFacade().findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
     public List<Object[]> calDepartmentTransferIssue(Institution institution) {
         Item item;
 
@@ -1310,6 +1358,72 @@ public class PharmacyController implements Serializable {
                 + " group by i.bill.department";
 
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public double findTransactionQuentity(Item item) {
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.InwardPharmacyRequest);
+        return 0.0;
+    }
+    
+    public double findTransactionQuentity(Institution institution, Amp item, List<BillType> billTypes) {
+        return 0.0;
+    }
+
+    public double findTransactionQuentity(Institution institution, Item item, List<BillType> billTypes) {
+        if (pharmacyItem instanceof Ampp) {
+            item = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            item = pharmacyItem;
+        }
+        String sql;
+
+//        sql = "select i "
+//                + " from BillItem i "
+//                + " where i.bill.department.institution=:ins"
+//                + " and i.bill.referenceBill.billType=:refType "
+//                + " and i.bill.referenceBill.cancelled=false "
+//                + " and i.item=:itm "
+//                + " and i.bill.billType=:btp "
+//                + " and i.createdAt between :frm and :to  "
+//                + " order by i.bill.department.name,i.bill.insId ";
+        Map m = new HashMap();
+
+        m.put("itm", item);
+        m.put("ins", institution);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyPre);
+        m.put("refType", BillType.PharmacySale);
+//        
+//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+//        if (billItems!=null) {
+//            grns.addAll(billItems);
+//        }
+//        //System.out.println("billItems = " + billItems);
+//        //System.out.println("institution.getName() = " + institution.getName());
+
+//        for (BillItem bi : billItems) {
+//            //System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            //System.out.println("bi.getInsId() = " + bi.getInsId());
+//            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//        }
+        sql = "select i.bill.department,"
+                + " sum(i.netValue),"
+                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " group by i.bill.department";
+
+        return 0.0;
 
     }
 
