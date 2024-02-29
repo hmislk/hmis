@@ -401,13 +401,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void add() {
-        System.out.println("add");
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;
             return;
         }
         System.out.println("Error check completed");
+        System.out.println("patient = " + patient);
+        System.out.println("patient = " + patient.getPerson());
         patientController.save(patient);
         System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
@@ -1104,7 +1105,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void fillBillSessions() {
         selectedBillSession = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
