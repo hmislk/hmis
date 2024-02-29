@@ -85,7 +85,7 @@
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-7">
-                                        <p:autoComplete  value="#{transferRequestController.currentBillItem.item}"
+                                        <p:autoComplete  id="items" value="#{transferRequestController.currentBillItem.item}"
                                                          forceSelection="true"  class="w-100" inputStyleClass="w-100"
                                                          completeMethod="#{itemController.completeAmpItem}" 
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
@@ -105,7 +105,9 @@
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-2">
-                                        <p:inputText id="txtQty" autocomplete="off" class="w-100" value="#{transferRequestController.currentBillItem.tmpQty}"/>
+                                        <p:inputText id="txtQty" autocomplete="off" class="w-100" value="#{transferRequestController.currentBillItem.tmpQty}">
+                                            <p:ajax event="change" update="focusItem" />
+                                        </p:inputText>
                                     </div>
                                     <div class="col-3">
                                         <p:commandButton 
@@ -117,6 +119,7 @@
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
+                                <p:focus id="focusItem" for="items" ></p:focus>
                             </p:panel>
                         </div>
                         

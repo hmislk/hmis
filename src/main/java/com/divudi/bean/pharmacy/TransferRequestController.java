@@ -215,9 +215,14 @@ public class TransferRequestController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-
+        
+        if (getBillItems() == null) {
+            JsfUtil.addErrorMessage("No Item Selected to Request");
+            return;
+        }
+        
         if (getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Select Item");
+            JsfUtil.addErrorMessage("No Item Selected to Request");
             return;
         }
         
