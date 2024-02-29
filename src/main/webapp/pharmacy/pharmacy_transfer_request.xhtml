@@ -55,20 +55,20 @@
                                     icon="fas fa-check" 
                                     class="mx-1 ui-button-success">
                                 </p:commandButton>
-                                 <p:commandButton  
+                                <p:commandButton  
                                     value="New Bill" 
                                     action="#{transferRequestController.recreate}" 
                                     ajax="false"  
                                     icon="fas fa-plus"
                                     class="ui-button-warning">
                                 </p:commandButton> 
-                                
+
                                 <p:commandButton value="Change Department" class="ui-button-primary mx-1" ajax="false" icon="fas fa-refresh"
                                                  action="#{transferRequestController.changeDepartment()}" ></p:commandButton>
-                               
+
                             </div>
                         </div>
-                    
+
 
                         <!--                    <h:panelGrid columns="4" style="min-width: 100%;" >                        
                                                 <h:outputLabel value="To :#{transferRequestController.bill.toDepartment.name} " />     
@@ -105,7 +105,9 @@
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-2">
-                                        <p:inputText id="txtQty" autocomplete="off" class="w-100" value="#{transferRequestController.currentBillItem.tmpQty}">
+                                        <p:inputText id="txtQty" autocomplete="off" class="w-100" 
+                                                     value="#{transferRequestController.currentBillItem.tmpQty}" 
+                                                     onfocus="this.select();">
                                             <p:ajax event="change" update="focusItem" />
                                         </p:inputText>
                                     </div>
@@ -122,7 +124,7 @@
                                 <p:focus id="focusItem" for="items" ></p:focus>
                             </p:panel>
                         </div>
-                        
+
                     </div>
 
                     <p:panel class="my-2">
