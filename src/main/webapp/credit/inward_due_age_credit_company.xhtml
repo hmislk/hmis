@@ -10,7 +10,11 @@
         <ui:composition template="/inward/inward_reports.xhtml">
             <ui:define name="subcontent">
                 <h:form>            
-                    <p:commandButton id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}"  />
+                    <p:panel class="my-2">
+                        <f:facet name="header">
+                            <h:outputLabel value="INWARD DUE AGE" />
+                        </f:facet>
+                        <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
@@ -39,6 +43,7 @@
                              </h:outputLabel>
                         </p:column>                      
                     </p:dataTable>
+                    </p:panel>
                 </h:form>
             </ui:define>
 

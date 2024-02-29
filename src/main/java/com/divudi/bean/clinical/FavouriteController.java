@@ -200,6 +200,10 @@ public class FavouriteController implements Serializable {
     public void listMyFavouriteMedicines() {
 
     }
+    
+    public void saveFavMedicine(){
+        
+    }
 
 //    public void removeFavourite() {
 //        if (current == null) {
