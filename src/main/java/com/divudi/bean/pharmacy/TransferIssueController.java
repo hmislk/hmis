@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -56,6 +57,8 @@ public class TransferIssueController implements Serializable {
     UserStockController userStockController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    BillController billController;
     ////
     @EJB
     private BillFacade billFacade;
@@ -83,8 +86,8 @@ public class TransferIssueController implements Serializable {
         createRequestIssueBillItems(requestedBill);
         return "/pharmacy/pharmacy_transfer_issue";
     }
-    
-    public String navigateToListPharmacyIssueRequests(){
+
+    public String navigateToListPharmacyIssueRequests() {
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
@@ -145,10 +148,6 @@ public class TransferIssueController implements Serializable {
         return requestedBill;
     }
 
-    
-    
-    
-    
     public void createRequestIssueBillItems(Bill requestedBill) {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         makeNull();
@@ -162,16 +161,21 @@ public class TransferIssueController implements Serializable {
         //User Stock Container Save if New Bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getRequestedBill())) {
+        List<BillItem> bis = billController.billItemsOfBill(getRequestedBill());
 
-            double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i.getBillItem(), BillType.PharmacyTransferIssue);
-            double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i.getBillItem(), BillType.PharmacyTransferIssue);
+        for (BillItem i : bis) {
+            
+            boolean flagStockFound = false;
 
-            double issuableQty = i.getQtyInUnit() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
+            double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i, BillType.PharmacyTransferIssue);
+            double cancelledIssue = getPharmacyCalculation().getCancelledIssuedByRequestedItem(i, BillType.PharmacyTransferIssue);
 
-            List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
+            double issuableQty = i.getQty() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
+
+            List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
+                
                 if (sq.getQty() == 0) {
                     continue;
                 }
@@ -184,8 +188,9 @@ public class TransferIssueController implements Serializable {
 
                 BillItem bItem = new BillItem();
                 bItem.setSearialNo(getBillItems().size());
-                bItem.setItem(i.getBillItem().getItem());
-                bItem.setReferanceBillItem(i.getBillItem());
+                bItem.setItem(i.getItem());
+                bItem.setReferanceBillItem(i);
+
                 bItem.setTmpQty(sq.getQty());
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));
@@ -193,12 +198,13 @@ public class TransferIssueController implements Serializable {
                 PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
                 phItem.setBillItem(bItem);
                 phItem.setQtyInUnit((double) sq.getQty());
-                phItem.setFreeQtyInUnit(i.getFreeQtyInUnit());
                 phItem.setPurchaseRateInUnit((double) sq.getStock().getItemBatch().getPurcahseRate());
                 phItem.setRetailRateInUnit((double) sq.getStock().getItemBatch().getRetailsaleRate());
                 phItem.setStock(sq.getStock());
                 phItem.setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                 phItem.setItemBatch(sq.getStock().getItemBatch());
+                phItem.setItemBatch(sq.getStock().getItemBatch());
+                phItem.setQty(sq.getQty());
                 bItem.setPharmaceuticalBillItem(phItem);
 
                 //USER STOCK
@@ -206,25 +212,22 @@ public class TransferIssueController implements Serializable {
                 bItem.setTransUserStock(us);
 
                 getBillItems().add(bItem);
+                flagStockFound=true;
 
             }
 
-        }
-
-        Stock stock = new Stock();
-        boolean flag = false;
-        for (BillItem b : getBillItems()) {
-            if (b.getPharmaceuticalBillItem().getStock().getId() == stock.getId()) {
-                flag = true;
-                break;
+            if(!flagStockFound){
+                BillItem bItem = new BillItem();
+                bItem.setSearialNo(getBillItems().size());
+                bItem.setItem(i.getItem());
+                bItem.setReferanceBillItem(i);
+                bItem.setTmpQty(0);
+                getBillItems().add(bItem);
             }
-            stock = b.getPharmaceuticalBillItem().getStock();
+            
         }
 
-        if (flag) {
-            billItems = null;
-            JsfUtil.addErrorMessage("There is Some Item in request that are added Multiple Time in Transfer request!!! please check request you can't issue errornus transfer request");
-        }
+        
 
     }
 
