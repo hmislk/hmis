@@ -48,6 +48,7 @@ public class Sms implements Serializable {
     String userId;
     String password;
     String sendingUrl;
+    private String otp;
     private String receipientNumber;
     @Enumerated(EnumType.STRING)
     private MessageType smsType;
@@ -279,5 +280,15 @@ public class Sms implements Serializable {
     public void setPending(boolean pending) {
         this.pending = pending;
     }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+    
+    
 
 }
