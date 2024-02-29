@@ -71,6 +71,7 @@ public class PatientPortalController {
     private boolean searchedPatientIsNull;
     private SessionInstance selectedSessionInstance;
     private boolean selectPatient;
+    private boolean addNewProfile;
 
     ScheduleModel eventModel;
     Staff staff;
@@ -105,14 +106,18 @@ public class PatientPortalController {
     BookingController bookingController;
     @Inject
     CommonController commonController;
-
     private ChannelBean channelBean;
 
-    public void docotrBooking() {
-        bookDoctor = true;
-        fillConsultants();
+    public void addNewProfile(){
+        patient = new Patient();
+        addNewProfile=true;
+        
     }
-
+    
+    public void saveNewPatient(){
+        addNewProfile=false;
+    }
+    
     public void reset() {
         patient = null;
         searchedPatients = null;
@@ -213,7 +218,7 @@ public class PatientPortalController {
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
-                patient = new Patient();
+                
             }
             
             selectPatient=true;
@@ -485,7 +490,14 @@ public class PatientPortalController {
     public void setSelectPatient(boolean selectPatient) {
         this.selectPatient = selectPatient;
     }
-    
+
+    public boolean isAddNewProfile() {
+        return addNewProfile;
+    }
+
+    public void setAddNewProfile(boolean addNewProfile) {
+        this.addNewProfile = addNewProfile;
+    }
     
 
     
