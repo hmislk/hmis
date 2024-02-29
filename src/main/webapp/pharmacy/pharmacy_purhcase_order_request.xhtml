@@ -50,7 +50,7 @@
                                 <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('itemList',view).clientId}" listener="#{purchaseOrderRequestController.setInsListener}"/>
                             </p:autoComplete>
                             <h:panelGroup>                            
-                                <p:commandButton ajax="false" value="Fill with Item" action="#{purchaseOrderRequestController.createOrderWithItems}" disabled="#{purchaseOrderRequestController.currentBill.id ne null}"/>
+                                <p:commandButton class="ui-button-warning mx-2" icon="fas fa-fill" ajax="false" value="Fill with Item" action="#{purchaseOrderRequestController.createOrderWithItems}" disabled="#{purchaseOrderRequestController.currentBill.id ne null}"/>
                             </h:panelGroup>
                         </p:tab>
 
@@ -72,7 +72,7 @@
                                     <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
                                 </p:column>
                             </p:autoComplete>
-                            <p:commandButton value="Add Item" action="#{purchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-plus" value="Add Item" action="#{purchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
 
                         </p:tab>
 
@@ -91,7 +91,7 @@
                                                    rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                 </p:column>
                             </p:autoComplete>
-                            <p:commandButton value="Add Item" action="#{purchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-plus" value="Add Item" action="#{purchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
 
                         </p:tab>
                         <p:tab title="Payment Method">
@@ -115,7 +115,7 @@
 
                         <f:facet name="header">  
                             <h:outputLabel  value="Pharmacy Bill Item"/>
-                            <p:commandButton ajax="false" value="Remove All" 
+                            <p:commandButton class="ui-button-danger mx-2" icon="fas fa-trash-can" style="float: right" ajax="false" value="Remove All" 
                                              action="#{purchaseOrderRequestController.removeSelected()}"/>
                         </f:facet>  
 
@@ -169,7 +169,7 @@
                         </p:column>  
 
                         <p:column styleClass="averageNumericColumn" >
-                            <p:commandButton value="Remove" ajax="false" action="#{purchaseOrderRequestController.removeItem(bi)}"/>
+                            <p:commandButton class="ui-button-danger" icon="fas fa-trash-can" ajax="false" action="#{purchaseOrderRequestController.removeItem(bi)}"/>
                         </p:column>
 
                     </p:dataTable>  
