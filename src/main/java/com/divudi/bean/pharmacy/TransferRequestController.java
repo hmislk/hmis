@@ -216,6 +216,11 @@ public class TransferRequestController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Select Item");
+            return;
+        }
+        
         if (getBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Select Requested Department");
             return;
