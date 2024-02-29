@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div class="posbill" >
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="*OPD Return Bill*"   />    
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div class="billDetails" >
+                <table style="width: 90%; margin-left: 8%;" >
+                    <tr>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="Date" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="Time" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <!--                            <h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Inv.No" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.insId}" >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%; text-align: left; " >
+                            <h:outputLabel value="Payment" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                            <h:outputLabel value="#{cc.attrs.bill.refundedBill.paymentMethod}" 
+                                           rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
+                                           rendered="#{cc.attrs.bill.refundedBill.deptId eq null and 
+                                                       cc.attrs.bill.cancelledBill.deptId eq null }"/>
+                            <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name} #{cc.attrs.bill.creditCompany.name}" />
+                        </td>
+                    </tr> 
+                    <tr>
+                        <td style="width: 20% ;text-align: left;" >
+                            <h:outputLabel value="Phone No" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%; text-align: left;" >
+                            <h:outputLabel value="NIC" ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <!--                            <h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nic}" >
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 20% ;text-align: left;" >
+                            <h:outputLabel value="Patient " ></h:outputLabel>
+                        </td>
+                        <td style="width: 5%; text-align: center">:</td>
+                        <td style="width: 30%; text-align: left;" colspan="3">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%" >
+                        </td>
+                        <td style="width: 3%; text-align: center">:</td>
+                        <td style="width: 30%" >
+
+                        </td>
+                    </tr>
+
+
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div >
+                <table style="width: 90%; margin-left: 8%;" >
+                    <tr>
+                        <td style="width: 80%;">
+                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+
+                        <td  style="width:20%;">
+                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />                           
+                </div>
+
+                <table  style="width: 90%; margin-left: 8%;" >
+
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+
+                        <tr>
+                            <td style="width: 80%; overflow: visible;">
+                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock"  >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 20%;">
+                                <h:outputLabel    value="#{-bip.netValue}" style="text-align: right;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
+                    </ui:repeat>
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />                           
+            </div>
+
+            <div  >
+
+                <table style="width: 84%; margin-left: 8%;">
+                    <tr>
+                        <td  class="totalsBlock" style="text-align: left; width: 80%; ">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount (#{cc.attrs.bill.paymentScheme.discountPercentForPharmacy} %)"/>
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 20%;">
+                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr >
+                        <td  class="totalsBlock" style="text-align: left; width: 60%;">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.netTotal ne 0.0}" value="Total" />
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; margin-right: 5%">
+                            <h:outputLabel rendered="#{cc.attrs.bill.netTotal ne 0.0}" value="#{-cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="mb-3"></div>
+            
+        </div>
+    </cc:implementation>
+</html>

@@ -6,7 +6,7 @@ import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BooleanMessage;
 import com.divudi.data.CalculationType;
@@ -22,6 +22,7 @@ import com.divudi.ejb.PatientReportBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.lab.Investigation;
@@ -40,7 +41,7 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.UserPreferenceFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.lowagie.text.DocumentException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -172,6 +173,7 @@ public class PatientReportController implements Serializable {
     private List<PatientReport> recentReportsOrderedByDoctor;
     private String smsNumber;
     private String smsMessage;
+    private boolean showBackground=false;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -611,15 +613,15 @@ public class PatientReportController implements Serializable {
 
     private double findPtReportItemVal(InvestigationItem ii) {
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("No Report to calculate");
+            JsfUtil.addErrorMessage("No Report to calculate");
             return 0;
         }
         if (currentPatientReport.getPatientReportItemValues() == null) {
-            UtilityController.addErrorMessage("Report Items values is null");
+            JsfUtil.addErrorMessage("Report Items values is null");
             return 0;
         }
         if (currentPatientReport.getPatientReportItemValues().isEmpty()) {
-            UtilityController.addErrorMessage("Report Items values is empty");
+            JsfUtil.addErrorMessage("Report Items values is empty");
             return 0;
         }
         ////System.out.println("currentPatientReport = " + currentPatientReport);
@@ -645,15 +647,15 @@ public class PatientReportController implements Serializable {
     public void calculate() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("No Report to calculate");
+            JsfUtil.addErrorMessage("No Report to calculate");
             return;
         }
         if (currentPatientReport.getPatientReportItemValues() == null) {
-            UtilityController.addErrorMessage("Report Items values is null");
+            JsfUtil.addErrorMessage("Report Items values is null");
             return;
         }
         if (currentPatientReport.getPatientReportItemValues().isEmpty()) {
-            UtilityController.addErrorMessage("Report Items values is empty");
+            JsfUtil.addErrorMessage("Report Items values is empty");
             return;
         }
         String calString = "";
@@ -872,7 +874,7 @@ public class PatientReportController implements Serializable {
     public void onCellEdit(CellEditEvent event) {
         try {
         } catch (Exception e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
         }
 
     }
@@ -936,7 +938,7 @@ public class PatientReportController implements Serializable {
     public void savePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null || currentPtIx == null) {
-            UtilityController.addErrorMessage("Nothing to save");
+            JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
 
@@ -959,7 +961,7 @@ public class PatientReportController implements Serializable {
         getPiFacade().edit(currentPtIx);
         commonController.printReportDetails(null, null, startTime, "Lab Report Save");
 
-        //UtilityController.addSuccessMessage("Saved");
+        //JsfUtil.addSuccessMessage("Saved");
     }
 
     public String emailMessageBody(PatientReport r) {
@@ -1419,17 +1421,17 @@ public class PatientReportController implements Serializable {
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("Nothing to approve");
+            JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
         if (currentPatientReport.getDataEntered() == false) {
-            UtilityController.addErrorMessage("First Save report");
+            JsfUtil.addErrorMessage("First Save report");
             return;
         }
 
         BooleanMessage tbm = canApproveThePatientReport(currentPatientReport);
         if (!tbm.isFlag()) {
-            UtilityController.addErrorMessage(tbm.getMessage());
+            JsfUtil.addErrorMessage(tbm.getMessage());
             return;
         }
 
@@ -1476,6 +1478,10 @@ public class PatientReportController implements Serializable {
 
                 getEmailFacade().create(e);
             }
+        }
+        if(currentPtIx.getBillItem().getBill().getPatient().getPatientPhoneNumber()!=null){
+            Patient tmp = currentPtIx.getBillItem().getBill().getPatient();
+            tmp.getPerson().setSmsNumber(String.valueOf(tmp.getPatientPhoneNumber()));
         }
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (getCurrentPtIx().getBillItem().getBill().getBalance() == 0.0) {
@@ -1536,22 +1542,22 @@ public class PatientReportController implements Serializable {
             }
         }
 
-        UtilityController.addSuccessMessage("Approved");
+        JsfUtil.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
     public void sendSmsForPatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("Nothing to approve");
+            JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
         if (currentPatientReport.getDataEntered() == false) {
-            UtilityController.addErrorMessage("First Save report");
+            JsfUtil.addErrorMessage("First Save report");
             return;
         }
         if (currentPatientReport.getApproved() == false) {
-            UtilityController.addErrorMessage("First Approve report");
+            JsfUtil.addErrorMessage("First Approve report");
             return;
         }
 
@@ -1579,22 +1585,22 @@ public class PatientReportController implements Serializable {
             getSmsFacade().edit(e);
         }
 
-        UtilityController.addSuccessMessage("SMS Sent");
+        JsfUtil.addSuccessMessage("SMS Sent");
 //        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
     public void reverseApprovalOfPatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("Nothing to approve");
+            JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
         if (currentPatientReport.getDataEntered() == false) {
-            UtilityController.addErrorMessage("First Save report");
+            JsfUtil.addErrorMessage("First Save report");
             return;
         }
         if (currentPatientReport.getApproved() == false) {
-            UtilityController.addErrorMessage("First Approve report");
+            JsfUtil.addErrorMessage("First Approve report");
             return;
         }
         getCurrentPtIx().setApproved(false);
@@ -1612,7 +1618,7 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
-        UtilityController.addSuccessMessage("Approval Reversed");
+        JsfUtil.addSuccessMessage("Approval Reversed");
 
         try {
             if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
@@ -1646,7 +1652,7 @@ public class PatientReportController implements Serializable {
     public void printPatientReport() {
         //////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
-            UtilityController.addErrorMessage("Nothing to approve");
+            JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
         currentPtIx.setPrinted(true);
@@ -1804,7 +1810,7 @@ public class PatientReportController implements Serializable {
             getPiFacade().edit(pi);
 //            getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
-            UtilityController.addErrorMessage("No ptIx or Ix selected to add");
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
         return r;
     }
@@ -1843,7 +1849,7 @@ public class PatientReportController implements Serializable {
             pi.getPatientReports().add(r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
-            UtilityController.addErrorMessage("No ptIx or Ix selected to add");
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
         return r;
     }
@@ -1866,7 +1872,7 @@ public class PatientReportController implements Serializable {
             pi.getPatientReports().add(r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
-            UtilityController.addErrorMessage("No ptIx or Ix selected to add");
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
         return r;
     }
@@ -2065,6 +2071,14 @@ public class PatientReportController implements Serializable {
         this.smsMessage = smsMessage;
     }
 
+    public boolean isShowBackground() {
+        return showBackground;
+    }
+
+    public void setShowBackground(boolean showBackground) {
+        this.showBackground = showBackground;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -2132,5 +2146,7 @@ public class PatientReportController implements Serializable {
     public void setSmsFacade(SmsFacade smsFacade) {
         this.smsFacade = smsFacade;
     }
+    
+    
 
 }

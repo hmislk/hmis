@@ -6,10 +6,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -69,14 +69,14 @@ public class PhotoCamBean implements Serializable {
 
     public void oncapturePatientPhoto(CaptureEvent captureEvent) {
         if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null || getPatientController().getCurrent().getId() == 0) {
-            UtilityController.addErrorMessage("Patient ?");
+            JsfUtil.addErrorMessage("Patient ?");
             return;
         }
         getPatientController().getCurrent().setBaImage(captureEvent.getData());
         getPatientController().getCurrent().setFileName("patient_image_" + getPatientController().getCurrent().getId() + ".png");
         getPatientController().getCurrent().setFileType("image/png");
         getPatientController().saveSelected();
-        UtilityController.addSuccessMessage("Photo captured from webcam.");
+        JsfUtil.addSuccessMessage("Photo captured from webcam.");
     }
 
     public void uploadPhoto(FileUploadEvent event) {

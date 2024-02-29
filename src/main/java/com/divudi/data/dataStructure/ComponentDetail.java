@@ -46,6 +46,10 @@ public class ComponentDetail {
         ComponentDetail cd = new ComponentDetail();
         getMultiplePaymentMethodComponentDetails().add(cd);
     }
+    
+    public void removePaymentDetail(ComponentDetail cd){
+        getMultiplePaymentMethodComponentDetails().remove(cd);
+    }
 
     public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
         this.multiplePaymentMethodComponentDetails = multiplePaymentMethod;

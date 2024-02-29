@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
@@ -104,7 +104,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -214,7 +214,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -245,7 +245,7 @@ public class ReportsStock implements Serializable {
 
     public void fillDepartmentInventryStocks() {
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -272,7 +272,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -377,7 +377,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -493,7 +493,7 @@ public class ReportsStock implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -523,7 +523,7 @@ public class ReportsStock implements Serializable {
     public void addComment(Stock st) {
         if (st != null) {
             getStockFacade().edit(st);
-            UtilityController.addSuccessMessage("Edit Successful");
+            JsfUtil.addSuccessMessage("Edit Successful");
         } else {
             return;
         }
@@ -546,7 +546,7 @@ public class ReportsStock implements Serializable {
         Date startTime = new Date();
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
@@ -600,7 +600,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (staff == null) {
-            UtilityController.addErrorMessage("Please select a staff member");
+            JsfUtil.addErrorMessage("Please select a staff member");
             return;
         }
         Map m = new HashMap();
@@ -646,7 +646,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null || institution == null) {
-            UtilityController.addErrorMessage("Please select a department && Dealor");
+            JsfUtil.addErrorMessage("Please select a department && Dealor");
             return "";
         }
         Map m;
@@ -685,7 +685,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
         Map m;
@@ -723,7 +723,7 @@ public class ReportsStock implements Serializable {
     public void fillCategoryStocksNew() {
 
         if (department == null || category == null) {
-            UtilityController.addErrorMessage("Please select a department && Category");
+            JsfUtil.addErrorMessage("Please select a department && Category");
             return;
         }
         Map m;
@@ -859,7 +859,7 @@ public class ReportsStock implements Serializable {
         Date toDate = null;
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m;

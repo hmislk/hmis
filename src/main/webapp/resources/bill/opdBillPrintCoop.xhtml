@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -17,31 +17,33 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
         <h:panelGroup>
             <h:outputStylesheet library="css" name="printingOpd.css"></h:outputStylesheet>
             <div  class="fiveinchbill">
                 <h:panelGroup id="gpBillPreviewCoop" >
+                    <div 
+                        style="text-align: center!important;
+                        min-width: 90%!important;
+                        /*padding: 5px!important;*/
+                        padding-top: 32%!important;
+                        margin: auto!important;
+                        font-size: 13px!important;
+                        font-weight: bold;">
+                        <h:outputLabel 
+                            value="#{cc.attrs.bill.toDepartment.name}" 
+                            style="font-size: 17px!important"/>
+                        <h:outputLabel 
+                            value="**Cancelled"  
+                            rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
 
+                        <h:outputLabel 
+                            value="**Refunded" 
+                            rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
 
-
-                    <div style="text-align: center!important; 
-                         min-width: 90%!important; 
-                         /*padding: 5px!important;*/ 
-                         padding-top: 32%!important;
-                         margin: auto!important; 
-                         font-size: 13px!important;
-                         font-weight: bold;">
-                        <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" style="font-size: 17px!important"/>
-                        <h:outputLabel value="**Cancelled"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
-
-                        <h:outputLabel value="**Refunded" 
-                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
-
-                        <h:outputLabel value="**Duplicate" 
-                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                                   cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
+                        <h:outputLabel 
+                            value="**Duplicate" 
+                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                        cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
                     </div>
 
                     <div class="receiptnoPrintingLabel">
@@ -51,23 +53,19 @@
                         <h:outputLabel value=":"/>
                     </div>
                     <div  class="receiptnoPrinting">
+                        <h:outputLabel 
+                            value="#{cc.attrs.bill.cancelledBill.insId}"  
+                            rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
 
+                        <h:outputLabel 
+                            value="#{cc.attrs.bill.refundedBill.insId}" 
+                            rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
 
-
-
-
-
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
-
-                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId}" 
-                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null and cc.attrs.refund eq true}"/> 
-
-                        <h:outputLabel value="#{cc.attrs.bill.insId}" 
-                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                                   cc.attrs.bill.cancelledBill.insId eq null}"/> 
+                        <h:outputLabel 
+                            value="#{cc.attrs.bill.insId}" 
+                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                        cc.attrs.bill.cancelledBill.insId eq null}"/> 
                     </div>
-
 
                     <div class="billdatePrintingLabel">
                         <h:outputLabel value="Date"/>
@@ -75,7 +73,7 @@
                     <div class="billdatePrintingLabelCol">
                         <h:outputLabel value=":"/>
                     </div>
-                    <div  class="billdatePrinting">
+                    <div  class="billdatePrinting mt-1">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
@@ -114,7 +112,7 @@
                     <div class="billtimePrintingLabelCol">
                         <h:outputLabel value=":"/>
                     </div>
-                    <div class="billtimePrinting">
+                    <div class="billtimePrinting mt-1">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                             <f:convertDateTime pattern="hh:mm:a"/>
@@ -129,8 +127,6 @@
                             <f:convertDateTime pattern="hh:mm:a"/>
                         </h:outputLabel>
                     </div>
-
-
 
                     <div class="agePrintingLabel">
                         <h:outputLabel value="Age"/>
@@ -156,7 +152,7 @@
                     <div class="phonePrintingLabelCol">
                         <h:outputLabel value=":"/>
                     </div>
-                    <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" styleClass="phonePrinting" />
+                    <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" style="position: absolute; left: 29% !important; top: 17% !important; font-size: 17px;" />
 
                     <div class="ptnamePrintingLabel">
                         <h:outputLabel value="NIC"/>
@@ -187,14 +183,14 @@
                     <div class="ratesPrinting" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column>
-                                <h:outputLabel value="#{bip1.netValue}" style="font-size: 12px!important;"  >
+                                <h:outputLabel value="#{-bip1.netValue}" style="font-size: 12px!important;"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
 
                                 <f:facet name="footer" class="totalCoop">
                                     <br/>
 
-                                    <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalCoop">
+                                    <h:outputLabel value="#{-cc.attrs.bill.total}" styleClass="totalCoop">
 
                                     </h:outputLabel>
                                 </f:facet>
@@ -204,16 +200,6 @@
 
                     <div class="totalsPrinting">
                         <table>
-                            <tr>
-                                <td>
-                                    <br/>
-                                    <br/>
-                                </td>
-                                <td>
-                                    <br/>
-                                    <br/>
-                                </td>
-                            </tr>
                             <!--                            <tr>
                                                             <td style="text-align: left; min-width: 3cm;">
                                                                 <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
@@ -245,18 +231,20 @@
                                 </td>
                             </tr>
 
-
                         </table>
                     </div>
 
                     <div class="cashierPrinting" >
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code }"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
-                                       rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"   />
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code  }" 
-                                       rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
-                                                   cc.attrs.bill.cancelledBill.deptId eq null }"/>
+                        <h:outputLabel 
+                            value="Cashier : #{cc.attrs.bill.cancelledBill.creater.name }"  
+                            rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                        <h:outputLabel 
+                            value="Cashier : #{cc.attrs.bill.refundedBill.creater.name}"
+                            rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"   />
+                        <h:outputLabel 
+                            value="Cashier : #{cc.attrs.bill.creater.name  }" 
+                            rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
+                                        cc.attrs.bill.cancelledBill.deptId eq null }"/>
 
                     </div>
                     <div style="position: absolute!important;
@@ -270,25 +258,9 @@
                             <f:convertDateTime pattern="dd/MM/yy hh:mm a"/>
                         </h:outputLabel>
                     </div>
-                    <div class="consult">
-
-                    </div>
-
-
-
-
 
                 </h:panelGroup>
             </div>
         </h:panelGroup>                
-
-
-
-
-
-
-
-
-
     </cc:implementation>
 </html>

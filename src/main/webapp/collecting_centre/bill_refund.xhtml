@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:common="http://java.sun.com/jsf/composite/ezcomp/common"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -33,14 +34,13 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                         <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                                       disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                                       rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
                                         <f:selectItems value="#{enumController.paymentMethods}"/>
                                     </p:selectOneMenu>
@@ -140,69 +140,47 @@
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{billSearch.printPreview}" >
-                            <p:panel rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
-                                <h:panelGroup id="gpBillPreview" >
-                                    <div class="nonPrintBlock">
-                                        <p:commandButton value="Print" ajax="false" action="#"  >
-                                            <p:printer target="gpBillPreview" ></p:printer>
-                                        </p:commandButton>
-                                    </div>
-                                    <ui:repeat value="#{billSearch.bill}" var="b">
-                                        <bi:opdBillPrintRmh bill="#{b}" dup="false"/>
-                                    </ui:repeat>
+                        <p:panel rendered="#{billSearch.printPreview}" >
+                            <f:facet name="header">
+                                
+                                <div class="d-flex justify-content-between">
+                                    <h:outputLabel  value="Bill Preview" class="mt-2"/>
+                                    <p:commandButton 
+                                    class="ui-button-info d-flex justify-content-end"
+                                    value="Print" 
+                                    icon="fa fa-print"
+                                    ajax="false" action="#"  >
+                                    <p:printer target="printPreview" ></p:printer>
+                                </p:commandButton>
+                                </div>
+                                
+                            </f:facet>
+                            <div class="d-flex justify-content-end">
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                            </div> 
 
+                            <h:panelGroup id="printPreview">
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}" />
                                 </h:panelGroup>
 
-                                <h:panelGroup id="gpBillPreviewCoop" >
-                                    <div class="nonPrintBlock">
-                                        <p:commandButton value="Print" ajax="false" action="#"  >
-                                            <p:printer target="gpBillPreviewCoop" ></p:printer>
-                                        </p:commandButton>
-                                    </div>
-                                    <ui:repeat value="#{billSearch.bill}" var="b">
-                                        <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
-                                    </ui:repeat>
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                    <bi:opdReturnfive_five_paper_without_headings 
+                                        bill="#{billSearch.bill}" 
+                                        payments="#{opdBillController.payments}"/>
 
                                 </h:panelGroup>
-                            </p:panel>
-                            <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                    <h:panelGroup id="gpBillPreviewCC" >
-                                        <div class="nonPrintBlock">
-                                            <p:commandButton value="Print" ajax="false" action="#"  >
-                                                <p:printer target="gpBillPreviewCC" ></p:printer>
-                                            </p:commandButton>
-                                        </div>
-                                        <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
-                                        <!--  <br/>
-                                                                <h:panelGroup >
-                                                                    <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
-                                                                </h:panelGroup>-->
-
-                                    </h:panelGroup>
-                                    <h:panelGroup id="gpBillPreviewCC1" >
-                                        <div class="nonPrintBlock">
-                                            <p:commandButton value="Print" ajax="false" action="#"  >
-                                                <p:printer target="gpBillPreviewCC1" ></p:printer>
-                                            </p:commandButton>
-                                        </div>
-                                        <bi:opdCCBillPrintRuhunu_1 bill="#{billSearch.bill}" dup="true"/>
-                                        <!--  <br/>
-                                                                <h:panelGroup >
-                                                                    <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
-                                                                </h:panelGroup>-->
-
-                                    </h:panelGroup>
-                                </h:panelGroup>
-                            </p:panel>
-                        </h:panelGroup>
-
+                            </h:panelGroup>
+                        </p:panel>
                     </h:form>
                 </h:panelGroup>   
 
             </ui:define>
-
         </ui:composition>
 
     </h:body>

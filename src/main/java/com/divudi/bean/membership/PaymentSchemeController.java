@@ -9,7 +9,7 @@
 package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.PaymentScheme;
@@ -17,7 +17,7 @@ import com.divudi.entity.membership.AllowedPaymentMethod;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,7 +97,7 @@ public class PaymentSchemeController implements Serializable {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null
                     || paymentMethodData.getCheque().getDate() == null) {
-                UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
+                JsfUtil.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
 
@@ -106,7 +106,7 @@ public class PaymentSchemeController implements Serializable {
         if (paymentMethod == PaymentMethod.Slip) {
             if (paymentMethodData.getSlip().getInstitution() == null
                     || paymentMethodData.getSlip().getDate() == null) {
-                UtilityController.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
+                JsfUtil.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
                 return true;
             }
 
@@ -115,7 +115,7 @@ public class PaymentSchemeController implements Serializable {
         if (paymentMethod == PaymentMethod.Card) {
             if (paymentMethodData.getCreditCard().getInstitution() == null
                     || paymentMethodData.getCreditCard().getNo() == null) {
-                UtilityController.addErrorMessage("Please Fill Credit Card Number and Bank");
+                JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank");
                 return true;
             }
         }
@@ -123,7 +123,7 @@ public class PaymentSchemeController implements Serializable {
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
                     || paymentMethodData.getEwallet().getNo() == null) {
-                UtilityController.addErrorMessage("Please Fill eWallet Reference Number and Bank");
+                JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }
         }
@@ -135,11 +135,11 @@ public class PaymentSchemeController implements Serializable {
 
         if (paymentMethod == PaymentMethod.Cash) {
             if (paid == 0.0) {
-                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
                 return true;
             }
             if (paid < amount) {
-                UtilityController.addErrorMessage("Please select tendered amount correctly");
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
                 return true;
             }
         }
@@ -183,17 +183,17 @@ public class PaymentSchemeController implements Serializable {
 
         //  getCurrent().setMembershipScheme(membershipScheme);
 //        if (getCurrent().getPaymentMethod() == null) {
-//            UtilityController.addErrorMessage("Payment Method?");
+//            JsfUtil.addErrorMessage("Payment Method?");
 //            return;
 //        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             paymentScheme.setCreatedAt(new Date());
             paymentScheme.setCreater(getSessionController().getLoggedUser());
             getFacade().create(paymentScheme);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         paymentScheme = null;
@@ -223,12 +223,12 @@ public class PaymentSchemeController implements Serializable {
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrentAllowedPaymentMethod().setCreatedAt(new Date());
             getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
             getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         paymentSchemeAllowedPaymentMethod = null;
@@ -279,9 +279,9 @@ public class PaymentSchemeController implements Serializable {
             paymentScheme.setRetiredAt(new Date());
             paymentScheme.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(paymentScheme);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

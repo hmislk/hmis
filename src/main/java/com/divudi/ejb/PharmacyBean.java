@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -53,6 +54,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -191,6 +193,7 @@ public class PharmacyBean {
         }
 
         for (BillItem bItem : bill.getBillItems()) {
+            System.out.println("bItem = " + bItem.getItem().getName());
             BillItem newBillItem = new BillItem();
             newBillItem.copy(bItem);
             newBillItem.invertValue(bItem);
@@ -237,9 +240,9 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Bill Already Cancelled");
             return null;
         }
-
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
         List<BillItem> list = savePreBillItems(bill, preBill, user, department);
 
@@ -599,10 +602,87 @@ public class PharmacyBean {
     }
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
-        if (item instanceof Ampp) {
-            item = ((Ampp) item).getAmp();
+        System.out.println("getStockByQty");
+        System.out.println("department = " + department);
+        System.out.println("qty = " + qty);
+        System.out.println("item = " + item);
+        if (qty <= 0) {
+            return new ArrayList<>();
         }
+        String sql ="";
+        Map m = new HashMap();
 
+        m.put("d", department);
+        m.put("q", 1.0);
+        if (item instanceof Amp) {
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item=:amp "
+                    + " and s.department=:d and s.stock >=:q "
+                    + " and s.itemBatch.dateOfExpire > :doe "
+                    + " order by s.itemBatch.dateOfExpire ";
+            m.put("amp", item);
+            m.put("doe", new Date());
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item in :amps "
+                    + " and s.itemBatch.dateOfExpire > :doe"
+                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+            m.put("amps", amps);
+        }else{
+            JsfUtil.addErrorMessage("Not supported yet");
+            return new ArrayList<>();
+        }
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
+        System.out.println("stocks = " + stocks);
+        List<StockQty> list = new ArrayList<>();
+        double toAddQty = qty;
+        for (Stock s : stocks) {
+            if (s.getStock() >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - s.getStock();
+                list.add(new StockQty(s, s.getStock()));
+            }
+        }
+        System.out.println("list = " + list);
+        return list;
+    }
+
+    public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
+        List<StockQty> stocks = new ArrayList<>();
+        if (item == null) {
+            return stocks;
+        }
+        List<Amp> amps = findAmpsForVmp(item);
+        if (amps == null) {
+            return stocks;
+        }
+        for (Amp a : amps) {
+            List<StockQty> sq = getStockByQty(a, qty, department);
+
+        }
+        return stocks;
+    }
+
+    public List<Amp> findAmpsForVmp(Vmp vmp) {
+        String jpql;
+        Map m = new HashMap();
+        m.put("vmp", vmp);
+        m.put("ret", false);
+        jpql = "select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.vmp=:vmp";
+        return ampFacade.findByJpql(jpql, m);
+    }
+
+    public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
         if (qty <= 0) {
             return new ArrayList<>();
         }
@@ -867,9 +947,9 @@ public class PharmacyBean {
 
         stock = getStockFacade().find(stock.getId());
 
-        //System.err.println("Before Update" + stock.getStock());
+//        System.out.println("Before Update" + stock.getStock());
         stock.setStock(stock.getStock() + qty);
-        //System.err.println("After Update " + stock.getStock());
+//        System.out.println("After Update " + stock.getStock());
         getStockFacade().edit(stock);
 
         return true;
@@ -1193,7 +1273,7 @@ public class PharmacyBean {
         name = name.replaceAll("\'", "");
         name = name.replaceAll("\"", "");
         String j = "SELECT c FROM PharmaceuticalItemCategory c Where (c.name)=:name ";
-        
+
         try {
             cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql(j, m);
         } catch (Exception e) {
@@ -1231,16 +1311,14 @@ public class PharmacyBean {
         String j = "SELECT c FROM PharmaceuticalItemType c Where (c.name) = :n";
         Map m = new HashMap();
         m.put("n", name.trim().toUpperCase());
-        try{
-             cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j,m);
-        
-        }catch(Exception e){
+        try {
+            cat = pharmaceuticalItemTypeFacade.findFirstByJpql(j, m);
+
+        } catch (Exception e) {
             return null;
         }
-        
-        
-        
-       if (cat == null && createNew == true) {
+
+        if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1405,37 +1483,42 @@ public class PharmacyBean {
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
         String sql;
-        if (strength == 0 || strengthUnit == null || cat == null) {
-            return null;
+        String vmpName = "";
+
+        if (vtm != null && vtm.getName() != null) {
+            vmpName += vtm.getName();
         }
+
+        if (strength < 0.00000001) {
+            vmpName += " " + strength;
+        }
+
+        if (strengthUnit != null && strengthUnit.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + strengthUnit.getName();
+        }
+
+        if (cat != null && cat.getName() != null) {
+            vmpName += (vmpName.isEmpty() ? "" : " ") + cat.getName();
+        }
+
+        vmpName = vmpName.trim();
+
         Map m = new HashMap();
-        m.put("vtm", vtm);
-        m.put("s", strength);
-        m.put("su", strengthUnit);
-        m.put("c", cat);
-        sql = "select v from VirtualProductIngredient v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VirtualProductIngredient v = getVirtualProductIngredientFacade().findFirstByJpql(sql, m);
-        ////System.out.println("m = " + m);
-        Vmp vmp;
-        if (v == null) {
-            ////System.out.println("new created");
+        m.put("n", vmpName);
+        m.put("v", vtm);
+        sql = "select v "
+                + "from Vmp v "
+                + "where v.name=:n "
+                + " and v.vtm=:v";
+        Vmp vmp = vmpFacade.findFirstByJpql(sql, m);
+        if (vmp == null) {
             vmp = new Vmp();
-
-            vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
-
+            vmp.setName(vmpName);
+            vmp.setVtm(vtm);
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
-
-            v = new VirtualProductIngredient();
-            v.setStrength(strength);
-            v.setStrengthUnit(strengthUnit);
-            v.setVtm(vtm);
-            v.setVmp(vmp);
-            v.setPharmaceuticalItemCategory(cat);
-            getVirtualProductIngredientFacade().create(v);
         }
-        v.getVmp().setRetired(false);
-        return v.getVmp();
+        return vmp;
     }
 
     public Vtm getVtmByName(String name, boolean createNew) {

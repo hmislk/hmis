@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
     
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -13,40 +13,84 @@
                 <h:form>
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Cancellation" />
+                                </div>
+                                    <div class="d-flex align-items-center" style="width: 50%">
+                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{billSearch.comment}"/>
+                                <p:spacer width="20%"></p:spacer>
+                                <p:commandButton value="Cancel" ajax="false" class="ui-button-danger mx-1" icon="fas fa-ban" action="#{billSearch.cancelPaymentBill()}" >
+                            </p:commandButton> 
+                               </div>
+                              </div>
+                            </f:facet>
+                            <h:outputLabel value="Payment Method" />
+                            <h:outputLabel value="&emsp;" />
                             <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{billSearch.cancelPaymentBill()}" >
-                            </h:commandButton>                            
+                                                        
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Patient Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.staff.person.nameWithTitle }" ></h:outputLabel>                                    
-                                    <h:outputLabel value="Phone" >
-                                    </h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.staff.person.phone}" >
-                                    </h:outputLabel>
-                                </p:panelGrid>
+                                <f:facet name="header">
+                                        <h:outputText styleClass="fa fa-user-circle"></h:outputText>
+                                        <h:outputLabel value="Staff Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                        <h:outputLabel value="Staff ​Name" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="Speciality" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.speciality.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.department.name }" ></h:outputLabel>
+                                        <h:outputLabel value="Address" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.person.address}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.person.ageAsString}"  />
+                                        <h:outputLabel value="Phone" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.staff.person.phone}" >
+                                        </h:outputLabel>
+                                    </h:panelGrid>
                             </p:panel>
                             <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-file-invoice"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                               <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
+                                    <h:outputLabel value="Bill No" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
+                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <h:outputLabel value="#{-billSearch.bill.total}" ></h:outputLabel>
+                                    <h:outputLabel value="Discount" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
                                     <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
+                                    <h:outputLabel value="Net Total" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <h:outputLabel value="#{-billSearch.bill.netTotal}" ></h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="" ></h:outputLabel>
+                                </h:panelGrid>
                             </p:panel>
                         </p:panelGrid>
-                      
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{billSearch.comment}"/>                            
-                        </p:panel>
                     </h:panelGroup>
 
 

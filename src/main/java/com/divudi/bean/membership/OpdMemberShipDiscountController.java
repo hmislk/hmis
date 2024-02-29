@@ -9,7 +9,7 @@
 package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Category;
@@ -124,15 +124,15 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void saveChannellingDiscountMatrixForDepartment() {
         if (membershipScheme == null) {
-            UtilityController.addErrorMessage("Select a Membership Scheme");
+            JsfUtil.addErrorMessage("Select a Membership Scheme");
             return;
         }
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
+            JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
         ChannellingMemberShipDiscount a = new ChannellingMemberShipDiscount();
@@ -147,7 +147,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
 
         fillMatricesForChannellingMembershipsForItemsDepartments();
         clearInstanceVars();
@@ -164,11 +164,11 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void saveSelectedChannelPaymentScheme() {
         if (paymentScheme == null) {
-            UtilityController.addErrorMessage("Membership Scheme or Payment Scheme");
+            JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
+            JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
 
@@ -180,7 +180,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
         createItemsChannelPaymentScheme();
         clearInstanceVars();
 
@@ -189,17 +189,17 @@ public class OpdMemberShipDiscountController implements Serializable {
     public void saveDepartment(PriceMatrix a) {
 
         if (membershipScheme == null && paymentScheme == null) {
-            UtilityController.addErrorMessage("Membership Scheme or Payment Scheme");
+            JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;
         }
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
+            JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
 
@@ -215,7 +215,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -223,12 +223,12 @@ public class OpdMemberShipDiscountController implements Serializable {
 //    public void saveDepartmentForPaymentMethod(PriceMatrix a) {
 //
 //        if (department == null) {
-//            UtilityController.addErrorMessage("Please select a department");
+//            JsfUtil.addErrorMessage("Please select a department");
 //            return;
 //        }
 //
 //        if (paymentMethod == null) {
-//            UtilityController.addErrorMessage("Please select Payment Method");
+//            JsfUtil.addErrorMessage("Please select Payment Method");
 //            return;
 //        }
 //
@@ -244,7 +244,7 @@ public class OpdMemberShipDiscountController implements Serializable {
 //        a.setCreatedAt(new Date());
 //        a.setCreater(getSessionController().getLoggedUser());
 //        getFacade().create(a);
-//        UtilityController.addSuccessMessage("Saved Successfully");
+//        JsfUtil.addSuccessMessage("Saved Successfully");
 //        //    recreateModel();
 //
 //    }
@@ -294,22 +294,22 @@ public class OpdMemberShipDiscountController implements Serializable {
     public void savePharmacyDiscountMatrixForDepartmentAndCategory() {
 
         if (membershipScheme == null) {
-            UtilityController.addErrorMessage("Membership Scheme ?");
+            JsfUtil.addErrorMessage("Membership Scheme ?");
             return;
         }
 
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Payment Method?");
+            JsfUtil.addErrorMessage("Payment Method?");
             return;
         }
 
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         if (category == null) {
-            UtilityController.addErrorMessage("Please select Category");
+            JsfUtil.addErrorMessage("Please select Category");
             return;
         }
 
@@ -329,7 +329,7 @@ public class OpdMemberShipDiscountController implements Serializable {
 
         //    recreateModel();
         fillDiscountMetrixesForPharmacyForDepartmentAndCategory();
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
     }
 
     public void fillDiscountMetrixesForPharmacyForDepartmentAndCategory() {
@@ -363,17 +363,17 @@ public class OpdMemberShipDiscountController implements Serializable {
     public void saveSelectedCategory(PriceMatrix a) {
 
         if (membershipScheme == null && paymentScheme == null) {
-            UtilityController.addErrorMessage("Membership Scheme or Payment Scheme");
+            JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;
         }
 
         if (category == null && item == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
+            JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
 
@@ -390,7 +390,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -398,12 +398,12 @@ public class OpdMemberShipDiscountController implements Serializable {
     public void saveSelectedCategoryPaymentMethod(PriceMatrix a) {
 
         if (category == null && item == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
+            JsfUtil.addErrorMessage("Please select Payment Method");
             return;
         }
 
@@ -420,7 +420,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
+        JsfUtil.addSuccessMessage("Saved Successfully");
         //    recreateModel();
 
     }
@@ -533,9 +533,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -591,9 +591,9 @@ public class OpdMemberShipDiscountController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         //    recreateModel();
 

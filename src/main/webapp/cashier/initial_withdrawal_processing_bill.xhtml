@@ -5,13 +5,14 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <h:form>
             <ui:composition template="./index.xhtml">
 
                 <ui:define name="subcontent">
+                    
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
@@ -26,7 +27,7 @@
                             </p:commandButton>
                         </f:facet>
                         <p:panel header="Add Withdrawal" >
- 
+
                             <div class="row">
                                 <div class="col-md-4">
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>

@@ -12,7 +12,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -405,21 +405,21 @@ public class DepartmentController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent() == null || getCurrent().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
+            JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
         if (getCurrent().getInstitution() == null) {
-            UtilityController.addErrorMessage("Please select an institution");
+            JsfUtil.addErrorMessage("Please select an institution");
             return;
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         fillSearchItems();
@@ -524,9 +524,9 @@ public class DepartmentController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -623,13 +623,25 @@ public class DepartmentController implements Serializable {
             }
             DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "departmentController");
+            if (controller == null) {
+                System.out.println("controller is null");
+                return null;
+            }
+            if (controller.getEjbFacade() == null) {
+                System.out.println("controller is null");
+                return null;
+            }
             return controller.getEjbFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            try {
+                java.lang.Long key;
+                key = Long.valueOf(value);
+                return key;
+            } catch (NumberFormatException e) {
+                return 0l;
+            }
         }
 
         String getStringKey(java.lang.Long value) {

@@ -1,43 +1,112 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <p:panel header="OPD Payment Search">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="OPD Payment Search" class="mx-4"/>
+                                </div>
+                            </div>
+                        </f:facet>
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{opdPreBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.currentDateTime}"  >      
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            id="fromDate" 
+                                            value="#{opdPreBillController.fromDate}" 
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            maxdate="#{commonController.currentDateTime}"  >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{opdPreBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.currentDateTime}"  >                                                                              
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            id="toDate" 
+                                            value="#{opdPreBillController.toDate}" 
+                                            navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            maxdate="#{commonController.currentDateTime}"  >                                                                              
                                 </p:calendar>
                                 
                                 <div class="d-grid gap-2 my-2">
-                                    <p:commandButton id="btnSearch" class="ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{opdPreBillController.createBillFeePayments}" />
+                                    <p:commandButton id="btnSearch" 
+                                                     class="ui-button-warning" 
+                                                     icon="fas fa-search" 
+                                                     ajax="false" 
+                                                     value="Search" 
+                                                     action="#{opdPreBillController.createBillFeePayments}" />
+                                    <p:commandButton 
+                                            id="btnClear"
+                                            icon="fas fa-broom"
+                                            value="Clear" 
+                                            class="w-100 mt-1 mb-2 ui-button-warning" 
+                                            action="#{opdPreBillController.clearPreBillSearchData}"
+                                            process="btnClear"
+                                            update="searchKeyword">
+                                        </p:commandButton>
                                 </div>
                                 
                                 
                                 <p:defaultCommand target="btnSearch" />
                                 <p:spacer height="10" width="5" ></p:spacer><!-- comment -->
+                                <h:panelGroup id="searchKeyword">
+                                    <h:outputLabel value="Bill No"/>
+                                    <p:inputText autocomplete="off" 
+                                                     class="w-100"
+                                                     value="#{opdPreBillController.searchKeyword.billNo}" />
+
+                                        <h:outputLabel value="Billed By"/>
+                                        <p:inputText class="form-control my-1"
+                                                     autocomplete="off" 
+                                                     value="#{opdPreBillController.searchKeyword.patientName}" />
+                                        
+                                        <h:outputLabel value="Balance"/>
+                                        <p:inputText class="form-control my-1"
+                                                     autocomplete="off"  
+                                                     value="#{opdPreBillController.searchKeyword.total}"
+                                                     />
+
+                                        <h:outputLabel value="Net Total"/>
+                                        <p:inputText class="form-control"
+                                                     autocomplete="off"
+                                                     value="#{opdPreBillController.searchKeyword.netTotal}"/>
+                                </h:panelGroup>
                             </div>
 
                             <div class="col-md-10">
-                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{opdPreBillController.billFeePayments}" 
-                                             var="bfp"  
+                                <p:dataTable rowIndexVar="i" 
+                                             id="tblBills" 
+                                             value="#{opdPreBillController.billFeePayments}" 
+                                             var="bfp" 
+                                             rows ="10"
+                                             rowStyleClass="#{bill.cancelled?'text-danger':''} "
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,25,50"
                                              >
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel   value="#{bfp.billFee.bill.deptId}"/>
+                                        <p:commandLink id="billNo" 
+                                                       ajax="false" 
+                                                       value="#{bfp.billFee.bill.deptId}" 
+                                                       action="#{billSearch.navigateToViewOpdBill()}">
+                                            <f:setPropertyActionListener value="#{bfp.billFee.bill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
                                     </p:column>    
                                     <p:column headerText="Batch Bill No">                                
                                         <h:outputLabel   value="#{bfp.billFee.bill.backwardReferenceBill.deptId}"/>

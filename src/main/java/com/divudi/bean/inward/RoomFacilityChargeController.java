@@ -9,7 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.inward.RoomFacility;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomFacilityCharge;
@@ -189,12 +189,12 @@ public class RoomFacilityChargeController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -214,7 +214,7 @@ public class RoomFacilityChargeController implements Serializable {
         ////// // System.out.println("r1 = " + r.getLinenCharge());
         getTimedItemFeeFacade().edit(r.getTimedItemFee());
         getFacade().edit(r);
-        UtilityController.addSuccessMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated");
 //        fillRoomFacilityCharge();
     }
 
@@ -231,7 +231,7 @@ public class RoomFacilityChargeController implements Serializable {
             r.setLinenCharge(linenCharge);
             getFacade().edit(r);
         }
-        UtilityController.addSuccessMessage("Sucessfully Uptate All Room Charges");
+        JsfUtil.addSuccessMessage("Sucessfully Uptate All Room Charges");
     }
 
     public void setSelectText(String selectText) {
@@ -278,9 +278,9 @@ public class RoomFacilityChargeController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -196,7 +196,7 @@ public class TransferReceiveController implements Serializable {
         }
         
         if(getReceivedBill().getBillItems().size()==0 || getReceivedBill().getBillItems() == null){
-            UtilityController.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
         }
 
@@ -250,7 +250,7 @@ public class TransferReceiveController implements Serializable {
 //        double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
 //        if (availableStock < tmp.getQty()) {
 //            tmp.setQty(oldValue);
-//            UtilityController.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
+//            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
 //        }
 //
 //        //   getPharmacyController().setPharmacyItem(tmp.getItem());
@@ -261,7 +261,7 @@ public class TransferReceiveController implements Serializable {
         //   double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
         if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
-            UtilityController.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
+            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
         }
 
         //   getPharmacyController().setPharmacyItem(tmp.getItem());

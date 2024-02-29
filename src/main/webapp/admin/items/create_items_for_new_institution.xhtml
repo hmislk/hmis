@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/admin/lims/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 >
@@ -20,7 +20,7 @@
 
                     <h:panelGrid columns="2" styleClass="alignTop" >
                         <p:panel >
-                            <p:dataTable  value="#{itemController.itemlist}" 
+                            <p:dataTable  value="#{itemController.allItems}" 
                                           var="i"   
                                           rowKey="#{i.id}" 
                                           selection="#{itemController.selectedList}" 

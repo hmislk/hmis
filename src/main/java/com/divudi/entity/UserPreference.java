@@ -137,6 +137,10 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
+    
+    @Enumerated(EnumType.STRING)
+    private PaperType inwardDepositPaymentBillPaper;
+    
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
@@ -220,11 +224,18 @@ public class UserPreference implements Serializable {
     
     private boolean autodisplayMenu = true;
     
+    //User Preference for Financial transaction manager
     
-    private boolean canSettleCollectingCentreBillsWithoutReferenceNumber;
+    private boolean showBillWiseDetails;
     
+    @Lob
+    private String inpatientFinalBillPrintHeader;
+    
+    private String changeTextCasesPatientName;
     
 
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -336,6 +347,7 @@ public class UserPreference implements Serializable {
 
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
+        this.opdSettleWithoutCashTendered = false;
     }
 
     public String getAbbreviationForHistory() {
@@ -1018,6 +1030,8 @@ public class UserPreference implements Serializable {
         }
         return longTimeFormat;
     }
+    
+    
 
     public void setLongTimeFormat(String longTimeFormat) {
         this.longTimeFormat = longTimeFormat;
@@ -1142,16 +1156,40 @@ public class UserPreference implements Serializable {
         this.bhtNumberWithOutAdmissionType = bhtNumberWithOutAdmissionType;
     }
 
-    public boolean isCanSettleCollectingCentreBillsWithoutReferenceNumber() {
-        return canSettleCollectingCentreBillsWithoutReferenceNumber;
+    public boolean isShowBillWiseDetails() {
+        return showBillWiseDetails;
     }
 
-    public void setCanSettleCollectingCentreBillsWithoutReferenceNumber(boolean canSettleCollectingCentreBillsWithoutReferenceNumber) {
-        this.canSettleCollectingCentreBillsWithoutReferenceNumber = canSettleCollectingCentreBillsWithoutReferenceNumber;
+    public void setShowBillWiseDetails(boolean showBillWiseDetails) {
+        this.showBillWiseDetails = showBillWiseDetails;
+    }
+
+    public String getInpatientFinalBillPrintHeader() {
+        return inpatientFinalBillPrintHeader;
+    }
+
+    public void setInpatientFinalBillPrintHeader(String inpatientFinalBillPrintHeader) {
+        this.inpatientFinalBillPrintHeader = inpatientFinalBillPrintHeader;
+    }
+
+    public String getChangeTextCasesPatientName() {
+        return changeTextCasesPatientName;
+    }
+
+    public void setChangeTextCasesPatientName(String textCase) {
+        this.changeTextCasesPatientName = textCase;
     }
     
     
-    
-    
+    public PaperType getInwardDepositPaymentBillPaper() {
+        if (inwardDepositPaymentBillPaper == null) {
+            inwardDepositPaymentBillPaper = PaperType.A4Paper;
+        }
+        return inwardDepositPaymentBillPaper;
+    }
+
+    public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
+        this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
+    }
 
 }

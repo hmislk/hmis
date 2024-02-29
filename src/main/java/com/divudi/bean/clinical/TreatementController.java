@@ -9,7 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
@@ -91,12 +91,12 @@ public class TreatementController implements Serializable {
         current.setSymanticType(SymanticType.Pharmacologic_Substance);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Updates");
+            JsfUtil.addSuccessMessage("Updated");
         }
         recreateModel();
         getItems();
@@ -143,9 +143,9 @@ public class TreatementController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -3,18 +3,46 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
         <title>Facelet Title</title>
     </h:head>
     <h:body>
-        <ui:composition template="/resources/template/template_1.xhtml">
-            <ui:define name="test">
-                <p:panel style="height: 100vh;" >
-                    <p:autoComplete placeholder="Test"></p:autoComplete>
-                </p:panel>
-            </ui:define>
-        </ui:composition>
+
+
+        <div class="container-fluid" >
+            
+            <h1>Arogya Healthcare Service (Pvt) Ltd</h1>
+            <h2>No.92, Main Street, Tangalle</h2>
+            <h3>Phone: 047 22 40 488,071 22 24 488-0712224488</h3>
+            <h4>Email : arogyachp@gmail.com</h4>
+            <br/>
+            <hr/>
+            <h1>Deposit Receipt</h1>
+            <br/>
+            Name : {name}<br/>
+            BHT : (bht}<br/>
+            Admission Type : {admission_type}<br/>
+            Date of Admissions: {date_of_admission)<br/>
+            Age : {patient_age}<br/>
+            Sex : {patient_sex}<br/>
+            NIC: {patient_nic}<br/>
+            Phone : {patient_phone}<br/>
+            Address : {patient_address}<br/>
+            Paying Amount : {net_total} {net_total_in_words}<br/>
+
+            Bill No : {ind_id}<br/>
+            Payment Method : {payment_method}<br/>
+            Cashier : {cashier_user_name}<br/>
+            Date : {bill_date}<br/>
+            Time* : {bill_type}<br/>
+
+
+        </div>
+
+
+
     </h:body>
 </html>
 

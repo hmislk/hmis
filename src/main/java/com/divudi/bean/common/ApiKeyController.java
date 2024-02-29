@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.ApiKeyType;
 import com.divudi.entity.ApiKey;
 import com.divudi.facade.ApiKeyFacade;
@@ -48,7 +48,7 @@ public class ApiKeyController implements Serializable {
 
     public String toManageMyApiKeys() {
         listMyApiKeys();
-        return "user_api_key";
+        return "/user_api_key";
     }
 
     public ApiKeyType[] getApiKeyTypes() {
@@ -101,18 +101,18 @@ public class ApiKeyController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getKeyValue() == null || getCurrent().getKeyValue().isEmpty()) {
-            UtilityController.addErrorMessage("Please enter Key Value");
+            JsfUtil.addErrorMessage("Please enter Key Value");
             return;
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         listMyApiKeys();
@@ -156,9 +156,9 @@ public class ApiKeyController implements Serializable {
             removing.setRetiredAt(new Date());
             removing.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(removing);
-            UtilityController.addSuccessMessage("Removed Successfully");
+            JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         listMyApiKeys();

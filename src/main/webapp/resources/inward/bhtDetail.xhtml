@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
 
 
@@ -24,51 +24,68 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="BHT No"/></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-3"><p:outputLabel value="BHT No"/></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.admissionType.name}" /></div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Payment Method"  /></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"> <h:outputLabel  value="#{cc.attrs.admission.paymentMethod}" /></div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Room"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-3"><p:outputLabel value="Admission Date"  /></div>
-                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
+                    <div class="col-md-2"><p:outputLabel value="Admission Date"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8">
+                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                        </h:outputLabel></div>
+                        </h:outputLabel>
+                    </div>
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-2"><p:outputLabel value="Room"  /></div>
-                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                    <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Local" rendered="#{cc.attrs.admission.foriegner eq false}"/>
+                        <h:outputLabel  value="Foreigner" rendered="#{cc.attrs.admission.foriegner eq true}"/>
+                    </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Claimability"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Not Claimable" rendered="#{cc.attrs.admission.claimable eq false}"/>
+                        <h:outputLabel  value="Claimable" rendered="#{cc.attrs.admission.claimable eq true}"/>
+                    </div>
+                </div>
+                <h:panelGroup rendered="#{cc.attrs.admission.creditCompany ne null}">
+                    <div class="row">
+                        <div class="col-md-2"><p:outputLabel value="Credit Company"  /></div>
+                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                        <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.creditCompany.name}"/>
+
+                        </div>
+                    </div>
+                </h:panelGroup>
+                
 
 
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
-                    <h:outputLabel rendered="#{cc.attrs.admission.foriegner}" value="Foriegner "/>
 
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="Claimable Bill  "/>
-
-                    <h:outputLabel rendered="#{cc.attrs.admission.claimable}" value="#{cc.attrs.admission.creditCompany.name}"/>
-                    <h:outputLabel  value="Admission Fee  " rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
+                    
 
                     <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
                     <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>

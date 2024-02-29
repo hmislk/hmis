@@ -6,7 +6,7 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -372,7 +372,7 @@ public class InstitutionController implements Serializable {
                     continue;
                 }
                 if (i.getCode() != null && i.getCode().equals(getCurrent().getCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                    JsfUtil.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
             }
@@ -389,7 +389,7 @@ public class InstitutionController implements Serializable {
                     continue;
                 }
                 if (i.getCode() != null && i.getCode().equals(getAgency().getCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                    JsfUtil.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
             }
@@ -439,7 +439,7 @@ public class InstitutionController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Institution Type");
+            JsfUtil.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -449,7 +449,7 @@ public class InstitutionController implements Serializable {
 //                getCurrent().setInstitutionCode(getCurrent().getCode());
 //            }
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
 //            if (getCurrent().getCode() != null) {
 //                if (!checkCodeExist()) {
@@ -462,14 +462,14 @@ public class InstitutionController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         fillItems();
     }
 
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
-            UtilityController.addErrorMessage("Select Institution Type");
+            JsfUtil.addErrorMessage("Select Institution Type");
             return;
         }
 
@@ -479,7 +479,7 @@ public class InstitutionController implements Serializable {
 //                getAgency().setInstitutionCode(getAgency().getCode());
 //            }
             getFacade().edit(getAgency());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
 //            if (getAgency().getCode() != null) {
 //                if (!checkCodeExistAgency()) {
@@ -492,7 +492,7 @@ public class InstitutionController implements Serializable {
             getAgency().setCreatedAt(new Date());
             getAgency().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getAgency());
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         fetchSelectedAgencys();
@@ -508,12 +508,12 @@ public class InstitutionController implements Serializable {
 
     public void updateCreditLimit(HistoryType historyType) {
         if (current == null || current.getId() == null) {
-            UtilityController.addErrorMessage("Please Select an Agency");
+            JsfUtil.addErrorMessage("Please Select an Agency");
             return;
         }
 
         if (current.getMaxCreditLimit() == 0.0) {
-            UtilityController.addErrorMessage("Please Enter Maximum Credit Limit.");
+            JsfUtil.addErrorMessage("Please Enter Maximum Credit Limit.");
             return;
         }
 
@@ -524,33 +524,33 @@ public class InstitutionController implements Serializable {
         double scl = i.getStandardCreditLimit();
 
         if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
+            JsfUtil.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
             return;
         }
 
         if (current.getMaxCreditLimit() < current.getAllowedCredit()) {
-            UtilityController.addErrorMessage("Allowed Credit Limit must Less Than Maximum Credit Limit");
+            JsfUtil.addErrorMessage("Allowed Credit Limit must Less Than Maximum Credit Limit");
             return;
         }
 
         if ((current.getStandardCreditLimit() == scl) && (current.getAllowedCredit() == acl) && (current.getMaxCreditLimit() == mcl)) {
-            UtilityController.addErrorMessage("Nothing To Update");
+            JsfUtil.addErrorMessage("Nothing To Update");
             return;
         }
 
         if (current.getStandardCreditLimit() != scl) {
             createAgentCreditLimitUpdateHistory(current, scl, current.getStandardCreditLimit(), historyType, "Standard Credit Limit");
-            UtilityController.addSuccessMessage("Standard Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Standard Credit Limit Updated");
         }
 
         if (current.getAllowedCredit() != acl) {
             createAgentCreditLimitUpdateHistory(current, acl, current.getAllowedCredit(), historyType, "Allowed Credit Limit");
-            UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Allowed Credit Limit Updated");
         }
 
         if (current.getMaxCreditLimit() != mcl) {
             createAgentCreditLimitUpdateHistory(current, mcl, current.getMaxCreditLimit(), historyType, "Max Credit Limit");
-            UtilityController.addSuccessMessage("Max Credit Limit Updated");
+            JsfUtil.addSuccessMessage("Max Credit Limit Updated");
         }
         getFacade().edit(current);
 
@@ -574,7 +574,7 @@ public class InstitutionController implements Serializable {
         agentHistory.setComment(comment);
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
-        UtilityController.addSuccessMessage("History Saved");
+        JsfUtil.addSuccessMessage("History Saved");
     }
 
     public Institution findInstitution(Long id) {
@@ -615,9 +615,9 @@ public class InstitutionController implements Serializable {
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -633,9 +633,9 @@ public class InstitutionController implements Serializable {
             getAgency().setRetiredAt(new Date());
             getAgency().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getAgency());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         fetchSelectedAgencys();
         prepareAddAgency();

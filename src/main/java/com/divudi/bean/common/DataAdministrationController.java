@@ -51,7 +51,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;

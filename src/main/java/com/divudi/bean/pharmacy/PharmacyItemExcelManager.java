@@ -7,7 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -68,6 +68,8 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -672,7 +674,7 @@ public class PharmacyItemExcelManager implements Serializable {
             double qty = fetchStockQty(pharmacyItem);
 
             if (qty != 0) {
-                UtilityController.addErrorMessage(pharmacyItem.getName() + " NOT Removed Beacause there is stock");
+                JsfUtil.addErrorMessage(pharmacyItem.getName() + " NOT Removed Beacause there is stock");
                 continue;
             }
 
@@ -1174,6 +1176,14 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcelWithStock() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
         String strCat;
         String strAmp;
         String strCode;
@@ -1216,9 +1226,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1233,21 +1243,21 @@ public class PharmacyItemExcelManager implements Serializable {
             out.close();
 
             inputWorkbook = new File(f.getAbsolutePath());
-
-            UtilityController.addSuccessMessage("Excel File Opened");
+            System.out.println("file input  = " + "file open excel");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
             getPharmacyPurchaseController().makeNull();
 
             for (int i = startRow; i < sheet.getRows(); i++) {
-
+                System.out.println("for loop  = " + i);
                 Map m = new HashMap();
 
                 //Category
                 cell = sheet.getCell(catCol, i);
                 strCat = cell.getContents();
-                //System.out.println("strCat is " + strCat);
+                System.out.println("strCat is " + strCat);
                 if (strCat == null || strCat.trim().equals("")) {
                     continue;
                 }
@@ -1255,14 +1265,14 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (cat == null) {
                     continue;
                 }
-                //System.out.println("cat = " + cat.getName());
+                System.out.println("cat = " + cat.getName());
 
                 phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
 
                 //Strength Unit
                 cell = sheet.getCell(strengthUnitCol, i);
                 strStrengthUnit = cell.getContents();
-                //System.out.println("strStrengthUnit is " + strengthUnitCol);
+                System.out.println("strStrengthUnit is " + strStrengthUnit);
                 strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
                 if (strengthUnit == null) {
                     continue;
@@ -1271,16 +1281,16 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Pack Unit
                 cell = sheet.getCell(packUnitCol, i);
                 strPackUnit = cell.getContents();
-                //System.out.println("strPackUnit = " + strPackUnit);
+                System.out.println("strPackUnit = " + strPackUnit);
                 packUnit = getPharmacyBean().getUnitByName(strPackUnit);
                 if (packUnit == null) {
                     continue;
                 }
-                //System.out.println("packUnit = " + packUnit.getName());
+                System.out.println("packUnit = " + packUnit.getName());
                 //Issue Unit
                 cell = sheet.getCell(issueUnitCol, i);
                 strIssueUnit = cell.getContents();
-                //System.out.println("strIssueUnit is " + strIssueUnit);
+                System.out.println("strIssueUnit is " + strIssueUnit);
                 issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
                 if (issueUnit == null) {
                     continue;
@@ -1288,7 +1298,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //StrengthOfAnMeasurementUnit
                 cell = sheet.getCell(strengthOfIssueUnitCol, i);
                 strStrength = cell.getContents();
-                //System.out.println("strStrength = " + strStrength);
+                System.out.println("strStrength = " + strStrength);
                 if (!strStrength.equals("")) {
                     try {
                         strengthUnitsPerIssueUnit = Double.parseDouble(strStrength);
@@ -1302,7 +1312,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Issue Units Per Pack
                 cell = sheet.getCell(issueUnitsPerPackCol, i);
                 strPackSize = cell.getContents();
-                //System.out.println("strPackSize = " + strPackSize);
+                System.out.println("strPackSize = " + strPackSize);
                 if (!strPackSize.equals("")) {
                     try {
                         issueUnitsPerPack = Double.parseDouble(strPackSize);
@@ -1406,23 +1416,27 @@ public class PharmacyItemExcelManager implements Serializable {
                 } else {
                 }
                 //Manufacture
+
                 cell = sheet.getCell(manufacturerCol, i);
                 strManufacturer = cell.getContents();
                 manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                System.out.println("manufacturerCol = " + "manufacturerCol");
                 amp.setManufacturer(manufacturer);
                 //Importer
                 cell = sheet.getCell(importerCol, i);
                 strImporter = cell.getContents();
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                System.out.println("importerCol = " + "importerCol");
                 amp.setManufacturer(importer);
                 //
                 String temStr;
 
                 cell = sheet.getCell(stockQtyCol, i);
                 temStr = cell.getContents();
+                System.out.println("temStr = " + "temStr");
                 try {
                     stockQty = Double.valueOf(temStr);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     stockQty = 0;
                 }
 
@@ -1430,7 +1444,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 temStr = cell.getContents();
                 try {
                     pp = Double.valueOf(temStr);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     pp = 0;
                 }
 
@@ -1468,10 +1482,10 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 getPharmacyPurchaseController().addItem();
             }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/pharmacy/pharmacy_purchase";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1501,9 +1515,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1519,7 +1533,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1578,7 +1592,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(doeCol, i);
                 temStr = cell.getContents();
                 try {
-                    doe = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH).parse(temStr);
+                    doe=CommonFunctions.convertDateToDbType(temStr);
                 } catch (Exception e) {
                     doe = new Date();
                 }
@@ -1598,10 +1612,10 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 getPharmacyPurchaseController().addItem();
             }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/pharmacy/pharmacy_purchase";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1621,9 +1635,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1639,7 +1653,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1717,10 +1731,10 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 getPharmacyPurchaseController().addItem();
             }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/pharmacy/pharmacy_purchase";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1735,9 +1749,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1753,7 +1767,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1790,21 +1804,21 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
-    
+
     public void tnametoName() {
         List<Amp> amps = getAmpFacade().findAll();
-        for(Amp a:amps){
-            if(a.getSname()!=null && !a.getSname().trim().equals("")){
+        for (Amp a : amps) {
+            if (a.getSname() != null && !a.getSname().trim().equals("")) {
                 a.setTname(a.getName());
                 a.setName(a.getSname());
                 getAmpFacade().edit(a);
@@ -1822,9 +1836,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1840,7 +1854,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1873,21 +1887,20 @@ public class PharmacyItemExcelManager implements Serializable {
 
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
 
-    
     private List<Amp> updatingAmps;
     private List<Amp> allAmps;
-    
+
 //    public String importCorrectNameFromSnapshot() {
 //        //System.out.println("importing to excel");
 //        String strId;
@@ -1902,9 +1915,9 @@ public class PharmacyItemExcelManager implements Serializable {
 //        Workbook w;
 //        Cell cell;
 //        InputStream in;
-//        UtilityController.addSuccessMessage(file.getFileName());
+//        JsfUtil.addSuccessMessage(file.getFileName());
 //        try {
-//            UtilityController.addSuccessMessage(file.getFileName());
+//            JsfUtil.addSuccessMessage(file.getFileName());
 //            in = file.getInputStream();
 //            File f;
 //            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1920,7 +1933,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //
 //            inputWorkbook = new File(f.getAbsolutePath());
 //
-//            UtilityController.addSuccessMessage("Excel File Opened");
+//            JsfUtil.addSuccessMessage("Excel File Opened");
 //            w = Workbook.getWorkbook(inputWorkbook);
 //            Sheet sheet = w.getSheet(0);
 //
@@ -1970,13 +1983,13 @@ public class PharmacyItemExcelManager implements Serializable {
 //
 //            }
 //
-//            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+//            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
 //            return "";
 //        } catch (IOException ex) {
-//            UtilityController.addErrorMessage(ex.getMessage());
+//            JsfUtil.addErrorMessage(ex.getMessage());
 //            return "";
 //        } catch (BiffException e) {
-//            UtilityController.addErrorMessage(e.getMessage());
+//            JsfUtil.addErrorMessage(e.getMessage());
 //            return "";
 //        }
 //    }
@@ -1988,7 +2001,6 @@ public class PharmacyItemExcelManager implements Serializable {
 //            getAmpFacade().edit(a);
 //        }
 //    }
-    
     public String importFindMissingNames() {
         String name;
         String code;
@@ -2000,9 +2012,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2018,7 +2030,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2055,18 +2067,17 @@ public class PharmacyItemExcelManager implements Serializable {
 
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
-    
-    
+
     public String importVtmFromExcel() {
         String strCat;
         String strAmp;
@@ -2104,9 +2115,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2122,7 +2133,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2281,13 +2292,13 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -2329,9 +2340,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2347,7 +2358,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2506,13 +2517,13 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -2530,9 +2541,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2548,7 +2559,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2607,13 +2618,13 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -2628,9 +2639,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2646,7 +2657,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2722,11 +2733,11 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
 
             }
-            UtilityController.addSuccessMessage("Succesful. All Mismatches listed below.");
+            JsfUtil.addSuccessMessage("Succesful. All Mismatches listed below.");
             return "";
         } catch (IOException | BiffException ex) {
             //   //System.out.println("ex = " + ex);
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -2743,9 +2754,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2761,7 +2772,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2801,13 +2812,13 @@ public class PharmacyItemExcelManager implements Serializable {
 
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -2823,9 +2834,9 @@ public class PharmacyItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -2841,7 +2852,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -2876,13 +2887,13 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -3310,6 +3321,4 @@ public class PharmacyItemExcelManager implements Serializable {
         this.allAmps = allAmps;
     }
 
-    
-    
 }

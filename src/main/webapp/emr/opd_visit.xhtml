@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
       >
     <h:body>
@@ -147,7 +147,7 @@
 
                                                 <div class="row my-1" ></div>
                                                 <div class="row" >
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-7" >
                                                         <p:commandLink 
                                                             value="Weight&nbsp;:&nbsp;"
                                                             action="#{patientEncounterController.createWtChart()}" 
@@ -168,7 +168,7 @@
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
                                                     </div>
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="Height&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText  
                                                             id="txtHt"
@@ -184,8 +184,8 @@
                                                 </div>
                                                 <div class="row my-1" ></div>
                                                 <div class="row"  >
-                                                    <div class="col-md-6" >
-                                                        <p:commandLink value="BP&nbsp;:&nbsp;" action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
+                                                    <div class="col-md-7" >
+                                                        <p:commandLink value="BP : " action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
                                                         <h:panelGroup >
                                                             <p:inputText
                                                                 id="txtSbp"
@@ -200,7 +200,7 @@
                                                             <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
                                                         </h:panelGroup>
                                                     </div>
-                                                    <div class="col-md-6" >
+                                                    <div class="col-md-5" >
                                                         <p:outputLabel value="BMI&nbsp;:&nbsp;" ></p:outputLabel>
                                                         <p:inputText 
                                                             id="txtBmi"
@@ -212,7 +212,44 @@
 
                                                     </div>
                                                 </div>
-
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <p:outputLabel 
+                                                            value="Pulse Rate :&nbsp;"/>
+                                                            
+                                                        <p:inputText  
+                                                            id="txtPr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pulseRate}" >
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="PFR&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtPfr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pfr}" >
+                                                            
+                                                        </p:inputText>
+<!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <h:outputLabel
+                                                            value="Saturation :&nbsp;"
+                                                            />
+                                                        <p:inputText  
+                                                            id="txtsat"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.saturation}" >
+                                                        </p:inputText>
+<!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
                                             </p:panel>
 
                                             <p:panel class="w-100 m-1" >
@@ -543,19 +580,144 @@
                                                 </h:panelGroup>
                                             </p:panel>
 
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Follow Up Plan"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acPa" 
+                                                                        value="#{patientEncounterController.encounterPlanOfAction.itemValue}"
+                                                                        completeMethod="#{planController.completePlanOfActions}"
+                                                                        var="pa" forceSelection="true"
+                                                                        itemLabel="#{pa.name}" 
+                                                                        itemValue="#{pa}"
+                                                                        class="w-100"
+
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
+                                                                         id="btnPr" 
+                                                                         action="#{patientEncounterController.addPlanOfAction()}"
+                                                                         process="acPa btnPr" update="acPa tblPa"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
+                                                    </div>
+                                                </div>
+<!--                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
+                                                                 id="txtSx" 
+                                                                 value="#{patientEncounterController.encounterProcedure.lobValue}">
+                                                </p:inputTextarea>
+
+                                                <p:watermark value="Select Procedure." for="acSx"></p:watermark>
+                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
+-->                                                <h:panelGroup id="gpPa" >
+                                                    <p:dataTable id="tblPa" 
+                                                                 rendered="#{patientEncounterController.encounterPlanOfActions ne null and patientEncounterController.encounterPlanOfActions.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterPlanOfActions}"
+                                                                 emptyMessage="No Plan Of Action Added" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="pa" class="w-100">
+                                                        <p:column headerText="Plan Name" >
+                                                            <h:outputLabel value="#{pa.itemValue.name}"></h:outputLabel>
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{pa.lobValue}"></h:outputLabel>
+                                                        </p:column>
+<!--                                                        <p:column>
+                                                            <p:commandButton  
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
+                                                                id="btnRemovePa"
+                                                                ajax="true" 
+                                                                action="#{patientEncounterController.removeCfv}" 
+                                                                process="btnRemoveSx"
+                                                                update="tblSx ">
+                                                                <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+                                                        </p:column>-->
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </p:panel>
 
                                         </div>
 
+
                                         <div class="ui-g-12 ui-md-4">
                                             <p:panel id="docPrescreption" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
                                                     <h:outputText class="mx-4" value="Prescription"/>
                                                 </f:facet>
-                                                <p:commandButton  class="ui-button-info" ajax="false" value="Print"  icon="pi pi-print" >
-                                                    <p:printer target="txtPrescriptionDoc" ></p:printer>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="Print" 
+                                                    icon="pi pi-print">
+                                                    <p:printer target="txtPrescriptionDoc" />
                                                 </p:commandButton>
-                                                <p:commandButton icon="fas fa-refresh" class="mx-2 ui-button-warning" id="btnRefresh" ajax="false" value="refresh" action="#{patientEncounterController.refreshPrescription}"/>
+                                                <p:commandButton
+                                                    class="ui-button-info mx-1" 
+                                                    ajax="false" 
+                                                    value="To Print" 
+                                                    action="opd_visit_print"
+                                                    icon="pi pi-print">
+                                                </p:commandButton>
+
+
+                                                <p:commandButton
+                                                    icon="fas fa-refresh"
+                                                    class="mx-1 ui-button-warning"
+                                                    id="btnRefresh"
+                                                    ajax="false" 
+                                                    value="refresh" 
+                                                    action="#{patientEncounterController.refreshPrescription}"/>
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                        }
+                                                    }
+                                                </style>
+
+
 
                                                 <p:textEditor 
                                                     styleClass="textEditer"

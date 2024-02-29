@@ -11,7 +11,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
@@ -336,18 +336,21 @@ public class VmpController implements Serializable {
     }
 
     public List<VirtualProductIngredient> getVivs() {
-        if (getCurrent().getId() == null) {
+    if (getCurrent().getId() == null) {
+        return new ArrayList<VirtualProductIngredient>();
+    } else {
+        Long currentId = getCurrent().getId();
+        String jpqlQuery = "SELECT v FROM VirtualProductIngredient v WHERE v.vmp.id = :vmpId";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("vmpId", currentId);
+        vivs = getVivFacade().findByJpql(jpqlQuery, parameters);
+
+        if (vivs == null) {
             return new ArrayList<VirtualProductIngredient>();
-        } else {
-
-            vivs = getVivFacade().findByJpql("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
-
-            if (vivs == null) {
-                return new ArrayList<VirtualProductIngredient>();
-            }
-
-            return vivs;
         }
+
+        return vivs;
+    }
     }
 
     public String getVivsAsString(Vmp vmp) {
@@ -398,7 +401,7 @@ public class VmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getVtm() == null) {
-            UtilityController.addErrorMessage("Select Vtm");
+            JsfUtil.addErrorMessage("Select Vtm");
             return true;
         }
 //        TODO:Message
@@ -406,15 +409,15 @@ public class VmpController implements Serializable {
             return true;
         }
         if (addingVtmInVmp.getStrength() == 0.0) {
-            UtilityController.addErrorMessage("Type Strength");
+            JsfUtil.addErrorMessage("Type Strength");
             return true;
         }
         if (current.getCategory() == null) {
-            UtilityController.addErrorMessage("Select Category");
+            JsfUtil.addErrorMessage("Select Category");
             return true;
         }
         if (addingVtmInVmp.getStrengthUnit() == null) {
-            UtilityController.addErrorMessage("Select Strenth Unit");
+            JsfUtil.addErrorMessage("Select Strenth Unit");
             return true;
         }
 
@@ -430,7 +433,7 @@ public class VmpController implements Serializable {
         getAddingVtmInVmp().setVmp(current);
         getVivFacade().create(getAddingVtmInVmp());
 
-        UtilityController.addSuccessMessage("Added");
+        JsfUtil.addSuccessMessage("Added");
 
         addingVtmInVmp = null;
 
@@ -578,7 +581,7 @@ public class VmpController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         }
         recreateModel();
         getItems();
@@ -587,10 +590,10 @@ public class VmpController implements Serializable {
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         }else{
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Saved Successfully.");
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();
@@ -638,9 +641,9 @@ public class VmpController implements Serializable {
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
