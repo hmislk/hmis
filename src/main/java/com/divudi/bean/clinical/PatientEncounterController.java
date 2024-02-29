@@ -1169,8 +1169,9 @@ public class PatientEncounterController implements Serializable {
         String weight = CommonController.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
+        String rr = e.getRespiratoryRate()+" bpm";
         String comments = e.getComments();
-        String pulseRate = e.getPulseRate()+" bpm";
+        String pulseRate = e.getPr()+" bpm";
         String pfr = e.getPfr()+"";
         String saturation = e.getSaturation()+"";
         if (comments == null) {
@@ -1280,6 +1281,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
