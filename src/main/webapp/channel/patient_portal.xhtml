@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
     <h:head>
         <title>Channeling</title>
         <link rel="stylesheet" 
@@ -90,7 +91,7 @@
                                     <f:convertDateTime pattern="dd MMM yyyy"/>
                                 </h:outputText>
                             </h5>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center justify-content-between">
                                 <div class="card-body">
                                     <h5 class="card-title">
                                         <h:outputText value="#{s.staff.name}">
@@ -103,6 +104,10 @@
                                             <f:convertDateTime pattern="hh:mm a"/>
                                         </h:outputText>
                                     </p>
+                                </div>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <h5>Bookings</h5>
+                                    <h3 class="mx-4">#{s.displayCount}</h3>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
                                     <p:commandButton value="Channel" class="ui-button-danger" action="#{patientPortalController.addBooking}">
@@ -151,105 +156,139 @@
                 </div>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{patientPortalController.addNewProfile eq false}" >
-                <div class="d-flex justify-content-center align-items-center" style="min-width: 25rem;">
-                    <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
-                        <div class="card-header text-center d-flex align-items-center justify-content-between">
-                            <h4>Select Your Profile</h4>
-                        </div>
-                        <div>
-                            <p:commandButton value="Add new Patient" action="#{patientPortalController.addNewProfile()}"/>
-                        </div>
-                        <div class="card-body">
-                            <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
-                                <div class="card mt-1" style="min-width: 25rem">
-                                    <h5 class="card-header">
-                                        <h:outputText value="#{sp.person.nameWithTitle}">
-                                        </h:outputText>
-                                    </h5>
-                                    <div class="d-flex align-items-center">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <h:outputText value="#{sp.person.address}">
-                                                </h:outputText></h5>
-                                            <p class="card-text">
-                                                <h:outputText value="#{sp.age}"> </h:outputText>
-                                            </p>
-                                        </div>
-                                        <div class="d-flex justify-content-end  p-2">
-                                            <p:commandButton value="Select" class="ui-button-danger" ajax="false">
-                                                <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
-                                            </p:commandButton>
+            <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}">
+                <h:panelGroup >
+                    <div class="d-flex justify-content-center align-items-center" style="min-width: 25rem;">
+                        <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
+                            <div class="card-header text-center d-flex align-items-center justify-content-between">
+                                <h4>Select Your Profile</h4>
+                            </div>
+
+                            <div class="card-body">
+                                <ui:repeat id="sPt" class="w-100" value="#{patientPortalController.searchedPatients}" var="sp">
+                                    <div class="card mt-1" style="min-width: 25rem">
+                                        <h5 class="card-header">
+                                            <h:outputText value="#{sp.person.nameWithTitle}">
+                                            </h:outputText>
+                                        </h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <h:outputText value="#{sp.person.address}">
+                                                    </h:outputText></h5>
+                                                <p class="card-text">
+                                                    <h:outputText value="#{sp.age}"> </h:outputText>
+                                                </p>
+                                            </div>
+                                            <div class="d-flex justify-content-end  p-2">
+                                                <p:commandButton value="Select" class="ui-button-danger" ajax="false">
+                                                    <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
+                                                </p:commandButton>
+                                            </div>
                                         </div>
                                     </div>
+                                </ui:repeat>
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+                <div class="text-center my-2">
+                    <h5>Or Add new Patient</h5>
+                </div>
+                <h:panelGroup class="d-flex justify-content-center align-items-center w-100" >
+
+                    <div class="card p-4 w-100">
+
+                        <h5>Register</h5>
+                        <div class="ui-fluid formgrid grid w-100">
+                            <div>
+                                <div>
+                                    <p:outputLabel value="Title:"  class="form-label" />
+                                    <p:selectOneMenu id="cmbTitle" value="#{patientPortalController.patient.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
+                                        <f:selectItem itemLabel="Select Title" />
+                                        <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
+                                                       itemValue="#{i}" />
+                                        <p:ajax process="cmbTitle" update="somSex" ></p:ajax>
+                                        <p:ajax event="change" process="cmbTitle" update="somSex" ></p:ajax>
+                                    </p:selectOneMenu>
                                 </div>
-                            </ui:repeat>
-                        </div>
-                    </div>
-                </div>
-            </h:panelGroup>
-            <div class="text-center my-2">
-                <h5>Or Add new Patient</h5>
-            </div>
-            <h:panelGroup rendered="#{patientPortalController.addNewProfile eq true}" class="d-flex justify-content-center align-items-center w-100" >
-                <div class="card p-4 w-100">
-                    <h5>Register</h5>
-                    <div class="ui-fluid formgrid grid w-100">
-                        <div>
-                            <div>
-                                <p:outputLabel for="title" value="Title"/>
-                                <p:selectOneMenu id="title">
-                                    <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItem itemLabel="Option 1" itemValue="Option 1"/>
-                                    <f:selectItem itemLabel="Option 2" itemValue="Option 2"/>
-                                    <f:selectItem itemLabel="Option 3" itemValue="Option 3"/>
-                                </p:selectOneMenu>
-                            </div>
-                            <div>
-                                <p:outputLabel for="gender" value="Gender"/>
-                                <p:selectOneMenu id="gender">
-                                    <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItem itemLabel="Option 1" itemValue="Option 1"/>
-                                    <f:selectItem itemLabel="Option 2" itemValue="Option 2"/>
-                                    <f:selectItem itemLabel="Option 3" itemValue="Option 3"/>
-                                </p:selectOneMenu>
-                            </div>
+                                <div>
+                                    <p:outputLabel value="Sex:"  class="form-label" />
+                                    <p:selectOneMenu id="somSex" value="#{patientPortalController.patient.person.sex}" class="form-control" >
+                                        <f:selectItem itemLabel="Select Gender" />
+                                        <f:selectItems value="#{billController.sex}" />
+                                    </p:selectOneMenu>
+                                </div>
 
 
-                            <div class="mx-2" style="width: 100%">
-                                <p:outputLabel value="Enter The Name Of The Patient"/>
-                                <p:inputText />
+                                <div class="mx-2" style="width: 100%">
+                                    <p:outputLabel value="Enter The Name Of The Patient"/>
+                                    <p:inputText value="#{patientPortalController.patient.person.name}" />
+                                </div>
+                                
+                                <div class="mx-2 w-100">
+                                    <p:outputLabel value="Enter Phone number"/>
+                                    <p:inputText 
+                                        required="true"
+                                        value="#{patientPortalController.patient.phoneNumberStringTransient}" 
+                                        class="form-control" 
+                                        validatorMessage="Please enter Valid Phone Number."
+                                        validator="#{patientController.validateMobile}"
+                                        >
+                                    </p:inputText>
+                                </div>
+                                <div class="mx-2 w-100">
+                                    <p:outputLabel value="Email:"  class="form-label" />
+                                    <p:inputText 
+                                        value="#{patientPortalController.patient.person.email}" 
+                                        class="form-control"
+                                        validatorMessage="Please enter Valid Email."
+                                        >
+                                        <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                            <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                        </c:if>
+                                    </p:inputText>
+                                </div>
+                                <div class="mx-2 w-100">
+                                    <h:outputLabel class="form-label" value="NIC No:" />
+                                    <h:panelGroup>
+                                        <p:inputText autocomplete="off" id="txtNIC" value="#{patientPortalController.patient.person.nic}" class="form-control" />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="mx-2 w-100">
+                                    <p:outputLabel value="Address:"  class="form-label" />
+                                    <p:inputText value="#{patientPortalController.patient.person.address}" style="width: 100%;" class="form-control" />
+
+                                </div>
+                                <div class="mx-2 w-100">
+                                    <p:outputLabel value="Area"  class="form-label" />
+                                    <p:autoComplete 
+                                        id="area" 
+                                        class="w-100 -mx-2"
+                                        inputStyleClass="form-control"
+                                        forceSelection="true"
+                                        value="#{patientPortalController.patient.person.area}"  
+                                        completeMethod="#{areaController.completeArea}" 
+                                        var="pa"
+                                        placeholder="Area"
+                                        itemLabel="#{pa.name}" 
+                                        itemValue="#{pa}" 
+                                        size="10"  
+                                        required="#{sessionController.departmentPreference.needAreaForPatientRegistration}"
+                                        requiredMessage="Need an Area"
+                                        >
+
+                                    </p:autoComplete> 
+                                </div>
                             </div>
-                            <div class="mx-2" style="width: 100%">
-                                <p:outputLabel value="Age"/>
-                                <p:inputText />
-                            </div>
-                            <div class="mx-2 w-100">
-                                <p:outputLabel  value="Mobile Number"/>
-                                <p:inputText />
-                            </div>
-                            <div class="mx-2 w-100">
-                                <p:outputLabel  value="Enter Email"/>
-                                <p:inputText />
-                            </div>
-                            <div class="mx-2 w-100">
-                                <p:outputLabel  value="NIC Number"/>
-                                <p:inputText />
-                            </div>
-                            <div class="mx-2 w-100">
-                                <p:outputLabel  value="Address"/>
-                                <p:inputText />
-                            </div>
-                            <div class="mx-2 w-100">
-                                <p:outputLabel value="Area"/>
-                                <p:inputText />
-                            </div>
+                            <p:commandButton value="Save" class="ui-button-danger m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
+                            </p:commandButton>
                         </div>
-                        <p:commandButton value="Save" class="ui-button-danger m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
-                        </p:commandButton>
                     </div>
-                </div>
+                </h:panelGroup>
             </h:panelGroup>
+
+
             <p:commandButton value="reset" class="ui-button-danger m-4" ajax="false" action="#{patientPortalController.reset}">
             </p:commandButton>
         </h:form>
