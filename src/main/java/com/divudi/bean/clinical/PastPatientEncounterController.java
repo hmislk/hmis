@@ -1136,7 +1136,8 @@ public class PastPatientEncounterController implements Serializable {
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
-        String pulseRate = e.getPulseRate()+" bpm";
+        String pulseRate = e.getPr()+" bpm";
+        String rr = e.getRespiratoryRate()+" bpm";
         String pfr = e.getPfr()+"";
         String saturation = e.getSaturation()+"";
 
@@ -1244,6 +1245,7 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{outdoor}", medicinesOutdoorAsString)
                 .replace("{indoor}", medicinesIndoorAsString)
                 .replace("{ix}", ixAsString)
+                .replace("{rr}", rr)
                 .replace("{pa}", paAsString)
                 .replace("{past-dx}", diagnosesAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)

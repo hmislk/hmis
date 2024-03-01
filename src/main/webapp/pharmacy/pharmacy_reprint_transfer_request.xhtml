@@ -42,21 +42,24 @@
                                         <h:outputLabel styleClass="fas fa-file-invoice" />
                                         <h:outputLabel value="Request Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <h:panelGrid columns="2" class="w-75">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                    <h:panelGrid columns="3" class="w-75">
+                                        <h:outputLabel value="Bill No" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                        <hr/>
-                                        <h:outputLabel value="Request Institution :" ></h:outputLabel>
+                                        <h:outputLabel value="Request Institution" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.fromInstitution.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                        <h:outputLabel value="Request Department :" ></h:outputLabel>
+                                        <h:outputLabel value="Request Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                        <h:outputLabel value="Request Created User :" ></h:outputLabel>
+                                        <h:outputLabel value="Request Created User" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.creater.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-
-                                        <hr/>
-                                        <h:outputLabel value="Request To Institution :" ></h:outputLabel>
+                                        <h:outputLabel value="Request To Institution" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
-                                        <h:outputLabel value="Request To Department :" ></h:outputLabel>
+                                        <h:outputLabel value="Request To Department" ></h:outputLabel>
+                                        <h:outputLabel value=":" />
                                         <h:outputLabel value="#{pharmacyBillSearch.bill.toDepartment.name}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
 
                                     </h:panelGrid>
