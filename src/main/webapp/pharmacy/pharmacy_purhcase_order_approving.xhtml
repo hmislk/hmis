@@ -10,17 +10,13 @@
     <ui:define name="content">
         <h:form>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderApproval')}" >
-                You are NOT authorized
-            </h:panelGroup>
-            <p:panel  rendered="#{webUserController.hasPrivilege('PharmacyOrderApproval')}" >
-                <h:panelGroup rendered="#{!purchaseOrderController.printPreview}">
-                    <p:panel >
+            <h:panelGroup rendered="#{!purchaseOrderController.printPreview}">
+                <p:panel >
                     <f:facet name="header">
                         <h:panelGrid columns="5" style="min-width: 100%;">
                             <p:outputLabel value="Purchase order Request Order"/>
                             <p:commandButton ajax="false"  value="Approve" action="#{purchaseOrderController.approve}">
-<!--                                <p:printer target="gpBillPreview" ></p:printer>-->
+                                <!--                                <p:printer target="gpBillPreview" ></p:printer>-->
                             </p:commandButton>
                             <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
                                 <f:selectItem itemLabel="SelectPayment method"/>
@@ -107,10 +103,10 @@
                     <p:spacer height="50"/>
                     <ph:history/>
                 </p:panel>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
-                    <p:panel >
-                    <p:commandButton ajax="false" action="#{purchaseOrderController.viewRequestedList()}" value="Requested List"/>                    
+            </h:panelGroup>
+            <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
+                <p:panel >
+                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
                     <p:commandButton value="Print" ajax="false" action="#" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
@@ -122,8 +118,8 @@
                     </p:panel>
 
                 </p:panel>
-                </h:panelGroup>
-            </p:panel>            
+            </h:panelGroup>
+
         </h:form>
     </ui:define>  
 
