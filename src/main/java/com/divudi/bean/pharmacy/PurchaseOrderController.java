@@ -142,9 +142,12 @@ public class PurchaseOrderController implements Serializable {
         getBillFacade().edit(getRequestedBill());
 
         clearList();
-
+        System.out.println(5678);
+        setPrintPreview(true);
+        System.out.println(1234);
+        System.out.println(getPrintPreview());
         return viewRequestedList();
-        //   printPreview = true;
+        
 
     }
     
