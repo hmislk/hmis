@@ -119,8 +119,11 @@ public class PurchaseOrderController implements Serializable {
         }
         return fromDate;
     }
-    
-   
+
+    public String navigateToPurchaseOrderApproval() {
+        printPreview = false;
+        return "/pharmacy/pharmacy_purhcase_order_approving";
+    }
 
     public String approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
@@ -132,7 +135,7 @@ public class PurchaseOrderController implements Serializable {
 
         saveBill();
         saveBillComponent();
-    
+
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         billFacade.edit(getAprovedBill());
@@ -141,15 +144,11 @@ public class PurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-        clearList();
-        setPrintPreview(true);
-        System.out.println(getPrintPreview());
-        return viewRequestedList();
-        
+//        clearList();
+        printPreview = true;
+        return "";
 
     }
-    
-    
 
     public String viewRequestedList() {
         clearList();

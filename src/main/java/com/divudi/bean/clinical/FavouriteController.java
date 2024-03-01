@@ -222,7 +222,7 @@ public class FavouriteController implements Serializable {
         current = null;
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
         JsfUtil.addSuccessMessage("Saved");
-        System.out.println("run = " + fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine););
+//        System.out.println("run = " + fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine));
     }
 
 //    public void removeFavourite() {
