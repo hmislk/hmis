@@ -342,7 +342,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         finalizeBill();
         saveBillComponent();
-        JsfUtil.addSuccessMessage("Request Succesfully Created");
+        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
     }
