@@ -119,6 +119,7 @@
 
 
                                 <p:commandButton 
+                                    id="btnRetailBillForCashier"
                                     ajax="false"
                                     class="ui-button-primary mx-2"
                                     icon="fa fa-pills" 
@@ -127,6 +128,7 @@
                                     action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
+                                <p:tooltip value="Bill For Cashier" />
 
                                 <p:commandButton 
                                     ajax="false"
