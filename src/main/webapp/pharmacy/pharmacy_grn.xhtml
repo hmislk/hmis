@@ -10,7 +10,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel>
+            <p:panel rendered="#{!grnController.printPreview}">
                 <f:facet name="header">
                     <h:outputLabel value="GRN Receive" class="mt-2"/>
                     <p:commandButton  
@@ -22,7 +22,7 @@
                         style="float: right;">
                     </p:commandButton> 
                 </f:facet>
-                <h:panelGroup rendered="#{!grnController.printPreview}">
+                <h:panelGroup >
 
                     <h:panelGrid columns="7" style="min-width: 100%;" class="my-2">
                         <h:outputLabel value="DEALOR"/>
@@ -43,7 +43,7 @@
 
                     </h:panelGrid>
 
-                    
+
                     <p:dataTable 
                         var="bi" 
                         styleClass="noBorder" 
@@ -180,10 +180,10 @@
                             </p:cellEditor>
                         </p:column>  
                         <p:column headerText="Profit %" style="width:80px; text-align: left;">                    
-                        <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate ) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
-                            <f:convertNumber pattern="0.0" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
+                            <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate ) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
+                                <f:convertNumber pattern="0.0" ></f:convertNumber>
+                            </h:outputText>
+                        </p:column>
                         <p:column width="6%">
                             <p:commandButton 
                                 ajax="false"
@@ -200,7 +200,7 @@
                             <p:rowEditor />  
                             
                         </p:column>
-                        
+
                     </p:dataTable>  
                     <p:panel>
                         <p:panelGrid columns="3" style="min-width: 100%" id="tot">
@@ -250,26 +250,37 @@
             </p:panel>
 
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
-                <p:commandButton 
-                    ajax="false" 
-                    action="pharmacy_purchase_order_list_for_recieve"
-                    actionListener="#{grnController.viewPoList()}" 
-                    value="PO List"> 
-                </p:commandButton>                   
-                <p:commandButton 
-                    value="Print" 
-                    ajax="false" 
-                    action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between">
+                        <h:outputLabel value="GRN Preview " class="mt-2"/>
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}" 
+                                value="Back to PO List"> 
+                            </p:commandButton>                   
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
 
-                <p:panel   id="gpBillPreview"   style="border: none;">
+                <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
                         <ph:grn bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
 
-                </p:panel>
+                </h:panelGroup>
             </p:panel>
         </h:form>
     </ui:define>  
