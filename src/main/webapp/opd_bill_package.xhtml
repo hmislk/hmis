@@ -35,33 +35,27 @@
                                     </h:panelGrid>
 
                                     <div class="mb-2">
+
                                         <p:panel id='pIxAdd' header="Items Request"  >
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-cart-plus"/>
                                                 <h:outputText class="mx-4" value="Items Requests"/>
                                             </f:facet>
+                                            <p:outputLabel id="tmp" value="#{billPackageController.itemLight}" ></p:outputLabel>
                                             <p:selectOneListbox 
                                                 filter="true"
                                                 id="acIx"
                                                 class="w-100"
                                                 scrollHeight="200"
                                                 converter="itemLightConverter"
-                                                value="#{billPackageController.itemLight}"  var="ix">
+                                                value="#{billPackageController.itemLight}" >
+                                                <p:ajax process="@this" update="tmp" />
                                                 <f:selectItems value="#{billPackageController.opdPackages}"
                                                                var="packege" 
                                                                itemLabel="#{packege.name}"
-                                                               itemValue="#{packege}" >
-                                                </f:selectItems>
-                                                
-                                                <p:column>
-                                                    #{ix.name}
-                                                </p:column>
-                                                <p:column>
-                                                    #{ix.total}
-                                                </p:column>
-
-
+                                                               itemValue="#{packege}" />
                                             </p:selectOneListbox>
+
 
                                             <p:commandButton 
                                                 id="btnAddIx" 
@@ -69,8 +63,8 @@
                                                 class="my-2 ui-button-success"
                                                 icon="fas fa-plus"
                                                 action="#{billPackageController.addToBill()}"
-                                                 process="acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                             update=" msg focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd">
+                                                process="acIx btnAddIx"
+                                                update="msg focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx">
                                             </p:commandButton>
                                         </p:panel>
                                     </div>

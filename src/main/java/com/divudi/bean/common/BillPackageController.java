@@ -587,6 +587,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     // <editor-fold defaultstate="collapsed" desc="Getter and Setter">
     public List<ItemLight> getOpdPackages() {
+        System.out.println("getOpdPackages");
+        System.out.println("opdPackages = " + opdPackages);
         if (opdPackages == null) {
             opdPackages = itemApplicationController.getPackages();
         }
@@ -960,18 +962,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public ItemLight getItemLight() {
-        if (getCurrentBillItem().getItem() != null) {
-            this.itemLight = new ItemLight(getCurrentBillItem().getItem());
-        }
         return itemLight;
     }
 
     public void setItemLight(ItemLight itemLight) {
         System.out.println("itemLight Mee= " + itemLight);
         this.itemLight=itemLight;
-        if (this.itemLight != null) {
-            getCurrentBillItem().setItem(itemController.findItem(this.itemLight.getId()));
-        }
     }
   
     public PaymentSchemeController getPaymentSchemeController() {
@@ -982,10 +978,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.paymentSchemeController = paymentSchemeController;
     }
 
+    @Override
     public boolean isPatientDetailsEditable() {
         return patientDetailsEditable;
     }
 
+    @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }
