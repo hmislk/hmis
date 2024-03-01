@@ -161,16 +161,18 @@
                                                     autocomplete="off" 
                                                     id="year" 
                                                     placeholder="Years"
+
                                                     value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
-                                                    class="w-100">
+                                                    class="form-control">
                                                     <f:ajax event="blur" execute="@this" render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-2">
                                                 <p:inputText
+
                                                     autocomplete="off" id="month" placeholder="Months"
                                                     value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
-                                                    class="w-100">
+                                                    class="form-control">
                                                     <f:ajax event="blur" execute="@this"  render="dpDob"  />
                                                 </p:inputText>
                                             </div>
@@ -179,51 +181,55 @@
 
                                                     autocomplete="off" id="day" placeholder="Days"
                                                     value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
-                                                    class="w-100">
+                                                    class="form-control">
                                                     <f:ajax event="blur" execute="@this"  render="dpDob" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-6">
-                                                <p:calendar 
+                                                <p:datePicker 
+
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
                                                     inputStyleClass="form-control"
                                                     pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                                    placeholder="Date of Birth"
+                                                    placeholder="Date of Birth (dd/mm/yyyy)"
                                                     >
                                                     <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                                                </p:calendar>
+                                                </p:datePicker>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    
-                                    <div class="col-md-3 p-1">
-                                        <p:inputText 
-                                            id="txtPhone" 
-                                            autocomplete="off" 
-                                            placeholder="Phone Number for Quick Search"
-                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
-                                            validator="#{patientController.validateMobile}"
-                                            class="form-control" validatorMessage="Please enter valid Number">
-                                        </p:inputText>
-                                    </div>
-                                    
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
                                             id="txtMobile" 
+
                                             autocomplete="off" 
-                                            placeholder="Other Contact Number"
+                                            placeholder="Mobile Number"
                                             value="#{cc.attrs.controller.patient.person.mobile}"
                                             class="form-control" 
-                                            validator="#{patientController.validateMobile}"
                                             validatorMessage="Please enter valid Number">
+                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                            </c:if>
                                         </p:inputText>
                                     </div>
-                                    
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText 
+                                            id="txtPhone" 
+
+                                            autocomplete="off" 
+                                            placeholder="Phone Number"
+                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            class="form-control" validatorMessage="Please enter valid Number">
+                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
                                     <div class="col-md-3 p-1">
                                         <p:inputText 
 
@@ -244,9 +250,6 @@
                                             placeholder="National ID Number"
                                             value="#{cc.attrs.controller.patient.person.nic}"
                                             class="form-control"/>
-                                        <c:if test="#{not empty sessionController.applicationPreference.nicRegex}">
-                                            <f:validateRegex pattern="#{sessionController.applicationPreference.nicRegex}"/>
-                                        </c:if>
                                     </div>
                                 </div>
 
@@ -273,6 +276,21 @@
                                             class="w-100"/>
                                     </div>
                                 </div>
+
+                                <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtNic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
+
+                                <p:tooltip for="year" value="#{cc.attrs.controller.patient.person.ageAsString}"  showDelay="0" hideDelay="0"></p:tooltip>
+
+
                             </h:panelGroup>
                         </h:panelGroup>
                     </h:panelGroup>
