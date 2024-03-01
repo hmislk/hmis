@@ -107,7 +107,7 @@
             <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
                 <p:panel >
                     <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
-                    <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print">
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
