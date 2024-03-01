@@ -219,10 +219,10 @@ public class FavouriteController implements Serializable {
         current.setForWebUser(sessionController.getLoggedUser());
         current.setOrderNo(getItems().size() + 1.0);
         favouriteItemFacade.create(current);
-        current = null;
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        current = null;
         JsfUtil.addSuccessMessage("Saved");
-        System.out.println("run = " + fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine););
+        System.out.println("done");
     }
 
 //    public void removeFavourite() {

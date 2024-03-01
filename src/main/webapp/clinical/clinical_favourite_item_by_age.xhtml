@@ -82,7 +82,7 @@
                                 <p:inputText class="mx-4 w-75" value="#{favouriteController.current.durationUnit}" ></p:inputText>
                             </h:panelGrid>
                             <f:facet name="footer">
-                                <p:commandButton class="ui-button-success" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
+                                <p:commandButton class="ui-button-success" ajax="false" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
                             </f:facet>
                         </p:dialog>
 
@@ -105,7 +105,7 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Medicine" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.item}" ></h:outputText>
+                                <h:outputText value="#{fi.item.name}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
