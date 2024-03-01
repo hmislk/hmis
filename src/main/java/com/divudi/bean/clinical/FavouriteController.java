@@ -49,6 +49,7 @@ public class FavouriteController implements Serializable {
     List<PrescriptionTemplate> items;
     private List<MeasurementUnit> availableDoseUnits;
     private List<Item> availableItems;
+    private boolean itemadd = false;
 
     /**
      * Methods
@@ -57,7 +58,17 @@ public class FavouriteController implements Serializable {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
     }
 
+    public String navigateToFavoriteMedicineByAge(){
+       return "/clinical/clinical_favourite_item_by_age?faces-redirect=true"; 
+    }
     
+    public String navigateToFavoriteMedicineByWeight(){
+        return "/clinical/clinical_favourite_item_by_weight?faces-redirect=true";
+    }
+    
+    public String navigateToEmrIndex(){
+        return "/emr/admin/index?faces-redirect=true";
+    }
     
     public void fillFavouriteDisgnosis() {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
@@ -133,6 +144,7 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("No Item Selected");
             return;
         }
+        itemadd = true;
         current = new PrescriptionTemplate();
         current.setForItem(item);
         current.setItem(item);
@@ -202,7 +214,15 @@ public class FavouriteController implements Serializable {
     }
     
     public void saveFavMedicine(){
-        
+        current.setType(PrescriptionTemplateType.FavouriteMedicine);
+        current.setForItem(item);
+        current.setForWebUser(sessionController.getLoggedUser());
+        current.setOrderNo(getItems().size() + 1.0);
+        favouriteItemFacade.create(current);
+        current = null;
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        JsfUtil.addSuccessMessage("Saved");
+        System.out.println("run = " + fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine););
     }
 
 //    public void removeFavourite() {
@@ -422,5 +442,15 @@ public class FavouriteController implements Serializable {
     public void setAvailableItems(List<Item> availableItems) {
         this.availableItems = availableItems;
     }
+
+    public boolean isItemadd() {
+        return itemadd;
+    }
+
+    public void setItemadd(boolean itemadd) {
+        this.itemadd = itemadd;
+    }
+    
+    
 
 }
