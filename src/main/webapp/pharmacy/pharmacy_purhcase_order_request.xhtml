@@ -166,6 +166,10 @@
                                     </h:panelGroup>
                                 </p:column>  
 
+                                <p:column headerText="Current Stock" >
+                                    <p:outputLabel value="#{pharmacyController.findStock(bi.item)}"/>                            
+                                </p:column>
+
                                 <p:column styleClass="averageNumericColumn" >
                                     <p:commandButton class="ui-button-danger" icon="fas fa-trash" ajax="false" action="#{purchaseOrderRequestController.removeItem(bi)}"/>
                                 </p:column>

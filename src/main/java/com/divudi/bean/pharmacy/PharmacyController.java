@@ -1362,6 +1362,7 @@ public class PharmacyController implements Serializable {
     }
 
     public double findTransactionQuentity(Item item) {
+        //TO DO Senula
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PharmacySale);
         billTypes.add(BillType.InwardPharmacyRequest);
@@ -1369,10 +1370,12 @@ public class PharmacyController implements Serializable {
     }
     
     public double findTransactionQuentity(Institution institution, Amp item, List<BillType> billTypes) {
+        //TO DO Senula
         return 0.0;
     }
 
-    public double findTransactionQuentity(Institution institution, Item item, List<BillType> billTypes) {
+    public double findTransactionQuentity(Institution institution, Item item, List<BillType> billTypes, Date fromDate, Date toDate) {
+        //TO DO Senula
         if (pharmacyItem instanceof Ampp) {
             item = ((Ampp) pharmacyItem).getAmp();
         } else {
