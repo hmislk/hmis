@@ -61,6 +61,8 @@ public class PrescriptionTemplate implements Serializable {
     private Double toDays;
     private Double fromKg;
     private Double toKg;
+     private Double fromAge;
+    private Double toAge;
 
     @ManyToOne
     Patient patient;
@@ -406,6 +408,22 @@ public class PrescriptionTemplate implements Serializable {
 
     public void setFavouriteType(FavouriteType favouriteType) {
         this.favouriteType = favouriteType;
+    }
+
+    public Double getFromAge() {
+        return fromAge;
+    }
+
+    public void setFromAge(Double fromAge) {
+        this.fromAge = fromAge;
+    }
+
+    public Double getToAge() {
+        return toAge;
+    }
+
+    public void setToAge(Double toAge) {
+        this.toAge = toAge;
     }
     
     
