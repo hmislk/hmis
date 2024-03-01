@@ -117,21 +117,20 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
-
-
+                            
                             <p:column headerText="Actions">
                                 <p:commandButton ajax="false" 
                                                  value="Approve" 
                                                  class="ui-button-success"
                                                  action="pharmacy_purhcase_order_approving"
-                                                 disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                                                 disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
                                 <p:commandButton ajax="false" 
                                                  value="Edit" 
                                                  class="ui-button-success"
                                                  action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
-                                                 disabled="#{b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                                                 disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                     <f:setPropertyActionListener 
                                         target="#{purchaseOrderRequestController.currentBill}"
                                         value="#{b}"/>
