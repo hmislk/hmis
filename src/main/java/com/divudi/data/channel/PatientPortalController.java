@@ -1,24 +1,38 @@
 package com.divudi.data.channel;
 
+import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.MessageType;
+import com.divudi.data.PaymentMethod;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Consultant;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
@@ -48,8 +62,18 @@ public class PatientPortalController {
     private Date date;
     private List<SessionInstance> sessionInstances;
     private Date sessionStartingDate;
-    ScheduleModel eventModel;
+    private String messageForSms;
+    private String otp;
+    private String patientEnteredOtp;
+    private boolean otpVerify;
+    private List<Patient> searchedPatients;
+    private Patient patient;
+    private boolean searchedPatientIsNull;
+    private SessionInstance selectedSessionInstance;
+    private boolean selectPatient;
+    private boolean addNewProfile;
 
+    ScheduleModel eventModel;
     Staff staff;
     ServiceSession serviceSession;
 
@@ -61,26 +85,53 @@ public class PatientPortalController {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private SmsFacade SmsFacade;
+    @EJB
+    SmsManagerEjb smsManager;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    SmsFacade smsFacade;
 
     @Inject
     private SessionController sessionController;
     @Inject
     DoctorController doctorController;
-
+    @Inject
+    SmsController smsController;
+    @Inject
+    PatientController patientController;
+    @Inject
+    BookingController bookingController;
+    @Inject
+    CommonController commonController;
     private ChannelBean channelBean;
 
-    public void docotrBooking() {
-        bookDoctor = true;
-        fillConsultants();
-
+    public void addNewProfile(){
+        patient = new Patient();
+        addNewProfile=true;
+        
+    }
+    
+    public void saveNewPatient(){
+        addNewProfile=false;
+    }
+    
+    public void reset() {
+        patient = null;
+        searchedPatients = null;
+        otpVerify = false;
+        searchedPatientIsNull=false;
     }
 
-    public void fillConsultants() {
+    public List<Staff> fillConsultants() {
         consultants = null;
         Map m = new HashMap();
         String sql = "select p from Staff p where p.retired=false and type(p)=:stype";
         m.put("stype", Consultant.class);
         consultants = staffFacade.findByJpql(sql, m);
+        return consultants;
     }
 
     public void fillChannelSessions() {
@@ -96,28 +147,111 @@ public class PatientPortalController {
     }
 
     public void fillSessionInstance() {
+        System.out.println("working");
         if (channelSessions != null) {
             sessionInstances = new ArrayList<>();
             sessionStartingDate = new Date();
+            System.out.println("selectedConsultant = " + selectedConsultant.getName());
             String jpql = "select i "
                     + " from SessionInstance i "
-                    + " where i.originatingSession=:os "
+                    + " where i.originatingSession.staff=:os "
                     + " and i.retired=:ret ";
 
             Map m = new HashMap();
             m.put("ret", false);
-            m.put("os", selectedChannelSession);
+            m.put("os", selectedConsultant);
 
             sessionInstances = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.DATE);
             System.out.println("sessionInstances = " + sessionInstances.size());
         }
     }
-    
-    public void fillBookingHistory(){
-        
+
+    public void otpCodeConverter() {
+        String numbers = "0123456789";
+
+        Random random = new Random();
+        StringBuilder otpBuilder = new StringBuilder();
+
+        for (int i = 0; i < 4; i++) {
+            int index = random.nextInt(numbers.length());
+            otpBuilder.append(numbers.charAt(index));
+        }
+        otp = otpBuilder.toString();
+        System.out.println("otp = " + otp);
     }
-    
-    
+
+    public void sendOtp() {
+        otpCodeConverter();
+        if (PatientphoneNumber == null) {
+            JsfUtil.addErrorMessage("Pleace Enter Phone Number");
+            return;
+        }
+
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setSmsType(MessageType.LabReport);
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(PatientphoneNumber);
+        e.setSendingMessage("Your authentication code is " + otp);
+        e.setDepartment(getSessionController().getDepartment());
+        e.setInstitution(getSessionController().getInstitution());
+        e.setPending(false);
+        e.setOtp(otp);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
+    }
+
+    public void findPatients() {
+        if (otpVerify) {
+            searchedPatients = new ArrayList<>();
+            String j;
+            Long PatientphoneNumberLong = commonController.convertStringToLong(PatientphoneNumber);
+            Map m = new HashMap();
+            j = "select p from Patient p where p.retired=false and p.patientPhoneNumber=:pp";
+            m.put("pp", PatientphoneNumberLong);
+            searchedPatients = patientFacade.findByJpql(j, m);
+            System.out.println("searchedPatients = " + searchedPatients.size());
+
+            if (searchedPatients == null || searchedPatients.isEmpty()) {
+                selectPatient = false;
+                
+            }
+            
+            selectPatient=true;
+        }
+    }
+
+    public void otpVerification() {
+        System.out.println("patientEnteredOtp = " + patientEnteredOtp);
+        List<Sms> smss = new ArrayList<>();
+        String j;
+        Map m = new HashMap();
+        j = "select s from Sms s where s.otp=:oc";
+        m.put("oc", patientEnteredOtp);
+        smss = smsFacade.findByJpql(j, m);
+        System.out.println("smss = " + smss.size());
+        if (smss.isEmpty() || smss.size() > 1) {
+            JsfUtil.addErrorMessage("Enter correct authentication code");
+            return;
+        } else {
+            otpVerify = true;
+            findPatients();
+        }
+    }
+
+    public void addBooking() {
+        System.out.println("this = " + patient.getPerson().getName());
+        bookingController.setPatient(patient);
+        bookingController.setPaymentMethod(PaymentMethod.Credit);
+        bookingController.setStaff(selectedConsultant);
+        bookingController.setSelectedSessionInstance(selectedSessionInstance);
+        bookingController.setSelectedServiceSession(selectedChannelSession);
+        bookingController.add();
+    }
 
     public String getPatientphoneNumber() {
         return PatientphoneNumber;
@@ -277,4 +411,94 @@ public class PatientPortalController {
         this.sessionStartingDate = sessionStartingDate;
     }
 
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public String getMessageForSms() {
+        return messageForSms;
+    }
+
+    public void setMessageForSms(String messageForSms) {
+        this.messageForSms = messageForSms;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return SmsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade SmsFacade) {
+        this.SmsFacade = SmsFacade;
+    }
+
+    public String getPatientEnteredOtp() {
+        return patientEnteredOtp;
+    }
+
+    public void setPatientEnteredOtp(String patientEnteredOtp) {
+        this.patientEnteredOtp = patientEnteredOtp;
+    }
+
+    public boolean isOtpVerify() {
+        return otpVerify;
+    }
+
+    public void setOtpVerify(boolean otpVerify) {
+        this.otpVerify = otpVerify;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public SessionInstance getSelectedSessionInstance() {
+        return selectedSessionInstance;
+    }
+
+    public void setSelectedSessionInstance(SessionInstance selectedSessionInstance) {
+        this.selectedSessionInstance = selectedSessionInstance;
+    }
+
+    public List<Patient> getSearchedPatients() {
+        return searchedPatients;
+    }
+
+    public void setSearchedPatients(List<Patient> searchedPatients) {
+        this.searchedPatients = searchedPatients;
+    }
+
+    public boolean isSearchedPatientIsNull() {
+        return searchedPatientIsNull;
+    }
+
+    public void setSearchedPatientIsNull(boolean searchedPatientIsNull) {
+        this.searchedPatientIsNull = searchedPatientIsNull;
+    }
+
+    public boolean isSelectPatient() {
+        return selectPatient;
+    }
+
+    public void setSelectPatient(boolean selectPatient) {
+        this.selectPatient = selectPatient;
+    }
+
+    public boolean isAddNewProfile() {
+        return addNewProfile;
+    }
+
+    public void setAddNewProfile(boolean addNewProfile) {
+        this.addNewProfile = addNewProfile;
+    }
+    
+
+    
 }

@@ -100,7 +100,7 @@ public class PurchaseOrderController implements Serializable {
     public void clearList() {
         filteredValue = null;
         billsToApprove = null;
-        printPreview = false;
+        printPreview = true;
         billItems = null;
         aprovedBill = null;
         requestedBill = null;
@@ -142,9 +142,10 @@ public class PurchaseOrderController implements Serializable {
         getBillFacade().edit(getRequestedBill());
 
         clearList();
-
+        setPrintPreview(true);
+        System.out.println(getPrintPreview());
         return viewRequestedList();
-        //   printPreview = true;
+        
 
     }
     

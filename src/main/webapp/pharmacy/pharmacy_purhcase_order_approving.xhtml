@@ -10,15 +10,14 @@
     <ui:define name="content">
         <h:form>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderApproval')}" >
-                You are NOT authorized
-            </h:panelGroup>
-            <p:panel  rendered="#{webUserController.hasPrivilege('PharmacyOrderApproval')}" >
-                <p:panel rendered="#{!purchaseOrderController.printPreview}">
+            <h:panelGroup rendered="#{!purchaseOrderController.printPreview}">
+                <p:panel >
                     <f:facet name="header">
                         <h:panelGrid columns="5" style="min-width: 100%;">
                             <p:outputLabel value="Purchase order Request Order"/>
-                            <p:commandButton ajax="false"  value="Approve" action="#{purchaseOrderController.approve}"/>
+                            <p:commandButton ajax="false"  value="Approve" action="#{purchaseOrderController.approve}">
+                                <!--                                <p:printer target="gpBillPreview" ></p:printer>-->
+                            </p:commandButton>
                             <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
                                 <f:selectItem itemLabel="SelectPayment method"/>
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
@@ -50,7 +49,7 @@
                         <p:column headerText="Item Name" >  
                             #{bi.item.name} 
                         </p:column>  
-                        
+
                         <p:column headerText="Code" styleClass="shortNumericColumn"  >  
                             #{bi.item.code} 
                         </p:column>  
@@ -100,13 +99,15 @@
                             <p:commandButton value="Remove" ajax="false" action="#{purchaseOrderController.removeItem(bi)}"/>
                         </p:column>
                     </p:dataTable>  
-
+                    <h1>#{purchaseOrderController.printPreview}</h1>
                     <p:spacer height="50"/>
                     <ph:history/>
                 </p:panel>
-                <p:panel rendered="#{purchaseOrderController.printPreview}">
-                    <p:commandButton ajax="false" action="#{purchaseOrderController.viewRequestedList()}" value="Requested List"/>                    
-                    <p:commandButton value="Print" ajax="false" action="#" >
+            </h:panelGroup>
+            <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
+                <p:panel >
+                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
+                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print">
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
@@ -117,7 +118,8 @@
                     </p:panel>
 
                 </p:panel>
-            </p:panel>            
+            </h:panelGroup>
+
         </h:form>
     </ui:define>  
 
