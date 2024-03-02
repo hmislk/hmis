@@ -35,8 +35,8 @@
                     </div>
 
                     <div  class="w-50">
-                        <p:commandButton value="Add" action="#{packageItemController.addToPackage()}" class="ui-button-success w-25" icon="fas fa-plus" />
-                        <p:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" class="ui-button-Danger w-25 mx-1" icon="fas fa-trash"  />
+                        <p:commandButton value="Add" action="#{packageItemController.addToPackage()}" class="ui-button-success w-25" icon="fas fa-plus" ajax="false"/>
+                        <p:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" class="ui-button-Danger w-25 mx-1" icon="fas fa-trash"  ajax="false"/>
                     </div>
 
                     <p:dataTable value="#{packageItemController.serviceItems}" var="i" 
