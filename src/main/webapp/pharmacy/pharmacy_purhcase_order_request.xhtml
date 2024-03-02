@@ -13,45 +13,50 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
-                <p:panel  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
-                    <f:facet name="header">
-                        <p:outputLabel value="Purchase order Request Order"/>
-                    </f:facet>
-                    <div class="row">
+                <h:panelGroup  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
 
+                    <div class="row">
                         <div class="col-9">
-                            <p:dataTable styleClass="noBorder" rowIndexVar="i" var="bi" scrollable="true"
-                                         rowKey="#{bi.searialNo}"
-                                         scrollHeight="350" value="#{purchaseOrderRequestController.billItems}" 
-                                         selection="#{purchaseOrderRequestController.selectedBillItems}"
-                                         id="itemList" >  
+                            <p:dataTable 
+                                styleClass="noBorder" 
+                                rowIndexVar="i" 
+                                
+                                var="bi" 
+                                scrollable="false"
+                                rowKey="#{bi.searialNo}"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="6"
+                                paginatorAlwaysVisible="false"
+                                value="#{purchaseOrderRequestController.billItems}" 
+                                selection="#{purchaseOrderRequestController.selectedBillItems}"
+                                id="itemList" >  
 
                                 <f:facet name="header">  
                                     <div class="d-flex justify-content-between">
-                                        <h:outputLabel  value="Pharmacy Bill Item"/>
+                                        <h:outputLabel  value="Purchase Order Items"/>
                                         <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected" 
                                                          action="#{purchaseOrderRequestController.removeSelected()}"/>
                                     </div>
                                 </f:facet>  
 
-                                <p:column selectionMode="multiple" style="width: 30px;"/>
+                                <p:column selectionMode="multiple" style="width: 10px;"/>
 
 
-                                <p:column headerText="No" style="width: 50px;" >
-                                    #{bi.searialNo+1}
+                                <p:column headerText="No" style="width: 20px;" >
+                                    <h:outputLabel value="#{bi.searialNo+1}" >
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    
                                 </p:column>
 
-                                <p:column headerText="Item Name"  >  
+                                <p:column headerText="Item"  >  
                                     #{bi.item.name}  - #{bi.item.code} 
                                 </p:column>
 
-                                <p:column headerText="Code" styleClass="shortNumericColumn"  >  
-                                    #{bi.item}
-                                </p:column>
-
                                 <p:column headerText="Qty" styleClass="averageNumericColumn" > 
-                                    <p:inputText autocomplete="off"  id="qty" value="#{bi.qty}" style="width:100%" label="Qty">  
-                                        <f:convertNumber pattern="#00.00"/>
+                                    <p:inputText autocomplete="off"  id="qty" value="#{bi.qty}" style="width:4em; text-align: right;" label="Qty">  
+                                        <f:convertNumber pattern="00"/>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
@@ -94,9 +99,7 @@
                             </p:dataTable> 
                         </div>
                         <div class="col-3">
-                            <p:panel class="my-1" header="Order Details">
-
-
+                            <p:panel header="Purchase Order">
                                 <p:outputLabel value="Supplier"
                                                class="form-label"
                                                for="acSupplier"></p:outputLabel>
@@ -114,10 +117,10 @@
                                     <f:ajax
                                         event="itemSelect" 
                                         execute="@this" 
-                                        render=":#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('exItem',view).clientId}" 
-                                        listener="#{purchaseOrderRequestController.setInsListener}"/>
+                                        render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}" 
+                                        />
                                 </p:autoComplete>
-                                
+
                                 <p:outputLabel value="Payment Method"
                                                class="form-label"
                                                for="cmbPs"></p:outputLabel>
@@ -125,13 +128,13 @@
                                     <f:selectItem itemLabel="SelectPayment method"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                                 </p:selectOneMenu>
-                                
-                                <p:outputLabel value="Total Value"
-                                               class="form-label w-100"
-                                               for="tot"></p:outputLabel>
-                                <p:outputLabel class="m-1" 
+
+                                <p:outputLabel 
+                                    value="Total Value"
+                                    class="form-label w-100"
+                                    for="tot"></p:outputLabel>
+                                <p:outputLabel class="m-1 w-100" 
                                                id="tot" 
-                                               class="w-100"
                                                style="font-weight: bold;" 
                                                value="#{purchaseOrderRequestController.currentBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -175,9 +178,10 @@
                                 <p:selectOneMenu 
                                     id="exDItem" 
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
-                                    forceSelection="true"
                                     class="w-75"
                                     inputStyleClass="w-100"
+                                    filterMatchMode="contains"
+                                    filter="true"
                                     completeMethod="#{purchaseOrderRequestController.dealorItems}"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
@@ -189,7 +193,6 @@
                                     <p:column headerText="Department Stock" >
                                         <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
                                     </p:column>
-                                    <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{purchaseOrderRequestController.dealorItems}" var="di" itemLabel="#{di.name}" itemValue="#{di}" ></f:selectItems>
                                 </p:selectOneMenu>
                                 <p:commandButton 
@@ -202,7 +205,7 @@
                                 <p:outputLabel 
                                     for="exItem" 
                                     class="form-label w-100"
-                                    value="Select Ant Item and Add" ></p:outputLabel>
+                                    value="Select An Item and Add" ></p:outputLabel>
                                 <p:autoComplete 
                                     id="exItem"
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
@@ -227,10 +230,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-2">
+                    <div >
                         <ph:history/>
                     </div>
-                </p:panel>  
+                </h:panelGroup>  
 
 
                 <p:panel 
