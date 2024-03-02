@@ -247,6 +247,7 @@ public class PatientPortalController {
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
         bookingController.add();
+        bookingController.sendSmsAfterBooking();
     }
 
     public String getPatientphoneNumber() {
