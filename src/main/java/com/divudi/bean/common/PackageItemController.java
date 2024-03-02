@@ -182,6 +182,7 @@ public class PackageItemController implements Serializable {
         getFacade().edit(getCurrent());
         JsfUtil.addSuccessMessage("Item Removed");
         recreateModel();
+        getItems();
     }
 
     /**
