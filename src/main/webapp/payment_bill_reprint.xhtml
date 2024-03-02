@@ -86,7 +86,7 @@
                             </div>
                         </div>
                             <p:panel header="Bill Fee Details" class="my-2">
-                                <p:dataTable value="#{billSearch.billItems}" var="bip21" emptyMessage="No Items" >
+                                <p:dataTable value="#{billSearch.bill.billItems}" var="bip21" emptyMessage="No Items" >
                                     <p:column headerText="Bill No">
                                         <h:outputLabel value="#{bip21.referenceBill.insId}" />
                                     </p:column>

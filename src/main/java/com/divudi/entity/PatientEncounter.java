@@ -154,7 +154,7 @@ public class PatientEncounter implements Serializable {
     private Double bmi = null;
     private Long pr = null;
     private Double height = null;
-    private Integer pulseRate = null;
+    private Integer respiratoryRate = null;
     private Integer pfr = null;
     private Double saturation = null;
     @ManyToOne
@@ -996,12 +996,12 @@ public class PatientEncounter implements Serializable {
         this.referringStaff = referringStaff;
     }
 
-    public Integer getPulseRate() {
-        return pulseRate;
+    public Integer getRespiratoryRate() {
+        return respiratoryRate;
     }
 
-    public void setPulseRate(Integer pulseRate) {
-        this.pulseRate = pulseRate;
+    public void setRespiratoryRate(Integer respiratoryRate) {
+        this.respiratoryRate = respiratoryRate;
     }
 
     public Integer getPfr() {

@@ -77,9 +77,13 @@
                         <p:commandButton ajax="false" icon="far fa-eye" class="ui-button-info " action="pharmacy_reprint_transfer_request">
                             <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                         </p:commandButton>
-                    
-                        <p:commandButton ajax="false" icon="fas fa-check" class="ui-button-success mx-2" action="pharmacy_transfer_issue"
-                                         disabled="#{p.cancelled eq true}">
+
+                        <p:commandButton 
+                            ajax="false" 
+                            icon="fas fa-check" 
+                            class="ui-button-success mx-2" 
+                            action="#{transferIssueController.navigateToPharmacyIssueForRequests}"
+                            disabled="#{p.cancelled eq true}">
                             <f:setPropertyActionListener target="#{transferIssueController.requestedBill}" value="#{p}"/>
                         </p:commandButton>
                     </p:column>

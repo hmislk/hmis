@@ -269,6 +269,12 @@ public class UserPrivilageController implements Serializable {
         TreeNode orderApprovalNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderApproval, "Order Approval"), orderNode);
         TreeNode orderCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Order Cancellation"), orderNode);
 
+        TreeNode disbursementNode = new DefaultTreeNode("Pharmacy Disbursement", pharmacyNode);
+        TreeNode disbursementRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequest, "Request"), disbursementNode);
+        TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
+        TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
+        TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+        
         TreeNode saleNode = new DefaultTreeNode("Sale", pharmacyNode);
         TreeNode pharmacySaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), saleNode);
         TreeNode pharmacySaleWithoutStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale without Stock"), saleNode);

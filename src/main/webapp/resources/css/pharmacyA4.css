@@ -10,6 +10,11 @@ root {
     display: block;
 }
 
+@media print {
+  .shadow, .shadow-sm, .shadow-lg {
+    box-shadow: none !important;
+  }
+}
 
 @media print{
     .posbill{

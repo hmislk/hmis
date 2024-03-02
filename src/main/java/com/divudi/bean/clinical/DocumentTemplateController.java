@@ -116,6 +116,7 @@ public class DocumentTemplateController implements Serializable {
                 + "{bp}<br/>"
                 + "{pr}<br/>"
                 + "{pfr}<br/>"
+                + "{rr}<br/>"
                 + "{sat}<br/>";
         return contents;
     }
