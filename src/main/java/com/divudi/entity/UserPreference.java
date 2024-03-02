@@ -137,6 +137,10 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
+    
+    @Enumerated(EnumType.STRING)
+    private PaperType inwardDepositPaymentBillPaper;
+    
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
@@ -219,15 +223,11 @@ public class UserPreference implements Serializable {
     private boolean printOpdTokenNumber=true;
     
     private boolean autodisplayMenu = true;
-    
     //User Preference for Financial transaction manager
-    
     private boolean showBillWiseDetails;
-    private boolean transferMonyToMyself;
-    
-    
-
-    
+    @Lob
+    private String inpatientFinalBillPrintHeader;
+    private String changeTextCasesPatientName;
     
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1023,6 +1023,8 @@ public class UserPreference implements Serializable {
         }
         return longTimeFormat;
     }
+    
+    
 
     public void setLongTimeFormat(String longTimeFormat) {
         this.longTimeFormat = longTimeFormat;
@@ -1155,16 +1157,32 @@ public class UserPreference implements Serializable {
         this.showBillWiseDetails = showBillWiseDetails;
     }
 
-    public boolean isTransferMonyToMyself() {
-        return transferMonyToMyself;
+    public String getInpatientFinalBillPrintHeader() {
+        return inpatientFinalBillPrintHeader;
     }
 
-    public void setTransferMonyToMyself(boolean TransferMonyToMyself) {
-        this.transferMonyToMyself = transferMonyToMyself;
+    public void setInpatientFinalBillPrintHeader(String inpatientFinalBillPrintHeader) {
+        this.inpatientFinalBillPrintHeader = inpatientFinalBillPrintHeader;
+    }
+
+    public String getChangeTextCasesPatientName() {
+        return changeTextCasesPatientName;
+    }
+
+    public void setChangeTextCasesPatientName(String textCase) {
+        this.changeTextCasesPatientName = textCase;
     }
     
     
-    
-    
+    public PaperType getInwardDepositPaymentBillPaper() {
+        if (inwardDepositPaymentBillPaper == null) {
+            inwardDepositPaymentBillPaper = PaperType.A4Paper;
+        }
+        return inwardDepositPaymentBillPaper;
+    }
+
+    public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
+        this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
+    }
 
 }
