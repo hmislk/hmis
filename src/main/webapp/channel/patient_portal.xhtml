@@ -204,7 +204,7 @@
                             <div>
                                 <div>
                                     <p:outputLabel value="Title:"  class="form-label" />
-                                    <p:selectOneMenu id="cmbTitle" value="#{patientPortalController.patient.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
+                                    <p:selectOneMenu id="cmbTitle" value="#{patientPortalController.patient.person.title}" class="form-control" requiredMessage="Please Select a title">
                                         <f:selectItem itemLabel="Select Title" />
                                         <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                        itemValue="#{i}" />
@@ -229,7 +229,6 @@
                                 <div class="mx-2 w-100">
                                     <p:outputLabel value="Enter Phone number"/>
                                     <p:inputText 
-                                        required="true"
                                         value="#{patientPortalController.patient.phoneNumberStringTransient}" 
                                         class="form-control" 
                                         validatorMessage="Please enter Valid Phone Number."
