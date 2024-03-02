@@ -108,21 +108,16 @@ public class PatientPortalController {
     CommonController commonController;
     private ChannelBean channelBean;
 
-    public void addNewProfile(){
-        patient = new Patient();
-        addNewProfile=true;
-        
-    }
-    
     public void saveNewPatient(){
-        addNewProfile=false;
+        patientController.save(patient);
     }
     
     public void reset() {
         patient = null;
         searchedPatients = null;
         otpVerify = false;
-        searchedPatientIsNull=false;
+        searchedPatientIsNull = false;
+        addNewProfile = false;
     }
 
     public List<Staff> fillConsultants() {
@@ -206,6 +201,9 @@ public class PatientPortalController {
     }
 
     public void findPatients() {
+        if (patient == null) {
+            patient = new Patient();
+        }
         if (otpVerify) {
             searchedPatients = new ArrayList<>();
             String j;
@@ -218,10 +216,8 @@ public class PatientPortalController {
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
-                
             }
-            
-            selectPatient=true;
+            selectPatient = true;
         }
     }
 
@@ -498,7 +494,5 @@ public class PatientPortalController {
     public void setAddNewProfile(boolean addNewProfile) {
         this.addNewProfile = addNewProfile;
     }
-    
 
-    
 }
