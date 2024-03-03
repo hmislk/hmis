@@ -72,6 +72,8 @@ public class PatientPortalController {
     private SessionInstance selectedSessionInstance;
     private boolean selectPatient;
     private boolean addNewProfile;
+    private boolean addNewPatient;
+    private boolean bookingCompleted;
 
     ScheduleModel eventModel;
     Staff staff;
@@ -110,6 +112,7 @@ public class PatientPortalController {
 
     public void saveNewPatient(){
         patientController.save(patient);
+        addNewPatient = false;
     }
     
     public void reset() {
@@ -118,6 +121,8 @@ public class PatientPortalController {
         otpVerify = false;
         searchedPatientIsNull = false;
         addNewProfile = false;
+        bookingCompleted = false;
+        addNewPatient = false;
     }
 
     public List<Staff> fillConsultants() {
@@ -143,6 +148,14 @@ public class PatientPortalController {
             System.out.println("channelSessions = " + channelSessions.size());
         }
 
+    }
+    
+    public void addNewPatientAction(){
+        addNewPatient = true;
+    }
+    
+    public void GoBackfromPatientAddAction(){
+        addNewPatient = false;
     }
 
     public void fillSessionInstance() {
@@ -220,8 +233,10 @@ public class PatientPortalController {
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
+                addNewPatient =true;
             }
             selectPatient = true;
+            addNewPatient =false;
         }
     }
 
@@ -252,6 +267,8 @@ public class PatientPortalController {
         bookingController.setSelectedServiceSession(selectedChannelSession);
         bookingController.add();
         bookingController.sendSmsAfterBooking();
+        bookingCompleted = true;
+        JsfUtil.addSuccessMessage("Your Booking Successfull");
     }
 
     public String getPatientphoneNumber() {
@@ -499,5 +516,14 @@ public class PatientPortalController {
     public void setAddNewProfile(boolean addNewProfile) {
         this.addNewProfile = addNewProfile;
     }
+
+    public boolean isAddNewPatient() {
+        return addNewPatient;
+    }
+
+    public void setAddNewPatient(boolean addNewPatient) {
+        this.addNewPatient = addNewPatient;
+    }
+    
 
 }
