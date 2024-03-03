@@ -562,6 +562,40 @@ public class PharmacyController implements Serializable {
     }
 
     // </editor-fold>
+    public void clearItemHistory() {
+
+        grantStock = 0.00;
+        grantSaleQty = 0.00;
+        grantSaleValue = 0.00;
+        grantWholeSaleQty = 0.00;
+        grantWholeSaleValue = 0.00;
+        grantBhtIssueQty = 0.00;
+        grantBhtValue = 0.00;
+        grantTransferIssueQty = 0.00;
+        grantTransferIssueValue = 0.00;
+        grantTransferReceiveQty = 0.00;
+        grantTransferReceiveValue = 0.00;
+        grantIssueQty = 0.00;
+        grantIssueValue = 0.00;
+
+        fromDate = CommonFunctions.getStartOfMonth();
+        toDate = CommonFunctions.getEndOfDay(new Date());
+
+        pharmacyItem = null;
+        institutionStocks = null;
+        institutionSales = null;
+        grns = null;
+        institutionWholeSales = null;
+        institutionBhtIssue = null;
+        institutionTransferIssue = null;
+        institutionTransferReceive = null;
+        institutionIssue = null;
+        pos = null;
+        directPurchase = null;
+        ampps = null;
+
+    }
+
     public void deleteSelectedPharmaceuticalLight() {
         if (selectedLights == null || selectedLights.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected");

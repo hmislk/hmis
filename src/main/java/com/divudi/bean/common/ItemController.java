@@ -2549,29 +2549,22 @@ public class ItemController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext context, UIComponent component, String value) {
-            System.out.println("getAsObject");
-            System.out.println("value = " + value);
             if (value == null || value.isEmpty()) {
                 return null;
             }
             try {
                 Long id = Long.valueOf(value);
-                System.out.println("id = " + id);
                 ItemController controller = (ItemController) context.getApplication().getELResolver()
                         .getValue(context.getELContext(), null, "itemController");
                 ItemLight il = controller.findItemLightById(id);
-                System.out.println("il = " + il);
                 return il;
             } catch (NumberFormatException e) {
-                System.out.println("e = " + e);
                 return null;
             }
         }
 
         @Override
         public String getAsString(FacesContext context, UIComponent component, Object value) {
-            System.out.println("getAsString");
-            System.out.println("value = " + value);
             if (value instanceof ItemLight) {
                 return ((ItemLight) value).getId().toString(); // Assuming getId() returns the ID
             }
