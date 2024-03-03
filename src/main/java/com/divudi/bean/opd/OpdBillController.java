@@ -1301,6 +1301,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
                 updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getLoggedPreference().getChangeTextCasesPatientName());
+                System.out.println("updatedPatientName = " + updatedPatientName);
                 getPatient().getPerson().setName(updatedPatientName);
             }
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
