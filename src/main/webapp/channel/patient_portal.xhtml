@@ -41,26 +41,35 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item ">
                                 <div>
+                                    <h6>Select Speciality</h6>
+                                </div>
+                                <div>
+                                    <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                    <div>
+                                        <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
+                                            <f:selectItem itemLabel="Select One" itemValue="con" />
+                                            <f:selectItems  value="#{doctorSpecialityController.selectedItems}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
+                                            <p:ajax event="itemSelect" listener="#{patientPortalController.fillConsultants()}" process="acSpeciality" update="scStaff" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <h6>Select Doctor</h6>
                                 </div>
                                 <div>
-                                    <p:autoComplete id="scStaff" 
-                                                    forceSelection="true"
-                                                    value="#{patientPortalController.selectedConsultant}"
-                                                    completeMethod="#{patientPortalController.fillConsultants()}"
-                                                    var="ri" 
-                                                    itemLabel="#{ri.name}" 
-                                                    itemValue="#{ri}"
-                                                    size="10"
-                                                    inputStyleClass="form-control"
-                                                    class="w-100">
-                                        <p:ajax  event="itemSelect"
-                                                 listener="#{patientPortalController.fillChannelSessions()}"
-                                                 process="scStaff"
-                                                 update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"
-                                                 />
-                                        <p:column>#{ri.name}</p:column>
-                                    </p:autoComplete>
+                                    <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
+                                    <div>
+                                        <p:selectOneMenu  class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
+                                            <f:selectItem itemLabel="Select One" itemValue="con" />
+                                            <f:selectItems  value="#{patientPortalController.consultants}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
+                                            <p:ajax  event="itemSelect"
+                                                     listener="#{patientPortalController.fillChannelSessions()}"
+                                                     process="scStaff"
+                                                     update=":#{p:resolveFirstComponentWithId('acSessions',view).clientId}"
+                                                     />
+                                        </p:selectOneMenu>
+                                    </div>
                                 </div>
                             </li>
 
@@ -225,7 +234,7 @@
                                     <p:outputLabel value="Enter The Name Of The Patient"/>
                                     <p:inputText value="#{patientPortalController.patient.person.name}" />
                                 </div>
-                                
+
                                 <div class="mx-2 w-100">
                                     <p:outputLabel value="Enter Phone number"/>
                                     <p:inputText 
