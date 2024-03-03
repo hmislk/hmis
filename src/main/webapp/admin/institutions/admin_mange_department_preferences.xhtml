@@ -359,6 +359,9 @@
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
+                                        
+                                        <h:outputLabel value="Change Authentication code size (Default size 4 )"></h:outputLabel>
+                                        <p:inputText id="otpIn" value="#{sessionController.currentPreference.otpIndexes}" />
 
 
                                     </h:panelGrid>
@@ -462,8 +465,7 @@
                                         <h:outputLabel value="Show All Payment Details Bill Wise"></h:outputLabel>
                                         <p:selectBooleanButton value="#{sessionController.currentPreference.showBillWiseDetails}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
                                         <h:outputLabel value="Can Transfer Cash to MySelf"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.transferMonyToMyself}" offIcon="fas fa-times" onIcon="fas fa-check" ></p:selectBooleanButton>
-
+                                        
                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>
