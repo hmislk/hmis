@@ -140,6 +140,18 @@ public class GrnController implements Serializable {
 
     }
 
+    public void duplicateItem(BillItem bi) {
+        BillItem updateBillItem = new BillItem();
+        if (bi != null) {
+            System.out.println("updateBillItem = " + bi.getItem().getName());
+            updateBillItem.setItem(bi.getItem());
+            getBillItems().add(updateBillItem);
+        }
+
+        calGrossTotal();
+
+    }
+
     public void removeSelected() {
         //  //System.err.println("1");
         if (selectedBillItems == null) {

@@ -484,7 +484,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         setDiscount(dis);
-        setTotal(tot);
+        setTotal(net);
         setNetTotal(net);
     }
 
@@ -967,11 +967,21 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void setItemLight(ItemLight itemLight) {
-        System.out.println("itemLight Mee= " + itemLight);
         this.itemLight=itemLight;
         if (this.itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(this.itemLight.getId()));
         }
+    }
+    public void feeChangeListener(BillFee bf) {
+        if (bf.getFeeGrossValue() == null) {
+            bf.setFeeGrossValue(0.0);
+//            return;
+        }
+
+        lstBillItems = null;
+        getLstBillItems();
+        bf.setTmpChangedValue(bf.getFeeGrossValue());
+        calTotals();
     }
   
     public PaymentSchemeController getPaymentSchemeController() {
@@ -982,10 +992,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.paymentSchemeController = paymentSchemeController;
     }
 
+    @Override
     public boolean isPatientDetailsEditable() {
         return patientDetailsEditable;
     }
 
+    @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
         this.patientDetailsEditable = patientDetailsEditable;
     }

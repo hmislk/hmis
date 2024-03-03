@@ -234,7 +234,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
-    public void generateBillComponent() {
+    public void generateBillComponentsForAllSupplierItems() {
         // int serialNo = 0;
         setBillItems(new ArrayList<BillItem>());
         for (Item i : getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution())) {
@@ -283,20 +283,12 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    public void createOrderWithItems() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
+    public void addAllSupplierItems() {
         if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please Select Dealor");
-
+            return;
         }
-
-        generateBillComponent();
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(Fill with Item)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
-
+        generateBillComponentsForAllSupplierItems();
     }
 
     public void request() {
@@ -325,6 +317,21 @@ public class PurchaseOrderRequestController implements Serializable {
 
     }
 
+    public List<Item> getDealorItems() {
+        List<Item> lst;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c.item "
+                + " from ItemsDistributors c"
+                + " where c.retired=false "
+                + " and c.item.retired=false "
+                + " and c.institution=:ins "
+                + " order by c.item.name";
+        hm.put("ins", getCurrentBill().getToInstitution());
+        lst = itemFacade.findByJpql(sql, hm, 200);
+        return lst;
+    }
+
     public void requestFinalize() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -342,7 +349,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         finalizeBill();
         saveBillComponent();
-        JsfUtil.addSuccessMessage("Request Succesfully Created");
+        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
     }
@@ -367,7 +374,6 @@ public class PurchaseOrderRequestController implements Serializable {
     private ItemController itemController;
 
     public void setInsListener() {
-
         getItemController().setInstitution(getCurrentBill().getToInstitution());
     }
 
