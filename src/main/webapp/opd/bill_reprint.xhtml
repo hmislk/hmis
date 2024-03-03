@@ -21,7 +21,6 @@
                                 <div class="d-flex m-1 col-6">
                                     <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundBills ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
                                     </p:commandButton>
-                                    #{billSearch.bill.refundBills ne null}
                                     <p:commandButton ajax="false" value="To Refund" action="#{billSearch.navigateToRefundOpdBill()}" disabled="#{billSearch.bill.cancelled}" class="ui-button-warning m-1 w-25" icon="fa fa-money-bill-wave">                          
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" class="w-50 m-1"
