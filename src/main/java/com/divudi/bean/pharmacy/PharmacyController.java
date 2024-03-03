@@ -1181,52 +1181,6 @@ public class PharmacyController implements Serializable {
 
     }
 
-    public double findStock(Item item) {
-        return findStock(null, item);
-    }
-
-    public double findStock(Institution institution, Item item) {
-        if (item instanceof Amp) {
-            Amp amp = (Amp) item;
-            return PharmacyController.this.findStock(institution, amp);
-        } else if (item instanceof Vmp) {
-            List<Amp> amps = vmpController.ampsOfVmp(item);
-            return findStock(institution, amps);
-        } else {
-            //TO Do for Ampp, Vmpp,
-            return 0.0;
-        }
-    }
-
-    public double findStock(Institution institution, Amp item) {
-        List<Amp> amps = new ArrayList<>();
-        amps.add(item);
-        return findStock(institution, amps);
-    }
-
-    public double findStock(Institution institution, List<Amp> amps) {
-        Double stock = null;
-        String jpql;
-        Map m = new HashMap();
-
-        m.put("amps", amps);
-        jpql = "select sum(i.stock) "
-                + " from Stock i ";
-        if (institution == null) {
-            jpql += " where i.itemBatch.item in :amps ";
-        } else {
-            m.put("ins", institution);
-            jpql += " where i.department.institution=:ins "
-                    + " and i.itemBatch.item in :amps ";
-        }
-
-        stock = getBillItemFacade().findDoubleByJpql(jpql, m);
-        if (stock != null) {
-            return stock;
-        }
-        return 0.0;
-    }
-
     public List<Object[]> calDepartmentTransferIssue(Institution institution) {
         Item item;
 
@@ -1361,6 +1315,65 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public double findAllOutTransactions(Item item) {
+        if (item instanceof Amp) {
+            return findAllOutTransactions((Amp) amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp((Vmp) item);
+            return findAllOutTransactions(amps);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findAllOutTransactions(Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findAllOutTransactions(amps);
+    }
+
+    public double findAllOutTransactions(List<Amp> amps) {
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyBhtPre);
+        bts.add(BillType.PharmacyPre);
+        return findTransactionStocks(null, null, bts, amps, fromDate, toDate);
+    }
+
+    public double findTransactionStocks(Department dep, Institution ins, List<BillType> billTypes, List<Amp> amps, Date fd, Date td) {
+        StringBuilder jpqlBuilder = new StringBuilder();
+        Map<String, Object> parameters = new HashMap<>();
+
+        jpqlBuilder.append("select sum(i.pharmaceuticalBillItem.qty) from BillItem i where i.retired = false");
+
+        if (dep != null) {
+            jpqlBuilder.append(" and i.bill.department = :dep");
+            parameters.put("dep", dep);
+        }
+        if (ins != null) {
+            jpqlBuilder.append(" and i.bill.department.institution = :ins");
+            parameters.put("ins", ins);
+        }
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpqlBuilder.append(" and i.bill.billType in :btp");
+            parameters.put("btp", billTypes);
+        }
+        if (amps != null && !amps.isEmpty()) {
+            jpqlBuilder.append(" and i.item in :itm");
+            parameters.put("itm", amps);
+        }
+        if (fd != null && td != null) {
+            jpqlBuilder.append(" and i.createdAt between :frm and :to");
+            parameters.put("frm", fd);
+            parameters.put("to", td);
+        }
+
+        jpqlBuilder.append(" group by i.bill.department");
+
+        String jpql = jpqlBuilder.toString();
+        double qty = getBillItemFacade().findDoubleByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        return qty;
+    }
+
     public double findTransactionQuentity(Item item) {
         //TO DO Senula
         List<BillType> billTypes = new ArrayList<>();
@@ -1368,7 +1381,7 @@ public class PharmacyController implements Serializable {
         billTypes.add(BillType.InwardPharmacyRequest);
         return 0.0;
     }
-    
+
     public double findTransactionQuentity(Institution institution, Amp item, List<BillType> billTypes) {
         //TO DO Senula
         return 0.0;
