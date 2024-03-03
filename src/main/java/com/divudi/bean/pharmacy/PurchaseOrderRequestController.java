@@ -318,17 +318,21 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public List<Item> getDealorItems() {
+        System.out.println("getDealorItems");
         List<Item> lst;
-        String sql;
+        String jpql;
         HashMap hm = new HashMap();
-        sql = "select c.item "
+        jpql = "select c.item "
                 + " from ItemsDistributors c"
                 + " where c.retired=false "
                 + " and c.item.retired=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
-        lst = itemFacade.findByJpql(sql, hm, 200);
+        System.out.println("hm = " + hm);
+        System.out.println("jpql = " + jpql);
+        lst = itemFacade.findByJpql(jpql, hm, 200);
+        System.out.println("lst = " + lst.size());
         return lst;
     }
 
@@ -349,9 +353,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
         finalizeBill();
         saveBillComponent();
-        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
+        JsfUtil.addSuccessMessage("Request Succesfully Completed.");
         printPreview = true;
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
     }
 
     public void calTotal() {
@@ -415,6 +418,7 @@ public class PurchaseOrderRequestController implements Serializable {
             currentBill.setBillType(BillType.PharmacyOrder);
             currentBill.setPaymentMethod(PaymentMethod.Credit);
         }
+        System.out.println("currentBill = " + currentBill);
         return currentBill;
     }
 
