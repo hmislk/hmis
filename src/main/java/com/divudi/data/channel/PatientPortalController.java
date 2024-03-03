@@ -125,6 +125,10 @@ public class PatientPortalController {
         Map m = new HashMap();
         String sql = "select p from Staff p where p.retired=false and type(p)=:stype";
         m.put("stype", Consultant.class);
+        if (selectedSpeciality!=null) {
+            sql+=" and p.speciality= :sp";
+            m.put("sp", selectedSpeciality);
+        }
         consultants = staffFacade.findByJpql(sql, m);
         return consultants;
     }
@@ -247,6 +251,7 @@ public class PatientPortalController {
         bookingController.setSelectedSessionInstance(selectedSessionInstance);
         bookingController.setSelectedServiceSession(selectedChannelSession);
         bookingController.add();
+        bookingController.sendSmsAfterBooking();
     }
 
     public String getPatientphoneNumber() {
