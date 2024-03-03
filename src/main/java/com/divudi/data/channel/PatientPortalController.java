@@ -20,6 +20,7 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Sms;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
@@ -166,12 +167,16 @@ public class PatientPortalController {
     }
 
     public void otpCodeConverter() {
+        int codeSize;
+        if (sessionController.getCurrentPreference().getOtpIndexes()== null) {
+            codeSize=4;
+        }
+        codeSize=Integer.parseInt(sessionController.getCurrentPreference().getOtpIndexes());
         String numbers = "0123456789";
-
         Random random = new Random();
         StringBuilder otpBuilder = new StringBuilder();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < codeSize; i++) {
             int index = random.nextInt(numbers.length());
             otpBuilder.append(numbers.charAt(index));
         }

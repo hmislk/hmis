@@ -137,10 +137,10 @@ public class UserPreference implements Serializable {
     private PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     private PaperType channelBillPaperType;
-    
+
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
-    
+
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
@@ -209,26 +209,28 @@ public class UserPreference implements Serializable {
     private String emailRegex;
     private String nicRegex;
 
+    private String otpIndexes;
+
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy opdItemListingStrategy;
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy ccItemListingStrategy;
-    
+
     @Enumerated(value = EnumType.STRING)
     private OpdBillingStrategy opdBillingStrategy;
-    
+
     @Enumerated(value = EnumType.STRING)
     private OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy;
-    private boolean printOpdTokenNumber=true;
-    
+    private boolean printOpdTokenNumber = true;
+
     private boolean autodisplayMenu = true;
     //User Preference for Financial transaction manager
     private boolean showBillWiseDetails;
     @Lob
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
-    
+
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -1023,8 +1025,6 @@ public class UserPreference implements Serializable {
         }
         return longTimeFormat;
     }
-    
-    
 
     public void setLongTimeFormat(String longTimeFormat) {
         this.longTimeFormat = longTimeFormat;
@@ -1112,8 +1112,8 @@ public class UserPreference implements Serializable {
     }
 
     public OpdTokenNumberGenerationStrategy getOpdTokenNumberGenerationStrategy() {
-        if(opdTokenNumberGenerationStrategy==null){
-            opdTokenNumberGenerationStrategy=OpdTokenNumberGenerationStrategy.BILLS_BY_DEPARTMENT_CATEGORY_AND_FROMSTAFF;
+        if (opdTokenNumberGenerationStrategy == null) {
+            opdTokenNumberGenerationStrategy = OpdTokenNumberGenerationStrategy.BILLS_BY_DEPARTMENT_CATEGORY_AND_FROMSTAFF;
         }
         return opdTokenNumberGenerationStrategy;
     }
@@ -1123,8 +1123,8 @@ public class UserPreference implements Serializable {
     }
 
     public OpdBillingStrategy getOpdBillingStrategy() {
-        if(opdBillingStrategy==null){
-            opdBillingStrategy=OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT;
+        if (opdBillingStrategy == null) {
+            opdBillingStrategy = OpdBillingStrategy.ONE_BILL_PER_DEPARTMENT;
         }
         return opdBillingStrategy;
     }
@@ -1172,8 +1172,7 @@ public class UserPreference implements Serializable {
     public void setChangeTextCasesPatientName(String textCase) {
         this.changeTextCasesPatientName = textCase;
     }
-    
-    
+
     public PaperType getInwardDepositPaymentBillPaper() {
         if (inwardDepositPaymentBillPaper == null) {
             inwardDepositPaymentBillPaper = PaperType.A4Paper;
@@ -1183,6 +1182,17 @@ public class UserPreference implements Serializable {
 
     public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
+    }
+
+    public String getOtpIndexes() {
+        return otpIndexes;
+    }
+
+    public void setOtpIndexes(String otpIndexes) {
+        if (otpIndexes == null) {
+           this.otpIndexes = "";
+        }
+        this.otpIndexes = otpIndexes;
     }
 
 }
