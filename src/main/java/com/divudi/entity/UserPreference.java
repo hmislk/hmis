@@ -223,18 +223,11 @@ public class UserPreference implements Serializable {
     private boolean printOpdTokenNumber=true;
     
     private boolean autodisplayMenu = true;
-    
     //User Preference for Financial transaction manager
-    
     private boolean showBillWiseDetails;
-    
     @Lob
     private String inpatientFinalBillPrintHeader;
-    
     private String changeTextCasesPatientName;
-    
-
-    
     
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
