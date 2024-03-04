@@ -140,6 +140,8 @@ public class UserPreference implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
+    
+    private boolean partialPaymentOfPharmacyBillsAllowed;
 
     @Deprecated
     @Enumerated(EnumType.STRING)
@@ -1201,5 +1203,15 @@ public class UserPreference implements Serializable {
     public void setOtpIndexes(String otpIndexes) {
         this.otpIndexes = otpIndexes;
     }
+
+    public boolean isPartialPaymentOfPharmacyBillsAllowed() {
+        return partialPaymentOfPharmacyBillsAllowed;
+    }
+
+    public void setPartialPaymentOfPharmacyBillsAllowed(boolean partialPaymentOfPharmacyBillsAllowed) {
+        this.partialPaymentOfPharmacyBillsAllowed = partialPaymentOfPharmacyBillsAllowed;
+    }
+    
+    
 
 }
