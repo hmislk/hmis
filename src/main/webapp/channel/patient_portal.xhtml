@@ -19,19 +19,26 @@
     <h:body class="container-fluid">
         <h:form id="form">
             <div class="row">
-                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark mb-1 p-4">
+                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark mb-1 p-0">
+                    <!-- Navbar toggler button -->
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-                        <a class="navbar-brand">Channel Your Doctor</a>
-                        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
 
+                    <!-- Navbar brand and collapsible content -->
+                    <div class="collapse navbar-collapse m-4" id="navbarTogglerDemo01">
+                        <a class="navbar-brand ml-4">Channel Your Doctor</a>
+                        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                            <!-- Add your navbar items here -->
                         </ul>
+                    </div>
+
+                    <!-- Button on opposite corner -->
+                    <div>
+                        <p:commandButton value="Logout" class="ui-button-danger m-4" icon="fas fa-right-from-bracket" ajax="false" action="#{patientPortalController.reset}" rendered="#{patientPortalController.otpVerify}"></p:commandButton>
                     </div>
                 </nav>
             </div>
-
             <h:panelGroup rendered="#{patientPortalController.patient.id ne null}">
                 <div class="d-flex justify-content-center align-items-center mt-4 ">
                     <div class="card shadow-lg p-1 container">
@@ -60,7 +67,7 @@
                                 <div>
                                     <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
                                     <div>
-                                        <p:selectOneMenu  class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
+                                        <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
                                             <f:selectItem itemLabel="Select One" itemValue="con" />
                                             <f:selectItems  value="#{patientPortalController.consultants}"  var="spe" itemLabel="#{spe.name}" itemValue="#{spe}" />
                                             <p:ajax  event="itemSelect"
@@ -85,7 +92,7 @@
                                     </p:selectOneMenu>
                                 </div>
                             </li>
-                            <p:commandButton value="Search" icon="fas fa-search" class="ui-button-danger" ajax="false" />
+                            <p:commandButton value="Search" icon="fas fa-search" class="ui-button-warning" ajax="false" />
                         </ul>
                     </div>
                 </div>
@@ -119,7 +126,7 @@
                                     <h3 class="mx-4">#{s.displayCount}</h3>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
-                                    <p:commandButton value="Channel" class="ui-button-danger" action="#{patientPortalController.addBooking}">
+                                    <p:commandButton value="Book Channel" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
                                         <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>
@@ -165,8 +172,8 @@
                 </div>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}">
-                <h:panelGroup >
+            <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
+                <h:panelGroup rendered="#{!patientPortalController.addNewPatient}" class="w-100" >
                     <div class="d-flex justify-content-center align-items-center" style="min-width: 25rem;">
                         <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
                             <div class="card-header text-center d-flex align-items-center justify-content-between">
@@ -190,24 +197,25 @@
                                                 </p>
                                             </div>
                                             <div class="d-flex justify-content-end  p-2">
-                                                <p:commandButton value="Select" class="ui-button-danger" ajax="false">
+                                                <p:commandButton value="Select" class="ui-button-success" ajax="false">
                                                     <f:setPropertyActionListener value="#{sp}" target="#{patientPortalController.patient}"/>
                                                 </p:commandButton>
                                             </div>
                                         </div>
                                     </div>
                                 </ui:repeat>
+                                <p:commandButton class="ui-button-success w-100 mt-2" icon="fas fa-plus" value="Add New Patient" action="#{patientPortalController.addNewPatientAction}" ajax="false" />
                             </div>
                         </div>
                     </div>
                 </h:panelGroup>
-                <div class="text-center my-2">
-                    <h5>Or Add new Patient</h5>
-                </div>
-                <h:panelGroup class="d-flex justify-content-center align-items-center w-100" >
+
+                <h:panelGroup class="d-flex justify-content-center align-items-center w-100" rendered="#{patientPortalController.addNewPatient}" >
 
                     <div class="card p-4 w-100">
-
+                        <div class="text-center my-2">
+                            <h5>Add new Patient</h5>
+                        </div>
                         <h5>Register</h5>
                         <div class="ui-fluid formgrid grid w-100">
                             <div>
@@ -289,16 +297,15 @@
                                     </p:autoComplete> 
                                 </div>
                             </div>
-                            <p:commandButton value="Save" class="ui-button-danger m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
+                            <p:commandButton value="Save" class="ui-button-success m-4" ajax="false" action="#{patientPortalController.saveNewPatient}" >
                             </p:commandButton>
+                            <div class="w-100 align-items-center" style="align-content: center">
+                                <p:commandLink value="Go Back" action="#{patientPortalController.GoBackfromPatientAddAction}" ajax="false" />
+                            </div>
                         </div>
                     </div>
                 </h:panelGroup>
             </h:panelGroup>
-
-
-            <p:commandButton value="reset" class="ui-button-danger m-4" ajax="false" action="#{patientPortalController.reset}">
-            </p:commandButton>
         </h:form>
     </h:body>
 </html>
