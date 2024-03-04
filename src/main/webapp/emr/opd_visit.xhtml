@@ -221,7 +221,7 @@
                                                         <p:inputText  
                                                             id="txtPr"
                                                             style="width: 5em;"
-                                                            value="#{patientEncounterController.current.pulseRate}" >
+                                                            value="#{patientEncounterController.current.pr}" >
                                                         </p:inputText>
                                                         <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>
                                                     </div>
@@ -248,6 +248,16 @@
                                                             value="#{patientEncounterController.current.saturation}" >
                                                         </p:inputText>
                                                         <!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
+                                                    </div>
+                                                     <div class="col-md-5" >
+                                                        <p:outputLabel value="Resp. Rate&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtRr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.respiratoryRate}" >
+                                                            
+                                                        </p:inputText>
+<!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
                                                     </div>
                                                 </div>
                                             </p:panel>
