@@ -121,6 +121,7 @@ public class UserPreference implements Serializable {
     private boolean opdSettleWithoutPatientPhoneNumber = false;
     private boolean channelBillDouble = false;
     private boolean hasAwebsiteAsFrontEnd = false;
+    private boolean partialPaymentOfPharmacyBillsAllowed = false;
     private String themeName;
     private String logoUrl;
     private String loggingHeader;
@@ -1190,6 +1191,14 @@ public class UserPreference implements Serializable {
 
     public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
+    }
+
+    public boolean isPartialPaymentOfPharmacyBillsAllowed() {
+        return partialPaymentOfPharmacyBillsAllowed;
+    }
+
+    public void setPartialPaymentOfPharmacyBillsAllowed(boolean partialPaymentOfPharmacyBillsAllowed) {
+        this.partialPaymentOfPharmacyBillsAllowed = partialPaymentOfPharmacyBillsAllowed;
     }
 
 }

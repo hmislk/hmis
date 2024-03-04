@@ -11,11 +11,7 @@
             <p:panel >
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
-                    <p:commandButton 
-                        ajax="false" 
-                        value="refrsh" 
-                        icon="fas fa-search"
-                        /> 
+                    
                 </f:facet>
 
                 <div class="row">
@@ -65,7 +61,7 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             paginatorPosition="bottom">
-                            <p:column headerText="Request No1" width="100px">                      
+                            <p:column headerText="Request No" width="100px">                      
                                 <h:outputLabel value="#{p.deptId}"/>                         
                             </p:column>
                             <p:column headerText="From Department" width="150px">                      
