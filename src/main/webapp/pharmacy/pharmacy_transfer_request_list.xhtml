@@ -11,6 +11,7 @@
             <p:panel >
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
+                    
                 </f:facet>
 
                 <div class="row">
@@ -66,7 +67,7 @@
                             <p:column headerText="From Department" width="150px">                      
                                 <h:outputLabel value="#{p.department.name}"/>                          
                             </p:column> 
-                            <p:column headerText="Requested At" width="100px" >
+                            <p:column headerText="Requested at" width="100px" >
 
                                 <h:outputLabel value="#{p.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -81,7 +82,7 @@
                                 </h:panelGroup>
 
                             </p:column>                 
-                            <p:column headerText="Requested By" width="100px" >                      
+                            <p:column headerText="Requested by" width="100px" >                      
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>                          
                                 <br/>
