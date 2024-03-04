@@ -1128,6 +1128,8 @@ public class UserPreference implements Serializable {
         }
         return opdBillingStrategy;
     }
+    
+    
 
     public void setOpdBillingStrategy(OpdBillingStrategy opdBillingStrategy) {
         this.opdBillingStrategy = opdBillingStrategy;
