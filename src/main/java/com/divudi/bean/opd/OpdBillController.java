@@ -1285,7 +1285,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (str == null || str.isEmpty()) {
             return str;
         }
-        
+
         StringBuilder result = new StringBuilder();
         String[] words = str.split("\\s");
         for (String word : words) {
@@ -2187,7 +2187,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient {
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
-
+        for (BillEntry bi : lstBillEntries) {
+            System.out.println("bi = " + bi.getBillItem().getItem());
+            System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
+            if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
+                JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
+                return;
+            }
+        }
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setSessionDate(sessionDate);

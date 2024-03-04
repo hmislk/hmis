@@ -262,6 +262,12 @@ public class UserPreference implements Serializable {
     }
 
     public void setPartialPaymentOfOpdBillsAllowed(boolean partialPaymentOfOpdBillsAllowed) {
+        if(partialPaymentOfOpdBillsAllowed==true){
+            this.opdSettleWithoutCashTendered = true;
+        }
+        else {
+            this.opdSettleWithoutCashTendered = false;
+        }
         this.partialPaymentOfOpdBillsAllowed = partialPaymentOfOpdBillsAllowed;
     }
 
@@ -341,7 +347,6 @@ public class UserPreference implements Serializable {
 
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
-        this.opdSettleWithoutCashTendered = false;
     }
 
     public String getAbbreviationForHistory() {
