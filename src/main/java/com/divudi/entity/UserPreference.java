@@ -1185,13 +1185,13 @@ public class UserPreference implements Serializable {
     }
 
     public String getOtpIndexes() {
+        if (otpIndexes==null || otpIndexes.isEmpty()) {
+            otpIndexes="4";
+        }
         return otpIndexes;
     }
 
     public void setOtpIndexes(String otpIndexes) {
-        if (otpIndexes == null) {
-           this.otpIndexes = "";
-        }
         this.otpIndexes = otpIndexes;
     }
 
