@@ -7,20 +7,21 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
     <ui:define name="content">
-        <h:form>
+        <h:form id="form">
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
-                <h:panelGroup  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
+                <h:panelGroup id="notPrintPreview"  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
 
                     <div class="row">
                         <div class="col-9">
+                            
                             <p:dataTable 
                                 styleClass="noBorder" 
                                 rowIndexVar="i" 
-                                
+
                                 var="bi" 
                                 scrollable="false"
                                 rowKey="#{bi.searialNo}"
@@ -47,7 +48,7 @@
                                     <h:outputLabel value="#{bi.searialNo+1}" >
                                         <f:convertNumber pattern="00" ></f:convertNumber>
                                     </h:outputLabel>
-                                    
+
                                 </p:column>
 
                                 <p:column headerText="Item"  >  
@@ -55,17 +56,27 @@
                                 </p:column>
 
                                 <p:column headerText="Qty" styleClass="averageNumericColumn" style="width:5em; padding: 0px;"> 
-                                    <p:inputText autocomplete="off"  id="qty" value="#{bi.qty}" style="width:4em; text-align: right;" label="Qty">  
-                                         <f:convertNumber pattern="0.#" ></f:convertNumber>
+                                    <p:inputText 
+                                        autocomplete="off"  
+                                        id="qty" 
+                                        value="#{bi.qty}" 
+                                        style="width:4em; text-align: right;" 
+                                        label="Qty"
+                                        onfocus="this.select()">  
+                                        <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
                                 </p:column> 
 
                                 <p:column headerText="Free Qty" styleClass="averageNumericColumn" style="width:4em; padding: 0px;"> 
-                                    <p:inputText autocomplete="off"  id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" 
-                                                 style="width:4rem; text-align: right;" label="Qty">  
-                                       <f:convertNumber pattern="0.#" ></f:convertNumber>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        id="freeQty" 
+                                        onfocus="this.select()"
+                                        value="#{bi.pharmaceuticalBillItem.freeQty}" 
+                                        style="width:4rem; text-align: right;" label="Qty">  
+                                        <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
@@ -73,7 +84,10 @@
 
                                 <p:column headerText="P Price" styleClass="averageNumericColumn" style="width:6em; text-align: right;">  
                                     <h:panelGroup id="price">
-                                        <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="width:6em; text-align: right;">
+                                        <p:inputText
+                                            onfocus="this.select()"
+                                            autocomplete="off" 
+                                            value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="width:6em; text-align: right;">
                                             <f:convertNumber pattern="#00.00"/>
                                             <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                             <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
@@ -83,7 +97,8 @@
 
                                 <p:column headerText="Total" styleClass="averageNumericColumn" style="width:4em; text-align: right;">  
                                     <h:panelGroup id="total">
-                                        <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" style="width:4rem; text-align: right;">
+                                        <h:outputText 
+                                            value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" style="width:4rem; text-align: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </h:panelGroup>
@@ -92,17 +107,22 @@
                                 <p:column headerText="Stock" style="width:4em; text-align: right;">
                                     <p:outputLabel value="#{stockController.findStock(bi.item)}" style="width:4em; text-align: right;"/>                            
                                 </p:column>
-                                
+
                                 <p:column headerText="Expiaring" style="width:4em; text-align: right;">
                                     <p:outputLabel value="#{stockController.findExpiaringStock(bi.item)}" style="width:4em; text-align: right;"/>                            
                                 </p:column>
-                                
-                                 <p:column headerText="Sale" style="width:4em; text-align: right;">
+
+                                <p:column headerText="Sale" style="width:4em; text-align: right;">
                                     <p:outputLabel value="#{pharmacyController.findAllOutTransactions(bi.item)}" style="width:4em; text-align: right;"/>                            
                                 </p:column>
 
                                 <p:column styleClass="averageNumericColumn" style="width:2em; text-align: right;">
-                                    <p:commandButton class="ui-button-danger" icon="fas fa-trash" ajax="false" action="#{purchaseOrderRequestController.removeItem(bi)}"/>
+                                    <p:commandButton 
+                                        class="ui-button-danger" 
+                                        icon="fas fa-trash"
+                                        ajax="false" 
+                                        tabindex="-1"
+                                        action="#{purchaseOrderRequestController.removeItem(bi)}"/>
                                 </p:column>
 
                             </p:dataTable> 
@@ -174,11 +194,20 @@
                                 </h:panelGroup>
                             </p:panel>
                             <p:panel header="Add Items" >
+                                <p:outputLabel 
+                                    class="form-label w-100"
+                                    value="Add supplier Items" ></p:outputLabel>
                                 <p:commandButton 
-                                    class="m-1 ui-button-success w-100"  
+                                    class="m-1 ui-button-success"  
                                     ajax="false" 
-                                    value="Add All Supplier Items" 
+                                    value="Add All" 
                                     action="#{purchaseOrderRequestController.addAllSupplierItems}"/>
+                                <p:commandButton 
+                                    class="m-1 ui-button-success "  
+                                    ajax="false" 
+                                    value="Add Items Below ROL" 
+                                    action="#{purchaseOrderRequestController.addAllSupplierItems}"/>
+
                                 <hr/>
                                 <p:outputLabel 
                                     for="exDItem" 
@@ -188,11 +217,9 @@
                                     id="exDItem" 
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
                                     class="w-75"
-                                    inputStyleClass="w-100"
                                     filterMatchMode="contains"
                                     filter="true"
-                                    completeMethod="#{purchaseOrderRequestController.dealorItems}"
-                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    var="vt" >
                                     <p:column headerText="Item" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
@@ -314,5 +341,4 @@
 
         </h:form>
     </ui:define>  
-
 </ui:composition>
