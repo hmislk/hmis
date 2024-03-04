@@ -30,7 +30,7 @@
                                 <p:commandButton 
                                     value="Add Another" 
                                     class="mx-2 ui-button-success" 
-                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    actionListener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
                                     icon="fas fa-plus" process="@this"
                                     update="tblMultiplePayments" 
                                     action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
