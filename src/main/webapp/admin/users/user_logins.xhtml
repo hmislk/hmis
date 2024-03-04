@@ -51,9 +51,9 @@
                                 <p:commandButton 
                                     value="Excel" 
                                     icon="fa fa-file-excel"
-                                    class="ui-button-success"
-                                    ajax="false"
-                                    action="#{loginController.downloadAsExcel}" />
+                                    class="ui-button-success">
+                                    <p:dataExporter target="tbl" type="xlsx" fileName="User_logins" />
+                                </p:commandButton>
                             </h:panelGrid>
                         </div>
 
@@ -79,7 +79,7 @@
                                 </h:outputLabel>
                             </h:panelGrid>
 
-                            <p:dataTable value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
+                            <p:dataTable id="tbl" value="#{loginController.logins}" var="b" rowIndexVar="index" sortMode="multiple">
                                 <p:column headerText="No" width="30px" >
                                     <h:outputLabel value="#{index +1}" ></h:outputLabel>
                                 </p:column>
