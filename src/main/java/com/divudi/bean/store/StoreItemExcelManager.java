@@ -6,7 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.InstitutionType;
@@ -449,9 +449,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -467,7 +467,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -717,10 +717,10 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 getStorePurchaseController().addItem();
             }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "/store/store_purchase";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -746,9 +746,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -764,7 +764,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -847,10 +847,10 @@ public class StoreItemExcelManager implements Serializable {
                 ////System.out.println("amp = " + amp.getName());
             }
             storeAmpController.recreateModel();
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1139,9 +1139,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1157,7 +1157,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1307,13 +1307,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1331,9 +1331,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1349,7 +1349,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1408,13 +1408,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1429,9 +1429,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1447,7 +1447,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1523,11 +1523,11 @@ public class StoreItemExcelManager implements Serializable {
                 }
 
             }
-            UtilityController.addSuccessMessage("Succesful. All Mismatches listed below.");
+            JsfUtil.addSuccessMessage("Succesful. All Mismatches listed below.");
             return "";
         } catch (IOException | BiffException ex) {
             //   ////System.out.println("ex = " + ex);
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         }
     }
@@ -1545,9 +1545,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1563,7 +1563,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1604,13 +1604,13 @@ public class StoreItemExcelManager implements Serializable {
 
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }
@@ -1627,9 +1627,9 @@ public class StoreItemExcelManager implements Serializable {
         Workbook w;
         Cell cell;
         InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
+        JsfUtil.addSuccessMessage(file.getFileName());
         try {
-            UtilityController.addSuccessMessage(file.getFileName());
+            JsfUtil.addSuccessMessage(file.getFileName());
             in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
@@ -1645,7 +1645,7 @@ public class StoreItemExcelManager implements Serializable {
 
             inputWorkbook = new File(f.getAbsolutePath());
 
-            UtilityController.addSuccessMessage("Excel File Opened");
+            JsfUtil.addSuccessMessage("Excel File Opened");
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
@@ -1683,13 +1683,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
             }
 
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            JsfUtil.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
             return "";
         } catch (IOException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
+            JsfUtil.addErrorMessage(ex.getMessage());
             return "";
         } catch (BiffException e) {
-            UtilityController.addErrorMessage(e.getMessage());
+            JsfUtil.addErrorMessage(e.getMessage());
             return "";
         }
     }

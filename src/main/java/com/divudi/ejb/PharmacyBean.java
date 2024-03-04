@@ -4,7 +4,7 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -54,7 +54,7 @@ import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VmppFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.facade.VirtualProductIngredientFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -240,7 +240,7 @@ public class PharmacyBean {
 //        }
         //@Safrin
         if (bill.isCancelled()) {
-            UtilityController.addErrorMessage("Bill Already Cancelled");
+            JsfUtil.addErrorMessage("Bill Already Cancelled");
             return null;
         }
         Bill preBill = createPreBill(bill, user, department, billNumberSuffix);
@@ -618,13 +618,17 @@ public class PharmacyBean {
             sql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item=:amp "
-                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+                    + " and s.department=:d and s.stock >=:q "
+                    + " and s.itemBatch.dateOfExpire > :doe "
+                    + " order by s.itemBatch.dateOfExpire ";
             m.put("amp", item);
+            m.put("doe", new Date());
         } else if (item instanceof Vmp) {
             List<Amp> amps = findAmpsForVmp((Vmp) item);
             sql = "select s "
                     + " from Stock s "
                     + " where s.itemBatch.item in :amps "
+                    + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
             m.put("amps", amps);
         }else{

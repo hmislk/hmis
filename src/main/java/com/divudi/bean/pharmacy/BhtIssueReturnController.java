@@ -6,7 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -32,7 +32,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 
 /**
  *
@@ -78,11 +78,11 @@ public class BhtIssueReturnController implements Serializable {
         }
 
 //        if (getSessionController().getDepartment().getId() != bill.getDepartment().getId()) {
-//            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+//            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
 //            return;
 //        }
         if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-            UtilityController.addErrorMessage("U can't return another department's Issue.please log to specific department");
+            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
             return;
         }
 
@@ -268,17 +268,17 @@ public class BhtIssueReturnController implements Serializable {
 
         
         if (returnBill.getTotal() == 0) {
-            UtilityController.addErrorMessage("Add Valied Return Quntity");
+            JsfUtil.addErrorMessage("Add Valied Return Quntity");
             return;
         }
 
 //        if (getBill().getCheckedBy() != null) {
-//            UtilityController.addErrorMessage("Checked Bill. Can not Return");
+//            JsfUtil.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
         
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("This Bill Already Discharged");
+            JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
         }
 
@@ -294,7 +294,7 @@ public class BhtIssueReturnController implements Serializable {
 
         /// setOnlyReturnValue();
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Returned");
+        JsfUtil.addSuccessMessage("Successfully Returned");
 
     }
 

@@ -2,7 +2,7 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -597,22 +597,22 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     private boolean errorCheck() {
         if (currentStaff == null) {
-            UtilityController.addErrorMessage("Please select a Staff Memeber");
+            JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
         }
 
         if (checkBillFeeValue()) {
-            UtilityController.addErrorMessage("There is a Credit Bill");
+            JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
+            JsfUtil.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -621,22 +621,22 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     private boolean errorCheckForAgency() {
 //        if (currentStaff == null) {
-//            UtilityController.addErrorMessage("Please select a Staff Memeber");
+//            JsfUtil.addErrorMessage("Please select a Staff Memeber");
 //            return true;
 //        }
 
         if (checkBillFeeValue()) {
-            UtilityController.addErrorMessage("There is a Credit Bill");
+            JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
 
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select a payment method");
+            JsfUtil.addErrorMessage("Please select a payment method");
             return true;
         }
 
@@ -653,7 +653,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         getBillFacade().create(b);
         saveBillCompo(b);
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
 
@@ -667,7 +667,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         getBillFacade().create(b);
         saveBillCompo(b);
         printPreview = true;
-        UtilityController.addSuccessMessage("Successfully Paid");
+        JsfUtil.addSuccessMessage("Successfully Paid");
         //////// // System.out.println("Paid");
     }
 
@@ -744,9 +744,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
 //        getItems();

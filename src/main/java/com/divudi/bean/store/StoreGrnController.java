@@ -6,7 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -30,7 +30,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -219,7 +219,7 @@ public class StoreGrnController implements Serializable {
         String msg = errorCheck(getGrnBill(), billItems);
 
         if (!msg.isEmpty()) {
-            UtilityController.addErrorMessage(msg);
+            JsfUtil.addErrorMessage(msg);
             return;
         }
 
@@ -558,12 +558,12 @@ public class StoreGrnController implements Serializable {
     public void addBillItem(BillItem billItem) {
 
 //        if (billItem.getPharmaceuticalBillItem().getPurchaseRate() > billItem.getPharmaceuticalBillItem().getRetailRate()) {
-//            UtilityController.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
+//            JsfUtil.addErrorMessage("Please enter Sale Rate Should be Over Purchase Rate");
 //            return;
 //        }
         if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
             if (billItem.getItem().getCategory() == null) {
-                UtilityController.addErrorMessage("Please Select Item Category for" + billItem.getItem().getName());
+                JsfUtil.addErrorMessage("Please Select Item Category for" + billItem.getItem().getName());
             }
             try {
                 billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
@@ -623,18 +623,18 @@ public class StoreGrnController implements Serializable {
 //        System.err.println("4 " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
-            UtilityController.addErrorMessage("You cant Change Qty than Remaining qty");
+            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
-            UtilityController.addErrorMessage("You cant set retail price below purchase rate");
+            JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
 
 //        if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
 //            if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
 //                tmp.getPharmaceuticalBillItem().setDoe(null);
-//                UtilityController.addErrorMessage("Check Date of Expiry");
+//                JsfUtil.addErrorMessage("Check Date of Expiry");
 //                //    return;
 //            }
 //        }
@@ -1082,37 +1082,37 @@ public class StoreGrnController implements Serializable {
 
     public void addItem() {
         if (getCurrentBillItem().getItem() == null) {
-            UtilityController.addErrorMessage("Please Select Item");
+            JsfUtil.addErrorMessage("Please Select Item");
             return;
         }
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            UtilityController.addErrorMessage("Please Select Category");
+            JsfUtil.addErrorMessage("Please Select Category");
             return;
         }
 
 //        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0 && getParentBillItem() == null) {
 //            System.err.println("33");
-//            UtilityController.addErrorMessage("Please enter Purchase Rate");
+//            JsfUtil.addErrorMessage("Please enter Purchase Rate");
 //            return;
 //        }
 //
 //        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() == 0) {
-//            UtilityController.addErrorMessage("Please enter Retail Rate");
+//            JsfUtil.addErrorMessage("Please enter Retail Rate");
 //            return;
 //        }
 //
 //        if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() < getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) {
-//            UtilityController.addErrorMessage("Please check Retail Rate");
+//            JsfUtil.addErrorMessage("Please check Retail Rate");
 //            return;
 //        }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0) {
-            UtilityController.addErrorMessage("Please enter Purchase QTY");
+            JsfUtil.addErrorMessage("Please enter Purchase QTY");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
 //            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() != 1) {
-//                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
+//                JsfUtil.addErrorMessage("Please Qty must be 1 for Asset");
 //                return;
 //            }
 

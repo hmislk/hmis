@@ -6,7 +6,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillClassType;
@@ -44,7 +44,7 @@ import com.divudi.facade.EncounterComponentFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -356,7 +356,7 @@ public class InwardSearch implements Serializable {
         tempbillItems = null;
         for (BillItem i : getRefundingItems()) {
             if (checkPaidIndividual(i)) {
-                UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Refund Bill");
                 return false;
             }
 
@@ -558,25 +558,25 @@ public class InwardSearch implements Serializable {
 
     private boolean check() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (getBill().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("U cant cancel Because this Bill has no BHT");
+            JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
             return true;
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment Method.");
+            JsfUtil.addErrorMessage("Please select a payment Method.");
             return true;
         }
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -605,7 +605,7 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                UtilityController.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
                 return;
             }
 
@@ -620,16 +620,16 @@ public class InwardSearch implements Serializable {
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit((BilledBill) getBill());
-                UtilityController.addSuccessMessage("Cancelled");
+                JsfUtil.addSuccessMessage("Cancelled");
 
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
-                UtilityController.addSuccessMessage("Awaiting Cancellation");
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -639,36 +639,36 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
             if (getBill().isRefunded()) {
-                UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
             if (getBill().getPatientEncounter() == null) {
-                UtilityController.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                UtilityController.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
                 return;
             }
 
             if (checkPaid()) {
-                UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
             }
 
             if (checkInvestigation()) {
-                UtilityController.addErrorMessage("Lab Report was already Entered .you cant Cancel");
+                JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                 return;
             }
 
@@ -676,7 +676,7 @@ public class InwardSearch implements Serializable {
 
                 ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
                 if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
-                    UtilityController.addErrorMessage("Sample Already collected can't cancel");
+                    JsfUtil.addErrorMessage("Sample Already collected can't cancel");
                     return;
                 }
             }
@@ -695,14 +695,14 @@ public class InwardSearch implements Serializable {
 
             getBillFacade().edit(cb);
             getBillFacade().edit((BilledBill) getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             getBillBean().updateBatchBill(getBill().getForwardReferenceBill());
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -721,18 +721,18 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
             double dbl = getInwardBean().getPaidValue(getBill().getPatientEncounter());
 
             if (dbl < getBill().getNetTotal()) {
-                UtilityController.addErrorMessage("This Bht has No Enough Vallue To Cancel");
+                JsfUtil.addErrorMessage("This Bht has No Enough Vallue To Cancel");
             }
 
 //            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-//                UtilityController.addErrorMessage("Final Payment is Finalized You can't Cancel");
+//                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
 //                return;
 //            }
             CancelledBill cb = createCancelBill();
@@ -756,12 +756,12 @@ public class InwardSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -783,12 +783,12 @@ public class InwardSearch implements Serializable {
             }
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
 //            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-//                UtilityController.addErrorMessage("Final Payment is Finalized You can't Cancel");
+//                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
 //                return;
 //            }
             RefundBill cb = createRefundCancelBill();
@@ -811,12 +811,12 @@ public class InwardSearch implements Serializable {
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -838,7 +838,7 @@ public class InwardSearch implements Serializable {
             getBillFacade().edit((BilledBill) bill);
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return true;
         }
 
@@ -851,20 +851,25 @@ public class InwardSearch implements Serializable {
             long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
 
             if (Math.abs(dayCount) > 3 && !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
-                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+                JsfUtil.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
                 return;
             }
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
             if (getBill().isRefunded()) {
-                UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
             if (getBill().getPatientEncounter() == null) {
-                UtilityController.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                return;
+            }
+
+            if (getComment() == null || getComment().trim().equals("")) {
+                JsfUtil.addErrorMessage("Please enter a comment");
                 return;
             }
 
@@ -886,12 +891,12 @@ public class InwardSearch implements Serializable {
             getBill().getPatientEncounter().setCreditUsedAmount(0);
             getPatientEncounterFacade().edit(getBill().getPatientEncounter());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -915,6 +920,13 @@ public class InwardSearch implements Serializable {
             }
             return true;
         }
+    }
+    
+    public String getRowStyleClass(BillItem bip) {
+        if (bip.getNetValue() != 0) {
+            return "non-zero-value-row";
+        }
+        return null; // Return null for rows with netValue equal to 0
     }
 
     public boolean checkBathcReferenceBillTimeService() {
@@ -952,7 +964,7 @@ public class InwardSearch implements Serializable {
 //                return;
 //            }
             if (checkBathcReferenceBill()) {
-                UtilityController.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
+                JsfUtil.addErrorMessage("There is some bills refering this Surgery .Cancel those bills first");
                 return;
             }
 
@@ -967,12 +979,12 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -1029,31 +1041,31 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
-                UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
             if (getBill().isCancelled()) {
-                UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+                JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
             if (getBill().isRefunded()) {
-                UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+                JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
             if (getBill().getPatientEncounter() == null) {
-                UtilityController.addErrorMessage("U cant cancel Because this Bill has no BHT");
+                JsfUtil.addErrorMessage("U cant cancel Because this Bill has no BHT");
                 return;
             }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                UtilityController.addErrorMessage("Final Payment is Finalized You can't Cancel");
+                JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
                 return;
             }
 
             if (checkPaid()) {
-                UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+                JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
             }
 
@@ -1067,14 +1079,14 @@ public class InwardSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
 
@@ -1087,7 +1099,7 @@ public class InwardSearch implements Serializable {
     public void approveCancellation() {
 
         if (billsApproving == null) {
-            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
+            JsfUtil.addErrorMessage("Select Bill to Approve Cancell");
             return;
         }
         for (Bill b : billsApproving) {
@@ -1107,7 +1119,7 @@ public class InwardSearch implements Serializable {
 
             ejbApplication.getBillsToCancel().remove(b);
 
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
         }
 
@@ -1161,27 +1173,27 @@ public class InwardSearch implements Serializable {
 
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
-            UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
         if (getBill().isRefunded()) {
-            UtilityController.addErrorMessage("Already Returned. Can not cancel.");
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
 
         if (checkPaid()) {
-            UtilityController.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
 
         if (getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Please select a payment scheme.");
+            JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a comment");
+            JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
 
@@ -1202,14 +1214,14 @@ public class InwardSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
-            UtilityController.addSuccessMessage("Cancelled");
+            JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
         } else {
-            UtilityController.addErrorMessage("No Bill to cancel");
+            JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
     }
@@ -1328,7 +1340,7 @@ public class InwardSearch implements Serializable {
 
         getBillFacade().edit(b);
 
-        UtilityController.addSuccessMessage("Successfully Cheked");
+        JsfUtil.addSuccessMessage("Successfully Cheked");
     }
 
     public void markAsUnChecked() {
@@ -1349,7 +1361,7 @@ public class InwardSearch implements Serializable {
 
         getBillFacade().edit(bill);
 
-        UtilityController.addErrorMessage("Successfully Cheked");
+        JsfUtil.addErrorMessage("Successfully Cheked");
     }
 
     public void selectBillItem(BillItem billItem) {

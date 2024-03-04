@@ -6,7 +6,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -376,12 +376,12 @@ public class StoreAdjustmentController implements Serializable {
 
     private boolean errorCheck() {
         if (getStock() == null) {
-            UtilityController.addErrorMessage("Please Select Stocke");
+            JsfUtil.addErrorMessage("Please Select Stocke");
             return true;
         }
 
         if (getStock().getItemBatch() == null) {
-            UtilityController.addErrorMessage("Select Item Batch");
+            JsfUtil.addErrorMessage("Select Item Batch");
             return true;
         }
 

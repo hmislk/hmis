@@ -13,7 +13,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.data.BillClassType;
@@ -67,7 +67,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 
 import java.io.Serializable;
@@ -1192,17 +1192,17 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getDateOfAdmission().after(date)) {
-            UtilityController.addErrorMessage("Check Discharge Time should be after Admitted Time");
+            JsfUtil.addErrorMessage("Check Discharge Time should be after Admitted Time");
             return true;
         }
 
         if (checkRoomIsDischarged()) {
-            UtilityController.addErrorMessage("Please Discharged From Room");
+            JsfUtil.addErrorMessage("Please Discharged From Room");
             return true;
         }
 
         if (getInwardBean().checkRoomDischarge(date, getPatientEncounter())) {
-            UtilityController.addErrorMessage("Check Discharge Time should be after Room Discharge Time");
+            JsfUtil.addErrorMessage("Check Discharge Time should be after Room Discharge Time");
             return true;
         }
 
@@ -1260,7 +1260,7 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
-        UtilityController.addSuccessMessage("Bill Saved");
+        JsfUtil.addSuccessMessage("Bill Saved");
 
         printPreview = true;
     }
@@ -1334,7 +1334,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage("Patient Already Discharged");
+            JsfUtil.addErrorMessage("Patient Already Discharged");
             return;
         }
         
@@ -1348,7 +1348,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (checkPatientItems()) {
-            UtilityController.addErrorMessage("Please Finalize Patient Timed Service");
+            JsfUtil.addErrorMessage("Please Finalize Patient Timed Service");
             return;
         }
 
@@ -1361,7 +1361,7 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
         }
 
-        UtilityController.addSuccessMessage("Patient  Discharged");
+        JsfUtil.addSuccessMessage("Patient  Discharged");
 
         setPatientEncounter(getPatientEncounter());
         createTables();
@@ -1373,7 +1373,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().isPaymentFinalized()) {
-            UtilityController.addErrorMessage("Payment is Finalized U need to cancel Previuios Final Bill of This Bht");
+            JsfUtil.addErrorMessage("Payment is Finalized U need to cancel Previuios Final Bill of This Bht");
             return true;
         }
 
@@ -1398,7 +1398,7 @@ public class BhtSummeryController implements Serializable {
         double different = Math.abs((tot - tot2));
 
         if (different > 0.1) {
-            UtilityController.addErrorMessage("Please Adjust category amount correctly");
+            JsfUtil.addErrorMessage("Please Adjust category amount correctly");
             return true;
         }
         return false;
@@ -1422,7 +1422,7 @@ public class BhtSummeryController implements Serializable {
         //  makeNull();
         getIntrimPrintController().makeNull();
         if (getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Please Select Patient Encounter");
+            JsfUtil.addErrorMessage("Please Select Patient Encounter");
             return "";
         }
 
@@ -1450,59 +1450,59 @@ public class BhtSummeryController implements Serializable {
 
     public boolean checkBill() {
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
-            UtilityController.addErrorMessage("Some Inward Service Bills Are Not Checked ");
+            JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
         }
 
 //        if (getInwardBean().checkByBillFee(getPatientEncounter(), new RefundBill(), BillType.InwardBill)) {
-//            UtilityController.addErrorMessage("Some Inward Service Bills Are Not Checked ");
+//            JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
 //            return true;
 //        }
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)) {
-            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
+            JsfUtil.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
             return true;
         }
 
 //        if (getInwardBean().checkByBillFee(getPatientEncounter(), new RefundBill(), BillType.InwardProfessional)) {
-//            UtilityController.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
+//            JsfUtil.addErrorMessage("Some Inward Pro Bills Are Not Checked ");
 //            return true;
 //        }
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)) {
-            UtilityController.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 1 ");
+            JsfUtil.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 1 ");
             return true;
         }
 
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)) {
-            UtilityController.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 2 ");
+            JsfUtil.addErrorMessage("Some Pharmacy Issue Bills Are Not Checked 2 ");
             return true;
         }
 
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.StoreBhtPre)) {
-            UtilityController.addErrorMessage("Some Store Issue Bills Are Not Checked 1");
+            JsfUtil.addErrorMessage("Some Store Issue Bills Are Not Checked 1");
             return true;
         }
 
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.StoreBhtPre)) {
-            UtilityController.addErrorMessage("Some Store Issue Bills Are Not Checked 2");
+            JsfUtil.addErrorMessage("Some Store Issue Bills Are Not Checked 2");
             return true;
         }
 
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardOutSideBill)) {
-            UtilityController.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
+            JsfUtil.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
             return true;
         }
 
 //        if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardOutSideBill)) {
-//            UtilityController.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
+//            JsfUtil.addErrorMessage("Some Inward Out Side Bills Are Not Checked ");
 //            return true;
 //        }
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardPaymentBill)) {
-            UtilityController.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
+            JsfUtil.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
             return true;
         }
 
         if (getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.InwardPaymentBill)) {
-            UtilityController.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
+            JsfUtil.addErrorMessage("Some Inward Payment Bills Are Not Checked ");
             return true;
         }
 
@@ -1519,7 +1519,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (!getPatientEncounter().isDischarged()) {
-            UtilityController.addErrorMessage(" Please Discharge This Patient ");
+            JsfUtil.addErrorMessage(" Please Discharge This Patient ");
             return "";
         }
 
@@ -1534,7 +1534,7 @@ public class BhtSummeryController implements Serializable {
         }
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
-                UtilityController.addErrorMessage("Payment method is Credit So Please Select Credit Company");
+                JsfUtil.addErrorMessage("Payment method is Credit So Please Select Credit Company");
             }
         }
 
@@ -1765,7 +1765,7 @@ public class BhtSummeryController implements Serializable {
     public void finalizeService(PatientItem patientItem) {
         if (patientItem.getToTime() != null) {
             if (patientItem.getToTime().before(patientItem.getFromTime())) {
-                UtilityController.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
             }
         }

@@ -6,7 +6,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
@@ -15,7 +15,7 @@ import com.divudi.entity.Staff;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -85,12 +85,12 @@ public class ServiceSessionLeaveController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrentStaff() == null) {
-            UtilityController.addErrorMessage("Please select Staff");
+            JsfUtil.addErrorMessage("Please select Staff");
             return true;
         }
 
         if (getCurrent().getSessionDate() == null) {
-            UtilityController.addErrorMessage("Please select Leave Date");
+            JsfUtil.addErrorMessage("Please select Leave Date");
             return true;
         }
         return false;
@@ -98,16 +98,16 @@ public class ServiceSessionLeaveController implements Serializable {
 
     private boolean errorCheckForServiceSessoinLeave() {
         if (getSelectedServiceSession() == null) {
-            UtilityController.addErrorMessage("Please select Service Session");
+            JsfUtil.addErrorMessage("Please select Service Session");
             return true;
         }
 
         if (getCurrent().getDeactivateComment() == null) {
-            UtilityController.addErrorMessage("Please Enter a Reson For Leave");
+            JsfUtil.addErrorMessage("Please Enter a Reson For Leave");
             return true;
         }
         if (getSelectedServiceSession().isDeactivated()) {
-            UtilityController.addErrorMessage("This Service Session is Alredy Leave Added");
+            JsfUtil.addErrorMessage("This Service Session is Alredy Leave Added");
             return true;
         }
         return false;
@@ -116,11 +116,11 @@ public class ServiceSessionLeaveController implements Serializable {
     private boolean errorCheckForServiceSessoinLeaveByDate() {
 
         if (getCurrent().getDeactivateComment() == null) {
-            UtilityController.addErrorMessage("Please Enter a Reson For Leave");
+            JsfUtil.addErrorMessage("Please Enter a Reson For Leave");
             return true;
         }
         if (bookingController.getSessionStartingDate() == null) {
-            UtilityController.addErrorMessage("Plaease Select Leave Date");
+            JsfUtil.addErrorMessage("Plaease Select Leave Date");
             return true;
         }
         return false;
@@ -236,7 +236,7 @@ public class ServiceSessionLeaveController implements Serializable {
         }
         List<ServiceSession> serviceSessions=fetchCreatedServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
         if (serviceSessions.isEmpty()) {
-            UtilityController.addErrorMessage("Selected Date Haven't Sessions or This Date Already Added Leave");
+            JsfUtil.addErrorMessage("Selected Date Haven't Sessions or This Date Already Added Leave");
             return;
         }
         for (ServiceSession s : serviceSessions) {

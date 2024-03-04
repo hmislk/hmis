@@ -7,7 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -71,7 +71,7 @@ public class IssueRateMarginsController implements Serializable {
         IssueRateMargins tmp = pharmacyBean.fetchIssueRateMargins(fromDepartment, getIssueRateMargins().getToDepartment());
 
         if (tmp != null) {
-            UtilityController.addErrorMessage("Already Exist");
+            JsfUtil.addErrorMessage("Already Exist");
             return;
         }
 

@@ -12,7 +12,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -63,7 +63,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -333,7 +333,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 for (BillItem bi : bs.getBill().getBillItems()) {
                     if (serealNo == bi.getBillSession().getSerialNo()) {
                         alreadyExists = true;
-                        UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                        JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                     }
                 }
             }
@@ -352,7 +352,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     public boolean errorCheck() {
         boolean flag = false;
 //        if (serealNo == 0) {
-//            UtilityController.addErrorMessage("Cant Add This Number");
+//            JsfUtil.addErrorMessage("Cant Add This Number");
 //            return true;
 //        }
 
@@ -361,7 +361,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 if (!bs.equals(selectedBillSession)) {
                     for (BillItem bi : bs.getBill().getBillItems()) {
                         if (serealNo == bi.getBillSession().getSerialNo()) {
-                            UtilityController.addErrorMessage("This Number Is Alredy Exsist");
+                            JsfUtil.addErrorMessage("This Number Is Alredy Exsist");
                             flag = true;
                         }
                     }
@@ -386,7 +386,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
 //                //System.out.println("billitem" + bi.getId());
 //                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
-//                    UtilityController.addErrorMessage("Number you entered already exist");
+//                    JsfUtil.addErrorMessage("Number you entered already exist");
 //                    setSelectedBillSession(bs);
 //
 //                }
@@ -397,17 +397,18 @@ public class BookingController implements Serializable, ControllerWithPatient {
 //    }
     public void updatePatient() {
         getPersonFacade().edit(getSelectedBillSession().getBill().getPatient().getPerson());
-        UtilityController.addSuccessMessage("Patient Updated");
+        JsfUtil.addSuccessMessage("Patient Updated");
     }
 
     public void add() {
-        System.out.println("add");
         errorText = "";
         if (errorCheck()) {
             settleSucessFully = false;
             return;
         }
         System.out.println("Error check completed");
+        System.out.println("patient = " + patient);
+        System.out.println("patient = " + patient.getPerson());
         patientController.save(patient);
         System.out.println("Saving patient completed");
         printingBill = saveBilledBill();
@@ -419,7 +420,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         sendSmsAfterBooking();
         settleSucessFully = true;
         printPreview = true;
-        UtilityController.addSuccessMessage("Channel Booking Added.");
+        JsfUtil.addSuccessMessage("Channel Booking Added.");
     }
 
     public void sendSmsAfterBooking() {
@@ -505,7 +506,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         getBillSessionFacade().edit(getSelectedBillSession());
         //System.out.println(getSelectedBillSession().getBill().getPatient());
-        UtilityController.addSuccessMessage("Serial Updated");
+        JsfUtil.addSuccessMessage("Serial Updated");
     }
 
     public void makeNull() {
@@ -963,7 +964,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
         Date currenDate = new Date();
         if (getDate().before(currenDate)) {
-            UtilityController.addErrorMessage("Please Select Future Date");
+            JsfUtil.addErrorMessage("Please Select Future Date");
             return;
         }
 
@@ -1104,7 +1105,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public void fillBillSessions() {
         selectedBillSession = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs "
                 + " From BillSession bs "
@@ -1126,65 +1127,65 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private boolean errorCheckForAddingNewBooking() {
         if (getSelectedSessionInstance() == null) {
             errorText = "Please Select Specility and Doctor.";
-            UtilityController.addErrorMessage("Please Select Specility and Doctor.");
+            JsfUtil.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
 
         if (getSelectedSessionInstance().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
-            UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
+            JsfUtil.addErrorMessage("Doctor Leave day Can't Channel.");
             return true;
         }
 
         if (getSelectedSessionInstance().getOriginatingSession() == null) {
             errorText = "Please Select Session.";
-            UtilityController.addErrorMessage("Please Select Session");
+            JsfUtil.addErrorMessage("Please Select Session");
             return true;
         }
 
         if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
             errorText = "Can not bill without Patient.";
-            UtilityController.addErrorMessage("Can't Settle Without Patient.");
+            JsfUtil.addErrorMessage("Can't Settle Without Patient.");
             return true;
         }
         if ((getPatient().getPerson().getPhone() == null || getPatient().getPerson().getPhone().trim().equals("")) && !getSessionController().getInstitutionPreference().isChannelSettleWithoutPatientPhoneNumber()) {
             errorText = "Can not bill without Patient Contact Number.";
-            UtilityController.addErrorMessage("Can't Settle Without Patient Contact Number.");
+            JsfUtil.addErrorMessage("Can't Settle Without Patient Contact Number.");
             return true;
         }
 
         if (paymentMethod == null) {
             errorText = "Please select Paymentmethod";
-            UtilityController.addErrorMessage("Please select Paymentmethod");
+            JsfUtil.addErrorMessage("Please select Paymentmethod");
             return true;
         }
 
         if (paymentMethod == PaymentMethod.Agent) {
             if (institution == null) {
                 errorText = "Please select Agency";
-                UtilityController.addErrorMessage("Please select Agency");
+                JsfUtil.addErrorMessage("Please select Agency");
                 return true;
             }
 
             if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
                 errorText = "Agency Ballance is Not Enough";
-                UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+                JsfUtil.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
             if (agentReferenceBookController.checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "Invaild Reference Number.";
-                UtilityController.addErrorMessage("Invaild Reference Number.");
+                JsfUtil.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
             if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
-                UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+                JsfUtil.addErrorMessage("This Reference Number is alredy Given.");
                 setAgentRefNo("");
                 return true;
             }
             if (agentReferenceBookController.checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
-                UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                JsfUtil.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
                 return true;
             }
         }
@@ -1199,14 +1200,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         if (institution != null) {
             if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "Please Enter Agent Ref No";
-                UtilityController.addErrorMessage("Please Enter Agent Ref No.");
+                JsfUtil.addErrorMessage("Please Enter Agent Ref No.");
                 return true;
             }
         }
         ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (getSelectedSessionInstance().getOriginatingSession().getMaxNo() != 0.0 && getSelectedSessionInstance().getTransDisplayCountWithoutCancelRefund() >= getSelectedSessionInstance().getOriginatingSession().getMaxNo()) {
             errorText = "No Space to Book.";
-            UtilityController.addErrorMessage("No Space to Book");
+            JsfUtil.addErrorMessage("No Space to Book");
             return true;
         }
 
@@ -1876,7 +1877,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
 
     public Boolean preSet() {
         if (getSelectedSessionInstance() == null) {
-            UtilityController.addErrorMessage("Please select Service Session");
+            JsfUtil.addErrorMessage("Please select Service Session");
             return false;
         }
         getChannelReportController().setSessionInstance(selectedSessionInstance);

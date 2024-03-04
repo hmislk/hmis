@@ -6,7 +6,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
@@ -18,7 +18,7 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -154,25 +154,25 @@ public class AgentReferenceBookController implements Serializable {
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
-            UtilityController.addErrorMessage("Please Select Institution.");
+            JsfUtil.addErrorMessage("Please Select Institution.");
             return;
         }
         if (agentReferenceBook.getStrbookNumber().trim().equals("")) {
-            UtilityController.addErrorMessage("Please Enter Book Number.");
+            JsfUtil.addErrorMessage("Please Enter Book Number.");
             return;
         }
         double startingNumber = agentReferenceBook.getStartingReferenceNumber();
         double endingNumber = agentReferenceBook.getEndingReferenceNumber();
         if (startingNumber <= 0 || startingNumber >= 99) {
-            UtilityController.addErrorMessage("Starting Reference Number should be between 01 and 99.");
+            JsfUtil.addErrorMessage("Starting Reference Number should be between 01 and 99.");
             return;
         }
         if (endingNumber <= 1 || endingNumber > 99) {
-            UtilityController.addErrorMessage("Ending Reference Number should be between 02 and 99.");
+            JsfUtil.addErrorMessage("Ending Reference Number should be between 02 and 99.");
             return;
         }
         if (startingNumber >= endingNumber) {
-            UtilityController.addErrorMessage("Starting Reference Number must be less than Ending Reference Number.");
+            JsfUtil.addErrorMessage("Starting Reference Number must be less than Ending Reference Number.");
             return;
         }
 
@@ -183,7 +183,7 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
         if (!getAgentReferenceBookFacade().findByJpql(sql, hm).isEmpty()) {
-            UtilityController.addErrorMessage("Book Number Is Already Given.");
+            JsfUtil.addErrorMessage("Book Number Is Already Given.");
             return;
         }
 
@@ -193,15 +193,15 @@ public class AgentReferenceBookController implements Serializable {
         agentReferenceBook.setCreater(getSessionController().getLoggedUser());
         agentReferenceBook.setDeactivate(false);
         getAgentReferenceBookFacade().create(agentReferenceBook);
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
         makeNull();
     }
 
     public void commonErrorMessageForSaveChannelBook(AgentReferenceBook arb) {
-        UtilityController.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getCode() + ")");
-        UtilityController.addErrorMessage("Book No - " + arb.getBookNumber());
-        UtilityController.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
-        UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
+        JsfUtil.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getCode() + ")");
+        JsfUtil.addErrorMessage("Book No - " + arb.getBookNumber());
+        JsfUtil.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
+        JsfUtil.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
     }
 
     public void searchReferenceBooks() {
