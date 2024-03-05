@@ -279,7 +279,9 @@
                     <f:facet name="header">
                         <h1>Purchase Order Request</h1>
                         <div class="buttons">
-                            <p:commandButton ajax="false" value="Print Request" icon="pi pi-save" styleClass="ui-button-success mx-1"/>
+                            <p:commandButton ajax="false" value="Print Request" icon="pi pi-save" styleClass="ui-button-success mx-1">
+                                <p:printer target="printPaper" />
+                            </p:commandButton>
                             <p:commandButton ajax="false" value="New Order" action="#{purchaseOrderRequestController.resetBillValues}" icon="pi pi-plus" styleClass="ui-button-info mx-1"/>
                         </div>
                     </f:facet>
@@ -288,18 +290,45 @@
 
                     <h:panelGroup id="printPaper" >
 
+                        <div class="institutionName">
+                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
+                        </div>
+                        <div class="institutionContact" >
+                            <div >
+                                <h:outputLabel value="Telephone : #{purchaseOrderRequestController.currentBill.creater.institution.phone} / #{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
 
-                        <div class="bill-header">
-                            <div>#{purchaseOrderRequestController.currentBill.department.name}</div>
-                            <div>#{purchaseOrderRequestController.currentBill.department.address}</div>
-                            <div>#{purchaseOrderRequestController.currentBill.department.telephone1}</div>
+                            </div>
+                            <!--                <div >
+                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.department.telephone1} "/>
+                                            </div>-->
+                            <div >
+                                <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
+                            </div>
+                            <div >
+                                <h:outputLabel value="Email : "/>
+                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
+                            </div>
                         </div>
 
+                        <div class="headingBill">
+                            <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
+                        </div>
+                        
                         <div class="purchase-order">
-                            <div>Order No: #{purchaseOrderRequestController.currentBill.insId}</div>
-                            <div>Supplier: #{purchaseOrderRequestController.currentBill.toInstitution.name}</div>
-                            <div>Supplier Phone: #{purchaseOrderRequestController.currentBill.toInstitution.phone}</div>
-                            <div>Supplier Address: #{purchaseOrderRequestController.currentBill.toInstitution.address}</div>
+                            <h:panelGrid columns="3" class="my-2 w-50">
+                                <h:outputLabel value="Order No" />
+                                <h:outputLabel value=":" />
+                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.insId}" />
+                                <h:outputLabel value="Supplier" />
+                                <h:outputLabel value=":" />
+                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
+                                <h:outputLabel value="Supplier Phone" />
+                                <h:outputLabel value=":" />
+                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
+                                <h:outputLabel value="Supplier Address" />
+                                <h:outputLabel value=":" />
+                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
+                            </h:panelGrid>
                         </div>
 
                         <table class="order-table">
@@ -333,6 +362,7 @@
                                 </ui:repeat>
                             </tbody>
                         </table>
+                        <br/>
 
                         <div class="purchase-order">
                             <div>Order Initiated by: #{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}</div>
