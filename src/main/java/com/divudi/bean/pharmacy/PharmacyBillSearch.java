@@ -1450,7 +1450,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
@@ -1850,7 +1850,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
             if (cb.getId() == null) {
-                getBillFacade().create(cb);
+                getBillFacade().edit(cb);
             }
 
             pharmacyCancelReturnBillItemsWithReducingStock(cb);
