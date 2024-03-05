@@ -352,10 +352,15 @@ public class TokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Wrong Token");
             return "";
         }
-        if (getPatient() == null) {
-
+        if (getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return "";
         } else if (getPatient().getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return "";
         } else if (getPatient().getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return "";
         } else {
             patientController.save(patient);
             currentToken.setPatient(getPatient());

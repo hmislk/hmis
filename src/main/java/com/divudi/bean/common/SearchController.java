@@ -216,7 +216,7 @@ public class SearchController implements Serializable {
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
-            JsfUtil.addErrorMessage("Enter COrrect Bill Number !");
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
         }
         String sql = "Select b from Bill b"
                 + " where b.retired=false "

@@ -14,16 +14,28 @@
             rel="stylesheet" 
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"></link>
-        
-        
+
+
         <style>
-            
-            .bgimg{
-                
-            }
-            
+
+/*            .bgImg{
+                height: 50vh;
+                width: auto;
+                background-image: url('https://img.freepik.com/premium-vector/medical-pattern-with-beakers-pipettes-as-well-as-crosses-with-hearts-pills_638892-315.jpg');
+                background-size: cover;
+                background-position: center;
+
+            }*/
+
             /* Media query for screens smaller than 768px */
             @media (max-width: 767.98px) {
+/*
+                .bgImg{
+                    height: 25vh;
+                   
+
+                }*/
+
                 .card {
                     min-width: auto;
                 }
@@ -37,7 +49,7 @@
     <h:body class="container-fluid">
         <h:form id="form">
             <div class="row">
-                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark mb-1 p-0">
+                <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark p-0">
                     <!-- Navbar toggler button -->
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -58,7 +70,7 @@
                 </nav>
             </div>
             <h:panelGroup rendered="#{patientPortalController.patient.id ne null}">
-                <div class="bgimg" style="height: 50vh;width: auto;background-image: url('https://img.freepik.com/premium-vector/medical-pattern-with-beakers-pipettes-as-well-as-crosses-with-hearts-pills_638892-315.jpg')" >
+                <div class="bgImg">
                     <div class="mt-5">
                         <div class="card shadow-lg p-4">
                             <div class="text-center">
