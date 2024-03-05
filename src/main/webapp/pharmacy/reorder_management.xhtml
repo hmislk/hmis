@@ -113,7 +113,7 @@
                                         <p:outputLabel value="Actions" >
                                         </p:outputLabel>
                                     </f:facet>
-                                    <p:commandButton id="rem" process="rem" update="tb1" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />
+                                    <p:commandButton id="rem" process="rem" update="@this" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />
                                 </p:column>
                             </p:dataTable>     
 
