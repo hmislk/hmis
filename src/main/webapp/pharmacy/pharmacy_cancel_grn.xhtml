@@ -144,6 +144,11 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between w-100">
                                 <h:outputLabel value="Cancel Bill Preview" class="mt-2"></h:outputLabel>
+                                <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-warning"
+                                        value="refresh"> 
+                                    </p:commandButton> 
 
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
@@ -169,13 +174,12 @@
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
  <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                            <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+<!--                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                                 <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                            </h:panelGroup>-->
                         </h:panelGroup>
                         
                     </p:panel>
