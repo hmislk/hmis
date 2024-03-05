@@ -161,7 +161,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-
+                            <p:ajax process="@this" update="batchNo"/>
                         </p:autoComplete>
                     </p:column> 
 
@@ -170,8 +170,8 @@
                         </h:outputText>
                     </p:column>  
 
-                    <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
-                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                    <p:column headerText="Batch No"  style="width:50px!important; text-align: right;"> 
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>                        
                     </p:column>
 
                     <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">  
