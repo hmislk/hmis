@@ -266,6 +266,9 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
+            
+            
+            
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
             if (b.getId() == null) {
@@ -283,6 +286,46 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    
+    public void finalizeBillItems() {
+        for (BillItem b : getBillItems()) {
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getCurrentBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            double orderingQty = 0.0;
+            if(b.getQty()!=null){
+                orderingQty+=b.getQty();
+            }
+            if(b.getPharmaceuticalBillItem()!=null){
+                orderingQty+=b.getPharmaceuticalBillItem().getFreeQty();
+            }
+            if(orderingQty<=0){
+                b.setRetired(true);
+                b.setRetiredAt(new Date());
+                b.setRetirer(sessionController.getLoggedUser());
+                b.setRetireComments("With PO Finalizing");
+            }
+            
+            
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+
+        }
+    }
+
+    
     public void addAllSupplierItems() {
         if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please Select Dealor");
@@ -352,7 +395,7 @@ public class PurchaseOrderRequestController implements Serializable {
 //        }
 
         finalizeBill();
-        saveBillComponent();
+        finalizeBillItems();
         JsfUtil.addSuccessMessage("Request Succesfully Completed.");
         printPreview = true;
     }

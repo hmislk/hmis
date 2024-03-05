@@ -31,6 +31,7 @@
                                 <p:column headerText="Item" >
                                     <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                 </p:column>
+                                 <p:ajax event="itemSelect" process="@this" update="tab" />
                             </p:autoComplete>
                             <p:watermark for="acItem" value="Select Medicine"/>
 
@@ -41,7 +42,7 @@
                             </p:commandButton>
                         </h:panelGrid>
                         <p:dialog header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="50%" width="30%">
-                            <h:panelGrid columns="3" class="w-75" >
+                            <h:panelGrid id="tab" columns="3" class="w-75" >
                                 <h:outputText value="Selected Medicine" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
                                 <h:outputText class="mx-4 w-75" value="#{favouriteController.current.item.name}" ></h:outputText>
@@ -80,9 +81,11 @@
                                 <h:outputText value="Duration Unit" ></h:outputText>
                                 <h:outputText value=":" ></h:outputText>
                                 <p:inputText class="mx-4 w-75" value="#{favouriteController.current.durationUnit}" ></p:inputText>
+                                
+                                
                             </h:panelGrid>
                             <f:facet name="footer">
-                                <p:commandButton class="ui-button-success" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
+                                <p:commandButton class="ui-button-success" ajax="false" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
                             </f:facet>
                         </p:dialog> 
 
@@ -104,7 +107,7 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Medicine" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.item}" ></h:outputText>
+                                <h:outputText value="#{fi.item.name}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
@@ -116,13 +119,15 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Dose" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.dose}" ></h:outputText>
+                                <h:outputText value="#{fi.dose}" >
+                                <f:convertNumber pattern="0.#" />
+                                </h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Dose Unit" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.doseUnit}" ></h:outputText>
+                                <h:outputText value="#{fi.doseUnit.name}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
@@ -134,13 +139,15 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Duration" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.duration}" ></h:outputText>
+                                <h:outputText value="#{fi.duration}" >
+                                <f:convertNumber pattern="0.#" />
+                                </h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Duration Unit" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.durationUnit}" ></h:outputText>
+                                <h:outputText value="#{fi.durationUnit.name}" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>

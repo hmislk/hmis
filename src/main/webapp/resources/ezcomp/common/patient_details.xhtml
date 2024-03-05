@@ -37,16 +37,17 @@
                                 value="Searched Patient Details" 
                                 class="mx-2"
                                 ></h:outputText>
-                            <h:panelGroup rendered="#{cc.attrs.editable}" >
+                            <h:panelGroup rendered="#{cc.attrs.editable}" id="edit" >
                                 <p:selectBooleanButton 
                                     value="#{cc.attrs.controller.patientDetailsEditable}" 
                                     offIcon="pi pi-pencil" 
                                     onIcon="pi pi-eye"                                 
-                                    class="mx-4">
+                                    class="mx-2">
                                     <p:ajax 
                                         process="@this" 
-                                        update="viewPatient editPatient" />
+                                        update="viewPatient editPatient btnDone edit" />
                                 </p:selectBooleanButton>
+                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
                             </h:panelGroup>
 
                         </h:panelGroup>

@@ -140,6 +140,8 @@ public class UserPreference implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
+    
+    private boolean partialPaymentOfPharmacyBillsAllowed;
 
     @Deprecated
     @Enumerated(EnumType.STRING)
@@ -263,6 +265,12 @@ public class UserPreference implements Serializable {
     }
 
     public void setPartialPaymentOfOpdBillsAllowed(boolean partialPaymentOfOpdBillsAllowed) {
+        if(partialPaymentOfOpdBillsAllowed==true){
+            this.opdSettleWithoutCashTendered = true;
+        }
+        else {
+            this.opdSettleWithoutCashTendered = false;
+        }
         this.partialPaymentOfOpdBillsAllowed = partialPaymentOfOpdBillsAllowed;
     }
 
@@ -342,7 +350,6 @@ public class UserPreference implements Serializable {
 
     public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
         this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
-        this.opdSettleWithoutCashTendered = false;
     }
 
     public String getAbbreviationForHistory() {
@@ -1128,6 +1135,8 @@ public class UserPreference implements Serializable {
         }
         return opdBillingStrategy;
     }
+    
+    
 
     public void setOpdBillingStrategy(OpdBillingStrategy opdBillingStrategy) {
         this.opdBillingStrategy = opdBillingStrategy;
@@ -1194,5 +1203,15 @@ public class UserPreference implements Serializable {
     public void setOtpIndexes(String otpIndexes) {
         this.otpIndexes = otpIndexes;
     }
+
+    public boolean isPartialPaymentOfPharmacyBillsAllowed() {
+        return partialPaymentOfPharmacyBillsAllowed;
+    }
+
+    public void setPartialPaymentOfPharmacyBillsAllowed(boolean partialPaymentOfPharmacyBillsAllowed) {
+        this.partialPaymentOfPharmacyBillsAllowed = partialPaymentOfPharmacyBillsAllowed;
+    }
+    
+    
 
 }

@@ -944,16 +944,18 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             return true;
         }
 
-//        if (getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
-//            if (cashPaid == 0.0) {
-//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//            if (cashPaid < getNetTotal()) {
-//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//        }
+        if (!getSessionController().getLoggedPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
+            if (cashPaid == 0.0) {
+                JsfUtil.addErrorMessage("Please enter the paid amount");
+                return true;
+            }
+            if (cashPaid < getPreBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                return true;
+            }
+
+        }
+
         return false;
     }
 
@@ -1312,6 +1314,9 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             }
         }
         Patient pt = savePatient();
+        if (errorCheckForSaleBill()) {
+            return;
+        }
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -1398,9 +1403,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
 //        if (checkAllBillItem()) {
 //            return;
 //        }
-        if (errorCheckForSaleBill()) {
-            return;
-        }
+        
 
         calculateAllRates();
 

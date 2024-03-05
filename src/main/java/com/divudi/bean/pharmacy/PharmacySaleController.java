@@ -1088,16 +1088,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             return true;
         }
 
-//        if (getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
-//            if (cashPaid == 0.0) {
-//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//            if (cashPaid < getNetTotal()) {
-//                JsfUtil.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//        }
+        if (!getSessionController().getLoggedPreference().isPartialPaymentOfPharmacyBillsAllowed()) {
+            if (cashPaid == 0.0) {
+                JsfUtil.addErrorMessage("Please enter the paid amount");
+                return true;
+            }
+            if (cashPaid < getPreBill().getNetTotal()) {
+                JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                return true;
+            }
+
+        }
+
         return false;
     }
 
@@ -1415,6 +1417,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 return;
             }
         }
+        
 
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select Payment Method");
@@ -1425,7 +1428,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
-
+        
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
@@ -1437,7 +1440,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 }
             }
         }
+        
         Patient pt = savePatient();
+        
+        if (errorCheckForSaleBill()) {
+            return;
+        }
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -1524,9 +1532,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        if (checkAllBillItem()) {
 //            return;
 //        }
-        if (errorCheckForSaleBill()) {
-            return;
-        }
+        
 
         calculateAllRates();
 
