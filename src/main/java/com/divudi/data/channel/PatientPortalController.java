@@ -192,14 +192,6 @@ public class PatientPortalController {
         addNewPatient = false;
     }
 
-    public void addNewPatientAction() {
-        addNewPatient = true;
-    }
-
-    public void GoBackfromPatientAddAction() {
-        addNewPatient = false;
-    }
-
     public void fillSessionInstance() {
         System.out.println("working");
         if (channelSessions != null) {

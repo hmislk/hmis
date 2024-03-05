@@ -128,7 +128,7 @@
                             </p:dataTable> 
                         </div>
                         <div class="col-3">
-                            <p:panel header="Purchase Order">
+                            <p:panel header="Purchase Order" id="po">
                                 <p:outputLabel value="Supplier"
                                                class="form-label"
                                                for="acSupplier"></p:outputLabel>
@@ -155,8 +155,18 @@
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
                                     <f:selectItem itemLabel="SelectPayment method"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsForPo}">
+                                    </f:selectItems>
+                                    <p:ajax process="@this" update="po" event="change"/>
                                 </p:selectOneMenu>
+
+                                <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
+                                   <p:selectOneMenu class="w-100"  value="#{purchaseOrderRequestController.currentBill.creditDuration}">    
+                                    <f:selectItem itemLabel="Select Credit Duration"/>
+                                    <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                                </h:panelGroup>
 
                                 <p:outputLabel 
                                     value="Total Value"
