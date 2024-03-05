@@ -216,7 +216,7 @@ public class SearchController implements Serializable {
 
     public Bill searchBillFromBillId(Long currentBillILong) {
         if (currentBillILong == null) {
-            JsfUtil.addErrorMessage("Enter COrrect Bill Number !");
+            JsfUtil.addErrorMessage("Enter Correct Bill Number !");
         }
         String sql = "Select b from Bill b"
                 + " where b.retired=false "
@@ -1630,13 +1630,14 @@ public class SearchController implements Serializable {
         //     m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+        m.put("ret", false);
         m.put("ins", getSessionController().getInstitution());
         String sql;
 
-        sql = "Select b from PreBill b where "
+        sql = "Select b from Bill b where "
                 + " b.createdAt between :fd and :td "
                 + " and b.billType=:bt "
-                + " and b.cancelled=true "
+                + " and b.retired=:ret "
                 + " and b.institution=:ins";
         //+ " and type(b)=:class ";
 

@@ -79,8 +79,10 @@ public class PatientPortalController {
     private boolean addNewProfile;
     private boolean addNewPatient;
     private boolean bookingCompleted;
+
     private List<BillSession> pastBookings;
     private List<Payment> pastPayments;
+
 
     ScheduleModel eventModel;
     Staff staff;
@@ -181,12 +183,12 @@ public class PatientPortalController {
         }
 
     }
-
-    public void addNewPatientAction() {
+    
+    public void addNewPatientAction(){
         addNewPatient = true;
     }
-
-    public void GoBackfromPatientAddAction() {
+    
+    public void GoBackfromPatientAddAction(){
         addNewPatient = false;
     }
 
@@ -270,10 +272,12 @@ public class PatientPortalController {
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
+
                 addNewPatient = true;
             }
             selectPatient = true;
             addNewPatient = false;
+
         }
     }
 
@@ -562,6 +566,7 @@ public class PatientPortalController {
         this.addNewPatient = addNewPatient;
     }
 
+
     public boolean isBookingCompleted() {
         return bookingCompleted;
     }
@@ -585,5 +590,6 @@ public class PatientPortalController {
     public void setPastPayments(List<Payment> pastPayments) {
         this.pastPayments = pastPayments;
     }
+
 
 }
