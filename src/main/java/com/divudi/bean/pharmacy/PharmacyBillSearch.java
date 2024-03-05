@@ -2054,7 +2054,7 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
                 return;
             }
 
