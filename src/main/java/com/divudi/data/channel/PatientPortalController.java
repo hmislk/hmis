@@ -7,12 +7,14 @@ import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SmsSentResponse;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
@@ -22,6 +24,8 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.SessionInstance;
+import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.ServiceSessionFacade;
@@ -76,6 +80,10 @@ public class PatientPortalController {
     private boolean addNewPatient;
     private boolean bookingCompleted;
 
+    private List<BillSession> pastBookings;
+    private List<Payment> pastPayments;
+
+
     ScheduleModel eventModel;
     Staff staff;
     ServiceSession serviceSession;
@@ -96,6 +104,10 @@ public class PatientPortalController {
     PatientFacade patientFacade;
     @EJB
     SmsFacade smsFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillSessionFacade billSessionFacade;
 
     @Inject
     private SessionController sessionController;
@@ -111,11 +123,32 @@ public class PatientPortalController {
     CommonController commonController;
     private ChannelBean channelBean;
 
-    public void saveNewPatient(){
+    public List<BillSession> fillPastBookings() {
+        pastBookings = null;
+        Map m = new HashMap();
+        String sql = "select bs from BillSession bs where bs.bill.billtype=:btype and bs.bill.patient=:pt and b.retired=:ret";
+        m.put("btype", BillType.ChannelCredit);
+        m.put("pt", patient);
+        m.put("ret", false);
+        pastBookings = billSessionFacade.findByJpql(sql, m);
+        return pastBookings;
+    }
+
+    public List<Payment> fillPastPayments() {
+        pastPayments = null;
+        Map m = new HashMap();
+        String sql = "select p from Payment p where retired=:ret and p.bill.patient=:pt";
+        m.put("ret", false);
+        m.put("pt", patient);
+        pastPayments = paymentFacade.findByJpql(sql, m);
+        return pastPayments;
+    }
+
+    public void saveNewPatient() {
         patientController.save(patient);
         addNewPatient = false;
     }
-    
+
     public void reset() {
         patient = null;
         searchedPatients = null;
@@ -131,8 +164,8 @@ public class PatientPortalController {
         Map m = new HashMap();
         String sql = "select p from Staff p where p.retired=false and type(p)=:stype";
         m.put("stype", Consultant.class);
-        if (selectedSpeciality!=null) {
-            sql+=" and p.speciality= :sp";
+        if (selectedSpeciality != null) {
+            sql += " and p.speciality= :sp";
             m.put("sp", selectedSpeciality);
         }
         consultants = staffFacade.findByJpql(sql, m);
@@ -159,6 +192,14 @@ public class PatientPortalController {
         addNewPatient = false;
     }
 
+    public void addNewPatientAction() {
+        addNewPatient = true;
+    }
+
+    public void GoBackfromPatientAddAction() {
+        addNewPatient = false;
+    }
+
     public void fillSessionInstance() {
         System.out.println("working");
         if (channelSessions != null) {
@@ -180,11 +221,12 @@ public class PatientPortalController {
     }
 
     public void otpCodeConverter() {
-        int codeSize;
-        if (sessionController.getCurrentPreference().getOtpIndexes()== null) {
-            codeSize=4;
-        }
-        codeSize=Integer.parseInt(sessionController.getCurrentPreference().getOtpIndexes());
+        int codeSize = 0;
+//        if (sessionController.getCurrentPreference().getOtpIndexes() == null || sessionController.getCurrentPreference().getOtpIndexes() == "0") {
+//            codeSize = 4;
+//        }
+//        codeSize = Integer.parseInt(sessionController.getCurrentPreference().getOtpIndexes());
+
         String numbers = "0123456789";
         Random random = new Random();
         StringBuilder otpBuilder = new StringBuilder();
@@ -238,10 +280,12 @@ public class PatientPortalController {
 
             if (searchedPatients == null || searchedPatients.isEmpty()) {
                 selectPatient = false;
-                addNewPatient =true;
+
+                addNewPatient = true;
             }
             selectPatient = true;
-            addNewPatient =false;
+            addNewPatient = false;
+
         }
     }
 
@@ -529,6 +573,31 @@ public class PatientPortalController {
     public void setAddNewPatient(boolean addNewPatient) {
         this.addNewPatient = addNewPatient;
     }
-    
+
+
+    public boolean isBookingCompleted() {
+        return bookingCompleted;
+    }
+
+    public void setBookingCompleted(boolean bookingCompleted) {
+        this.bookingCompleted = bookingCompleted;
+    }
+
+    public List<BillSession> getPastBookings() {
+        return pastBookings;
+    }
+
+    public void setPastBookings(List<BillSession> pastBookings) {
+        this.pastBookings = pastBookings;
+    }
+
+    public List<Payment> getPastPayments() {
+        return pastPayments;
+    }
+
+    public void setPastPayments(List<Payment> pastPayments) {
+        this.pastPayments = pastPayments;
+    }
+
 
 }

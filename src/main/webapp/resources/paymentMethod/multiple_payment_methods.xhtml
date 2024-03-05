@@ -11,6 +11,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="controller" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -29,14 +30,14 @@
                                 <p:commandButton 
                                     value="Add Another" 
                                     class="mx-2 ui-button-success" 
-                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    actionListener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
                                     icon="fas fa-plus" process="@this"
                                     update="tblMultiplePayments" 
                                     action="#{cc.attrs.paymentMethodData.paymentMethodMultiple.addAnotherPaymentDetail}" >
                                 </p:commandButton>
                             </div>
-                            <p:outputLabel id="bl" value="Balance Amount - #{opdBillController.calculatRemainForMultiplePaymentTotal()}"
-                                           style="color: #{opdBillController.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" />
+                            <p:outputLabel id="bl" value="Balance Amount - #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
+                                           style="color: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal() > 0 ? 'red' : 'green'}; margin-right: 5px;" />
 
 
                         </div>
@@ -61,7 +62,7 @@
                                 </p:selectOneMenu>
                                  <p:commandButton 
                                     class="mx-2 ui-button-danger" 
-                                    actionListener="#{opdBillController.calculatRemainForMultiplePaymentTotal()}"
+                                    actionListener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
                                     icon="fas fa-times" 
                                     process="@this"
                                     update="tblMultiplePayments" 

@@ -17,7 +17,7 @@
 
                     <div class="row">
                         <div class="col-9">
-                            
+
                             <p:dataTable 
                                 styleClass="noBorder" 
                                 rowIndexVar="i" 
@@ -315,14 +315,21 @@
                             </thead>
                             <tbody>
                                 <ui:repeat value="#{purchaseOrderRequestController.billItems}" var="bi">
-                                    <tr>
-                                        <td>#{bi.item.code}</td>
-                                        <td>#{bi.item.name}</td>
-                                        <td>#{bi.pharmaceuticalBillItem.qty}</td>
-                                        <td>#{bi.pharmaceuticalBillItem.freeQty}</td>
-                                        <td>#{bi.pharmaceuticalBillItem.purchaseRate}</td>
-                                        <td>#{bi.netValue}</td>
-                                    </tr>
+
+                                    <h:panelGroup rendered="#{not bi.retired}" >
+
+                                        <tr>
+                                            <td>#{bi.item.code}</td>
+                                            <td>#{bi.item.name}</td>
+                                            <td>#{bi.pharmaceuticalBillItem.qty}</td>
+                                            <td>#{bi.pharmaceuticalBillItem.freeQty}</td>
+                                            <td>#{bi.pharmaceuticalBillItem.purchaseRate}</td>
+                                            <td>#{bi.netValue}</td>
+                                        </tr>
+
+                                    </h:panelGroup>
+
+
                                 </ui:repeat>
                             </tbody>
                         </table>
