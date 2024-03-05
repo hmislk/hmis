@@ -1062,10 +1062,6 @@ public class PharmacyBillSearch implements Serializable {
 
             b.setPharmaceuticalBillItem(ph);
 
-            if (b.getId() == null) {
-                getBillItemFacede().create(b);
-            }
-
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -1310,7 +1306,7 @@ public class PharmacyBillSearch implements Serializable {
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
-            getBillFeeFacade().create(bf);
+            getBillFeeFacade().edit(bf);
         }
     }
 
