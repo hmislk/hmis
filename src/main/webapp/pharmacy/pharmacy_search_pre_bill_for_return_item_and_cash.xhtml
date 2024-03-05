@@ -64,7 +64,7 @@
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>    
 
-                                    <p:column headerText="Billed at">
+                                    <p:column headerText="Billed At">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -78,7 +78,7 @@
                                         </h:panelGroup>                             
                                     </p:column>       
 
-                                    <p:column headerText="Billed by" >
+                                    <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>

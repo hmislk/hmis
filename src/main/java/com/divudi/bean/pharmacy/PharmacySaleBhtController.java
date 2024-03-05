@@ -810,25 +810,22 @@ public class PharmacySaleBhtController implements Serializable {
         }
         for (BillItem bi: getBillItems()){
             if(bi.getItem()==null){
-                System.out.println("1 = " + 1);
                 JsfUtil.addErrorMessage("Requested item could not empty"+bi.getItem().getName());
                 return true;
             }
             if (bi.getPharmaceuticalBillItem() == null){
-                System.out.println("2 = " + 2);
                 JsfUtil.addErrorMessage("Requested item not found"+bi.getItem().getName());
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock()==null){
-                System.out.println("3 = " + 3);
                 JsfUtil.addErrorMessage("Requested item not found"+bi.getItem().getName());
                 return true;
             }
-            if (bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem().getName().trim().equals("")){
-                System.out.println("4 = " + 4);
-                JsfUtil.addErrorMessage("Requested item not found"+bi.getItem().getName());
+            if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null){
+                JsfUtil.addErrorMessage("Please edit the item quantity to save"+bi.getItem().getName());
                 return true;
             }
+           
         }
 
 //        if (checkAllBillItem()) {
