@@ -110,10 +110,12 @@
                                             <p:ajax event="itemSelect" listener="#{patientPortalController.fillSessionInstance()}" process="acSessions" update="sessionDates" />
                                         </p:selectOneMenu>
                                     </div>
+
                                 </li>
                                 <p:commandButton value="Search" icon="fas fa-search" class="ui-button-warning mt-2" ajax="false" />
                             </ul>
                         </div>
+
                     </div>
                 </div>
 
@@ -193,8 +195,10 @@
                 </div>
             </h:panelGroup>
 
+
             <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
                 <h:panelGroup rendered="#{!patientPortalController.addNewPatient}" class="w-100" >
+
                     <div class="d-flex justify-content-center align-items-center" style="min-width: 25rem;">
                         <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
                             <div class="card-header text-center d-flex align-items-center justify-content-between">
