@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
+        <div style="width: 212mm;">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -39,53 +39,58 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Good Recieve Note(Cancel)" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Good Recieve Note (Cancel)" style="text-decoration: underline;"/>                           
             </div>
 
-            <h:panelGrid columns="4" style="min-width: 100%;">
 
+            <div style="min-width: 90%; margin-left: 8%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
+                <div class="row">
+                    <h:outputLabel value="G.R.N. Cancel No" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="col-3"/>
+                    <h:outputLabel value="G.R.N.No " class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}" class="col-4"/>
+                </div>
 
+                <div class="row">
+                    <h:outputLabel value="Cancel Date" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-3">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
+                    <h:outputLabel value="G.R.N.Date" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="col-4">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
+                </div>
 
+                <div class="row">
+                    <h:outputLabel value="Cancel Time" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-3">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="G.R.N.Time" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="col-4">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    </h:outputLabel>
+                </div>
 
-                <h:outputLabel value="G.R.N. Cancel No"/>
-                <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                <div class="row">
+                    <h:outputLabel value="Cancelled By " class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="col-3"/>
+                    <h:outputLabel value="Invoice No" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
+                </div>
 
-                <h:outputLabel value="G.R.N.No "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}"/>
+                <div class="row">
+                    <h:outputLabel value="Location" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-3"/>
+                    <h:outputLabel value="Supplier" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="col-4"/>
+                </div>
 
-                <h:outputLabel value="Cancel Date  " />
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                </h:outputLabel>
+            </div>
 
-                <h:outputLabel value="G.R.N.Date  "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                </h:outputLabel >
-
-                <h:outputLabel value="Cancel Time  " />
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                </h:outputLabel>
-
-                <h:outputLabel value="G.R.N.Time  "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                </h:outputLabel>
-
-                <h:outputLabel value="Cancelled By "/>
-                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" />
-                <h:outputLabel value="Invoice No "/>
-                <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
-
-                <h:outputLabel value="Location "/>
-                <h:outputLabel value="#{cc.attrs.bill.department.name}" />
-                <h:outputLabel value="Supplier "/>
-                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-
-            </h:panelGrid>
-
-
+            
+            
             <div >
                 <p:spacer height="15px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
