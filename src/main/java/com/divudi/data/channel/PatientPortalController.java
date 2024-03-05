@@ -221,7 +221,7 @@ public class PatientPortalController {
     }
 
     public void otpCodeConverter() {
-        int codeSize = 0;
+        int codeSize = 4;
 //        if (sessionController.getCurrentPreference().getOtpIndexes() == null || sessionController.getCurrentPreference().getOtpIndexes() == "0") {
 //            codeSize = 4;
 //        }
