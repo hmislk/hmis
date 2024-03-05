@@ -1219,7 +1219,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
         selectedBillSession = null;
         selectedServiceSession = ((ServiceSession) event.getObject());
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "Select bs From BillSession bs "
@@ -1549,7 +1549,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String generateBillNumberDeptId(Bill bill) {
         String suffix = getSessionController().getDepartment().getDepartmentCode();
         BillClassType billClassType = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
         BillType billType = null;
         String deptId = null;
@@ -1638,7 +1638,7 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
         List<BillType> bts = Arrays.asList(billTypes);
         BillType billType = null;
         String insId = null;

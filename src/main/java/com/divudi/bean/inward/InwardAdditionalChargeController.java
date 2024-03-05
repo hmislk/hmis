@@ -18,6 +18,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Fee;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
@@ -119,13 +120,22 @@ public class InwardAdditionalChargeController implements Serializable {
         getBilledBillFacade().edit(current);
 
         JsfUtil.addSuccessMessage("Additional Charges Added");
-        makeNull();
         
     }
 
     public void makeNull() {
         current = null;
         billItemList = null;
+        inwardChargeType = null;
+    }
+    
+    public void reset(){
+        PatientEncounter p = current.getPatientEncounter();
+        current = null;
+        billItemList =null;
+        getCurrent().setPatientEncounter(p);
+        inwardChargeType = null;
+        JsfUtil.addSuccessMessage("Cleared Successfully");
     }
     
     public void makeChargesNull() {

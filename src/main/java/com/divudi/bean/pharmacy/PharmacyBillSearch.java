@@ -1062,10 +1062,6 @@ public class PharmacyBillSearch implements Serializable {
 
             b.setPharmaceuticalBillItem(ph);
 
-            if (b.getId() == null) {
-                getBillItemFacede().create(b);
-            }
-
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -1310,7 +1306,7 @@ public class PharmacyBillSearch implements Serializable {
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
 
-            getBillFeeFacade().create(bf);
+            getBillFeeFacade().edit(bf);
         }
     }
 
@@ -1454,7 +1450,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
@@ -1854,7 +1850,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
             if (cb.getId() == null) {
-                getBillFacade().create(cb);
+                getBillFacade().edit(cb);
             }
 
             pharmacyCancelReturnBillItemsWithReducingStock(cb);
@@ -2058,7 +2054,7 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             if (checkBillItemStock()) {
-                JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
+                JsfUtil.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
                 return;
             }
 

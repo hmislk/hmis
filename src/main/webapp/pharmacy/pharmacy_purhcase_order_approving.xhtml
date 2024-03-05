@@ -29,95 +29,124 @@
                             </p:commandButton>
                         </div>
                     </f:facet>
-                    <p:panel class="mb-2">
+                    <p:panel class="mb-2" id="po">
                         <div class="row">
-                            <div class="col-2">
+                            <div class="col-3">
                                 <p:outputLabel style="font-weight: bold" class="mx-3" value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
-                                 
+
                             </div>
                             <div class="col-4">
                                 <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
                             </div>
-                            <div class="col-6">
-                                <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
-                                <f:selectItem itemLabel="Select Payment method"/>
-                                <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
-                            </p:selectOneMenu>
+                            <div class="col-5">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <p:outputLabel style="font-weight: bold" value="Payment Method"></p:outputLabel>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
+                                            <f:selectItem itemLabel="Select Payment method"/>
+                                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                                            <p:ajax process="@this" update="po" event="change"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    
+                                    <div class="col-4">
+                                        <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" >
+                                            <p:selectOneMenu class="w-100"  value="#{purchaseOrderController.aprovedBill.creditDuration}">    
+                                                <f:selectItem itemLabel="Select Credit Duration"/>
+                                                <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
+                                                </f:selectItems>
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+
                             </div>
                         </div>
                     </p:panel>
-                    <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
-                                 var="bi" value="#{purchaseOrderController.billItems}"
-                                 id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
-                                 selection="#{purchaseOrderController.selectedItems}">  
-
+                    <p:panel>
                         <f:facet name="header">  
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel  value="Pharmacy Bill Item"/>
                                 <p:commandButton ajax="false" value="Remove All" class="ui-button-Danger" style="float: right" action="#{purchaseOrderController.removeSelected()}"/>                            
                             </div>
-                        </f:facet>  
+                        </f:facet>
+                        <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
+                                     var="bi" value="#{purchaseOrderController.billItems}"
+                                     id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     selection="#{purchaseOrderController.selectedItems}">  
 
-                        <p:column selectionMode="multiple" style="width: 30px;"></p:column>
 
 
-                        <p:column headerText="No" style="width: 50px;" >
-                            <p:outputLabel value="#{bi.searialNo + 1}" ></p:outputLabel>
-                        </p:column>
+                            <p:column selectionMode="multiple" style="width: 30px;"></p:column>
 
-                        <p:column headerText="Item Name" >  
-                            #{bi.item.name} 
-                        </p:column>  
 
-                        <p:column headerText="Code" styleClass="shortNumericColumn"  >  
-                            #{bi.item.code} 
-                        </p:column>  
+                            <p:column headerText="No" style="width: 50px;" >
+                                <p:outputLabel value="#{bi.searialNo + 1}" ></p:outputLabel>
+                            </p:column>
 
-                        <p:column headerText="Qty" styleClass="averageNumericColumn" >                         
-                            <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">
-                                <f:convertNumber pattern="#00.00"/>
-                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
-                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
-                            </p:inputText>
-                        </p:column>  
-                        <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
-                            <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
-                                <f:convertNumber pattern="#00.00"/>
-                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
-                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
-                            </p:inputText>
-                        </p:column> 
-                        <p:column headerText="Purchse Price"  styleClass="averageNumericColumn" >  
-                            <h:panelGroup id="price">
-                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">   
+                            <p:column headerText="Item Name" >  
+                                #{bi.item.name} 
+                            </p:column>  
+
+                            <p:column headerText="Code" styleClass="shortNumericColumn"  >  
+                                #{bi.item.code} 
+                            </p:column>  
+
+                            <p:column headerText="Qty" styleClass="averageNumericColumn" >                         
+                                <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
                                     <f:convertNumber pattern="#00.00"/>
-                                    <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                    <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
-                            </h:panelGroup>
-                        </p:column>  
-
-
-                        <p:column headerText="Last Sale Price" style="text-align: right;" styleClass="averageNumericColumn" >  
-                            <h:panelGroup >
-                                <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
+                            </p:column>  
+                            <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
+                                <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
                                     <f:convertNumber pattern="#00.00"/>
-                                </h:outputText>
-                            </h:panelGroup>
-                        </p:column>  
+                                    <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
+                                </p:inputText>
+                            </p:column> 
+                            <p:column headerText="Purchse Price"  styleClass="averageNumericColumn" >  
+                                <h:panelGroup id="price">
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">   
+                                        <f:convertNumber pattern="#00.00"/>
+                                        <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
+                                    </p:inputText>
+                                </h:panelGroup>
+                            </p:column>  
 
-                        <p:column headerText="Total" style="text-align: right;" styleClass="averageNumericColumn" >  
-                            <h:panelGroup id="total">
-                                <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </h:panelGroup>
-                        </p:column>  
 
-                        <p:column styleClass="averageNumericColumn" >
-                            <p:commandButton  ajax="false" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
-                        </p:column>
-                    </p:dataTable> 
+                            <p:column headerText="Last Sale Price" style="text-align: right;" styleClass="averageNumericColumn" >  
+                                <h:panelGroup >
+                                    <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#00.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>  
+
+                            <p:column headerText="Total" style="text-align: right;" styleClass="averageNumericColumn" >  
+                                <h:panelGroup id="total">
+                                    <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>  
+
+                            <p:column styleClass="averageNumericColumn" >
+                                <p:commandButton  ajax="false" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
+                            </p:column>
+                        </p:dataTable> 
+                    </p:panel>
+
                     <p:spacer height="50"/>
                     <ph:history/>
                 </p:panel>
@@ -125,14 +154,14 @@
             <h:panelGroup rendered="#{purchaseOrderController.printPreview}">
                 <p:panel >
                     <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve" class="ui-button-warning" icon="fas fa-arrow-left"/>                    
-                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info" icon="fas fa-print">
+                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info mx-2" icon="fas fa-print">
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
-                    <p:panel   id="gpBillPreview">
+                    <p:panel   id="gpBillPreview" class="my-2">
 
-                        <ph:po bill="#{purchaseOrderController.aprovedBill}"/>
-                        
+                        <ph:po bill="#{purchaseOrderController.aprovedBill}" controller="#{purchaseOrderController}"/>
+
 
                     </p:panel>
 

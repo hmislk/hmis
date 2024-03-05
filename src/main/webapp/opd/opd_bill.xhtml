@@ -490,7 +490,7 @@
                                                 <f:selectItems 
                                                     value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                     var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                <p:ajax process="@this pay" 
+                                                <p:ajax process="@this" 
                                                         update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
                                                         event="change" 
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
