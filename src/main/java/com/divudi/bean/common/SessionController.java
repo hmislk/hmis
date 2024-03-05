@@ -114,8 +114,10 @@ public class SessionController implements Serializable, HttpSessionListener {
      */
     private static final long serialVersionUID = 1L;
     WebUser loggedUser = null;
+    @Deprecated
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
+    @Deprecated
     private UserPreference institutionPreference;
     private UserPreference departmentPreference;
     private UserPreference userPreference;
@@ -1746,10 +1748,12 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    @Deprecated
     public UserPreference getLoggedPreference() {
         return loggedPreference;
     }
 
+    @Deprecated
     public void setLoggedPreference(UserPreference loggedPreference) {
         this.loggedPreference = loggedPreference;
     }
@@ -1891,11 +1895,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationPreference = applicationPreference;
     }
 
+    @Deprecated
     public UserPreference getInstitutionPreference() {
         institutionPreference = getApplicationPreference();
         return institutionPreference;
     }
 
+    @Deprecated
     public void setInstitutionPreference(UserPreference institutionPreference) {
         this.institutionPreference = institutionPreference;
         setApplicationPreference(institutionPreference);
