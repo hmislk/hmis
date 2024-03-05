@@ -105,7 +105,7 @@
                                     </p:column>        
                                     <p:column>
                                         <p:commandButton ajax="false" disabled="#{bill.checkActiveReturnCashBill() or bill.cancelled}" 
-                                                         icon="fas fa-eye" value="View Bill" action="pharmacy_reprint_bill_return_bht"  >
+                                                         value="View Bill" action="pharmacy_reprint_bill_return_bht"  >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </p:commandButton>                                
                                     </p:column>
