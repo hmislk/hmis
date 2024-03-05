@@ -39,10 +39,25 @@
                                 <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
                             </div>
                             <div class="col-5">
-                                <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
                                     <f:selectItem itemLabel="Select Payment method"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                                 </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-6">
+                                        <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
+                                   <p:selectOneMenu class="w-100"  value="#{purchaseOrderRequestController.currentBill.creditDuration}">    
+                                    <f:selectItem itemLabel="Select Credit Duration"/>
+                                    <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
+                                    </f:selectItems>
+                                </p:selectOneMenu>
+                                </h:panelGroup>
+                                    </div>
+                                </div>
+                                
+                                
                             </div>
                         </div>
                     </p:panel>
