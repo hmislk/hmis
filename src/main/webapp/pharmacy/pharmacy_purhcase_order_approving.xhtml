@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
         <h:form>
@@ -54,7 +55,7 @@
                                     <div class="col-4">
                                         <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" >
                                             <div class="ui-inputgroup">
-                                                <p:inputText placeholder="Select Credit Duration" value="#{purchaseOrderController.creditDuration}"/>
+                                                <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}"/>
                                                 <div class="ui-inputgroup-addon">Days</div>
                                             </div>
                                         </h:panelGroup>
