@@ -1,3 +1,4 @@
+
 package com.divudi.bean.opd;
 
 import com.divudi.bean.common.*;

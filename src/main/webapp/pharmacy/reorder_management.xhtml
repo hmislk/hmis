@@ -59,7 +59,7 @@
                                                         class="w-100">
                                             <f:ajax  event="itemSelect" execute="creditCom"  />
                                             <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                           
+
                                         </p:autoComplete>
                                         <p:commandButton value="Create Reorders" action="#{reorderController.createReOrdersByDepartment()}"/>
                                         <p:commandButton id="ldr" process="ldr" update="tbl" value="List Reorders by Department" action="#{reorderController.fillReordersBySelectedDepartment()}"/>
@@ -109,27 +109,13 @@
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: left;" >
-                                    <f:facet name="header" >
-                                        <p:outputLabel value="Actions" >
-                                        </p:outputLabel>
-                                    </f:facet>
                                     <p:commandButton id="rem" process="rem" update="@this" action="#{reorderController.removeReOrder(ro)}"  icon="fas fa-trash" class="ui-button-danger" />
                                 </p:column>
-                            </p:dataTable>     
-
-
-
+                            </p:dataTable>
                         </div>
-
-
                     </p:panel>
-                </h:form>
-
-
+                </h:form> 
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
