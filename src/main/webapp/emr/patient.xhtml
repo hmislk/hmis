@@ -55,25 +55,25 @@
                                         <h:outputLabel value="Age :"  class="form-label" />
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="year" pt:placeholder="Years"
+                                                <p:inputText autocomplete="off" id="year" placeholder="Years"
                                                              value="#{patientController.ageYearComponant}" class="form-control" >
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="month" pt:placeholder="months" class="form-control" 
+                                                <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control" 
                                                              value="#{patientController.ageMonthComponant}">
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="day" pt:placeholder="days"
+                                                <p:inputText autocomplete="off" id="day" placeholder="days"
                                                              value="#{patientController.ageDateComponant}" class="form-control" >
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                         </div>
                                     </div>
