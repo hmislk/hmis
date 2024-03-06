@@ -218,7 +218,7 @@
                                     </p:column>
 
                                     <p:column >
-                                        <h:commandLink action="pharmacy_reprint_grn"  actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}">   
+                                        <h:commandLink action="#{pharmacyBillSearch.navigateToViewPurchaseOrder()}" >   
                                             <h:outputLabel value="#{b.saleValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>

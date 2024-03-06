@@ -87,6 +87,16 @@ public class TransferIssueController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issue";
     }
 
+    public String navigateToPharmacyIssueFromGrn() {
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        pharmacyController.clearItemHistory();
+        createGrnIssueBillItems(requestedBill);
+        return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
+    }
+
     public String navigateToListPharmacyIssueRequests() {
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
@@ -156,6 +166,14 @@ public class TransferIssueController implements Serializable {
         generateBillComponent();
     }
 
+    public void createGrnIssueBillItems(Bill grn) {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        makeNull();
+        requestedBill = grn;
+        issuedBill = null;
+        generateBillComponentsForIssueBillFromGrn(requestedBill);
+    }
+
     public void generateBillComponent() {
 
         //User Stock Container Save if New Bill
@@ -164,7 +182,7 @@ public class TransferIssueController implements Serializable {
         List<BillItem> bis = billController.billItemsOfBill(getRequestedBill());
 
         for (BillItem i : bis) {
-            
+
             boolean flagStockFound = false;
 
             double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i, BillType.PharmacyTransferIssue);
@@ -175,7 +193,7 @@ public class TransferIssueController implements Serializable {
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
-                
+
                 if (sq.getQty() == 0) {
                     continue;
                 }
@@ -212,11 +230,11 @@ public class TransferIssueController implements Serializable {
                 bItem.setTransUserStock(us);
 
                 getBillItems().add(bItem);
-                flagStockFound=true;
+                flagStockFound = true;
 
             }
 
-            if(!flagStockFound){
+            if (!flagStockFound) {
                 BillItem bItem = new BillItem();
                 bItem.setSearialNo(getBillItems().size());
                 bItem.setItem(i.getItem());
@@ -224,10 +242,59 @@ public class TransferIssueController implements Serializable {
                 bItem.setTmpQty(0);
                 getBillItems().add(bItem);
             }
-            
+
         }
 
-        
+    }
+
+    public void generateBillComponentsForIssueBillFromGrn(Bill grn) {
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+
+        List<BillItem> bis = billController.billItemsOfBill(grn);
+
+        for (BillItem oi : bis) {
+
+            BillItem ni = new BillItem();
+
+            if (oi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
+            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
+            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
+            npi.setStockHistory(oi.getPharmaceuticalBillItem().getStockHistory());
+            npi.setBillItem(oi.getPharmaceuticalBillItem().getBillItem());
+            npi.setDoe(oi.getPharmaceuticalBillItem().getDoe());
+            npi.setStringValue(oi.getPharmaceuticalBillItem().getStringValue());
+            npi.setQty(oi.getPharmaceuticalBillItem().getQty());
+            npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQty());
+            npi.setPurchaseRate(oi.getPharmaceuticalBillItem().getPurchaseRate());
+            npi.setLastPurchaseRate(oi.getPharmaceuticalBillItem().getLastPurchaseRate());
+            npi.setRetailRate(oi.getPharmaceuticalBillItem().getRetailRate());
+            npi.setWholesaleRate(oi.getPharmaceuticalBillItem().getWholesaleRate());
+            npi.setStock(oi.getPharmaceuticalBillItem().getStock());
+            npi.setStaffStock(oi.getPharmaceuticalBillItem().getStaffStock());
+
+            ni.setItem(oi.getItem());
+            ni.setItemId(oi.getItemId());
+            ni.setNetRate(oi.getNetRate());
+
+            ni.setQty(oi.getQty());
+
+            ni.setGrossValue(oi.getGrossValue());
+            ni.setNetValue(oi.getNetValue());
+
+            ni.setPharmaceuticalBillItem(npi);
+
+           
+            ni.setSearialNo(getBillItems().size());
+            ni.setItem(oi.getItem());
+            ni.setReferanceBillItem(oi);
+            ni.setTmpQty(0);
+            getBillItems().add(ni);
+
+        }
 
     }
 
