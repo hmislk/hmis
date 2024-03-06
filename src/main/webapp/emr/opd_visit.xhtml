@@ -25,31 +25,34 @@
                             <p:commandButton 
                                 action="#{patientEncounterController.saveSelected()}"
                                 ajax="false"
+                                class="ui-button-warning p-0 m-1"
                                 icon="pi pi-save"
-                                class="p-0 m-1" 
                                 title="Save"/>
 
                             <p:commandButton 
-                                class="p-0 m-1" 
+                                class="p-0 m-1 ui-button-success" 
                                 action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
                             </p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
-                            <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                            <p:commandButton 
-                                ajax="false" value="To Patient Profile"
-                                action="#{patientController.toEmrPatientProfile()}"
-                                process="panelPt" update="panelPt" ></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-warning" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
+                            <p:commandButton class="p-0 m-1 ui-button-secondary" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
+                            
                             <p:commandButton 
                                 id="btnCommentPrint"
                                 ajax="false"
                                 icon="pi pi-print"
-                                class="p-0 m-1" 
+                                class="p-0 m-1 ui-button-info" 
                                 title="Print">
                                 <p:printer target=":formImage:tblView:txeLetterPreview"/>
                             </p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-warning"
+                                icon="fas fa-address-card"
+                                ajax="false" value="Patient Profile"
+                                action="#{patientController.toEmrPatientProfile()}"
+                                process="panelPt" update="panelPt" ></p:commandButton>
 
 
                         </div>
@@ -767,6 +770,8 @@
                                                 <p:commandButton 
                                                     id="btnGenerateNewDocument"
                                                     value="Generate" 
+                                                    class="ui-button-warning"
+                                                    icon="fas fa-arrows-rotate"
                                                     process="btnGenerateNewDocument somTemplates"
                                                     update="lstEncounterDocs gpReferralDoc"
                                                     action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
@@ -803,16 +808,20 @@
                                                             <p:commandButton 
                                                                 id="btnSaveDoc"
                                                                 value="Save" 
+                                                                class="ui-button-warning"
+                                                                icon="fas fa-save"
                                                                 action="#{patientEncounterController.saveEncounterReferral()}"
                                                                 process="btnSaveDoc "
                                                                 update="lstEncounterDocs">
                                                             </p:commandButton>
                                                             <p:commandButton 
                                                                 id="btnDeleteDoc"
-                                                                value="Delete" 
-                                                                action="#{patientEncounterController.saveEncounterReferral()}"
+                                                                value="Delete"
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
+                                                                action="#{patientEncounterController.removeEncounterReferral()}"
                                                                 process="btnDeleteDoc"
-                                                                update="lstEncounterDocs ">
+                                                                update="lstEncounterDocs txeLetterPreview">
                                                             </p:commandButton>
                                                             <p:commandButton 
                                                                 id="btnCommentPrint"
