@@ -161,11 +161,10 @@
                                 </p:selectOneMenu>
 
                                 <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
-                                   <p:selectOneMenu class="w-100"  value="#{purchaseOrderRequestController.currentBill.creditDuration}">    
-                                    <f:selectItem itemLabel="Select Credit Duration"/>
-                                    <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
-                                    </f:selectItems>
-                                </p:selectOneMenu>
+                                   <div class="ui-inputgroup">
+                                                <p:inputText placeholder="Select Credit Duration" value="#{purchaseOrderController.creditDuration}"/>
+                                                <div class="ui-inputgroup-addon">Days</div>
+                                            </div>
                                 </h:panelGroup>
 
                                 <p:outputLabel 
@@ -287,16 +286,20 @@
                     styleClass="print-preview"
                     class="w-100">
                     <f:facet name="header">
-                        <h1>Purchase Order Request</h1>
-                        <div class="buttons">
-                            <p:commandButton ajax="false" value="Print Request" icon="pi pi-save" styleClass="ui-button-success mx-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h4>Purchase Order Request</h4>
+                            </div>
+                            <div>
+                            <p:commandButton ajax="false" value="Print Request" icon="fas fa-print" styleClass="ui-button-info mx-1">
                                 <p:printer target="printPaper" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="New Order" action="#{purchaseOrderRequestController.resetBillValues}" icon="pi pi-plus" styleClass="ui-button-info mx-1"/>
+                            <p:commandButton ajax="false" value="New Order" action="#{purchaseOrderRequestController.resetBillValues}" icon="fas fa-plus" styleClass="ui-button-success mx-1"/>
+                            </div>
                         </div>
                     </f:facet>
-
-                    <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
+                    <p:panel>
+                        <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
 
                     <h:panelGroup id="printPaper" >
 
@@ -382,6 +385,7 @@
                         </div>
 
                     </h:panelGroup>
+                    </p:panel>
                 </p:panel>
 
             </h:panelGroup>
