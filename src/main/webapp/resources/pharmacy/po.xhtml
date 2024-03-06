@@ -57,6 +57,9 @@
                     <h:outputLabel value="Payment Type "/>
                     <h:outputLabel value=" : "/>
                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                    <h:outputLabel value="Credit Duration" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value=" : " rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creditDuration}" rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}"/>
                     <h:outputLabel value="P.O. Date "/>
                     <h:outputLabel value=" : "/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
