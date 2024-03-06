@@ -65,7 +65,7 @@
                                                     accesskey="i"    
                                                     id="acStock" 
                                                     value="#{pharmacySaleController.stock}" 
-                                                    completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}" 
+                                                    completeMethod="#{stockController.completeAvailableStocks}" 
                                                     var="i" 
                                                     itemLabel="#{i.itemBatch.item.name}" 
                                                     itemValue="#{i}" 

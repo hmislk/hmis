@@ -639,6 +639,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return items;
     }
 
+    @Deprecated
     public List<Stock> completeAvailableStocks(String qry) {
         Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
         List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
@@ -657,6 +658,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return new ArrayList<>(stockSet);
     }
 
+    @Deprecated
     public List<Stock> completeAvailableStocksStartsWith(String qry) {
         List<Stock> stockList;
         String sql;
@@ -676,6 +678,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return stockList;
     }
 
+    @Deprecated
     public List<Stock> completeAvailableStocksContains(String qry) {
         List<Stock> stockList;
         String sql;

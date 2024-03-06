@@ -64,7 +64,7 @@
 
                                                 <p:autoComplete accesskey="i"    id="acStock" 
                                                                 value="#{pharmacyWholeSaleController2.stock}" 
-                                                                completeMethod="#{pharmacyWholeSaleController2.completeAvailableStocksFromNameOrGeneric}" 
+                                                                completeMethod="#{stockController.completeAvailableStocks}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                                 >
                                                     <p:column headerText="Id">

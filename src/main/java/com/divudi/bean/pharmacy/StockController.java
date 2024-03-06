@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -87,6 +89,64 @@ public class StockController implements Serializable {
         return storeBean;
     }
 
+    
+    
+     public List<Stock> completeAvailableStocks(String qry) {
+        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
+        List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
+        if (initialStocks != null) {
+            stockSet.addAll(initialStocks);
+        }
+
+        // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
+        if (stockSet.size() <= 10) {
+            List<Stock> additionalStocks = completeAvailableStocksContains(qry);
+            if (additionalStocks != null) {
+                stockSet.addAll(additionalStocks);
+            }
+        }
+
+        return new ArrayList<>(stockSet);
+    }
+
+    public List<Stock> completeAvailableStocksStartsWith(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+//        itemsWithoutStocks = completeRetailSaleItems(qry);
+        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        return stockList;
+    }
+
+    public List<Stock> completeAvailableStocksContains(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+//        itemsWithoutStocks = completeRetailSaleItems(qry);
+        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        return stockList;
+    }
+    
     public void removeStoreItemsWithoutStocks() {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
@@ -337,6 +397,10 @@ public class StockController implements Serializable {
 
     public void setDepartmentFacade(DepartmentFacade departmentFacade) {
         this.departmentFacade = departmentFacade;
+    }
+    
+    private StockFacade getStockFacade(){
+        return ejbFacade;
     }
 
     /**
