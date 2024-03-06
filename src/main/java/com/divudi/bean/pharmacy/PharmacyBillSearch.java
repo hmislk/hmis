@@ -764,10 +764,10 @@ public class PharmacyBillSearch implements Serializable {
         List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private boolean checkGrnReturn() {
@@ -1220,7 +1220,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
