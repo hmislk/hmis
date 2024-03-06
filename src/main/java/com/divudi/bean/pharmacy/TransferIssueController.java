@@ -180,6 +180,9 @@ public class TransferIssueController implements Serializable {
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
         List<BillItem> bis = billController.billItemsOfBill(getRequestedBill());
+        getIssuedBill().setDepartment(requestedBill.getDepartment());
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+        getIssuedBill().setToDepartment(requestedBill.getDepartment());
 
         for (BillItem i : bis) {
 
@@ -251,6 +254,9 @@ public class TransferIssueController implements Serializable {
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
         List<BillItem> bis = billController.billItemsOfBill(grn);
+        getIssuedBill().setDepartment(null);
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+        getIssuedBill().setToDepartment(null);
 
         for (BillItem oi : bis) {
 
@@ -299,13 +305,17 @@ public class TransferIssueController implements Serializable {
     }
 
     public void settle() {
+        if (getIssuedBill().getToDepartment() == null){
+            JsfUtil.addErrorMessage("Please Select Department to Issue");
+            return;
+        }
         if (getIssuedBill().getToStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
-
+        
         saveBill();
-
+        System.out.println("1 = " + getIssuedBill().getToDepartment().getName());
         for (BillItem i : getBillItems()) {
 
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
@@ -362,19 +372,21 @@ public class TransferIssueController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
 
             getIssuedBill().getBillItems().add(i);
+            System.out.println("2 = " + getIssuedBill().getToDepartment().getName());
         }
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-
+        
+        
         if (getSessionController().getLoggedPreference().isDepNumGenFromToDepartment()) {
             getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         } else {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         }
 
-        getIssuedBill().setInstitution(getSessionController().getInstitution());
-        getIssuedBill().setDepartment(getSessionController().getDepartment());
-
+//        getIssuedBill().setInstitution(getSessionController().getInstitution());
+        getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
+//
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
 
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
@@ -392,7 +404,6 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(getRequestedBill());
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
-
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         issuedBill = null;
@@ -451,8 +462,8 @@ public class TransferIssueController implements Serializable {
 
     private void saveBill() {
         getIssuedBill().setReferenceBill(getRequestedBill());
-        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
-        getIssuedBill().setToDepartment(getRequestedBill().getDepartment());
+//        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
+//        getIssuedBill().setToDepartment(getRequestedBill().getDepartment());
 
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());

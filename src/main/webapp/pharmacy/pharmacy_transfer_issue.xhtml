@@ -84,22 +84,32 @@
                         <p:panel >
                             <f:facet name="header" >                                  
                                 <h:outputText value="Issue Details" ></h:outputText>
+                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" style="float: right;" ajax="false" class="ui-button-success mx-2" >
+                                </p:commandButton>  
                             </f:facet>
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Items will be issued to : " class="mb-1"/>
-                                <h:outputLabel value="#{transferIssueController.issuedBill.department.name}" class="mb-1"/>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Items will be issued from &nbsp;" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.fromDepartment}" disabled="true"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
 
-                                <h:outputLabel value="Items will be issued from :" />
-                                <h:outputLabel value="#{transferIssueController.issuedBill.department.name}" class="mb-1"/>
-                                
-                                
-                                <h:outputLabel value="Select Staff Name :" />&nbsp;
+                                <h:outputLabel value="Items will be issued to"/>
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.toDepartment}" class="mb-1"
+                                                var="to" itemLabel="#{to.name}" itemValue="#{to}"
+                                                disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
+                                                completeMethod="#{departmentController.completeDept}"/>
+
+
+
+
+                                <h:outputLabel value="Select Staff Name" />
+                                <h:outputLabel value=": &nbsp;"/>
                                 <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
                                                  forceSelection="true" 
                                                  var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                                  value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
-                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" ajax="false" class="ui-button-success mx-2" >
-                                </p:commandButton>                        
+
                             </h:panelGrid>
                         </p:panel>
                     </div>
