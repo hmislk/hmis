@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
         <h:form>
@@ -50,14 +51,13 @@
                                             <p:ajax process="@this" update="po" event="change"/>
                                         </p:selectOneMenu>
                                     </div>
-                                    
+
                                     <div class="col-4">
                                         <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" >
-                                            <p:selectOneMenu class="w-100"  value="#{purchaseOrderController.aprovedBill.creditDuration}">    
-                                                <f:selectItem itemLabel="Select Credit Duration"/>
-                                                <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
-                                                </f:selectItems>
-                                            </p:selectOneMenu>
+                                            <div class="ui-inputgroup">
+                                                <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}"/>
+                                                <div class="ui-inputgroup-addon">Days</div>
+                                            </div>
                                         </h:panelGroup>
                                     </div>
                                 </div>

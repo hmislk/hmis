@@ -319,6 +319,8 @@ public class PatientPortalController {
         bookingCompleted = true;
         JsfUtil.addSuccessMessage("Your Booking Successfull");
     }
+    
+  
 
     public String getPatientphoneNumber() {
         return PatientphoneNumber;

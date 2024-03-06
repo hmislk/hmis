@@ -46,7 +46,7 @@
 
                                                 <p:autoComplete accesskey="i" id="acStock" class="w-100"
                                                                 value="#{pharmacySaleController2.stock}" 
-                                                                completeMethod="#{pharmacySaleController2.completeAvailableStocksFromNameOrGeneric}" 
+                                                                completeMethod="#{stockController.completeAvailableStocks}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" 
                                                                 itemValue="#{i}" 
                                                                 maxResults="30"
