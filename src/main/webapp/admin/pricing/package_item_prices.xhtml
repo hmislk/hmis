@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/pricing/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl />
+                <p:growl id="msg"/>
                 <p:panel header="Manage Package Item Fees" >
                     <p:panelGrid columns="1" styleClass="alignTop">
                         <p:panelGrid columns="2" >
@@ -68,7 +68,7 @@
                                     <h:inputText autocomplete="off" id="txtFee" value="#{packageItemFeeController.currentFee.fee}"/>
                                     <h:outputText value=""/>
                                     <h:commandButton id="btnAddTo" value="Add" action="#{packageItemFeeController.saveCharge}" styleClass="buttons">
-                                        <f:ajax render="dtbFee gpVeda" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
+                                        <f:ajax render="dtbFee gpVeda msg" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
                                     </h:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
                                 </h:panelGrid>

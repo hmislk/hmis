@@ -9,10 +9,11 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.SymanticType;
 import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,8 +36,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -51,11 +52,11 @@ public class ProcedureController implements Serializable {
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
     String selectText = "";
-    
-    public String navigateToManageProcedures(){
+
+    public String navigateToManageProcedures() {
         return "/emr/admin/procedures";
     }
-    
+
     public void downloadAsExcel() {
         getItems();
         try {
@@ -136,23 +137,21 @@ public class ProcedureController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getDepartment() != null) {
-            current.setSymanticType(SymanticType.Therapeutic_Procedure);
-            if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-                getFacade().edit(current);
-                UtilityController.addSuccessMessage("Saved");
-            } else {
-                current.setCreatedAt(new Date());
-                current.setCreater(getSessionController().getLoggedUser());
-                getFacade().create(current);
-                UtilityController.addSuccessMessage("Updates");
-            }
-            recreateModel();
-            getItems();
-        }else{
-            UtilityController.addErrorMessage("Please Select a Department");
+        if (current==null){
+            JsfUtil.addErrorMessage("Nothing to save");
         }
-
+        current.setSymanticType(SymanticType.Therapeutic_Procedure);
+        if (getCurrent().getId() != null) {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Saved");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Updated");
+        }
+        recreateModel();
+        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -196,9 +195,9 @@ public class ProcedureController implements Serializable {
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

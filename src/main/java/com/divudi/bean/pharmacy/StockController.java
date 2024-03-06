@@ -9,17 +9,22 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +40,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -53,6 +58,11 @@ public class StockController implements Serializable {
     private Stock current;
     private List<Stock> items = null;
     String selectText = "";
+    @EJB
+    BillItemFacade billItemFacade;
+
+    @Inject
+    VmpController vmpController;
 
     public List<Stock> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Stock c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -91,6 +101,110 @@ public class StockController implements Serializable {
                 getItemFacade().edit(i);
             }
         }
+    }
+
+    public double findStock(Item item) {
+        return findStock(null, item);
+    }
+
+    public double findStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    public double findStock(Institution institution, Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findStock(institution, amps);
+    }
+
+    public double findExpiaringStock(Item item) {
+        return findExpiaringStock(null, item);
+    }
+
+    public double findStock(Institution institution, List<Amp> amps) {
+        Double stock = null;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (institution == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("ins", institution);
+            jpql += " where i.department.institution=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
+    public double findExpiaringStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findExpiaringStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    public double findExpiaringStock(Institution institution, Amp item) {
+        List<Amp> amps = new ArrayList<>();
+        amps.add(item);
+        return findExpiaringStock(institution, amps);
+    }
+
+    public double findExpiaringStock(Institution institution, List<Amp> amps) {
+        if (amps == null) {
+            return 0.0;
+        }
+        if (amps.isEmpty()) {
+            return 0.0;
+        }
+        Double stock = null;
+        String jpql;
+        Map m = new HashMap();
+        Vmp tvmp = amps.get(0).getVmp();
+        int daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, daysToMarkAsExpiaring);
+        Date doe = c.getTime();
+        m.put("amps", amps);
+        m.put("doe", doe);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (institution == null) {
+            jpql += " where i.itemBatch.item in :amps "
+                    + " and i.itemBatch.dateOfExpire < :doe ";
+        } else {
+            m.put("ins", institution);
+            jpql += " where i.department.institution=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
     }
 
     public List<Stock> completeStock(String qry) {
@@ -138,7 +252,7 @@ public class StockController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent().getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Manufacturer");
+            JsfUtil.addErrorMessage("Please Select Manufacturer");
             return true;
         }
         return false;
@@ -151,10 +265,10 @@ public class StockController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -198,9 +312,9 @@ public class StockController implements Serializable {
 
         if (current != null) {
             getFacade().remove(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -271,5 +385,4 @@ public class StockController implements Serializable {
     /**
      *
      */
-    
 }

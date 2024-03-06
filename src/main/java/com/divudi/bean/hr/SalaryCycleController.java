@@ -7,7 +7,7 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.LeaveType;
@@ -255,17 +255,17 @@ public class SalaryCycleController implements Serializable {
 
         //Check Salry Date        
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
-            UtilityController.addErrorMessage("Salary Date Already Exist");
+            JsfUtil.addErrorMessage("Salary Date Already Exist");
             return true;
         }
 
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.AdvanceDate, current.getSalaryAdvanceFromDate(), current.getSalaryAdvanceToDate())) {
-            UtilityController.addErrorMessage("Salary Advance Date Already Exist");
+            JsfUtil.addErrorMessage("Salary Advance Date Already Exist");
             return true;
         }
 
 //        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
-//            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
+//            JsfUtil.addErrorMessage("Salary Over Time Date Already Exist");
 //            return true;
 //        }
         return false;
@@ -279,12 +279,12 @@ public class SalaryCycleController implements Serializable {
         current.processName();
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
         //     recreateModel();
@@ -313,9 +313,9 @@ public class SalaryCycleController implements Serializable {
 //            getFacade().remove(current);
 //            getCurrentRoster().getSalaryCycleList().remove(getCurrent());
 //            getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         //   recreateModel();
 

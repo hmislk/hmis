@@ -4,7 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:prints="http://java.sun.com/jsf/composite/ezcomp/prints"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -119,18 +119,17 @@
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Transfered In" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" >
-                                                        </p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalTransferRecive}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Bank Withdrawal" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalWithdrawals}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Billed Bill (In Shift)" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBilledBillValue}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row" >
                                                     <div class="col-md-3"><p:outputLabel value="Deductions (-)" style="font-weight: 700" ></p:outputLabel></div>
@@ -140,23 +139,23 @@
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Transfered Out" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" >
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBalanceTransfer}" >
                                                         </p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Bank Deposits" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalDeposits}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Refunded Bill (In Shift)" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBillRefunds}" ></p:outputLabel></div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md-2"><p:outputLabel value="Canceled Bill (In Shift)" ></p:outputLabel></div>
                                                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                    <div class="col-md-8"><p:outputLabel value="0.0" ></p:outputLabel></div>
+                                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.totalBillCanceld}"></p:outputLabel></div>
                                                 </div>
                                                 <div class="row" >
                                                     <div class="col-md-3"><p:outputLabel value="Total Of End Shift Bill" style="font-weight: 700" ></p:outputLabel></div>
@@ -191,7 +190,12 @@
 
                                     <h:panelGrid id="depositbill">
                                         <div class="d-flex justify-content-center">
-                                            <prints:five_five_paper_with_headings_for_Shift_end_fund_bill payments="#{financialTransactionController.currentBillPayments}" bill="#{financialTransactionController.currentBill}" startbill="#{financialTransactionController.nonClosedShiftStartFundBill}"/>  
+                                            <prints:five_five_paper_with_headings_for_Shift_end_fund_bill 
+                                                payments="#{financialTransactionController.currentBillPayments}" 
+                                                bill="#{financialTransactionController.currentBill}"
+                                                startbill="#{financialTransactionController.nonClosedShiftStartFundBill}"
+                                                Additions="#{financialTransactionController.aditions}"
+                                                Deductions="#{financialTransactionController.deductions}"/>  
                                         </div>
                                     </h:panelGrid>
                                 </p:panel>

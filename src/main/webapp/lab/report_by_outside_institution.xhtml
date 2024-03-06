@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/reportLab/report_lab.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 >
@@ -12,20 +12,21 @@
     <ui:define name="subcontent">
         <h:form>
 
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+            <p:panel>
                 <f:facet name="header">
-                    <h:outputLabel value="3) Investigation Counts"/>
-                <h:panelGrid columns="2"  styleClass="noPrintButton" >
+                    <h:outputLabel value="Fees For Outside Institutions"/>
+                </f:facet>
+                <h:panelGrid columns="2"  class="my-2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                    <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Institution"/>
-                    <p:autoComplete forceSelection="true" 
+                    <p:autoComplete class="mx-4 w-100" inputStyleClass="w-100" forceSelection="true" 
                                     value="#{commonReport.institution}" 
                                     completeMethod="#{institutionController.completeIns}" var="ix" itemLabel="#{ix.name}" 
                                     itemValue="#{ix}" size="30"  style="width: 400px;">
@@ -38,30 +39,28 @@
                     </p:autoComplete>
                     </h:panelGrid>
                     
-                    <h:panelGrid columns="5"  >
-                        <p:spacer width="65" height="1"/>
-                        <p:commandButton value="Refresh" ajax="false" action="#{commonReport.displayOutsideBillFees()}"  styleClass="noPrintButton" style="float: right;"   />
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
+                <h:panelGrid columns="6" class="my-2" >
+                    <p:commandButton class="ui-button-warning" icon="fas fa-cogs" value="Process" ajax="false" action="#{commonReport.displayOutsideBillFees()}"   />
+                    <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print" >
+                        <p:printer target="tbl" />
                     </p:commandButton>
                     <p:commandButton 
-                      ajax="false"  value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                        ajax="false"  value="Excel" class="ui-button-success" icon="fas fa-file-excel">
                         <p:dataExporter type="xlsx" target="tbl" fileName="Report By Outside Institution"/>  
                     </p:commandButton>
                     
                 </h:panelGrid>
-                </f:facet>
 
                 <p:dataTable id="tbl" value="#{commonReport.billFees}" 
                              var="d" style="font-size: 15px;">
                     <f:facet name="header">
-                        <h:outputLabel value="#{commonReport.institution.name}"/>
-                        <h:outputLabel value="Fees For Outside Institution" style="white-space: pre-line"/>
-                        <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                        <h:outputLabel value="#{commonReport.institution.name} &nbsp;"/>
+                        <h:outputLabel value="Fees For Outside Institution &nbsp;" style="white-space: pre-line"/>
+                        <h:outputLabel value=" From : &nbsp;" style="white-space: pre-line"/>
                         <h:outputLabel  value="#{commonReport.fromDate}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
-                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel value="&emsp;&emsp;To :&nbsp;"/>
                         <h:outputLabel  value="#{commonReport.toDate}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>

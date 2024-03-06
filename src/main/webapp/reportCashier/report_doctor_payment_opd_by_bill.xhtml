@@ -1,33 +1,32 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       >
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="OPD Doctor Payment(By Bill)" >
-                        <p:panel>
-                            <h:panelGrid columns="2">
+                            <h:panelGrid columns="2" class="my-2">
                                 <p:outputLabel value="From" />
-                                <p:calendar id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.fromDate}"></p:calendar>
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.fromDate}"></p:calendar>
                                 <p:outputLabel value="To" />
-                                <p:calendar id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.toDate}"></p:calendar>
+                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{searchController.toDate}"></p:calendar>
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
-                                <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                 >
                                 </p:autoComplete>
                                 <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
-                                <p:autoComplete style="width: 400px;" forceSelection="true" value="#{searchController.currentStaff}" id="scStaff"
+                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" forceSelection="true" value="#{searchController.currentStaff}" id="scStaff"
                                                 completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                                 >
                                 </p:autoComplete>
@@ -36,15 +35,17 @@
                             <p:watermark for="tdate" value="To Date" />
                             <p:watermark for="acSpeciality" value="Speciality" />
                             <p:watermark for="scStaff" value="Staff / Doctor" />
-                        </p:panel>
-                        <p:panel>
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{searchController.fillDocPayingBill}"   />
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <h:panelGrid columns="6" class="my-2">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{searchController.fillDocPayingBill}"   />
+                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-
-
-                        </p:panel>
+                                <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="OPD_Doctor_Payment_by_Bill_Report" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                            
+                            
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
                                 <p:dataTable id="tbl" value="#{searchController.bills}" var="b">

@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://java.sun.com/jsf/composite/patient"
-                xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:bill="http://java.sun.com/jsf/composite/inward"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
                 >
 
 
@@ -43,7 +43,7 @@
                                     <p:column>
                                         <h:outputLabel value="#{myItem.patient.person.name}"/>
                                     </p:column>
-                                    <p:ajax process="@this"></p:ajax>
+<!--                                    <p:ajax process="@this"></p:ajax>-->
                                 </p:autoComplete> 
 
                                 <p:commandButton
@@ -133,23 +133,65 @@
                                     <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
                                     <p:outputLabel  value="Consultant"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringConsultant}" ></p:inputText>
+                                    <!--<p:inputText  class="w-100"  value="#{bhtEditController.current.referringConsultant}"  ></p:inputText>-->
+                                    <p:autoComplete forceSelection="true" 
+                                                    value="#{bhtEditController.current.referringConsultant}" 
+                                                    id="refCon"
+                                                    completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    styleClass="form-control w-100"
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"></p:autoComplete>
                                     <p:outputLabel  value="Medical Officer"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.opdDoctor}" ></p:inputText>
+<!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.opdDoctor}" ></p:inputText>-->
+                                     <p:autoComplete forceSelection="true" id="scStaff" placeholder="OPD Doctor"
+                                                    value="#{bhtEditController.current.opdDoctor}" 
+                                                    completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
+                                                    var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                    styleClass="form-control w-100"
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"
+                                                    >
+                                    </p:autoComplete>
 
                                     <p:outputLabel  value="Doctor who referred patient"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringDoctor}" ></p:inputText>
+<!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringDoctor}" ></p:inputText>-->
+                                    <p:autoComplete forceSelection="true"
+                                                    value="#{bhtEditController.current.referringDoctor}"
+                                                    completeMethod="#{doctorController.completeDoctor}" var="ix"
+                                                    itemLabel="#{ix.person.name}" itemValue="#{ix}" 
+                                                    styleClass="form-control w-100"
+                                                    class="w-100" 
+                                                    inputStyleClass="w-100"
+                                                    />
                                     <p:outputLabel  value="Staff who referred patient"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringStaff}" ></p:inputText>
+<!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referringStaff}" ></p:inputText>-->
+                                     <p:autoComplete forceSelection="true"
+                                                    value="#{bhtEditController.current.referringStaff}"
+                                                    completeMethod="#{staffController.completeStaff}" var="ix"
+                                                    class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"
+                                                    itemLabel="#{ix.person.name}" itemValue="#{ix}" />
                                     <p:outputLabel  value="Referral Institution"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referredByInstitution}" ></p:inputText>
+<!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.referredByInstitution}" ></p:inputText>-->
+                                    <p:autoComplete forceSelection="true" value="#{bhtEditController.current.referredByInstitution}"
+                                                    completeMethod="#{institutionController.completeIns}" var="refi"
+                                                    itemLabel="#{refi.name}" itemValue="#{refi}" 
+                                                    class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100">
+                                        <p:column headerText="Name">#{refi.name}</p:column>
+                                        <p:column headerText="Code">#{refi.institutionCode}</p:column>
+                                        <p:column headerText="Institution Type">#{refi.institutionType}</p:column>
+                                    </p:autoComplete>
                                     <p:outputLabel  value="Workplace"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
-                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.workplace}" ></p:inputText>
+<!--                                    <p:inputText  class="w-100"  value="#{bhtEditController.current.workplace}" ></p:inputText>-->
+                                      <p:autoComplete  forceSelection="true" value="#{bhtEditController.current.workplace}"
+                                                    completeMethod="#{institutionController.completeIns}" var="mysp"
+                                                    itemLabel="#{mysp.name}" itemValue="#{mysp}" 
+                                                    class="w-100 form-control" styleClass="w-100" inputStyleClass="w-100"/>
                                     <p:outputLabel  value="Referral Number"  />
                                     <!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:inputText  class="w-100"  value="#{bhtEditController.current.referanceNo}" ></p:inputText>
@@ -209,7 +251,7 @@
                                                                             <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
                                                                         </p:autoComplete>-->
 
-                                    <p:outputLabel value="Refering Doctor"/>                            
+                                    <p:outputLabel value="Referring Doctor"/>                            
                                     <p:autoComplete inputStyleClass="w-100" id="acRefDoc" forceSelection="true" value="#{bhtEditController.current.referringDoctor}"
                                                     completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                     itemLabel="#{ix.person.name}" itemValue="#{ix}"  
@@ -218,7 +260,7 @@
 
                                     <p:outputLabel value="Admission Type "/>
                                     <h:outputLabel class="mx-2" value="#{bhtEditController.current.admissionType.name}"/>                               
-                                    <h:outputLabel value="Select Payment method"/>
+                                    <h:outputLabel value="Select Payment Method"/>
                                     <p:selectOneMenu  class="mx-2 w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">                       
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                                         <p:ajax process="@this" update="crd" event="change" />
@@ -234,6 +276,7 @@
                                 <p:commandButton 
                                     value="load Patient's Credit Companies"
                                     id="btnLoad"
+                                    icon="fas fa-spinner"
                                     action="#{bhtEditController.fillCreditCompaniesByPatient()}"
                                     process="btnLoad"
                                     update="tblCom"
@@ -280,7 +323,7 @@
                                 </p:inputTextarea>
 
                                 <p:watermark for="com" value="Comment"/>
-                                <p:commandButton class="my-1" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
+                                <p:commandButton class="my-1 ui-button-danger" icon="fas fa-ban" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
                                 </p:commandButton>
                             </p:panel>
                         </div>
@@ -328,7 +371,7 @@
                                     <p:inputText  class="mx-2 w-100"  value="#{bhtEditController.current.guardian.mobile}"  />
                                     <p:outputLabel value="Home Phone No" />
                                     <p:inputText class="mx-2 w-100"   value="#{bhtEditController.current.guardian.phone}"  />
-                                    <p:outputLabel   value="Adress" />
+                                    <p:outputLabel   value="Address" />
                                     <p:inputText class="mx-2 w-100" autocomplete="off" value="#{bhtEditController.current.guardian.address}" />
                                 </h:panelGrid>
                             </p:panel>

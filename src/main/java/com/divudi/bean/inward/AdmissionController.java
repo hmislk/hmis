@@ -10,7 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -37,7 +37,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -94,6 +94,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             
     @Inject
     BhtEditController bhtEditController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+    
     ////////////////////////////
     private CommonFunctions commonFunctions;
     ///////////////////////
@@ -148,7 +151,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void resetCreditDetail(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
-            UtilityController.addErrorMessage("Nuull");
+            JsfUtil.addErrorMessage("Nuull");
             return;
         }
 
@@ -358,6 +361,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToSearchInwardBills() {
         return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
     }
+    
+    public String navigateToSearchAdmissions() {
+        return "/inward/inpatient_search?faces-redirect=true";
+    }
 
     public List<Admission> completePatient(String query) {
         List<Admission> suggestions;
@@ -378,17 +385,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void searchAdmissions() {
         if (fromDate == null || toDate == null) {
-            UtilityController.addErrorMessage("Please select date");
+            JsfUtil.addErrorMessage("Please select date");
             return;
         }
 
 //        if (fromDate != null && fromDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-//            UtilityController.addErrorMessage("Please select from date below or equal to the current date");
+//            JsfUtil.addErrorMessage("Please select from date below or equal to the current date");
 //            return;
 //        }
 //        
 //        if (toDate != null && toDate.compareTo(CommonFunctions.getEndOfDay()) >= 0) {
-//            UtilityController.addErrorMessage("Please select to date below or equal to the current date");
+//            JsfUtil.addErrorMessage("Please select to date below or equal to the current date");
 //            return;
 //        }
         String j;
@@ -465,7 +472,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
         current.getPatient().setEditingMode(false);
-        return "/inward/admission_profile?faces-redirect?true";
+        bhtSummeryController.setPatientEncounter(current);
+        return bhtSummeryController.navigateToInpatientProfile();
     }
 
     public List<Admission> completeAdmission(String query) {
@@ -569,7 +577,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToListAdmissions() {
         institutionForSearch = sessionController.getLoggedUser().getInstitution();
         clearSearchValues();
-        return "/inward/inpatient_search";
+        return "/inward/inpatient_search?faces-redirect=true;";
     }
 
     public void listCurrentInpatients() {
@@ -676,9 +684,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         prepereToAdmitNewPatient();
 //        getItems();
@@ -736,7 +744,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void discharge() {
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
-            UtilityController.addSuccessMessage("No Patient Data Found");
+            JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
             getCurrent().setDischarged(Boolean.TRUE);
             getCurrent().setDateOfDischarge(new Date());
@@ -789,11 +797,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
-            UtilityController.addErrorMessage("Please select Admission Type");
+            JsfUtil.addErrorMessage("Please select Admission Type");
             return true;
         }
         if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Paymentmethod");
+            JsfUtil.addErrorMessage("Select Paymentmethod");
             return true;
         }
         
@@ -816,12 +824,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 }
             
             if (getCurrent().getCreditCompany() == null) {
-                UtilityController.addErrorMessage("Select Credit Company");
+                JsfUtil.addErrorMessage("Select Credit Company");
                 return true;
             }
         }
         if (getPatientRoom().getRoomFacilityCharge() == null) {
-            UtilityController.addErrorMessage("Select Room ");
+            JsfUtil.addErrorMessage("Select Room ");
             return true;
         }
         if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
@@ -841,22 +849,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getInwardBean().isRoomFilled(getPatientRoom().getRoomFacilityCharge().getRoom())) {
-                UtilityController.addErrorMessage("Select Empty Room");
+                JsfUtil.addErrorMessage("Select Empty Room");
                 return true;
             }
         }
 
         if (getCurrent().getReferringConsultant() == null) {
-            UtilityController.addErrorMessage("Please Select Referring Doctor");
+            JsfUtil.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
         if (getCurrent().getPatient() == null) {
-            UtilityController.addErrorMessage("Select Patient");
+            JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
-                UtilityController.addErrorMessage("Please Add Reference No");
+                JsfUtil.addErrorMessage("Please Add Reference No");
                 return true;
             }
         }
@@ -938,15 +946,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void updateBHTNo() {
         if (current.getBhtNo() == null || current.getBhtNo().isEmpty()) {
-            UtilityController.addErrorMessage("BHT NO");
+            JsfUtil.addErrorMessage("BHT NO");
             return;
         }
         if (patientRoom.getRoomFacilityCharge() == null) {
-            UtilityController.addErrorMessage("Room...");
+            JsfUtil.addErrorMessage("Room...");
             return;
         }
         if (current.getAdmissionType() == null) {
-            UtilityController.addErrorMessage("Admission Type.");
+            JsfUtil.addErrorMessage("Admission Type.");
             return;
         }
         addPatient();
@@ -969,14 +977,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         //  getCurrent().setBhtNo(bhtText);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
-            UtilityController.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            UtilityController.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
         PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
@@ -1067,11 +1075,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void createChildAdmission() {
         if (parentAdmission == null) {
-            UtilityController.addErrorMessage("Please select the mother encounter");
+            JsfUtil.addErrorMessage("Please select the mother encounter");
             return;
         }
         if (parentAdmission.getParentEncounter() != null) {
-            UtilityController.addErrorMessage("This mother encounter already has another Mother ENcounter, which is NOT possible. Select some other encounter");
+            JsfUtil.addErrorMessage("This mother encounter already has another Mother ENcounter, which is NOT possible. Select some other encounter");
             return;
         }
 
@@ -1176,12 +1184,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void bhtNumberCalculation() {
         if (getCurrent() == null || getCurrent().getAdmissionType() == null) {
-//            UtilityController.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
+//            JsfUtil.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
             return;
         }
 
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum() == null) {
-            UtilityController.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
+            JsfUtil.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
             return;
         }
 

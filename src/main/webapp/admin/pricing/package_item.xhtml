@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/admin/pricing/index.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
@@ -14,26 +14,42 @@
 
                 <p:panel header="Add Investigation to Package" styleClass="panel-margin">
 
-                    <h:panelGrid columns="2" styleClass="panel-grid-margin">
-                        <h:selectOneListbox id="lstSelect" size="10" value="#{packageItemController.currentPackege}" style="min-width: 223px">
-                            <f:selectItems value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                            <f:ajax render="gpDetail" execute="lstSelect" />
-                        </h:selectOneListbox>
-                        
-                        <h:panelGroup>
-                            <h:outputLabel for="packageItem" value="Available Items" styleClass="label-style" />
-                            <h:selectOneListbox size="10" id="packageItem" value="#{packageItemController.current}" style="max-width: 400px;">
-                                <f:selectItems value="#{packageItemController.items}" var="myPis" itemLabel="#{myPis.item.name}" itemValue="#{myPis}" />
-                            </h:selectOneListbox>
-                        </h:panelGroup>
-                    </h:panelGrid>
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Packages">
+                                <p:selectOneListbox id="lstSelect" value="#{packageItemController.currentPackege}" filter="true">
+                                    <f:selectItems value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    <f:ajax render="gpDetail packageItem" execute="lstSelect" />
+                                </p:selectOneListbox>
+                            </p:panel>
 
-                    <h:panelGroup styleClass="button-group">
-                        <h:commandButton value="Add" action="#{packageItemController.addToPackage()}" styleClass="button-spacing p-button-success" />
-                        <h:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" styleClass="button-spacing p-button-danger" />
-                    </h:panelGroup>
+                        </div>
+                        <div class="col-6">
+                            <p:panel header="Available Items" >
 
-                    <p:dataTable value="#{packageItemController.serviceItems}" var="i" scrollable="true" rowKey="#{i.id}" scrollHeight="150" selectionMode="single" selection="#{packageItemController.currentItem}" filteredValue="#{packageItemController.filteredItems}" style="max-width: 1000px;">
+                                <p:selectOneListbox id="packageItem" value="#{packageItemController.current}" >
+                                    <f:selectItems value="#{packageItemController.items}" var="myPis" itemLabel="#{myPis.item.name}" itemValue="#{myPis}" />
+                                </p:selectOneListbox>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <div  class="w-50">
+                        <p:commandButton value="Add" action="#{packageItemController.addToPackage()}" class="ui-button-success w-25" icon="fas fa-plus" ajax="false"/>
+                        <p:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" class="ui-button-Danger w-25 mx-1" icon="fas fa-trash"  ajax="false"/>
+                    </div>
+
+                    <p:dataTable value="#{packageItemController.serviceItems}" var="i" 
+                                 rowKey="#{i.id}"
+                                 rows="10"
+                                 paginator="true" paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                                 scrollable="true" 
+                                 class="w-100" selectionMode="single" 
+                                 selection="#{packageItemController.currentItem}"
+                                 filteredValue="#{packageItemController.filteredItems}">
                         <p:column headerText="Department" filterBy="#{i.department.name}" filterMatchMode="contains">
                             #{i.department.name}
                         </p:column>

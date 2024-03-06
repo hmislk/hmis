@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       >
 
     <h:body>
@@ -32,7 +32,7 @@
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSearch" />
-                                <h:outputLabel value="Opd Bill No"/>
+                                <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Payment Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" class="w-100 my-1"/>
@@ -46,9 +46,9 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="w-100 my-1"/>
                                 <h:outputLabel value="Charges"/>   
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}" class="w-100 my-1"/>
-                                <h:outputLabel value="Payment Methord"/>
+                                <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu  value="#{searchController.searchKeyword.paymentMethod}" class="w-100 my-1">
-                                    <f:selectItem itemLabel="select Payment Methord" />
+                                    <f:selectItem itemLabel="Select Payment Method" />
                                     <f:selectItems value="#{enumController.paymentMethods}" />
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Credit Company"/>                              
@@ -72,7 +72,7 @@
                                              rowsPerPageTemplate="5,10,25,50"
                                              rowIndexVar="i" >
                                     
-                                    <p:column headerText="Opd Bill No" filterBy="#{bi.paidForBillFee.bill.insId}">
+                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.insId}">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Credit Company" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" >
@@ -81,7 +81,7 @@
                                     <p:column headerText="Payment Bill No" filterBy="#{bi.bill.insId}">
                                         <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Methord" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
+                                    <p:column headerText="Payment Method" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.paymentMethod}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Specility"  filterBy="#{bi.paidForBillFee.staff.speciality.name}">
@@ -91,41 +91,41 @@
                                         <h:outputLabel value="#{bi.paidForBillFee.staff.person.nameWithTitle}" ></h:outputLabel>
 
                                     </p:column>                         
-                                    <p:column headerText="Paid at"  >
+                                    <p:column headerText="Paid At"  >
                                         <h:outputLabel value="#{bi.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bi.bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
                                             <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" value="#{bi.bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bi.bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" value="Refunded At " />
                                             <h:outputLabel style="color: red;" rendered="#{bi.bill.refunded}" value="#{bi.bill.refundedBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                    <p:column headerText="Bill at"  >
+                                    <p:column headerText="Bill At"  >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>  
-                                    <p:column headerText="Paid by" >
+                                    <p:column headerText="Paid By" >
 
                                         <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bi.bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" value="Cancelled At " />
                                             <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" value="#{bi.bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{bi.bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
+                                            <h:outputLabel style="color: red;" value="Refunded At " />
                                             <h:outputLabel style="color: red;" rendered="#{bi.bill.refunded}" value="#{bi.bill.refundedBill.creater.webUserPerson.name}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
@@ -143,7 +143,7 @@
 
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="View Bill" action="payment_bill_reprint">
+                                        <p:commandButton class="ui-button-primary" icon="fas fa-eye" ajax="false" value="View Bill" action="payment_bill_reprint">
                                             <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>

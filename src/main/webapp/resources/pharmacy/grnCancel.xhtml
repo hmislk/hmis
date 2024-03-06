@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,7 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
+        <div style="width: 212mm;">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -23,249 +24,242 @@
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
-                <div >
-                    <!--                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>-->
+                <div class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Tel : "/>
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="/ #{cc.attrs.bill.department.telephone2}" rendered="#{cc.attrs.bill.department.telephone2 ne null}"/>
                 </div>
-                <div >
-                    <!--<h:outputLabel value="Fax : 0912234061 "/>-->
+                <div  class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Fax :"/>
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
                 </div>
-                <div >
-                    <!--<h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>-->
+                <div  class="d-flex justify-content-center gap-2">
+                    <h:outputLabel value="Email : "/>
                     <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
                 </div>
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Good Recieve Note(Cancel)" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Good Recieve Note (Cancel)" style="text-decoration: underline;"/>                           
             </div>
 
-            <h:panelGrid columns="4" style="min-width: 100%;">
 
+            <div style="min-width: 90%; margin-left: 8%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
+                <div class="row">
+                    <h:outputLabel value="G.R.N. Cancel No" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.deptId}" class="col-3"/>
+                    <h:outputLabel value="G.R.N.No " class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}" class="col-4"/>
+                </div>
 
+                <div class="row">
+                    <h:outputLabel value="Cancel Date" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-3">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
+                    <h:outputLabel value="G.R.N.Date" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="col-4">
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                    </h:outputLabel>
+                </div>
 
+                <div class="row">
+                    <h:outputLabel value="Cancel Time" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="col-3">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="G.R.N.Time" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}" class="col-4">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                    </h:outputLabel>
+                </div>
 
-                <h:outputLabel value="G.R.N. Cancel No"/>
-                <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                <div class="row">
+                    <h:outputLabel value="Cancelled By " class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="col-3"/>
+                    <h:outputLabel value="Invoice No" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="col-4"/>
+                </div>
 
-                <h:outputLabel value="G.R.N.No "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}"/>
+                <div class="row">
+                    <h:outputLabel value="Location" class="col-3"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.name}" class="col-3"/>
+                    <h:outputLabel value="Supplier" class="col-2"/>
+                    <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="col-4"/>
+                </div>
 
-                <h:outputLabel value="Cancel Date  " />
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                </h:outputLabel>
-
-                <h:outputLabel value="G.R.N.Date  "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                </h:outputLabel >
-
-                <h:outputLabel value="Cancel Time  " />
-                <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                </h:outputLabel>
-
-                <h:outputLabel value="G.R.N.Time  "/>
-                <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                </h:outputLabel>
-
-                <h:outputLabel value="Cancelled By "/>
-                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" />
-                <h:outputLabel value="Invoice No "/>
-                <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}"/>
-
-                <h:outputLabel value="Location "/>
-                <h:outputLabel value="#{cc.attrs.bill.department.name}" />
-                <h:outputLabel value="Supplier "/>
-                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-
-            </h:panelGrid>
-
-
-            <div >
-                <p:spacer height="15px"/>
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
-                    <p:column style="text-align: left!important;"  >
-                        <f:facet name="header">
-                            <h:outputLabel value="Item" style="font-weight: bold!important; " />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.item.name}"/>
-                    </p:column>
-                    <p:column style="width: 8px;text-align: right!important;" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
-                    </p:column>                                  
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Ord" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.referanceBillItem.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber integerOnly="true"/>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right!important;"> 
-                        <f:facet name="header">
-                            <h:outputLabel value="Rcv" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber integerOnly="true"/>
-                        </h:outputLabel>
-                    </p:column>                  
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Fr" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" >
-
-                            </h:outputLabel>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}"/>
-                    </p:column>
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Cur" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Last" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Amount" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value=" " style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.retailRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:columnGroup type="footer">
-
-                        <p:row>
-                            <p:column colspan="7" footerText="Total" style="font-weight: bold!important;"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
-                                <f:facet name="footer">
-                                    <br></br>
-                                    <h:outputLabel value="#{0-cc.attrs.bill.total}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column />
-                        </p:row>
-
-                        <p:row>
-                            <p:column colspan="7" footerText="Expenses" style="font-weight: bold!important;"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
-                                <f:facet name="footer">
-                                    <br></br>
-                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column />
-                        </p:row>
-
-                        <p:row >
-                            <p:column colspan="7" footerText="Tax"/>
-                            <p:column style="text-align: right;" footerText="#{cc.attrs.bill.tax}">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.tax}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column />
-                        </p:row>
-                        <p:row >
-                            <p:column colspan="7" footerText="Discount"/>
-                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.discount}" style="text-decoration: underline;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column />
-                        </p:row>
-                        <p:row >
-                            <p:column colspan="7" footerText="Net Total" style="font-weight: bold!important;"/>
-                            <p:column style="text-align: right;" footerText="#{cc.attrs.bill.netTotal}">
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.netTotal}" style="font-weight: bold!important; text-decoration: underline;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column />
-                        </p:row>
-                    </p:columnGroup>
-                </p:dataTable>
             </div>
 
-            <div>
-                <p:dataTable id="tblExpenses" value="#{cc.attrs.bill.billExpenses}" var="be"
-                             emptyMessage="No Bill Expenses" >
-                    <p:column headerText="Expense" >
-                        <h:outputLabel value="#{be.item.name}" ></h:outputLabel>
-                    </p:column>
-                    <p:column headerText="Value" >
-                        <h:outputLabel value="#{be.netValue}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column headerText="Descreption" >
-                        <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
-                    </p:column>
-                </p:dataTable>
-            </div>
+            
+            <style>
+                table {
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 100%;
+                }
 
-            <div class="preparedBy">
+                td, th {
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                    padding: 4px;
+                }
+
+            </style>
+            
+            
+            <div style="width: 100%;" class=" mt-2">
+
+                <table style="text-align: center; width: 100%; border: 2px!important;">
+                    <thead style="font-size: 14px;">
+                        <tr>
+                            <th style="text-align: left!important;min-width: 30%; font-weight: bold!important;">Item</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Expiry</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Ordered Qty</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Free Qty</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Value</th>
+                            <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
+                        </tr>
+                    </thead> 
+
+                    <tbody style="font-size: 13px;">
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                            <tr>
+                                <td style="text-align: left;">#{bip.item.name}</td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="d/M/yy"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.referanceBillItem.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+
+                    <tfoot class="mt-4" style="font-size: 13px;">
+
+                        <tr>
+                            <td colspan="6" style="text-align: left; font-weight: bold!important;">Total</td>
+                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                                <h:outputText value="#{0-cc.attrs.bill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" style="text-align: left; font-weight: bold!important;">Expenses</td>
+                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                                <h:outputText value="#{0-cc.attrs.bill.expenseTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" style="text-align: left; font-weight: bold!important;">Tax</td>
+                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                                <h:outputText value="#{cc.attrs.bill.tax}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" style="text-align: left; font-weight: bold!important;">Discount</td>
+                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                                <h:outputText value="#{0-cc.attrs.bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6" style="text-align: left; font-weight: bold!important;">Net Total</td>
+                            <td colspan="2" style="text-align: right; font-weight: bold!important;">
+                                <h:outputText value="#{0-cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="mt-2 w-100">
+
+                <table  style="text-align: center; width: 100%; border: 2px!important;">
+                    <thead style="font-size: 15px;">
+                        <tr>
+                            <th style="text-align: left!important;min-width: 60%; font-weight: bold!important;">Expense</th>
+                            <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Value</th>
+                            <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Description</th>
+                        </tr>
+                    </thead> 
+
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.bill.billExpenses}" var="be">
+                            <tr>
+                                <td>#{be.item.name}</td>
+                                <td>
+                                    <h:outputText value="#{be.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td>#{be.description}</td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align: left;" class="empty-message">No Bill Expenses</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            </div>
+            
+            <div class="preparedBy mt-3">
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
 
             </div>
 
-            <div >
+            <div class="mb-4">
                 <h:outputLabel value="Received By : " style="text-align: right!important;"/>
             </div>
 
-            <hr/>
+            
 <!--            <div >
 
                 <h4 style="color: #000000; text-align: center " >

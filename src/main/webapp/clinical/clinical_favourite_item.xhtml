@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:autocomplete="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
 
@@ -56,28 +56,27 @@
 
 
                                     <h:outputText value="Dose" ></h:outputText>
-                                    <h:outputText value="#{favouriteController.current.dblValue1}" ></h:outputText>
+                                    <h:inputText value="#{favouriteController.current.dose}" ></h:inputText>
 
                                     <h:outputText value="Dose Unit" ></h:outputText>
-                                    <p:selectOneMenu      value="#{favouriteController.current.measurementUnit1}" style="min-width: 223px">
+                                    <p:selectOneMenu      value="#{favouriteController.current.doseUnit}" style="min-width: 223px">
                                         <f:selectItem itemLabel="Select Dose Unit" ></f:selectItem>
                                         <f:selectItems  value="#{measurementUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Frequency" ></h:outputText>
-                                    <h:outputText value="#{favouriteController.current.measurementUnit2}" ></h:outputText>
                                     <p:selectOneMenu    
-                                        value="#{favouriteController.current.measurementUnit2}"
+                                        value="#{favouriteController.current.frequencyUnit}"
                                         style="min-width: 223px">
                                         <f:selectItem itemLabel="Select Frequency" ></f:selectItem>
                                         <f:selectItems  value="#{frequencyUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Duration" ></h:outputText>
-                                    <h:outputText value="#{favouriteController.current.dblValue2}" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.duration}" ></h:outputText>
 
                                     <h:outputText value="Duration Unit" ></h:outputText>
-                                    <h:outputText value="#{favouriteController.current.measurementUnit2}" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.durationUnit}" ></h:outputText>
 
                                 </h:panelGrid>
 
@@ -104,31 +103,31 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Dose" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.dblValue1}" ></h:outputText>
+                                <h:outputText value="#{fi.dose}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Dose Unit" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.measurementUnit1}" ></h:outputText>
+                                <h:outputText value="#{fi.doseUnit}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Frequency" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.measurementUnit2}" ></h:outputText>
+                                <h:outputText value="#{fi.frequencyUnit}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Duration" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.dblValue2}" ></h:outputText>
+                                <h:outputText value="#{fi.duration}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
                                     <h:outputText value="Duration Unit" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.measurementUnit2}" ></h:outputText>
+                                <h:outputText value="#{fi.durationUnit}" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>

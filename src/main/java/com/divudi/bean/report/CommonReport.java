@@ -8,7 +8,7 @@ import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -35,7 +35,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -4360,7 +4360,7 @@ public class CommonReport implements Serializable {
         grnReturnCancel = new BillsTotals();
 
         if (getDepartment() == null) {
-            UtilityController.addErrorMessage("Please Select Department");
+            JsfUtil.addErrorMessage("Please Select Department");
             return;
         }
 

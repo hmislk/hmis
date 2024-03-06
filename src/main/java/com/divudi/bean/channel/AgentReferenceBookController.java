@@ -6,7 +6,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+
 import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
@@ -18,7 +18,7 @@ import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -84,28 +84,95 @@ public class AgentReferenceBookController implements Serializable {
         saveAgentBook(ReferenceBookEnum.ChannelBook);
     }
 
+    public Boolean checkAgentReferenceNumber(Institution institution, String refNumber) {
+
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+        } catch (Exception e) {
+            return false;
+        }
+
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a where "
+                + " a.startingReferenceNumber<= :ag "
+                + " and a.endingReferenceNumber>= :ag "
+                + " and a.retired=false "
+                + " and a.deactivate=false "
+                + " and a.institution=:ins";
+
+        m.put("ins", institution);
+        m.put("ag", dbl);
+
+        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
+
+        if (agentReferenceBook == null) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    
+    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
+        Double dbl = null;
+        try {
+            dbl = Double.parseDouble(refNumber);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ah from AgentHistory ah join ah.bill b "
+                + " where "
+                + " b.retired=false "
+                + " and b.billType=:bt "
+                + " and b.paymentMethod=:pm "
+                + " and b.creditCompany=:ins "
+                + " and ((ah.referenceNo) like :rn) ";
+
+        m.put("bt", bt);
+        m.put("pm", pm);
+        m.put("ins", institution);
+        m.put("rn", "%" + refNumber.toUpperCase() + "%");
+
+        List<AgentHistory> ahs = agentHistoryFacade.findByJpql(sql, m);
+
+        if (ahs.isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
     public void saveAgentBook(ReferenceBookEnum bookEnum) {
         // Validate inputs
         if (agentReferenceBook.getInstitution() == null) {
-            UtilityController.addErrorMessage("Please Select Institution.");
+            JsfUtil.addErrorMessage("Please Select Institution.");
             return;
         }
         if (agentReferenceBook.getStrbookNumber().trim().equals("")) {
-            UtilityController.addErrorMessage("Please Enter Book Number.");
+            JsfUtil.addErrorMessage("Please Enter Book Number.");
             return;
         }
         double startingNumber = agentReferenceBook.getStartingReferenceNumber();
         double endingNumber = agentReferenceBook.getEndingReferenceNumber();
         if (startingNumber <= 0 || startingNumber >= 99) {
-            UtilityController.addErrorMessage("Starting Reference Number should be between 01 and 99.");
+            JsfUtil.addErrorMessage("Starting Reference Number should be between 01 and 99.");
             return;
         }
         if (endingNumber <= 1 || endingNumber > 99) {
-            UtilityController.addErrorMessage("Ending Reference Number should be between 02 and 99.");
+            JsfUtil.addErrorMessage("Ending Reference Number should be between 02 and 99.");
             return;
         }
         if (startingNumber >= endingNumber) {
-            UtilityController.addErrorMessage("Starting Reference Number must be less than Ending Reference Number.");
+            JsfUtil.addErrorMessage("Starting Reference Number must be less than Ending Reference Number.");
             return;
         }
 
@@ -116,7 +183,7 @@ public class AgentReferenceBookController implements Serializable {
         hm.put("sbNumber", agentReferenceBook.getStrbookNumber().trim());
 
         if (!getAgentReferenceBookFacade().findByJpql(sql, hm).isEmpty()) {
-            UtilityController.addErrorMessage("Book Number Is Already Given.");
+            JsfUtil.addErrorMessage("Book Number Is Already Given.");
             return;
         }
 
@@ -126,15 +193,15 @@ public class AgentReferenceBookController implements Serializable {
         agentReferenceBook.setCreater(getSessionController().getLoggedUser());
         agentReferenceBook.setDeactivate(false);
         getAgentReferenceBookFacade().create(agentReferenceBook);
-        UtilityController.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
         makeNull();
     }
 
     public void commonErrorMessageForSaveChannelBook(AgentReferenceBook arb) {
-        UtilityController.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getCode() + ")");
-        UtilityController.addErrorMessage("Book No - " + arb.getBookNumber());
-        UtilityController.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
-        UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
+        JsfUtil.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getCode() + ")");
+        JsfUtil.addErrorMessage("Book No - " + arb.getBookNumber());
+        JsfUtil.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
+        JsfUtil.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());
     }
 
     public void searchReferenceBooks() {
@@ -369,7 +436,7 @@ public class AgentReferenceBookController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -140,6 +140,18 @@ public class GrnController implements Serializable {
 
     }
 
+    public void duplicateItem(BillItem bi) {
+        BillItem updateBillItem = new BillItem();
+        if (bi != null) {
+            System.out.println("updateBillItem = " + bi.getItem().getName());
+            updateBillItem.setItem(bi.getItem());
+            getBillItems().add(updateBillItem);
+        }
+
+        calGrossTotal();
+
+    }
+
     public void removeSelected() {
         //  //System.err.println("1");
         if (selectedBillItems == null) {
@@ -203,17 +215,17 @@ public class GrnController implements Serializable {
 
     public void settle() {
         if (insTotal == 0) {
-            UtilityController.addErrorMessage("Fill the invoice Total");
+            JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
         }
         if (difference != 0) {
-            UtilityController.addErrorMessage("The invoice does not match..! Check again");
+            JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
         }
 
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
         if (!msg.isEmpty()) {
-            UtilityController.addErrorMessage(msg);
+            JsfUtil.addErrorMessage(msg);
             return;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
@@ -501,18 +513,18 @@ public class GrnController implements Serializable {
 //        System.err.println("4 " + tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (remains < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
             tmp.setTmpQty(remains);
-            UtilityController.addErrorMessage("You cant Change Qty than Remaining qty");
+            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
         }
 
         if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
             tmp.getPharmaceuticalBillItem().setRetailRate(getRetailPrice(tmp.getPharmaceuticalBillItem().getBillItem()));
-            UtilityController.addErrorMessage("You cant set retail price below purchase rate");
+            JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
 
         if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
             if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
                 tmp.getPharmaceuticalBillItem().setDoe(null);
-                UtilityController.addErrorMessage("Check Date of Expiry");
+                JsfUtil.addErrorMessage("Check Date of Expiry");
                 //    return;
             }
         }

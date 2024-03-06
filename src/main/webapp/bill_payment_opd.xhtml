@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -14,54 +15,89 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Reprint"  rendered="#{!billController.printPreview}">
-                        <f:facet name="header" >
-                            <h:outputLabel value="Payment For OPD Bill" ></h:outputLabel>
+                        <f:facet name="header">
+                            <h:outputText value="Payment For OPD Bill"/>
+                            <h:panelGrid columns="3" style="float: right" class="w-50">
+                                <p:inputText placeholder="Enter Comments to Refund Bill" value="#{billController.comment}" style="float: right" class="p-2 w-100"/> 
+
+                                <p:commandButton value="Pay" action="#{billController.saveBillOPDCredit}" ajax="false" 
+                                                 icon="fa fa-money-bill-wave"
+                                                 class="w-50 ui-button-warning" style="float: right"/>
+                            </h:panelGrid>
                         </f:facet>
 
                         <p:panel>
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Patient Details">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
-                                        <h:outputLabel value="Age:" />
-                                        <h:outputLabel value="#{billSearch.bill.patient.age}"  />
-                                        <h:outputLabel value="Sex:" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.sex}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Phone:" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.patient.person.phone}" >
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                                <p:panel header="Bill Details">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.deptId}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.paymentMethod}" >
-                                        </h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                <h:outputLabel value="Payment Details" class="mx-2"></h:outputLabel>
+                            </f:facet>
+                            <h:panelGrid columns="5" >
+                                <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
+                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                    <p:ajax process="@this" 
+                                            update="creditCard cheque slip"
+                                            event="change"
+                                            listener="#{billController.changeListener()}"/>
+                                </p:selectOneMenu>
 
-                                        <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
 
-                                        <h:outputLabel value=" Total Previous Settlements :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.total - billSearch.bill.balance}" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
+                                <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
 
-                                        <h:outputLabel value="Due Amount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.balance}" style="color: red;" >
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
+                                <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                                </h:panelGroup>
+                            </h:panelGrid>
+                            <p:outputLabel value="Paying Ammount" class="mx-2"/>
+                            <p:inputText value="#{billController.opdPaymentCredit}" class="mx-1 my-2"/>
+                        </p:panel>
+
+                        <p:panel>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel header="Bill Details">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.deptId}" >
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.paymentMethod}" >
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value=" Total Previous Settlements :" ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.total - billSearch.bill.balance}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Due Amount :" ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.balance}" style="color: red;" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
                             <p:panel header="Bill Item Details">
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true" value="#{billSearch.billFees2}" var="bip" >
@@ -107,40 +143,7 @@
                                     </p:column>  
                                 </p:dataTable>
                             </p:panel>
-                            <p:panel>
-                                <p:panelGrid columns="2" >
 
-                                    <p:outputLabel value="Payment Method" />
-                                    <p:panelGrid columns="5" >
-                                        <h:panelGrid columns="1">                                
-                                            <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
-                                                <f:selectItems value="#{enumController.paymentMethods}"  />
-                                                <p:ajax process="@this" 
-                                                        update="creditCard cheque slip"
-                                                        event="change"
-                                                        listener="#{billController.changeListener()}"/>
-                                            </p:selectOneMenu>
-                                        </h:panelGrid>
-                                        <p:inputText value="#{billController.comment}" id="comment"/>
-                                        <p:watermark value="Comment" for="comment"/>
-
-                                        <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                            <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                    </p:panelGrid>
-                                    <p:outputLabel value="Paying Ammount" />
-                                    <p:inputText value="#{billController.opdPaymentCredit}" />
-                                    <p:commandButton value="Pay" action="#{billController.saveBillOPDCredit}" ajax="false" />
-                                </p:panelGrid>
-                            </p:panel>
                         </p:panel>
                     </p:panel>
 
@@ -196,7 +199,7 @@
                                                     </div>
 
                                                     <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.nameWithTitle}" styleClass="ptname" /> <br/>
-                                                    
+
                                                     <h:outputLabel value="#{billController.opdBill.referenceBill.patient.person.phone}" styleClass="phone" />
 
 

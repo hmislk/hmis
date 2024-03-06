@@ -234,6 +234,7 @@ public enum Privileges {
     ChannelDoctorPaymentCancel,
     ChannelViewHistory,
     ChannelCreateSessions,
+    ChannelCreateSpecialSessions,
     ChannelManageSessions,
     ChannelAdministration,
     ChannelAgencyReports,
@@ -289,6 +290,7 @@ public enum Privileges {
     ChannellingDoctorLeaveByDate,
     ChannellingDoctorLeaveByServiceSession,
     ChannellingChannelSheduling,
+    ChannellingSpecialChannelSheduling,
     ChannellingChannelShedulRemove,
     ChannellingChannelShedulName,
     ChannellingChannelShedulStartingNo,
@@ -391,8 +393,16 @@ public enum Privileges {
     ClinicalPatientNameChange,
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
-    ClinicalPatientPhoneNumberEdit,;
-
+    ClinicalPatientPhoneNumberEdit,
+    
+    //Pharmacy Disbursement
+    
+    PharmacyDisbursementRequest,
+    PharmacyDisbursementIssurForRequest,
+    PharmacyDisbursementDirectIssue,
+    PharmacyDisbursementRecieve,
+    ;
+    
     public String getLabel() {
         switch (this) {
             case Opd:

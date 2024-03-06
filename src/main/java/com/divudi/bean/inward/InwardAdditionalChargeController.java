@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -18,12 +18,15 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Fee;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.FeeFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -58,6 +61,7 @@ public class InwardAdditionalChargeController implements Serializable {
     private SessionController sessionController;
     //////////////
     private BilledBill current;
+    private List<BillItem> billItemList;
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
@@ -78,12 +82,12 @@ public class InwardAdditionalChargeController implements Serializable {
     
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
-            UtilityController.addErrorMessage("Select BHT");
+            JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
         if (getCurrent().getFromInstitution() == null) {
-            UtilityController.addErrorMessage("Select Where item From");
+            JsfUtil.addErrorMessage("Select Where Item From");
             return true;
         }
 
@@ -92,12 +96,12 @@ public class InwardAdditionalChargeController implements Serializable {
         }
 
         if (getCurrent().getTotal() < 1) {
-            UtilityController.addErrorMessage("Enter Added Charge Correctly");
+            JsfUtil.addErrorMessage("Enter Added Charge Correctly");
             return true;
         }
 
         if (getCurrent().getComments().isEmpty()) {
-            UtilityController.addErrorMessage("Enter Discription");
+            JsfUtil.addErrorMessage("Enter Discription");
             return true;
         }
 
@@ -109,19 +113,36 @@ public class InwardAdditionalChargeController implements Serializable {
         if (errorCheck()) {
             return;
         }
-
         saveBill();
         BillItem b = saveBillItem();
-
+        billItemList.add(b);
         getCurrent().setSingleBillItem(b);
         getBilledBillFacade().edit(current);
 
-        UtilityController.addSuccessMessage("Additional Charges Added");
-        makeNull();
+        JsfUtil.addSuccessMessage("Additional Charges Added");
+        
     }
 
     public void makeNull() {
         current = null;
+        billItemList = null;
+        inwardChargeType = null;
+    }
+    
+    public void reset(){
+        PatientEncounter p = current.getPatientEncounter();
+        current = null;
+        billItemList =null;
+        getCurrent().setPatientEncounter(p);
+        inwardChargeType = null;
+        JsfUtil.addSuccessMessage("Cleared Successfully");
+    }
+    
+    public void makeChargesNull() {
+        inwardChargeType=null;
+        current.setFromInstitution(null);
+        current.setTotal(null);
+        current.setComments(null);
     }
 
     private void saveBill() {
@@ -141,6 +162,9 @@ public class InwardAdditionalChargeController implements Serializable {
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());
         }
+        else{
+            getBilledBillFacade().edit(getCurrent());
+        }
     }
 
     private BillItem saveBillItem() {
@@ -151,11 +175,10 @@ public class InwardAdditionalChargeController implements Serializable {
         temBi.setNetValue(getCurrent().getTotal());
         temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
-
+       
         if (temBi.getId() == null) {
             getBillItemFacade().create(temBi);
         }
-
         saveBillFee(temBi);
 
         return temBi;
@@ -247,5 +270,16 @@ public class InwardAdditionalChargeController implements Serializable {
 
     public void setInwardChargeType(InwardChargeType inwardChargeType) {
         this.inwardChargeType = inwardChargeType;
+    }
+
+    public List<BillItem> getBillItemList() {
+        if(billItemList==null){
+            billItemList = new ArrayList<>();
+        }
+        return billItemList;
+    }
+
+    public void setBillItemList(List<BillItem> billItemList) {
+        this.billItemList = billItemList;
     }
 }

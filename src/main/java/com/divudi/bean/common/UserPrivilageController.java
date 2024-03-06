@@ -17,7 +17,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,8 +94,10 @@ public class UserPrivilageController implements Serializable {
 
     private TreeNode<PrivilegeHolder> createPrivilegeHolderTreeNodes() {
         TreeNode root = new DefaultTreeNode(new PrivilegeHolder(null, "Root"), null);
+        
+        TreeNode allNode = new DefaultTreeNode(new PrivilegeHolder(null, "Privileges for All Sections"), root);
 
-        TreeNode opdNode = new DefaultTreeNode(new PrivilegeHolder(null, "OPD"), root);
+        TreeNode opdNode = new DefaultTreeNode(new PrivilegeHolder(null, "OPD"), allNode);
 
         TreeNode billingMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Opd, "Billing Menu"), opdNode);
 
@@ -110,7 +112,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode reactivateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdReactivate, "Reactivate"), opdNode);
         TreeNode opdBillSearchEditNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdBillSearchEdit, "OPD Bill Search Edit (Patient Details)"), opdNode);
 
-        TreeNode inwardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inward"), root);
+        TreeNode inwardNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inward"), allNode);
 
         TreeNode inwardMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Inward, "Inward Menu"), inwardNode);
 
@@ -169,7 +171,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode inwardOutsideMarkAsUnpaidNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardOutSideMarkAsUnPaid, "Inward Outside Bill Mark as Un-Paid"), additionalPrivilegesNode);
         TreeNode inwardBillSettleWithoutCheckNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillSettleWithoutCheck, "Inward Bill Settle Without Check"), additionalPrivilegesNode);
 
-        TreeNode theatreNode = new DefaultTreeNode(new PrivilegeHolder(null, "Theatre"), root);
+        TreeNode theatreNode = new DefaultTreeNode(new PrivilegeHolder(null, "Theatre"), allNode);
         TreeNode theatreMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Theatre, "Theatre Menu"), theatreNode);
         TreeNode addSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreAddSurgery, "Add Surgery"), theatreNode);
         TreeNode theatreBillingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreBilling, "Theatre Billing"), theatreNode);
@@ -196,7 +198,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode opdIssueSearchPreBillReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterIssueOpdSearchPreBillReturn, "Opd Issue Search Pre Bill Return"), opdIssueNode);
         TreeNode opdIssuePreBillAddToStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterIssueOpdSearchPreBillAddToStock, "Opd Issue Pre Bill Add To Stock"), opdIssueNode);
 
-        TreeNode labNode = new DefaultTreeNode(new PrivilegeHolder(null, "Lab"), root);
+        TreeNode labNode = new DefaultTreeNode(new PrivilegeHolder(null, "Lab"), allNode);
         TreeNode labMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Lab, "Lab Menu"), labNode);
         TreeNode labBillingMenuNode = new DefaultTreeNode("Billing Menu", labNode);
         TreeNode labBillNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.LabBilling, "Lab Bill"), labBillingMenuNode);
@@ -247,7 +249,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode labCCBillingSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.LabCCBillingSearch, "Lab Collecting Center Bill search"), labCollectingCenterBillingNode);
         TreeNode labReportingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.LabReporting, "Lab Reporting"), labNode);
 
-        TreeNode pharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), root);
+        TreeNode pharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), allNode);
         TreeNode pharmacyMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         TreeNode pharmacyAdministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
         TreeNode pharmacyStockAdjustmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockAdjustment, "Pharmacy Stock Adjustment"), pharmacyNode);
@@ -267,6 +269,12 @@ public class UserPrivilageController implements Serializable {
         TreeNode orderApprovalNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderApproval, "Order Approval"), orderNode);
         TreeNode orderCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Order Cancellation"), orderNode);
 
+        TreeNode disbursementNode = new DefaultTreeNode("Pharmacy Disbursement", pharmacyNode);
+        TreeNode disbursementRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequest, "Request"), disbursementNode);
+        TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
+        TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
+        TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+        
         TreeNode saleNode = new DefaultTreeNode("Sale", pharmacyNode);
         TreeNode pharmacySaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), saleNode);
         TreeNode pharmacySaleWithoutStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale without Stock"), saleNode);
@@ -291,162 +299,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacySetReorderLevelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySetReorderLevel, "Pharmacy Set Reorder Level"), pharmacyNode);
         TreeNode pharmacyBHTIssueAcceptNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBHTIssueAccept, "Pharmacy Accept BHT Issue"), pharmacyNode);
 
-        ///////////////////
-        TreeNode paymentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Payment"), root);
-        TreeNode paymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Payment, "Payment Menu"), paymentNode);
-        TreeNode staffPaymentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBilling, "Staff Payment"), paymentNode);
-        TreeNode paymentSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillSearch, "Payment Search"), paymentNode);
-        TreeNode paymentReprintsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReprint, "Payment Reprints"), paymentNode);
-        TreeNode paymentCancelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillCancel, "Payment Cancel"), paymentNode);
-        TreeNode paymentRefundNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillRefund, "Payment Refund"), paymentNode);
-        TreeNode paymentReactivationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReactivation, "Payment Reactivation"), paymentNode);
-
-        TreeNode reportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), root);
-        TreeNode reportsMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Reports, "Reports Menu"), reportsNode);
-        TreeNode forOwnInstitutionNode = new DefaultTreeNode("For Own Institution", reportsNode);
-        TreeNode forAllInstitutionNode = new DefaultTreeNode("For All Institution", reportsNode);
-
-        TreeNode cashCardBillReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCashCardOwn, "Cash/Card Bill Reports"), forOwnInstitutionNode);
-        TreeNode creditBillReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCreditOwn, "Credit Bill Reports"), forOwnInstitutionNode);
-        TreeNode itemReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsItemOwn, "Item Reports"), forOwnInstitutionNode);
-
-        TreeNode cashCardBillReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCashCardOther, "Cash/Card Bill Reports"), forAllInstitutionNode);
-        TreeNode creditBillReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportSearchCreditOther, "Credit Bill Reports"), forAllInstitutionNode);
-        TreeNode itemReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsItemOwn, "Item Reports"), forAllInstitutionNode);
-
-        TreeNode clinicalsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinicals"), root);
-        TreeNode clinicalDataNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Clinical, "Clinical Data"), clinicalsNode);
-        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summery"), clinicalsNode);
-        TreeNode patientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDetails, "Patient Details"), clinicalsNode);
-        TreeNode patientPhotoNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoto, "Patient Photo"), clinicalsNode);
-        TreeNode visitDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitDetail, "Visit Details"), clinicalsNode);
-        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summery"), clinicalsNode);
-        TreeNode historyNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalHistory, "History"), clinicalsNode);
-        TreeNode clinicaladministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalAdministration, "Administration"), clinicalsNode);
-        TreeNode clinicalPatientDeleteNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDelete, "Clinical Patient Delete"), clinicalsNode);
-
-        TreeNode adminNode = new DefaultTreeNode(new PrivilegeHolder(null, "Administration"), root);
-        TreeNode adminMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Admin, "Admin Menu"), adminNode);
-        TreeNode manageUsersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminManagingUsers, "Manage Users"), adminNode);
-        TreeNode manageInstitutionsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminInstitutions, "Manage Institutions"), adminNode);
-        TreeNode manageStaffNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminStaff, "Manage Staff"), adminNode);
-        TreeNode manageItemsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminItems, "Manage Items/Services"), adminNode);
-        TreeNode manageFeesNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPrices, "Manage Fees/Prices/Packages"), adminNode);
-        TreeNode filterWithoutDepartmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminFilterWithoutDepartment, "Filter Without Department"), adminNode);
-        TreeNode searchAllNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);
-        TreeNode changeProfessionalFeeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeProfessionalFee, "Change Professional Fee"), adminNode);
-        TreeNode changeCollectingCentreNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCollectingCentre, "Change Collecting Centre"), adminNode);
-        TreeNode sendBulkSMSNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SendBulkSMS, "Send Bulk SMS"), adminNode);
-        TreeNode onlyForDevelopersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Developers, "Only For Developers(Don't Add That)"), adminNode);
-
-        TreeNode membershipNode = new DefaultTreeNode(new PrivilegeHolder(null, "Membership"), root);
-        TreeNode membershipMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShip, "Membership Menu"), membershipNode);
-        TreeNode addMembersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipAdd, "Add Members"), membershipNode);
-        TreeNode editMembersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipEdit, "Edit Members"), membershipNode);
-        TreeNode membershipReportsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipReports, "Membership Reports"), membershipNode);
-        TreeNode membershipDiscountManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipDiscountManagement, "Membership Discount Management"), membershipNode);
-        TreeNode membershipAdministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipAdministration, "Membership Administration"), membershipNode);
-        TreeNode otherNode = new DefaultTreeNode("Other", membershipNode);
-
-        TreeNode membershipSchemesNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipSchemes, "Membership Schemes"), otherNode);
-        TreeNode inwardMembershipMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShip, "Inward Membership Menu"), otherNode);
-        TreeNode schemesDiscountsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShipSchemesDicounts, "Schemes Discounts"), otherNode);
-        TreeNode inwardMembershipReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShipInwardMemberShipReport, "Inward Membership Report"), otherNode);
-        TreeNode opdMembershipDisMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDis, "Opd Membership Dis Menu"), otherNode);
-        TreeNode discountByDepartmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisByDepartment, "Discount By Department"), otherNode);
-        TreeNode discountByCategoryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisByCategory, "Discount By Category"), otherNode);
-        TreeNode opdMembershipReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport, "Opd Membership Report"), otherNode);
-        TreeNode reActivateRegisteredPatientNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipMemberReActive, "Re-Activate Registered Patient"), otherNode);
-        TreeNode deActivateRegisteredPatientNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipMemberDeActive, "De-Activate Registered Patient"), otherNode);
-
-        TreeNode humanResourceNode = new DefaultTreeNode(new PrivilegeHolder(null, "Human Resource"), root);
-        TreeNode hrMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Hr, "HR Menu"), humanResourceNode);
-        TreeNode workingTimeNode = new DefaultTreeNode("Working Time", humanResourceNode);
-        TreeNode workingTimeMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrWorkingTime, "Working Time Menu"), workingTimeNode);
-        TreeNode rosterTableNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrRosterTable, "Roster Table"), workingTimeNode);
-        TreeNode uploadAttendanceNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrUploadAttendance, "Upload Attendance"), workingTimeNode);
-        TreeNode analyseAttendanceByRosterNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAnalyseAttendenceByRoster, "Analyse Attendance By Roster"), workingTimeNode);
-        TreeNode analyseAttendanceByStaffNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAnalyseAttendenceByStaff, "Analyse Attendance By Staff"), workingTimeNode);
-        TreeNode formNode = new DefaultTreeNode("Form", humanResourceNode);
-        TreeNode formMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrForms, "Form Menu"), formNode);
-        TreeNode leaveFormNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrLeaveForms, "Leave Form"), formNode);
-        TreeNode additionalFormNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdditionalForms, "Additional Form"), formNode);
-        TreeNode hrSalaryAdvanceNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdvanceSalary, "HR Salary Advance"), humanResourceNode);
-        TreeNode hrSalaryNode = new DefaultTreeNode("HR Salary", humanResourceNode);
-        TreeNode hrSalaryGenerateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrGenerateSalary, "HR Salary Generate"), hrSalaryNode);
-        TreeNode hrSalaryGenerateSpecialNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrGenerateSalarySpecial, "HR Salary Generate Special"), hrSalaryNode);
-        TreeNode hrSalaryPrintNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrPrintSalary, "HR Salary Print"), humanResourceNode);
-        TreeNode hrReportsNode = new DefaultTreeNode("HR Reports", humanResourceNode);
-        TreeNode hrReportsMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReports, "HR Reports Menu"), hrReportsNode);
-        TreeNode hrReportsLevel1Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel1, "HR Reports Level 1"), hrReportsNode);
-        TreeNode hrReportsLevel2Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel2, "HR Reports Level 2"), hrReportsNode);
-        TreeNode hrReportsLevel3Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel3, "HR Reports Level 3"), hrReportsNode);
-// TreeNode employeeHistoryReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.EmployeeHistoryReport, "HR Employee History Reports"), hrReportsNode);
-        TreeNode hrAdministrationNode = new DefaultTreeNode("HR Administration", humanResourceNode);
-        TreeNode hrAdministrationMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdmin, "HR Administration Menu"), hrAdministrationNode);
-        TreeNode hrDeleteLateLeaveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.hrDeleteLateLeave, "HR Delete Late Leave"), hrAdministrationNode);
-        TreeNode hrEditRetiedDateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrEditRetiedDate, "HR Edit Retied Date"), hrAdministrationNode);
-        TreeNode hrRemoveResignDateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrRemoveResignDate, "HR Remove Resign Date"), hrAdministrationNode);
-
-        TreeNode storeNode = new DefaultTreeNode(new PrivilegeHolder(null, "Store"), root);
-        TreeNode storeMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Store, "Store Menu"), storeNode);
-        TreeNode storeissueNode = new DefaultTreeNode("Issue", storeNode);
-        TreeNode storeissueMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssue, "Issue Menu"), storeissueNode);
-        TreeNode storeinwardBillingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueInwardBilling, "Inward Billing"), storeissueNode);
-        TreeNode storesearchIssueBillNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueSearchBill, "Search Issue Bill"), storeissueNode);
-        TreeNode storesearchIssueBillItemsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueBillItems, "Search Issue Bill Items"), storeissueNode);
-        TreeNode storepurchaseNode = new DefaultTreeNode("Purchase", storeNode);
-        TreeNode storepurchaseMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchase, "Purchase Menu"), purchaseNode);
-        TreeNode storepurchaseOrderNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrder, "Purchase Order"), purchaseNode);
-        TreeNode storepoApproveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrderApprove, "PO Approve"), purchaseNode);
-        TreeNode storestoregrnReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseGRNRecive, "GRN Receive"), purchaseNode);
-        TreeNode storestoregrnReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseGRNReturn, "GRN Return"), purchaseNode);
-        TreeNode storepurchasePurchaseNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchasePurchase, "Purchase"), purchaseNode);
-        TreeNode storepoApproveSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrderApproveSearch, "PO Approve Search"), purchaseNode);
-        TreeNode storetransferNode = new DefaultTreeNode("Transfer", storeNode);
-        TreeNode storetransferMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransfer, "Transfer Menu"), storetransferNode);
-        TreeNode storetransferRequestNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferRequest, "Request"), storetransferNode);
-        TreeNode storetransferIssueNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferIssue, "Issue"), storetransferNode);
-        TreeNode storetransferReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferRecive, "Receive"), storetransferNode);
-        TreeNode storetransferReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferReport, "Report"), storetransferNode);
-        TreeNode storeadjustmentNode = new DefaultTreeNode("Adjustment", storeNode);
-        TreeNode storeadjustmentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustment, "Adjustment Menu"), storeadjustmentNode);
-        TreeNode storedepartmentStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentDepartmentStock, "Department Stock(Qty)"), storeadjustmentNode);
-        TreeNode storestaffStockAdjustmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentStaffStock, "Staff Stock Adjustment"), storeadjustmentNode);
-        TreeNode storepurchaseRateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentPurchaseRate, "Purchase Rate"), storeadjustmentNode);
-        TreeNode storesaleRateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentSaleRate, "Sale Rate"), storeadjustmentNode);
-        TreeNode storedelorPaymentNode = new DefaultTreeNode("Delor Payment", storeNode);
-        TreeNode storedelorPaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPayment, "Delor Payment Menu"), storedelorPaymentNode);
-        TreeNode storedelorDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueSearch, "Delor Due Search"), storedelorPaymentNode);
-        TreeNode storedelorDueByAgeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueByAge, "Delor Due By Age"), storedelorPaymentNode);
-        TreeNode storepaymentNode = new DefaultTreeNode("Payment", storedelorPaymentNode);
-        TreeNode storepaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPayment, "Payment Menu"), storepaymentNode);
-        TreeNode storegrnPaymentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRN, "GRN Payment"), storepaymentNode);
-        TreeNode storegrnPaymentSelectNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRNSelect, "GRN Payment(Select)"), storepaymentNode);
-        TreeNode storegrnPaymentDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentGRNDoneSearch, "GRN Payment Due Search"), storedelorPaymentNode);
-        TreeNode storesearchNode = new DefaultTreeNode("Search", storeNode);
-        TreeNode storesearchMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreSearch, "Search Menu"), storesearchNode);
-        TreeNode storereportNode = new DefaultTreeNode("Report", storeNode);
-        TreeNode storereportMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreReports, "Report Menu"), storereportNode);
-        TreeNode storesummaryNode = new DefaultTreeNode("Summary", storeNode);
-        TreeNode storesummaryMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreSummery, "Summary Menu"), storesummaryNode);
-        TreeNode storeadministrationNode = new DefaultTreeNode("Administration", storeNode);
-        TreeNode storeadministrationMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdministration, "Administration Menu"), storeadministrationNode);
-
-        TreeNode searchRootNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), root);
-        TreeNode searchMenuRootNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Search, "Search Menu"), searchRootNode);
-        TreeNode grandSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchGrand, "Grand Search"), searchRootNode);
-
-        TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), root);
-        TreeNode changeThemeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change Theme"), userNode);
-
-        TreeNode cashTransactionNode = new DefaultTreeNode(new PrivilegeHolder(null, "Cash Transaction"), root);
-        TreeNode cashTransactionMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransaction, "Cash Transaction Menu"), cashTransactionNode);
-        TreeNode cashInNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashIn, "Cash In"), cashTransactionNode);
-        TreeNode cashOutNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashOut, "Cash Out"), cashTransactionNode);
-        TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
-
-        TreeNode channellingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Channelling"), root);
+        TreeNode channellingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Channelling"), allNode);
         TreeNode channellingMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Channelling, "Channelling Menu"), channellingNode);
         TreeNode channelBookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channellingNode);
         TreeNode channelfutureBookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingFutureChannelBooking, "Channel Future Booking"), channellingNode);
@@ -456,6 +309,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode channeldoctorLeaveByDateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingDoctorLeaveByDate, "Doctor Leave By Date"), channeldoctorLeaveMenuNode);
         TreeNode channeldoctorLeaveBySessionNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingDoctorLeaveByServiceSession, "Doctor Leave By Service Session"), channeldoctorLeaveMenuNode);
         TreeNode channelchannelSchedulingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelSheduling, "Channel Scheduling"), channellingNode);
+        TreeNode channelSpecialchannelSchedulingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingSpecialChannelSheduling, "Special Channel Scheduling"), channellingNode);
         TreeNode channelAgentFeeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelAgentFee, "Channel Agent Fee"), channellingNode);
         TreeNode channelBookingInterfaceNode = new DefaultTreeNode("Channel Booking Interface", channellingNode);
         TreeNode channelbookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelBookingBokking, "Booking"), channelBookingInterfaceNode);
@@ -470,10 +324,10 @@ public class UserPrivilageController implements Serializable {
         TreeNode channelrestrictBookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelBookingRestric, "Restrict Channel Booking"), channelBookingInterfaceNode);
         TreeNode channelprintPastBookingReceiptNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPrintInPastBooking, "Print Past Booking Receipt"), channellingNode);
         TreeNode channelpaymentNode = new DefaultTreeNode("Payment", channellingNode);
-        TreeNode channelpaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPayment, "Payment Menu"), paymentNode);
-        TreeNode channelpayDoctorNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentPayDoctor, "Pay Doctor"), paymentNode);
-        TreeNode channelpaymentDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentDueSearch, "Payment Due Search"), paymentNode);
-        TreeNode channelpaymentDoneSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentDoneSearch, "Payment Done Search"), paymentNode);
+        TreeNode channelpaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPayment, "Payment Menu"), channelpaymentNode);
+        TreeNode channelpayDoctorNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentPayDoctor, "Pay Doctor"), channelpaymentNode);
+        TreeNode channelpaymentDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentDueSearch, "Payment Due Search"), channelpaymentNode);
+        TreeNode channelpaymentDoneSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingPaymentDoneSearch, "Payment Done Search"), channelpaymentNode);
         TreeNode channelcashierTransactionNode = new DefaultTreeNode("Cashier Transaction", channellingNode);
         TreeNode channelcashierTransactionMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelCashierTransaction, "Cashier Transaction Menu"), channelcashierTransactionNode);
         TreeNode channelincomeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelCashierTransactionIncome, "Income"), channelcashierTransactionNode);
@@ -511,16 +365,172 @@ public class UserPrivilageController implements Serializable {
         TreeNode channelCashCancelRestrictionNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelCashCancelRestriction, "Channel Cash Cancel Restriction"), channelManagementNode);
         TreeNode channelActiveVatNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelActiveVat, "Channel Active Vat"), channelManagementNode);
 
+        ///////////////////
+        TreeNode paymentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Payment"), allNode);
+        TreeNode paymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Payment, "Payment Menu"), paymentNode);
+        TreeNode staffPaymentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBilling, "Staff Payment"), paymentNode);
+        TreeNode paymentSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillSearch, "Payment Search"), paymentNode);
+        TreeNode paymentReprintsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReprint, "Payment Reprints"), paymentNode);
+        TreeNode paymentCancelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillCancel, "Payment Cancel"), paymentNode);
+        TreeNode paymentRefundNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillRefund, "Payment Refund"), paymentNode);
+        TreeNode paymentReactivationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PaymentBillReactivation, "Payment Reactivation"), paymentNode);
+
+        TreeNode reportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), allNode);
+        TreeNode reportsMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Reports, "Reports Menu"), reportsNode);
+        TreeNode forOwnInstitutionNode = new DefaultTreeNode("For Own Institution", reportsNode);
+        TreeNode forAllInstitutionNode = new DefaultTreeNode("For All Institution", reportsNode);
+
+        TreeNode cashCardBillReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCashCardOwn, "Cash/Card Bill Reports"), forOwnInstitutionNode);
+        TreeNode creditBillReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCreditOwn, "Credit Bill Reports"), forOwnInstitutionNode);
+        TreeNode itemReportsOwnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsItemOwn, "Item Reports"), forOwnInstitutionNode);
+
+        TreeNode cashCardBillReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSearchCashCardOther, "Cash/Card Bill Reports"), forAllInstitutionNode);
+        TreeNode creditBillReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportSearchCreditOther, "Credit Bill Reports"), forAllInstitutionNode);
+        TreeNode itemReportsOtherNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsItemOwn, "Item Reports"), forAllInstitutionNode);
+
+        TreeNode clinicalsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinicals"), allNode);
+        TreeNode clinicalDataNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Clinical, "Clinical Data"), clinicalsNode);
+        TreeNode patientSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientSummery, "Patient Summery"), clinicalsNode);
+        TreeNode patientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDetails, "Patient Details"), clinicalsNode);
+        TreeNode patientPhotoNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientPhoto, "Patient Photo"), clinicalsNode);
+        TreeNode visitDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitDetail, "Visit Details"), clinicalsNode);
+        TreeNode visitSummeryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalVisitSummery, "Visit Summery"), clinicalsNode);
+        TreeNode historyNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalHistory, "History"), clinicalsNode);
+        TreeNode clinicaladministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalAdministration, "Administration"), clinicalsNode);
+        TreeNode clinicalPatientDeleteNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDelete, "Clinical Patient Delete"), clinicalsNode);
+
+        TreeNode adminNode = new DefaultTreeNode(new PrivilegeHolder(null, "Administration"), allNode);
+        TreeNode adminMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Admin, "Admin Menu"), adminNode);
+        TreeNode manageUsersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminManagingUsers, "Manage Users"), adminNode);
+        TreeNode manageInstitutionsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminInstitutions, "Manage Institutions"), adminNode);
+        TreeNode manageStaffNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminStaff, "Manage Staff"), adminNode);
+        TreeNode manageItemsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminItems, "Manage Items/Services"), adminNode);
+        TreeNode manageFeesNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminPrices, "Manage Fees/Prices/Packages"), adminNode);
+        TreeNode filterWithoutDepartmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.AdminFilterWithoutDepartment, "Filter Without Department"), adminNode);
+        TreeNode searchAllNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);
+        TreeNode changeProfessionalFeeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeProfessionalFee, "Change Professional Fee"), adminNode);
+        TreeNode changeCollectingCentreNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCollectingCentre, "Change Collecting Centre"), adminNode);
+        TreeNode sendBulkSMSNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SendBulkSMS, "Send Bulk SMS"), adminNode);
+        TreeNode onlyForDevelopersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Developers, "Only For Developers(Don't Add That)"), adminNode);
+
+        TreeNode membershipNode = new DefaultTreeNode(new PrivilegeHolder(null, "Membership"), allNode);
+        TreeNode membershipMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShip, "Membership Menu"), membershipNode);
+        TreeNode addMembersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipAdd, "Add Members"), membershipNode);
+        TreeNode editMembersNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipEdit, "Edit Members"), membershipNode);
+        TreeNode membershipReportsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipReports, "Membership Reports"), membershipNode);
+        TreeNode membershipDiscountManagementNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipDiscountManagement, "Membership Discount Management"), membershipNode);
+        TreeNode membershipAdministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipAdministration, "Membership Administration"), membershipNode);
+        TreeNode otherNode = new DefaultTreeNode("Other", membershipNode);
+
+        TreeNode membershipSchemesNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MembershipSchemes, "Membership Schemes"), otherNode);
+        TreeNode inwardMembershipMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShip, "Inward Membership Menu"), otherNode);
+        TreeNode schemesDiscountsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShipSchemesDicounts, "Schemes Discounts"), otherNode);
+        TreeNode inwardMembershipReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipInwardMemberShipInwardMemberShipReport, "Inward Membership Report"), otherNode);
+        TreeNode opdMembershipDisMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDis, "Opd Membership Dis Menu"), otherNode);
+        TreeNode discountByDepartmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisByDepartment, "Discount By Department"), otherNode);
+        TreeNode discountByCategoryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisByCategory, "Discount By Category"), otherNode);
+        TreeNode opdMembershipReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport, "Opd Membership Report"), otherNode);
+        TreeNode reActivateRegisteredPatientNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipMemberReActive, "Re-Activate Registered Patient"), otherNode);
+        TreeNode deActivateRegisteredPatientNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.MemberShipMemberDeActive, "De-Activate Registered Patient"), otherNode);
+
+        TreeNode humanResourceNode = new DefaultTreeNode(new PrivilegeHolder(null, "Human Resource"), allNode);
+        TreeNode hrMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Hr, "HR Menu"), humanResourceNode);
+        TreeNode workingTimeNode = new DefaultTreeNode("Working Time", humanResourceNode);
+        TreeNode workingTimeMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrWorkingTime, "Working Time Menu"), workingTimeNode);
+        TreeNode rosterTableNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrRosterTable, "Roster Table"), workingTimeNode);
+        TreeNode uploadAttendanceNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrUploadAttendance, "Upload Attendance"), workingTimeNode);
+        TreeNode analyseAttendanceByRosterNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAnalyseAttendenceByRoster, "Analyse Attendance By Roster"), workingTimeNode);
+        TreeNode analyseAttendanceByStaffNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAnalyseAttendenceByStaff, "Analyse Attendance By Staff"), workingTimeNode);
+        TreeNode formNode = new DefaultTreeNode("Form", humanResourceNode);
+        TreeNode formMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrForms, "Form Menu"), formNode);
+        TreeNode leaveFormNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrLeaveForms, "Leave Form"), formNode);
+        TreeNode additionalFormNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdditionalForms, "Additional Form"), formNode);
+        TreeNode hrSalaryAdvanceNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdvanceSalary, "HR Salary Advance"), humanResourceNode);
+        TreeNode hrSalaryNode = new DefaultTreeNode("HR Salary", humanResourceNode);
+        TreeNode hrSalaryGenerateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrGenerateSalary, "HR Salary Generate"), hrSalaryNode);
+        TreeNode hrSalaryGenerateSpecialNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrGenerateSalarySpecial, "HR Salary Generate Special"), hrSalaryNode);
+        TreeNode hrSalaryPrintNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrPrintSalary, "HR Salary Print"), humanResourceNode);
+        TreeNode hrReportsNode = new DefaultTreeNode("HR Reports", humanResourceNode);
+        TreeNode hrReportsMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReports, "HR Reports Menu"), hrReportsNode);
+        TreeNode hrReportsLevel1Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel1, "HR Reports Level 1"), hrReportsNode);
+        TreeNode hrReportsLevel2Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel2, "HR Reports Level 2"), hrReportsNode);
+        TreeNode hrReportsLevel3Node = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrReportsLevel3, "HR Reports Level 3"), hrReportsNode);
+// TreeNode employeeHistoryReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.EmployeeHistoryReport, "HR Employee History Reports"), hrReportsNode);
+        TreeNode hrAdministrationNode = new DefaultTreeNode("HR Administration", humanResourceNode);
+        TreeNode hrAdministrationMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrAdmin, "HR Administration Menu"), hrAdministrationNode);
+        TreeNode hrDeleteLateLeaveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.hrDeleteLateLeave, "HR Delete Late Leave"), hrAdministrationNode);
+        TreeNode hrEditRetiedDateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrEditRetiedDate, "HR Edit Retied Date"), hrAdministrationNode);
+        TreeNode hrRemoveResignDateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.HrRemoveResignDate, "HR Remove Resign Date"), hrAdministrationNode);
+
+        TreeNode storeNode = new DefaultTreeNode(new PrivilegeHolder(null, "Store"), allNode);
+        TreeNode storeMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Store, "Store Menu"), storeNode);
+        TreeNode storeissueNode = new DefaultTreeNode("Issue", storeNode);
+        TreeNode storeissueMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssue, "Issue Menu"), storeissueNode);
+        TreeNode storeinwardBillingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueInwardBilling, "Inward Billing"), storeissueNode);
+        TreeNode storesearchIssueBillNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueSearchBill, "Search Issue Bill"), storeissueNode);
+        TreeNode storesearchIssueBillItemsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreIssueBillItems, "Search Issue Bill Items"), storeissueNode);
+        TreeNode storepurchaseNode = new DefaultTreeNode("Purchase", storeNode);
+        TreeNode storepurchaseMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchase, "Purchase Menu"), storepurchaseNode);
+        TreeNode storepurchaseOrderNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrder, "Purchase Order"), storepurchaseNode);
+        TreeNode storepoApproveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrderApprove, "PO Approve"), storepurchaseNode);
+        TreeNode storestoregrnReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseGRNRecive, "GRN Receive"), storepurchaseNode);
+        TreeNode storestoregrnReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseGRNReturn, "GRN Return"), storepurchaseNode);
+        TreeNode storepurchasePurchaseNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchasePurchase, "Purchase"), storepurchaseNode);
+        TreeNode storepoApproveSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StorePurchaseOrderApproveSearch, "PO Approve Search"), storepurchaseNode);
+        TreeNode storetransferNode = new DefaultTreeNode("Transfer", storeNode);
+        TreeNode storetransferMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransfer, "Transfer Menu"), storetransferNode);
+        TreeNode storetransferRequestNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferRequest, "Request"), storetransferNode);
+        TreeNode storetransferIssueNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferIssue, "Issue"), storetransferNode);
+        TreeNode storetransferReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferRecive, "Receive"), storetransferNode);
+        TreeNode storetransferReportNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreTransferReport, "Report"), storetransferNode);
+        TreeNode storeadjustmentNode = new DefaultTreeNode("Adjustment", storeNode);
+        TreeNode storeadjustmentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustment, "Adjustment Menu"), storeadjustmentNode);
+        TreeNode storedepartmentStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentDepartmentStock, "Department Stock(Qty)"), storeadjustmentNode);
+        TreeNode storestaffStockAdjustmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentStaffStock, "Staff Stock Adjustment"), storeadjustmentNode);
+        TreeNode storepurchaseRateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentPurchaseRate, "Purchase Rate"), storeadjustmentNode);
+        TreeNode storesaleRateNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdjustmentSaleRate, "Sale Rate"), storeadjustmentNode);
+        TreeNode storedelorPaymentNode = new DefaultTreeNode("Delor Payment", storeNode);
+        TreeNode storedelorPaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPayment, "Delor Payment Menu"), storedelorPaymentNode);
+        TreeNode storedelorDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueSearch, "Delor Due Search"), storedelorPaymentNode);
+        TreeNode storedelorDueByAgeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentDueByAge, "Delor Due By Age"), storedelorPaymentNode);
+        TreeNode storepaymentNode = new DefaultTreeNode("Payment", storedelorPaymentNode);
+        TreeNode storepaymentMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPayment, "Payment Menu"), storepaymentNode);
+        TreeNode storegrnPaymentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRN, "GRN Payment"), storepaymentNode);
+        TreeNode storegrnPaymentSelectNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentPaymentGRNSelect, "GRN Payment(Select)"), storepaymentNode);
+        TreeNode storegrnPaymentDueSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreDealorPaymentGRNDoneSearch, "GRN Payment Due Search"), storedelorPaymentNode);
+        TreeNode storesearchNode = new DefaultTreeNode("Search", storeNode);
+        TreeNode storesearchMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreSearch, "Search Menu"), storesearchNode);
+        TreeNode storereportNode = new DefaultTreeNode("Report", storeNode);
+        TreeNode storereportMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreReports, "Report Menu"), storereportNode);
+        TreeNode storesummaryNode = new DefaultTreeNode("Summary", storeNode);
+        TreeNode storesummaryMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreSummery, "Summary Menu"), storesummaryNode);
+        TreeNode storeadministrationNode = new DefaultTreeNode("Administration", storeNode);
+        TreeNode storeadministrationMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdministration, "Administration Menu"), storeadministrationNode);
+
+        TreeNode searchRootNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), allNode);
+        TreeNode searchMenuRootNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Search, "Search Menu"), searchRootNode);
+        TreeNode grandSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchGrand, "Grand Search"), searchRootNode);
+
+        TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
+        TreeNode changeThemeNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangePreferece, "Change Theme"), userNode);
+
+        TreeNode cashTransactionNode = new DefaultTreeNode(new PrivilegeHolder(null, "Cash Transaction"), allNode);
+        TreeNode cashTransactionMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransaction, "Cash Transaction Menu"), cashTransactionNode);
+        TreeNode cashInNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashIn, "Cash In"), cashTransactionNode);
+        TreeNode cashOutNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashOut, "Cash Out"), cashTransactionNode);
+        TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
+
+        
         return root;
     }
 
     public void savePrivileges() {
         if (currentWebUser == null) {
-            UtilityController.addErrorMessage("Please select a user");
+            JsfUtil.addErrorMessage("Please select a user");
             return;
         }
         if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         saveWebUserPrivileges();

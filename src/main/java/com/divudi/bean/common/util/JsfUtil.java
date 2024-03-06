@@ -62,26 +62,6 @@ public class JsfUtil {
         return converter.getAsObject(FacesContext.getCurrentInstance(), component, theId);
     }
     
-//   public static <T> List<T> arrayToList(T[] arr) {
-//        if (arr == null) {
-//            return new ArrayList<T>();
-//        }
-//        return Arrays.asList(arr);
-//    }
-
-//    public static <T> Set<T> arrayToSet(T[] arr) {
-//        if (arr == null) {
-//            return new HashSet<T>();
-//        }
-//        return new HashSet(Arrays.asList(arr));
-//    }
-    
-//    public static Object[] collectionToArray(Collection<?> c) {
-//        if (c == null) {
-//            return new Object[0];
-//        }
-//        return c.toArray();
-//    }
 
     public static <T> List<T> setToList(Set<T> set) {
         return new ArrayList<T>(set);
@@ -91,19 +71,28 @@ public class JsfUtil {
         return converter.getAsString(FacesContext.getCurrentInstance(), null, object);
     }
     
-//    public static String getCollectionAsString(Collection<?> collection) {
-//        if (collection == null || collection.size() == 0) {
-//            return "(No Items)";
-//        }
-//        StringBuffer sb = new StringBuffer();
-//        int i = 0;
-//        for (Object item : collection) {
-//            if (i > 0) {
-//                sb.append("<br />");
-//            }
-//            sb.append(item);
-//            i++;
-//        }
-//        return sb.toString();
-//    }
+
+    public static void addErrorMessage(Exception ex, String defaultMsg) {
+        String msg = ex.getLocalizedMessage();
+        if (msg != null && msg.length() > 0) {
+            addErrorMessage(msg);
+        } else {
+            addErrorMessage(defaultMsg);
+        }
+    }
+
+   
+
+    public static enum PersistAction {
+        CREATE,
+        DELETE,
+        UPDATE
+    }
+
+    public static boolean isValidationFailed() {
+        return FacesContext.getCurrentInstance().isValidationFailed();
+    }
+    
+    
+    
 }

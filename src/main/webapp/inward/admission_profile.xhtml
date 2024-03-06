@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:in="http://java.sun.com/jsf/composite/inward"
-                xmlns:bi="http://java.sun.com/jsf/composite/bill"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
@@ -17,6 +17,13 @@
                 <f:facet name="header" >
                     <h:outputText styleClass="fa fa-id-card"></h:outputText>
                     <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+                    <p:commandButton 
+                        value="Back to Search Admission" 
+                        action="#{admissionController.navigateToSearchAdmissions()}" 
+                        style="float: right;"
+                        class="ui-button-warning"
+                        icon="fa fa-arrow-left">
+                    </p:commandButton>
                 </f:facet>
                 <div class="row" >
                     <div class="col-3" >
@@ -162,6 +169,11 @@
                                 <h:outputText value="Surgeries"></h:outputText>
                             </f:facet>
                             <div class="d-grid gap-3"> 
+                                <p:dataTable value="#{bhtSummeryController.surgeryBills}" var="s" >
+                                    <p:column >
+                                        <h:outputText value="#{s.procedure.item.name}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
@@ -169,7 +181,7 @@
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
                                         />
                                 </p:commandButton>
                                 <p:commandButton 
@@ -194,7 +206,7 @@
                                     class="w-100">
                                     <f:setPropertyActionListener
                                         value="#{admissionController.current}"
-                                        target="#{surgeryBillController.batchBill.patientEncounter}"
+                                        target="#{surgeryBillController.surgeryBill.patientEncounter}"
                                         />
                                 </p:commandButton>
                                 <p:commandButton 

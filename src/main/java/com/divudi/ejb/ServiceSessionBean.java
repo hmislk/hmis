@@ -208,7 +208,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ClinicalOpdBooking};
+            BillType.ClinicalOpdBooking,
+            BillType.ChannelCredit
+        };
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select count(bs) From BillSession bs where "
@@ -217,21 +219,29 @@ public class ServiceSessionBean {
                 + " and type(bs.bill)=:class"
                 + " and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
-        hh.put("ssDate", sessionDate);
-        hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
-        hh.put("ss", serviceSession.getSessionNumberGenerator());
+
+        hh.put(
+                "ssDate", sessionDate);
+        hh.put(
+                "bt", bts);
+        hh.put(
+                "class", BilledBill.class
+        );
+        hh.put(
+                "ss", serviceSession.getSessionNumberGenerator());
         Long lgValue = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
         ////// // System.out.println("serviceSession = " + serviceSession);
         ////// // System.out.println("serviceSession.getSessionNumberGenerator() = " + serviceSession.getSessionNumberGenerator());
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("hh = " + hh);
         ////// // System.out.println("lgValue= " + lgValue);
-        if (lgValue == null) {
+        if (lgValue
+                == null) {
             return 1;
         }
 
-        return lgValue.intValue() + 1;
+        return lgValue.intValue()
+                + 1;
     }
 
     public int getSessionNumber(ServiceSession serviceSession, Date sessionDate, BillSession billSession) {
@@ -240,7 +250,8 @@ public class ServiceSessionBean {
         BillType[] billTypes = {BillType.ChannelAgent,
             BillType.ChannelCash,
             BillType.ChannelOnCall,
-            BillType.ChannelStaff};
+            BillType.ChannelStaff,
+            BillType.ChannelCredit};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs From BillSession bs where "
@@ -252,7 +263,8 @@ public class ServiceSessionBean {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("bt", bts);
-        hh.put("class", BilledBill.class);
+        hh.put("class", BilledBill.class
+        );
         hh.put("ss", serviceSession.getSessionNumberGenerator());
 
         List<BillSession> lgValue = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);

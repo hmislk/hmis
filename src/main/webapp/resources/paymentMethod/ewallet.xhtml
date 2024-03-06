@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -18,19 +18,21 @@
             <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.totalValue}"  id="txtVal"/>
             <p:watermark value="Value" for="txtVal" />
         </h:panelGroup>
-        <div class="col" >
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno"/>                                
-        </div>
-        <div class="col" >
+        <div class="d-flex">
+
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.no}" id="refno" class="mx-1"/>                                
+
+
             <p:selectOneMenu value="#{cc.attrs.paymentMethodData.ewallet.institution}" >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>
-        </div>
-        <div class="col" >
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}"  id="memo"/>
+
+            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.ewallet.comment}" id="memo" class="mx-1"/>
             <p:watermark value="Memo" for="memo" />
             <p:watermark value="eWallet Ref. No." for="refno" />
+
         </div>
+
     </cc:implementation>
 </html>

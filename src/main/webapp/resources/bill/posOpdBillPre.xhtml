@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -71,106 +71,56 @@
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
 
-            <div class="billDetails" >
-                <table style="width: 100%; margin-left:0.5cm;" >
+            <div>
+                <table style="width: 75%; margin: 0 auto;" class="billDetails">
                     <tr>
                         <td style="width: 15%; text-align: left;" >
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 85%" >
+                        <td style="width: 55%; text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: left;">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
-                        </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
-
-                        <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                            </h:outputLabel>-->
-                        </td>
-
                     </tr>
-
                     <tr>
                         <td style="width: 15%; text-align: left;" >
                             <h:outputLabel value="Time" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%" >
+                        <td style="width: 30%; text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
-                        </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
-
-                        <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
-                            </h:outputLabel>-->
-                        </td>
-
                     </tr>
-
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel value="Bill No" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%;" >
+                        <td style="width: 30%; text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}"  >
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
+                    </tr>
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Name" ></h:outputLabel>
                         </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="User" ></h:outputLabel>-->
-                        </td>
-
-                        <td style="width: 30%" >
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
-                            </h:outputLabel>-->
+                        <td>:</td>
+                        <td style="width: 30%; text-align: left;" >
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                            </h:outputLabel>
                         </td>
 
                     </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
-                        <tr>
-                            <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" ></h:outputLabel>
-                            </td>
-                            <td>:</td>
-                            <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
-                                </h:outputLabel>
-                            </td>
-                            <td style="width: 10%" >
-                            </td>
-                            <td style="width: 15%" >
-                            </td>
-                            <td style="width: 30%" >
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
+                   
                     <h:panelGroup rendered="#{cc.attrs.bill.referredByInstitution ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
@@ -214,9 +164,7 @@
 
             </div>
 
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
+            
 
             <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" >
                 <div >
@@ -227,7 +175,7 @@
                 </div>
             </h:panelGroup>
 
-           
+
 
             <div  >
                 <h:panelGroup rendered="false" >

@@ -607,7 +607,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
 //        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 //
 //        if (Math.abs(lng) > 2) {
-//            UtilityController.addErrorMessage("Date Range is too Long");
+//            JsfUtil.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
 //

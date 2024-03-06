@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -15,18 +15,20 @@
 
         <div class="row">
             <div class="col-md-4 p-1">
-                <p:selectOneMenu id="cmbTitle"  placeholder="Title" class="form-control w-100">
+                <p:selectOneMenu id="cmbTitle"  class="form-control w-100" value="#{cc.attrs.patient.person.title}">
                     <f:selectItem itemLabel="Select Title" />
-                    <f:selectItems value="#{enumController.title}" />
+                    <f:selectItems value="#{opdBillController.title}" />
+                    <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
+                    <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
                 </p:selectOneMenu>
             </div>
             <div class="col-md-4 p-1">
                 <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.patient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Name"></p:inputText>
             </div>
             <div class="col-md-4 p-1">
-                <p:selectOneMenu id="txtNewSex" class="form-control w-100">
+                <p:selectOneMenu id="txtNewSex" class="form-control w-100" value="#{cc.attrs.patient.person.sex}">
                     <f:selectItem itemLabel="Select Sex" />
-                    <f:selectItems value="#{enumController.sex}" />
+                    <f:selectItems value="#{opdBillController.sex}" />
                 </p:selectOneMenu>
             </div>
 

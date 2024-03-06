@@ -14,7 +14,7 @@ import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

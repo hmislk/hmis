@@ -1,16 +1,15 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       >
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
@@ -18,91 +17,156 @@
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
+                            <p:commandButton 
+                                class="ui-button-secondary mx-2" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                style="float: right;"
+                                action="ward_pharmacy_bht_issue_request_list_for_issue" 
+                                actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" 
+                                value="Requested List">
+                            </p:commandButton>
                         </f:facet>
 
+                        <div class="row">
+                            <div class="col-md-7">
+                                <p:panel header="Reprint" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Matrix Department : &nbsp;"/>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.department.name}"/>
+                                    </f:facet>
 
+                                    <p:dataTable 
+                                        id="tbl" 
+                                        rowIndexVar="rowIndex" 
+                                        value="#{pharmacyBillSearch.bill.billItems}"  
+                                        var="bip" 
+                                        rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
 
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="No"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Item Name"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.item.name}"/>
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputLabel value="QTY"/>
+                                            </f:facet>
+                                            <p:outputLabel value="#{bip.qty}"/>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Gross Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.grossValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Matrix Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.marginValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Net Value"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column  style="text-align: right;" colspan="4">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column  style="text-align: right;" colspan="2">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-5">
+                                <p:panel header="Reprint" >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Bill Preview" ></h:outputLabel>
+                                        <p:commandButton 
+                                            class="ui-button-info" 
+                                            icon="fas fa-print" 
+                                            value="Reprint" 
+                                            style="float: right;"
+                                            ajax="false" 
+                                            action="#" >
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" title="Redraw Bill"></p:commandButton>
+                                    </div>
+
+                                    <h:panelGroup id="gpBillPreview" class="mt-2 p-2"> 
+
+                                        <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                            <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                            <h:panelGroup rendered="true" > 
+                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
+                                            </h:panelGroup>
+                                        </h:panelGroup>  
+
+                                        <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}"> 
+                                            <h:panelGroup rendered="true" > 
+                                                <ph:A4_paper_with_headings bill="#{pharmacyBillSearch.bill}"></ph:A4_paper_with_headings>
+                                            </h:panelGroup>
+                                        </h:panelGroup> 
+
+                                    </h:panelGroup>  
+                                </p:panel>
+                            </div>
+                        </div>
                     </p:panel>
-
-                   
-
-                    <h:panelGrid columns="2">
-                        <h:outputLabel value="Matrix Department"/>
-                        <h:outputLabel value="#{pharmacyBillSearch.bill.fromDepartment.name}"/>
-                    </h:panelGrid>
-
-                    <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="No"/>
-                            </f:facet>
-                            <h:outputLabel value="#{rowIndex+1}"/>
-                        </p:column>
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="Item Name"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.item.name}"/>
-                        </p:column>
-
-
-                        <p:column>
-                            <f:facet name="header">
-                                <h:outputLabel value="QTY"/>
-                            </f:facet>
-                            <p:outputLabel value="#{bip.qty}"/>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Gross Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.grossValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Matrix Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.marginValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-                        <p:column style="text-align: right;">
-                            <f:facet name="header">
-                                <h:outputLabel value="Net Value"/>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </p:column>
-
-
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column  style="text-align: right;" colspan="4">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
-                                            <f:convertNumber pattern="#0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                                <p:column  style="text-align: right;" colspan="2">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
-                                            <f:convertNumber pattern="#0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
-                    </p:dataTable>
-
 
                     <!--                    <h:panelGroup id="gpBillPreview" >
                                             <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
@@ -117,53 +181,9 @@
                         </div>
 
                     </h:panelGroup>  -->
-                    <p:panel>
-                        <p:commandButton value="Reprint" ajax="false" action="#"  >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-
-                        <h:panelGroup   id="gpBillPreview" > 
-
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                        <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
-
-                                <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                        <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>
-
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-
-                                <div >
-                                    <h:panelGroup rendered="true" > 
-                                        <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                    </h:panelGroup>
-                                </div>
-
-                            </h:panelGroup>                            
-
-                        </h:panelGroup>  
-
-                    </p:panel>
 
                 </h:form>
             </ui:define>
-
-
-
         </ui:composition>
-
     </h:body>
 </html>

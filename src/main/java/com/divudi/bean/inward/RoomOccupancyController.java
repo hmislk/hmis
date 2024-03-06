@@ -11,7 +11,7 @@ import com.divudi.entity.inward.RoomFacilityCharge;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.RoomFacade;
 import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.facade.util.JsfUtil;
+import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -89,6 +89,7 @@ public class RoomOccupancyController implements Serializable {
             return;
         }
         patientRoom.setDischarged(true);
+        JsfUtil.addSuccessMessage("Successfully Discharged");
         patientRoom.setDischargedAt(new Date());
         patientRoom.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(patientRoom);

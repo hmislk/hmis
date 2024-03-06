@@ -33,7 +33,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import com.divudi.bean.common.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -119,11 +119,11 @@ public class PackageItemFeeController implements Serializable {
     public void saveCharge() {
 
         if (currentFee == null) {
-            UtilityController.addErrorMessage("Please select a charge");
+            JsfUtil.addErrorMessage("Please select a charge");
             return;
         }
         if (currentIx == null) {
-            UtilityController.addErrorMessage("Please select a Investigation");
+            JsfUtil.addErrorMessage("Please select a Investigation");
             return;
         }
 
@@ -134,10 +134,10 @@ public class PackageItemFeeController implements Serializable {
             currentFee.setCreater(getSessionController().getLoggedUser());
 
             getPackageFeeFacade().create(currentFee);
-            UtilityController.addSuccessMessage("Fee Added");
+            JsfUtil.addSuccessMessage("Fee Added");
         } else {
             getPackageFeeFacade().edit(currentFee);
-            UtilityController.addSuccessMessage("Fee Saved");
+            JsfUtil.addSuccessMessage("Fee Saved");
         }
 
         setPakageTotal();
@@ -190,7 +190,7 @@ public class PackageItemFeeController implements Serializable {
 
     public void removeFee() {
         if (getRemovedPackageFee().getId() == null || getRemovedPackageFee().getId() == 0) {
-            UtilityController.addErrorMessage("Nothing to remove");
+            JsfUtil.addErrorMessage("Nothing to remove");
             return;
         } else {
             getRemovedPackageFee().setRetired(true);
@@ -212,9 +212,9 @@ public class PackageItemFeeController implements Serializable {
             currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+            JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
 
         currentIx = null;

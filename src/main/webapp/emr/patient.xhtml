@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-      xmlns:emr="http://java.sun.com/jsf/composite/ezcomp/emr">
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -122,39 +122,53 @@
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-md-6">
-                                        <h:outputLabel value="PHN Number:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.phn}" class="form-control" />
+                                        <p:outputLabel value="PHN Number:" class="form-label" />
+                                        <div class="input-group">
+                                            <p:inputText
+                                                id="txtPhn"
+                                                value="#{patientController.current.phn}" class="form-control" />
+
+                                            <span class="input-group-btn">
+                                                <p:commandButton
+                                                    id="btnPhn"
+                                                    value="Generate" 
+                                                    process="btnPhn" 
+                                                    update="txtPhn" 
+                                                    action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                                    class="mx-1" />
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="MRN No"  />
-                                        <h:panelGroup>
-                                            <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
-                                        </h:panelGroup>
+                                        <div class="col-md-6">
+                                            <h:outputLabel class="form-label" value="MRN No"  />
+                                            <h:panelGroup>
+                                                <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Patient Account:"  class="form-label" />
+                                            <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
+                                                                   offLabel="No Account"
+                                                                   onLabel="Has an account" ></p:selectBooleanButton>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:outputLabel class="form-label" value="Credit Limit"  />
+                                            <h:panelGroup>
+                                                <p:inputText autocomplete="off" id="txtCreditLimit"
+                                                             value="#{patientController.current.creditLimit}"
+                                                             class="form-control" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-md-12">
+                                            <h:outputLabel value="Comments:"  class="form-label" />
+                                            <h:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row form-group">
-                                    <div class="col-md-6">
-                                        <p:outputLabel value="Patient Account:"  class="form-label" />
-                                        <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
-                                                               offLabel="No Account"
-                                                               onLabel="Has an account" ></p:selectBooleanButton>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="Credit Limit"  />
-                                        <h:panelGroup>
-                                            <p:inputText autocomplete="off" id="txtCreditLimit"
-                                                         value="#{patientController.current.creditLimit}"
-                                                         class="form-control" />
-                                        </h:panelGroup>
-                                    </div>
-                                </div>
-                                <div class="row form-group">
-                                    <div class="col-md-12">
-                                        <h:outputLabel value="Comments:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
-                                    </div>
-                                </div>
-                            </div>
                         </p:panel>
 
                     </h:form>

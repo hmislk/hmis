@@ -95,7 +95,6 @@ public class BillNumberGenerator {
                 + "  where  b.retired=false "
                 + " and b.institution=:ins "
                 + " and b.billType = :bt ";
-                
         HashMap hm = new HashMap();
         hm.put("ins", institution);
         hm.put("bt", billType);
@@ -745,7 +744,7 @@ public class BillNumberGenerator {
         hm.put("bd", new Date());
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         if(dd==null){
-             dd=1l;
+             dd=0l;
         }else{
             dd++;
         }

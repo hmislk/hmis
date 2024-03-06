@@ -5,7 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -100,7 +100,7 @@ public class PurchaseOrderController implements Serializable {
     public void clearList() {
         filteredValue = null;
         billsToApprove = null;
-        printPreview = false;
+        printPreview = true;
         billItems = null;
         aprovedBill = null;
         requestedBill = null;
@@ -119,12 +119,15 @@ public class PurchaseOrderController implements Serializable {
         }
         return fromDate;
     }
-    
-   
+
+    public String navigateToPurchaseOrderApproval() {
+        printPreview = false;
+        return "/pharmacy/pharmacy_purhcase_order_approving";
+    }
 
     public String approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select Paymentmethod");
+            JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
         }
 
@@ -132,7 +135,7 @@ public class PurchaseOrderController implements Serializable {
 
         saveBill();
         saveBillComponent();
-    
+
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         billFacade.edit(getAprovedBill());
@@ -141,14 +144,11 @@ public class PurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-        clearList();
-
-        return viewRequestedList();
-        //   printPreview = true;
+//        clearList();
+        printPreview = true;
+        return "";
 
     }
-    
-    
 
     public String viewRequestedList() {
         clearList();

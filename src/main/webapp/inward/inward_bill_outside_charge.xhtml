@@ -1,25 +1,26 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://java.sun.com/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
 
 
     <ui:define name="content">
         <h:panelGroup>
             <h:form>
-                <p:panel>
-                    <f:facet name="header">
-                        <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
-                        <p:outputLabel value="Add Outside Charge" class="m-2"/>
-                    </f:facet>
 
-                    <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
+                <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                            <p:outputLabel value="Patient Details" class="m-2"/>
+                        </f:facet>
                         <div class="row">
+
                             <div class="col-12" >
                                 <h:outputLabel value="Type Patient Name or BHT : " class="m-1"/>
 
@@ -40,33 +41,34 @@
                                     <p:column>
                                         <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                     </p:column>  
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
+                                    
                                 </p:autoComplete> 
                                 <p:commandButton value="Select" ajax="false" class="m-1"/>
                             </div>
                         </div>
-                    </h:panelGroup>
+                    </p:panel>
+                </h:panelGroup>
 
-                    <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
-                        <div class="row" >
-                            <div class="col-12 text-al" >
+                <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> <!-- FontAwesome Icon -->
+                                    <p:outputLabel value="Add Outside Charges" class="m-2"/>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-end align-items-center" >
 
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <h:panelGroup rendered="true" styleClass="opdPanel">
-                                <p:panel >
-                                    <div class="d-flex justify-content-end align-items-center gap-3" >
-                                        <h:panelGrid columns="4" class="mb-2 d-flex justify-content-end">
+
+                                        <h:panelGrid columns="7">
                                             <p:commandButton 
                                                 class="m-1 ui-button-success" 
-                                                id="btnAdd"
+                                                id="btnNew"
                                                 icon="fa fa-plus"
-                                                value="Add"  
+                                                value="New Bill"  
                                                 ajax="false" 
-                                                action="#{inwardAdditionalChargeController.addCharge}"/>
+                                                action="#{inwardAdditionalChargeController.makeNull()}"/>
 
                                             <p:defaultCommand 
                                                 target="btnAdd"/>
@@ -76,17 +78,18 @@
                                                 value="Clear"
                                                 icon="fa fa-ban"
                                                 ajax="false" 
-                                                action="#{inwardAdditionalChargeController.makeNull}" />
+                                                action="#{inwardAdditionalChargeController.reset()}" />
 
                                             <p:commandButton 
                                                 class="m-1 ui-button-warning " 
-                                                value="Go To Add Service" 
+                                                value="Go To Add Services" 
                                                 icon ="fa fa-wrench"
                                                 ajax="false" 
                                                 action="/inward/inward_bill_service" />
-
+                                            <p:spacer width="5"/>
                                         </h:panelGrid>
-                                        <h:panelGrid columns="3" class="mb-2 d-flex justify-content-end">
+                                        <p:spacer width="35"/>
+                                        <h:panelGrid columns="5">
                                             <p:commandButton 
                                                 style="float: right;"
                                                 ajax="false"
@@ -117,15 +120,25 @@
                                                     target="#{admissionController.current}" 
                                                     value="#{inwardAdditionalChargeController.current.patientEncounter}" ></f:setPropertyActionListener>
                                             </p:commandButton>
+
                                         </h:panelGrid>
 
                                     </div>
+                                </div>
+                            </div>
+
+                        </f:facet>
+
+                        <div class="col-12">
+                            <h:panelGroup rendered="true" styleClass="opdPanel">
+                                <p:panel >
+
                                     <div class="row">
                                         <div class="col-5 ">
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-user-circle" /> <!-- FontAwesome Icon -->
-                                                    <h:outputText value="Patient Detail" class="mx-3"></h:outputText>
+                                                    <h:outputText value="Patient Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <h:panelGroup id="panSearch2">
                                                     <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
@@ -137,7 +150,7 @@
                                             <p:panel>
                                                 <f:facet name="header" >
                                                     <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
-                                                    <h:outputText value="Charge Detail" class="mx-3"></h:outputText>
+                                                    <h:outputText value="Charge Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <div class="row">
                                                     <div class="row m-1">
@@ -147,29 +160,36 @@
                                                         </div>
                                                         <div class="col-8">
                                                             <div>
-                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" filter="true" >
                                                                     <f:selectItem itemLabel="Please select Charge"/>
                                                                     <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 </p:selectOneMenu>
                                                             </div>
                                                         </div>
                                                     </div>
-
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
                                                             <h:outputLabel value="From Institution"/>
                                                         </div>
                                                         <div class="col-8 ">
-                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+<!--                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
                                                                             completeMethod="#{institutionController.completeIns}"
+                                                                            disabled="#{not empty inwardAdditionalChargeController.current.fromInstitution}"
                                                                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
                                                                 <p:column>
-                                                                    #{ix.name}
-                                                                </p:column>
-                                                                <p:column>
-                                                                    #{ix.institutionCode}
-                                                                </p:column>
-                                                            </p:autoComplete>
+                                                            #{ix.name}
+                                                        </p:column>
+                                                        <p:column>
+                                                            #{ix.institutionCode}
+                                                        </p:column>
+                                                    </p:autoComplete>-->
+
+                                                            <div>
+                                                                <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
+                                                                    <f:selectItem itemLabel="Select Institution"/>
+                                                                    <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -187,10 +207,17 @@
                                                             <p:outputLabel value="Description"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
+                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" disabled="#{not empty inwardAdditionalChargeController.current.comments}"/>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <p:commandButton 
+                                                    class="m-1 ui-button-success" 
+                                                    id="btnAdd"
+                                                    icon="fa fa-plus"
+                                                    value="Add"  
+                                                    ajax="false" 
+                                                    action="#{inwardAdditionalChargeController.addCharge}"/>
                                             </p:panel>
                                         </div>
                                     </div>
@@ -198,8 +225,46 @@
                                 </p:panel>
                             </h:panelGroup>        
                         </div>
-                    </h:panelGrid>
-                </p:panel>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <h:panelGroup id="panelBillItems"  >
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-user-tie" />
+                                            <h:outputLabel class="mx-4" value="Inward OutSide Charges"/>
+                                        </f:facet>
+
+                                        <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardAdditionalChargeController.billItemList}" var="bif" >
+
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Fee</f:facet>
+                                                <h:outputLabel  value="#{bif.inwardChargeType}">
+
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Total</f:facet>
+                                                <h:outputLabel value="#{bif.netValue}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Comments</f:facet>
+                                                <h:outputLabel value="#{bif.bill.comments}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </div>
+
+                        </div>
+                    </p:panel>
+                </h:panelGrid>
+
             </h:form>
 
         </h:panelGroup>

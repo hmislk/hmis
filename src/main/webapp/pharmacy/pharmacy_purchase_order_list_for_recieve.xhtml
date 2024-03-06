@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
         <h:form>
@@ -55,6 +55,7 @@
                             value="#{searchController.bills}" 
                             var="p"
                             paginator="true"
+                            rows="10"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
@@ -117,25 +118,25 @@
                             </p:column>
                             <p:column width="15%">
                                 <div class="row">
-                                    <div class="col-md-12">
+                                    <div class="d-flex gap-2 mb-1">
                                         <p:commandButton 
-                                                ajax="false"
-                                                value="Recieve"
-                                                class="mx-1 w-100 ui-button-success"
-                                                action="#{grnController.navigateToResive()}" 
-                                                disabled="#{p.cancelled}">
-                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Recieve All" 
-                                                class="mx-1 my-1 w-100 ui-button-warning"
-                                                action="#{grnController.navigateToResiveAll()}" 
-                                                disabled="#{p.cancelled}">
-                                                <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
-                                            </p:commandButton>
+                                            ajax="false"
+                                            value="Recieve"
+                                            class="w-50 ui-button-success"
+                                            action="#{grnController.navigateToResive()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Recieve All" 
+                                            class="w-50 ui-button-warning"
+                                            action="#{grnController.navigateToResiveAll()}" 
+                                            disabled="#{p.cancelled}">
+                                            <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
                                     </div>
-                                    <div class="mx-1 col-md-12">
+                                    <div class="col-md-12">
                                         <p:commandButton 
                                             ajax="false" 
                                             class="w-100"
@@ -149,7 +150,7 @@
 
 
                             </p:column>
-                            <p:column headerText="GRNS" width="30%">                   
+                            <p:column headerText="GRNS" width="40%">                   
                                 <p:dataTable var="b" value="#{p.listOfBill}">                        
                                     <p:column  >
                                         <h:commandLink action="pharmacy_reprint_grn" actionListener="#{pharmacyBillSearch.calTotalSaleRate(b)}" >                                
@@ -164,14 +165,14 @@
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
                                         </h:commandLink>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                           value="#{b.cancelledBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
+                                        <br/>                                      
+                                            <h:panelGroup rendered="#{b.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                               value="#{b.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         <h:panelGroup rendered="#{b.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded at " />
                                             <h:outputLabel style="color: red;" rendered="#{b.refunded}" 
@@ -188,12 +189,12 @@
                                             <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
                                         </h:commandLink>
                                         <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled by " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                           value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
+                                            <h:panelGroup rendered="#{b.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled by " />
+                                                <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
+                                                               value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         <h:panelGroup rendered="#{b.refunded}" >
                                             <h:outputLabel style="color: red;" value="Refunded by " />
                                             <h:outputLabel style="color: red;" rendered="#{b.refunded}"

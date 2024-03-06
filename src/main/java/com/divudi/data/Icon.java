@@ -1,50 +1,47 @@
 package com.divudi.data;
 
 /**
+ * Enum for defining various icons with human-readable labels. Note: Image and
+ * action paths are removed as per request.
  *
- * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
  */
 public enum Icon {
-    Patient_Lookup("Patient_Lookup.png", "#{opdBillController.navigateToSearchPatients}"),
-    Patient_Add_New("Patient_Add_New.png", "#{patientController.navigateToAddNewPatientForOpd}"),
-    Channel_Booking("Channel_Booking.png", "#{channelBookingController.navigateToChannelBookingFromMenu}"),
-    Search_Opd_Bill("Search_Opd_Bill.png", "#{searchController.navigateToSearchOpdBillsOfLoggedDepartment}"),
-    Cashier_Summeries("Cashier_Summeries.png", "#{cashierReportController.navigateToOpdSummeries}"),
-    Shift_End_Summery("Shift_End_Summery.png", "#{cashierReportController.navigateToDayEndSummary}"),
-    Day_End_Summery("Day_End_Summery.png", "#{cashierReportController.navigateToShiftEndSummary}"),
-    Admit("Admit.png", "#{admissionController.navigateToAdmitFromMenu()}"),
-    Opd_Billing("New_Opd_Bill.png", "#{opdBillController.navigateToNewOpdBill}"),
-    Billing_For_Cashier("New_Opd_Bill_For_Cashier.png", "#{opdPreBillController.navigateToBillingForCashierFromMenu}"),
-    Collecting_Centre_Billing("OPD_Billing.png", "#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu}"),
-    Medical_Package_Billing("Admit.png", "#{billPackageController.navigateToNewOpdPackageBill}"),
-    Accept_Payments("Admit.png", "/opd/patient_accept_payment"),
-    Accept_Payments_For_OPD_Bills("Admit.png", "/opd_search_pre_bill"),
-    Accept_Payments_For_OPD_Batch_Bills("Admit.png", "/opd_search_pre_batch_bill"),
-    Accept_Payments_For_Pharmacy_Bills("Admit.png", "/pharmacy/pharmacy_search_pre_bill"),
-    Scan_to_pay("Admit.png", "/pharmacy/pharmacy_search_pre_bill"),
-    Manage_Shift_Fund_Bills("Admit.png", "/pharmacy/pharmacy_search_pre_bill"),
-    Manage_Token("Admit.png", "/pharmacy/pharmacy_search_pre_bill");
+    Patient_Lookup("Patient Lookup"),
+    Patient_Add_New("Add New Patient"),
+    Channel_Booking("Channel Booking"),
+    Search_Opd_Bill("Search OPD Bill"),
+    Cashier_Summaries("Cashier Summaries"),
+    Shift_End_Summary("Shift End Summary"),
+    Day_End_Summary("Day End Summary"),
+    Admit("Admit Patient"),
+    Opd_Billing("OPD Billing"),
+    Billing_For_Cashier("Billing for Cashier"),
+    Collecting_Centre_Billing("Collecting Centre Billing"),
+    Medical_Package_Billing("Medical Package Billing"),
+    Accept_Payments("Accept Payments"),
+    Accept_Payments_For_OPD_Bills("Accept Payments for OPD Bills"),
+    Accept_Payments_For_OPD_Batch_Bills("Accept Payments for OPD Batch Bills"),
+    Accept_Payments_For_Pharmacy_Bills("Accept Payments for Pharmacy Bills"),
+    Scan_to_Pay("Scan to Pay"),
+    Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
+    Manage_Token("Manage Token"),
+    Create_Purchase_Order("Create Purchase Order"),
+    Auto_Order_P_Model("Auto Order (P Model)"),
+    Auto_Order_Q_Model("Auto Order (Q Model)"),
+    Direct_Purchase("Direct Purchase"),
+    Purchase_Orders_Approval("Purchase Orders Approval"),
+    Goods_Receipt("Goods Receipt"),
+    Return_Received_Goods("Return Received Goods"),
+    Return_without_Receipt("Return without Receipt");
 
-    ;
+    private final String label;
 
-    public static Icon getPatient_Lookup() {
-        return Patient_Lookup;
+    Icon(String label) {
+        this.label = label;
     }
 
-    private final String image;
-    private final String action;
-
-    Icon(String image, String action) {
-        this.image = image;
-        this.action = action;
+    public String getLabel() {
+        return label;
     }
-
-    public String getImage() {
-        return image;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
 }

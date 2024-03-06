@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bil="http://java.sun.com/jsf/composite/bill"
-      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -147,16 +147,92 @@
                                         </f:facet>
 
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
-                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
                                             <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                             <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
-                                            <p:column headerText="Item">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                            <p:column headerText="Item" width="30%">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
+                                                <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
+
+                                                <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
+                                                    <h:panelGroup style="text-align: left;">
+
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtCodeD" value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblNameD" value="Name" for="txtName" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtName" value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblStockD" value="Stock" for="txtStock" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtStock" value="#{bi.pharmaceuticalBillItem.stock.stock}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblExpiryD" value="Expiry" for="txtExpiry" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtExpiry" value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="padding: 5px;" >
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                                </p:outputLabel>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblBadgeD" value="Batch No" for="txtBadge" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtBadge" value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" style="padding: 5px;" />
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-1">
+                                                            <div class="col-5" style="border: 1px solid black">
+                                                                <p:outputLabel id="lblSaleRate" value="Sale Rate" style="font-weight: bold;" />
+                                                            </div>
+                                                            <div class="col-7" style="border: 1px solid black">
+                                                                <p:outputLabel id="txtSaleRate" value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" style="padding: 5px;" />
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                </p:dialog>
                                             </p:column>
-                                            <p:column headerText="Quantity">
+
+                                            <p:column headerText="Rate" style="width: 10%">
+                                                <h:outputLabel id="rate" value="#{bi.rate}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Value" style="width: 10%">
+                                                <h:outputLabel value="#{bi.grossValue}" id="gros">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Expiry" style="width: 15%">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                </h:outputLabel>
+
+                                            </p:column>
+                                            <p:column headerText="Qty" style="width: 8%">
                                                 <p:cellEditor>  
                                                     <f:facet name="output">  
                                                         <h:outputText value="#{bi.qty}" >
@@ -169,32 +245,16 @@
                                                 </p:cellEditor> 
                                             </p:column>
 
-                                            <p:column style="width:6%">  
+                                            <p:column style="width:4%"> 
+
                                                 <p:rowEditor />  
-                                            </p:column>  
-
-
-                                            <p:column headerText="Rate">
-                                                <h:outputLabel id="rate" value="#{bi.rate}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Value">
-                                                <h:outputLabel value="#{bi.grossValue}" id="gros">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                                </h:outputLabel>
-
-                                            </p:column>
-                                            <p:column headerText="Remove">
-                                                <p:commandButton value="Remove" action="#{pharmacySaleController.removeBillItem(bi)}" ajax="false" >
+                                                <p:commandButton icon="fas fa-trash" action="#{pharmacySaleController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
 
                                                 </p:commandButton>
-                                            </p:column>
+                                            </p:column> 
+                                            <!--                                            <p:column headerText="Remove">
+                                                                                            
+                                                                                        </p:column>-->
 
                                         </p:dataTable>
                                     </p:panel>
@@ -301,22 +361,13 @@
                                                         <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
                                                     </f:facet>
                                                     <div class="row" >
-                                                        <div class="d-flex col">
+                                                        <div class="col-md-5" >
                                                             <p:selectOneMenu   id="pay"
-                                                                               class="mx-1" value="#{pharmacySaleController.paymentMethod}">    
+                                                                               value="#{pharmacySaleController.paymentMethod}">    
                                                                 <f:selectItems value="#{enumController.paymentMethods}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
                                                                 <p:ajax process="@this cmbPs cmbPs2" 
                                                                         update="pBillDetails panelPaymentDetails pnlCreditDetails" 
-                                                                        event="change"  
-                                                                        listener="#{pharmacySaleController.changeListener()}"/>
-                                                            </p:selectOneMenu>
-
-                                                            <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}">   
-                                                                <f:selectItem itemLabel="Discount Scheme"/>
-                                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                <p:ajax process="@this pay " 
-                                                                        update="pBillDetails panelPaymentDetails" 
                                                                         event="change"  
                                                                         listener="#{pharmacySaleController.changeListener()}"/>
                                                             </p:selectOneMenu>
@@ -328,7 +379,8 @@
                                                                         event="change"  
                                                                         listener="#{pharmacySaleController.changeListener()}"/>
                                                             </p:selectOneMenu>
-
+                                                        </div>
+                                                        <div class="col-md-7">
                                                             <p:commandButton ajax="false" accesskey="s" value="Settle"
                                                                              icon="fa fa-check"
                                                                              class="ui-button-success mx-1"
@@ -347,10 +399,12 @@
                                                                              ajax="false" action="pharmacy_bill_retail_sale"
                                                                              class="mx-1 ui-button-warning"
                                                                              actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+
                                                         </div>
+
                                                     </div>
                                                     <div class="row" >
-                                                        <div class="my-2">
+                                                        <div class="my-1">
                                                             <h:panelGroup id="panelPaymentDetails" class="row">
                                                                 <div class="col" >
                                                                     <h:panelGroup id="creditCard" rendered="#{pharmacySaleController.paymentMethod eq 'Card'}">
@@ -422,10 +476,30 @@
                                                                         </h:panelGrid>
                                                                     </h:panelGroup>
 
+                                                                    <h:panelGroup
+                                                                        class="row my-1 w-100"
+                                                                        layout="block" 
+                                                                        id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                                        >
+                                                                        <pa:multiple_payment_methods paymentMethodData="#{pharmacySaleController.paymentMethodData}" class="w-100" controller="#{pharmacySaleController}"/>
+
+                                                                    </h:panelGroup>
+
                                                                 </div>
 
                                                             </h:panelGroup>
                                                         </div>
+                                                    </div>
+
+                                                    <div class="col-5">
+                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">   
+                                                            <f:selectItem itemLabel="Discount Scheme"/>
+                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                            <p:ajax process="@this pay " 
+                                                                    update="pBillDetails panelPaymentDetails" 
+                                                                    event="change"  
+                                                                    listener="#{pharmacySaleController.changeListener()}"/>
+                                                        </p:selectOneMenu>
                                                     </div>
 
                                                     <h:panelGrid columns="2" class="my-2">
@@ -528,7 +602,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                             </div>
-            
+
                             <div class="d-flex gap-3">
 
                                 <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
