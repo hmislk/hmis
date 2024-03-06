@@ -403,7 +403,7 @@ public class PharmacyPurchaseController implements Serializable {
             return;
         }
         if (getBill().getFromInstitution() == null) {
-            JsfUtil.addErrorMessage("Select Dealor");
+            JsfUtil.addErrorMessage("Select Dealer");
             return;
         }
         if (getBill().getReferenceInstitution() == null) {
