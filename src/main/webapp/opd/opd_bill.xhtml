@@ -473,7 +473,7 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" controller = "#{opdBillController}" class="w-100"/>
+                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}" controller="#{opdBillController}" class="w-100"/>
                                                 
                                             </h:panelGroup>
                                         </h:panelGroup>
@@ -491,7 +491,7 @@
                                                     value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                     var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                                 <p:ajax process="@this" 
-                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails pBillDetails"
+                                                        update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem paymentDetails" 
                                                         event="change" 
                                                         listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu>
