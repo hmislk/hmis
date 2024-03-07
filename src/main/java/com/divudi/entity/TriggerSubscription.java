@@ -4,11 +4,17 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.TriggerType;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -22,6 +28,35 @@ public class TriggerSubscription implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
+    @Enumerated(EnumType.ORDINAL)
+    private TriggerType triggerType;
+    @ManyToOne
+    private WebUser webUser;
+    @ManyToOne
+    private Department department;
+    private double orderNumber;
+    
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
+    //Retairing properties 
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+
+    private String retireComments;
+    //Editer Properties
+    @ManyToOne
+
+    private WebUser editer;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date editedAt;
 
     public Long getId() {
         return id;
@@ -54,6 +89,102 @@ public class TriggerSubscription implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.TriggerSubscription[ id=" + id + " ]";
+    }
+
+    public TriggerType getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(TriggerType triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }  
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public WebUser getEditer() {
+        return editer;
+    }
+
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
+
+    public double getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(double orderNumber) {
+        this.orderNumber = orderNumber;
     }
     
 }
