@@ -66,7 +66,10 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Entity;
+import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
+import org.reflections.Reflections;
 
 /**
  *
@@ -165,6 +168,7 @@ public class DataAdministrationController {
     private SearchKeyword searchKeyword;
     CommonController commonController;
     private int manageCheckEnteredDataIndex;
+    private String errors;
 
     Date fromDate;
     Date toDate;
@@ -255,6 +259,40 @@ public class DataAdministrationController {
 
         }
 
+    }
+
+    public String navigateToCheckMissingFields() {
+        System.out.println("navigateToCheckMissingFields");
+        errors = "";
+        errors = findMissingFieldErrors();
+        return "/dataAdmin/missing_database_fields";
+    }
+
+    private String findMissingFieldErrors() {
+        System.out.println("findMissingFieldErrors");
+        StringBuilder err = new StringBuilder();
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+            try {
+                // Dynamically execute the query for each entity class to get the first result
+                System.out.println("jpql = " + jpql);
+                Object result = itemFacade.executeQueryFirstResult(entityClass, jpql);
+                System.out.println("result = " + result);
+                // If result is null, you might want to append a different message or handle it accordingly
+            } catch (PersistenceException | IllegalArgumentException e) {
+                err.append("<br/>").append(e.getMessage());
+            }
+        }
+        return err.toString();
+    }
+
+    public List<Class<?>> findEntityClassNames() {
+        List<Class<?>> lst = new ArrayList<>();
+        Reflections reflections = new Reflections("com.dividi.entity");
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
+        lst.addAll(annotated);
+        return lst;
     }
 
     public void addBillFeesToProfessionalCancelBills() {
@@ -925,7 +963,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -953,7 +990,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         int j = 1;
 
@@ -985,7 +1021,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -1011,7 +1046,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         for (Item i : items) {
 //            //System.out.println("i.getName() = " + i.getName());
@@ -1133,7 +1167,7 @@ public class DataAdministrationController {
 
         return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
-    
+
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -1505,9 +1539,17 @@ public class DataAdministrationController {
     public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
         this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
     }
-    
-    public String navigateToAdminDataAdministration(){
-        return "/dataAdmin/admin_data_administration";
+
+    public String navigateToAdminDataAdministration() {
+        return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public String getErrors() {
+        return errors;
+    }
+
+    public void setErrors(String errors) {
+        this.errors = errors;
     }
 
 }
