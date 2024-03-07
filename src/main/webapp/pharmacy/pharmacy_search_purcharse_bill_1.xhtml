@@ -13,7 +13,7 @@
                 <h:form>
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Grn With Dealer "/>       
+                            <h:outputLabel value="Pharmacy Grn With Supplier "/>       
                             <p:defaultCommand target="btnSearch"/>
                         </f:facet>
                         <h:panelGrid columns="8" class="my-2" >
@@ -24,7 +24,7 @@
                             <p:calendar class="mx-4" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
 
-                            <h:outputLabel value="Dealer"/>
+                            <h:outputLabel value="Supplier"/>
                             <p:autoComplete completeMethod="#{dealerController.completeDealor}" 
                                             value="#{searchController.dealer}" 
                                             var="d"
@@ -56,7 +56,7 @@
                             </p:column> 
 
 
-                            <p:column headerText="Dealer Name" 
+                            <p:column headerText="Supplier Name" 
                                       sortBy="#{bill.toInstitution.name}"
                                       filterBy="#{bill.toInstitution.name}"
                                       filterMatchMode="contains"

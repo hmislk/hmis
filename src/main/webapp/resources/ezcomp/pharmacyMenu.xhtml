@@ -161,11 +161,11 @@
                 <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item"  value="Search Adjustment Bills"  ></p:menuitem>
                 <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all"  value="Transfer All Stock" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
             </p:submenu>
-            <p:submenu label="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}">
-                <p:menuitem  ajax="false" action="/dealorPayment/dealor_due"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
-                <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age" actionListener="#{dealorDueController.makeNull()}" value="Dealor Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
+            <p:submenu label="Supplier Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}">
+                <p:menuitem  ajax="false" action="/dealorPayment/dealor_due"  value="Supplier Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" ></p:menuitem>
+                <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age" actionListener="#{dealorDueController.makeNull()}" value="Supplier Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>
                 <p:submenu label="Payment" >
-                    <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all" value="By Dealer" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
+                    <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all" value="By Supplier" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
                                 actionListener="#{pharmacyDealorBill.makeNull()}"/>  
                     <p:menuitem ajax="false" action="/dealorPayment/bill_dealor" value="By Bill" 
                                 rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
