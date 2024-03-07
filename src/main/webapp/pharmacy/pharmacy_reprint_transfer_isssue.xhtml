@@ -52,15 +52,15 @@
 
                         <h:panelGroup id="gpBillPreview" >
 <!--                            <ph:transferIssue bill="#{pharmacyBillSearch.bill}"/>-->
+                            <center>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                    <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                                <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
-                            </h:panelGroup>
-
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                    <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup>
+                            </center>
                         </h:panelGroup>
 
                     </h:panelGroup>

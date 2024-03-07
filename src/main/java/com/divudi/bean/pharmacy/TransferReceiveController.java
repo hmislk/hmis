@@ -212,6 +212,7 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
         getReceivedBill().setNetTotal(calTotal());
+        getReceivedBill().setTotal(calTotal());
 
         getBillFacade().edit(getReceivedBill());
 
