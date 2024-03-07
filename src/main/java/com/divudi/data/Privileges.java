@@ -194,6 +194,23 @@ public enum Privileges {
     PharmacySetReorderLevel,
     PharmacyReturnWithoutTraising,
     PharmacyBHTIssueAccept,
+    
+    PharmacySaleForCashier,
+    PharmacySearchSaleBill,
+    PharmacySaleBillToPay,
+    PharmacySaleBillItems,
+    PharmacyReturnItemsOnly,
+    PharmacyReturnItemsAndPayments,
+    PharmacySearchReturnBill,
+    PharmacyAddToStock,
+    
+    PharmacyDirectIssueToBht,
+    PharmacyDirectIssueToTheaterCases,
+    PharmacyBhtIssueRequest,
+    PharmacySearchInpatientDirectIssuesbyBill,
+    PharmacySearchInpatientDirectIssuesbyItem,
+    PharmacySearchInpatientDirectIssueReturnsbyBill,
+    PharmacysSearchInpatientDirectIssueReturnsbyItem,
     //theater
     Theatre,
     TheatreAddSurgery,
@@ -549,6 +566,7 @@ public enum Privileges {
             case PharmacyPurchaseCancellation:
             case PharmacyReturnWithoutTraising:
             case PharmacyStockAdjustmentSingleItem:
+            case PharmacySaleForCashier;
                 return "Pharmacy";
             default:
                 return this.toString();
