@@ -660,6 +660,18 @@ public class TransferIssueController implements Serializable {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
+    public void removeAll() {
+        if (billItems == null) {
+            return;
+        }
+
+        for (BillItem b : billItems) {
+            getBillItems().remove(b);
+        }
+
+        billItems = null;
+    }
+
     private void saveBill() {
         getIssuedBill().setReferenceBill(getRequestedBill());
 //        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
