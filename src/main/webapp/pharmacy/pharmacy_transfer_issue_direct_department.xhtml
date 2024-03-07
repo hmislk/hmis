@@ -34,20 +34,15 @@
                                                     var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
                                                     >
                                         <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
+                                            <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                 &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
                                                                          commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
                                                              severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" /> 
-                                            </h:outputLabel>            
-                                        </p:column>
-
-                                        <p:column headerText="Code" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
-                                                                                  commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Generic" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
-                                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                            </h:outputText>  
+                                            <h:outputLabel value=" (" ></h:outputLabel>
+                                            <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                            <h:outputLabel value=") - " ></h:outputLabel>
+                                            <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                         </p:column>
                                         <p:column headerText="Rate" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
                                                                                   commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -85,7 +80,7 @@
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="" ></p:outputLabel>
+                                    <p:outputLabel value="" class="my-2"></p:outputLabel>
                                     <p:commandButton  accesskey="a" 
                                                       id="btnAdd"
                                                       icon="fa fa-plus"
@@ -104,7 +99,14 @@
                                 <h:outputLabel styleClass="fas fa-list" />
                                 <h:outputLabel value="Items For Issue" class="mx-4" />
                             </f:facet>
-                            <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
+                            <p:dataTable styleClass="noBorder" var="bItm" 
+                                         rowIndexVar="i" 
+                                         scrollable="false"
+                                         rowKey="#{bi.searialNo}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="6"
+                                         paginatorAlwaysVisible="false"
                                          value="#{transferIssueController.billItems}" 
                                          id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
 
@@ -114,9 +116,8 @@
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
 
 
-
                                 <p:column headerText="Item Name" style="width: 50px!important;"  >                     
-                                    <h:outputText id="item" value="#{bItm.item.name}" >                                   
+                                    <h:outputText id="item" value="#{bItm.item.name}" >    
                                     </h:outputText>
                                 </p:column>  
 
@@ -136,26 +137,17 @@
                                     </h:outputLabel>
                                 </p:column>  
 
-                                <p:column style="width:6%">  
-                                    <p:rowEditor />  
-                                </p:column>
 
-                                <p:column headerText="Qty" style="width:25px!important; text-align: right;
-                                          ">                   
-                                    <p:cellEditor>  
-                                        <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
-                                        </f:facet>                        
-                                        <f:facet name="input">  
-                                            <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                            </p:inputText>
-                                        </f:facet>
-                                    </p:cellEditor>
+                                <p:column headerText="Qty" style="width:25px!important; text-align: right;">
+
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.qty}">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+
                                 </p:column>              
 
                                 <p:column style="width: 10px!important;">
-                                    <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.removeBillItem(bItm)}">
+                                    <p:commandButton icon="fas fa-trash" class="ui-button-danger" ajax="false" action="#{transferIssueController.removeBillItem(bItm)}">
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>  
