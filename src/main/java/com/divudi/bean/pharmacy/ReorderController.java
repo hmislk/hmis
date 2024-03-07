@@ -171,7 +171,7 @@ public class ReorderController implements Serializable {
     
     public void removeReOrder(Reorder ro){
         if (ro != null) {
-            reorders.remove(ro);
+            reorderFacade.remove(ro);
         }
    
     }

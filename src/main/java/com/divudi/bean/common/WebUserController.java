@@ -786,6 +786,16 @@ public class WebUserController implements Serializable {
         userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_icons";
     }
+    
+    public String navigateToManageUserSubscriptions() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        return "/admin/users/user_subscription";
+    }
 
     public String toManageSignature() {
         if (selected == null) {
@@ -997,7 +1007,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/index";
+        return "/admin/users/index?faces-redirect=true;";
     }
 
     public List<WebUserLight> getWebUseLights() {

@@ -19,6 +19,18 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="GRN Reprint" class="mt-2"></h:outputLabel>
                                 <div class="d-flex gap-2">
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-print"
+                                        action="#{transferIssueController.navigateToPharmacyIssueFromGrn}"
+                                        value="Transfer All Stocks" 
+                                        ajax="false" >
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{transferIssueController.requestedBill}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    
                                     <p:commandButton 
                                         class="ui-button-info"
                                         icon="fa fa-print"

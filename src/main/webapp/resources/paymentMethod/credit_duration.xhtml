@@ -15,9 +15,12 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="d-flex" >
-            <p:inputText  
-                value="#{cc.attrs.paymentMethodData.credit.creditDuration}" style="width: 10em;" class="mx-2">
-            </p:inputText>            
+            <div class="ui-inputgroup mx-1 my-1">
+                <p:inputText  
+                    value="#{cc.attrs.paymentMethodData.credit.creditDuration}" style="width: 10em;">
+                </p:inputText>
+                <div class="ui-inputgroup-addon">Days</div>
+            </div>
         </div>
 
 

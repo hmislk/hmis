@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
+
+    <h:body>
+
+        <ui:composition template="/admin/users/user_roles.xhtml">
+
+            <ui:define name="users">
+                <h:form id="form" >
+                    <h:panelGroup  rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}"  >
+                        <p:outputLabel value="YOU ARE NOT AUTHERIZED." ></p:outputLabel>
+                    </h:panelGroup>
+
+                    <p:panel header="Manage User Role Privilages"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+                        <f:facet name="header" >
+                            <i class="fa fa-unlock-alt" aria-hidden="true"/>
+                            <h:outputLabel value="Manage User Role Privilages" class="mx-2"/>
+                        </f:facet>
+
+                        <h:panelGrid  columns="3">    
+                            <p:outputLabel  value="User Role" ></p:outputLabel>
+                            <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
+                            <p:outputLabel class="form-control w-100" value="#{userPrivilageController.webUserRole.name}"></p:outputLabel>
+                        </h:panelGrid>  
+
+
+                        <div class="w-100 mt-2 mb-2">
+                            
+                                <p:commandButton 
+                                    value="List User Role Privileges"
+                                    class="ui-button-success mx-1"
+                                    ajax="false"
+                                    icon="fa fa-list"
+                                    action="#{userPrivilageController.fillUserRolePrivileges}">
+                                </p:commandButton>
+                            
+                                <p:commandButton 
+                                    value="Update User Role Privilage"  
+                                    action="#{userPrivilageController.saveUserRolePrivileges}"
+                                    class="ui-button-warning"
+                                    ajax="false" 
+                                    icon="fa fa-save"
+                                    style="float: right"
+                                    >  
+                                </p:commandButton> 
+                        </div>
+
+                        <p:tree
+                            id="tree"
+                            selectionMode="checkbox"
+                            datakey="#{node}"
+                            selection="#{userPrivilageController.selectedNodes}"
+                            value="#{userPrivilageController.rootTreeNode}" 
+                            var="node" 
+                            propagateSelectionDown="true"
+                            propagateSelectionUp="true"  
+                            >
+                            <p:treeNode >
+                                <h:outputText value="#{node}" />  
+                            </p:treeNode>
+                        </p:tree>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
