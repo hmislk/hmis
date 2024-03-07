@@ -31,7 +31,7 @@ public class ComponentDetail {
     private PaymentMethod paymentMethod;
     private List<ComponentDetail> multiplePaymentMethodComponentDetails;
     private PaymentMethodData paymentMethodData;
-    private int creditDuration;
+    private String creditDuration;
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
@@ -123,11 +123,11 @@ public class ComponentDetail {
         this.paymentMethodData = paymentMethodData;
     }
 
-    public int getCreditDuration() {
+    public String getCreditDuration() {
         return creditDuration;
     }
 
-    public void setCreditDuration(int creditDuration) {
+    public void setCreditDuration(String creditDuration) {
         this.creditDuration = creditDuration;
     }
     
