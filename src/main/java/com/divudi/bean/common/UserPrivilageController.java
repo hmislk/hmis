@@ -734,8 +734,8 @@ public class UserPrivilageController implements Serializable {
     
     public void fillUserRolePrivileges() {
         List<WebUserPrivilege> wups;
-        if (currentWebUser == null) {
-            JsfUtil.addErrorMessage("User?");
+        if (webUserRole == null) {
+            JsfUtil.addErrorMessage("User Role?");
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
