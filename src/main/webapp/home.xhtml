@@ -132,14 +132,12 @@
                     class="col-md-1 m-3"
                     >
                     <h:form>
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="opd/patient_search.xhtml"   
-                            value="Patient Lookup"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                        <p:commandLink action="opd/patient_search.xhtml" ajax="false" styleClass="svg-link">
+                            <p:graphicImage library="image" name="health_worker_form.svg" style="cursor: pointer;"/>
+                            <h:outputText style="display: none;" value="Patient Lookup" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
                     </h:form>
+
                 </h:panelGroup>
 
                 <h:panelGroup 

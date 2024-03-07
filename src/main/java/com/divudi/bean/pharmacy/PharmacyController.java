@@ -593,7 +593,7 @@ public class PharmacyController implements Serializable {
         pos = null;
         directPurchase = null;
         ampps = null;
-
+        
     }
 
     public void deleteSelectedPharmaceuticalLight() {

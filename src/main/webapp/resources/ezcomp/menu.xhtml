@@ -16,8 +16,12 @@
                     font-size: 18px !important;
                 }
             </style>
+            
+            <p:tooltip for="home" value="Home" ></p:tooltip>
+            
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem  
+                <p:menuitem 
+                    id="home"
                     ajax="false"
                     action="/home" 
                     icon="pi pi-home"
@@ -590,7 +594,7 @@
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
                                     value="Direct Issue" 
-                                    actionListener="#{searchController.makeListNull()}" 
+                                    actionListener="#{transferIssueController.makeNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
                                     icon="fas fa-pills"></p:menuitem>
 
@@ -974,7 +978,6 @@
 
                 <p:submenu 
                     icon="fa fa-fw fa-users"
-
                     rendered="#{webUserController.hasPrivilege('Hr')}" >
                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
