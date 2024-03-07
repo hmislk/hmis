@@ -52,6 +52,7 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -269,27 +270,33 @@ public class DataAdministrationController {
     }
 
     private String findMissingFieldErrors() {
-        System.out.println("findMissingFieldErrors");
         StringBuilder err = new StringBuilder();
         for (Class<?> entityClass : findEntityClassNames()) {
             String entityName = entityClass.getSimpleName();
             String jpql = "SELECT e FROM " + entityName + " e";
             try {
-                // Dynamically execute the query for each entity class to get the first result
-                System.out.println("jpql = " + jpql);
+                // Attempt to execute the query for each entity class to get the first result
                 Object result = itemFacade.executeQueryFirstResult(entityClass, jpql);
-                System.out.println("result = " + result);
-                // If result is null, you might want to append a different message or handle it accordingly
-            } catch (PersistenceException | IllegalArgumentException e) {
-                err.append("<br/>").append(e.getMessage());
+            } catch (PersistenceException e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    err.append("<br/>").append(cause.getMessage());
+                } else {
+                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
+                }
+            } catch (Exception e) {
+                err.append("<br/>General error: ").append(e.getMessage());
             }
         }
-        return err.toString();
+        return err.length() > 0 ? err.toString() : "No errors found.";
     }
 
     public List<Class<?>> findEntityClassNames() {
         List<Class<?>> lst = new ArrayList<>();
-        Reflections reflections = new Reflections("com.dividi.entity");
+        Reflections reflections = new Reflections("com.divudi.entity");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
         lst.addAll(annotated);
         return lst;
