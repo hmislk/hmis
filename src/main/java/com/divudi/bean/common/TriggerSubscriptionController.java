@@ -313,7 +313,7 @@ public class TriggerSubscriptionController implements Serializable {
                 return null;
             }
             TriggerSubscriptionController controller = (TriggerSubscriptionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "userSubscriptionConverter");
+                    getValue(facesContext.getELContext(), null, "triggerSubscriptionController");
             return controller.getFacade().find(getKey(value));
         }
 
