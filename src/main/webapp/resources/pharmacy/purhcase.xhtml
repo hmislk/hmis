@@ -127,7 +127,7 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column colspan="6" footerText="Total"/>
-                            <p:column footerText="#{0-cc.attrs.bill.total}" style="text-align: right;">
+                            <p:column footerText="#{0-cc.attrs.bill.total}" >
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -135,9 +135,9 @@
                                 </f:facet>
                             </p:column>
                             <p:column ></p:column>
-                            <p:column footerText="#{0-cc.attrs.bill.saleValue}" style="text-align: right;">
+                            <p:column footerText="#{0-cc.attrs.bill.saleValue}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.total}">
+                                    <h:outputLabel value="#{cc.attrs.bill.saleValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
