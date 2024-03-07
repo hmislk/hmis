@@ -31,7 +31,7 @@
                         filter="true">
                         <f:selectItem itemLabel="All" ></f:selectItem>
                         <f:selectItems 
-                            value="#{triggerSubscriptionController.departments}"
+                            value="#{userIconController.departments}"
                             var="d"
                             itemLabel="#{d.name}"
                             itemValue="#{d}" ></f:selectItems>
@@ -45,7 +45,7 @@
                         ajax="false"
                         icon="fa fa-list"
                         update="tbl"
-                        action="#{triggerSubscriptionController.fillDepartmentIcon}"
+                        action="#{triggerSubscriptionController.fillDepartmentSubscription}"
                         >
                     </p:commandButton>
 
@@ -76,7 +76,7 @@
 
                 <p:dataTable 
                     var="userIcon" 
-                    value="#{userIconController.userIcons}" 
+                    value="#{userIconController.triggerSubscriptions}" 
                     rowKey="#{userIcon.id}" 
                     id="tbl">
                     <p:column headerText="Icon">

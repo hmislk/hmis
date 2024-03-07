@@ -56,13 +56,13 @@ public class TriggerSubscriptionController implements Serializable {
         }
     }
 
-    public void fillDepartmentIcon() {
+    public void fillDepartmentSubscription() {
         if (user == null) {
             JsfUtil.addErrorMessage("User?");
         }
         Map m = new HashMap();
         String jpql = "SELECT i "
-                + " FROM UserIcon i "
+                + " FROM TriggerSubscription i "
                 + " where i.webUser=:u "
                 + " and i.retired=:ret ";
         if (department != null) {
@@ -74,7 +74,6 @@ public class TriggerSubscriptionController implements Serializable {
         triggerTypes = getTriggerSubscriptionFacade().findByJpql(jpql, m);
     }
 
-    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     public void moveSelectedUserIconUp() {
         
     }
