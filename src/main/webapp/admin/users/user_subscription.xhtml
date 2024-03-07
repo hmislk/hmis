@@ -31,7 +31,7 @@
                         filter="true">
                         <f:selectItem itemLabel="All" ></f:selectItem>
                         <f:selectItems 
-                            value="#{userIconController.departments}"
+                            value="#{triggerSubscriptionController.departments}"
                             var="d"
                             itemLabel="#{d.name}"
                             itemValue="#{d}" ></f:selectItems>
@@ -61,7 +61,7 @@
                                        itemValue="#{i}"/>
                     </p:selectOneMenu>
                     <p:commandButton 
-                        value="Add Icon" 
+                        value="Add Subscription" 
                         icon="fa fa-plus" 
                         class="ui-button-success w-100"
                         action="#{triggerSubscriptionController.addUserSubscription}" 
@@ -75,20 +75,20 @@
 
 
                 <p:dataTable 
-                    var="userIcon" 
-                    value="#{userIconController.triggerSubscriptions}" 
-                    rowKey="#{userIcon.id}" 
+                    var="sub" 
+                    value="#{triggerSubscriptionController.triggerSubscriptions}" 
+                    rowKey="#{sub.id}" 
                     id="tbl">
-                    <p:column headerText="Icon">
-                        <h:outputText value="#{userIcon.icon}" />
+                    <p:column headerText="Subscription">
+                        <h:outputText value="#{sub.triggerType.label}" />
                     </p:column>
                     <p:column 
                         headerText="Department" 
-                        rendered="#{userIconController.department eq null}">
-                        <h:outputText value="#{userIcon.department.name}" />
+                        rendered="#{triggerSubscriptionController.department eq null}">
+                        <h:outputText value="#{sub.department.name}" />
                     </p:column>
                     <p:column headerText="Order">
-                        <h:outputText value="#{userIcon.orderNumber}" />
+                        <h:outputText value="#{sub.orderNumber}" />
                     </p:column>
                     <p:column headerText="Actions" style="text-align: center; width: 200px;" >
                         <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
@@ -96,35 +96,38 @@
                                 id="up" 
                                 icon="fa fa-arrow-up"
                                 class="ui-button-warning"
-                                action="#{userIconController.moveSelectedUserIconUp}" 
+                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionUp}" 
                                 update="tbl" >
                                 <f:setPropertyActionListener 
-                                    value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
 
                             <p:commandButton 
                                 id="down" 
                                 icon="fa fa-arrow-down"
                                 class="mx-2 ui-button-warning"
-                                action="#{userIconController.moveSelectedUserIconDown}" 
+                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionDown}" 
                                 update="tbl" >
                                 <f:setPropertyActionListener 
-                                    value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
                             <p:commandButton 
                                 id="remove" 
                                 icon="fa fa-trash"
-                                action="#{userIconController.removeUserIcon()}" 
+                                action="#{triggerSubscriptionController.removeUserSubscription()}" 
                                 class="ui-button-danger"
                                 update="tbl" >
                                 <f:setPropertyActionListener 
-                                    value="#{userIcon}" 
-                                    target="#{userIconController.current}" >
+                                    value="#{sub}" 
+                                    target="#{triggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
+                                <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
 
                             <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
