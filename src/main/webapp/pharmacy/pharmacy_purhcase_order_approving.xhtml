@@ -57,7 +57,7 @@
 
                                             <div class="col-4">
                                                 <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
-                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" input="true"/>
+                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" valueRequired="true"/>
                                                 </h:panelGroup>
                                             </div>
                                         </div>
