@@ -91,6 +91,7 @@ public class WebUserRoleController implements Serializable {
     
     public void saveCurrent(){
         save(current);
+        items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
     }
     
@@ -109,7 +110,7 @@ public class WebUserRoleController implements Serializable {
     
     private List<WebUserRole> findAllItems(){
         String jpql = "Select r "
-                + " from WebUserROle r "
+                + " from WebUserRole r "
                 + " where r.retired=:ret"
                 + " order by r.name";
         Map m = new HashMap<>();

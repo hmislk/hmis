@@ -978,7 +978,6 @@
 
                 <p:submenu 
                     icon="fa fa-fw fa-users"
-
                     rendered="#{webUserController.hasPrivilege('Hr')}" >
                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>

@@ -25,7 +25,8 @@
                                         <ui:insert name="users" >
                                             <div class="row" >
                                                 <div class="col-6" >
-                                                    <p:selectOneMenu 
+                                                    <p:selectOneListbox 
+                                                        id="lstItems"
                                                         value="#{webUserRoleController.current}"
                                                         filter="true"
                                                         filterMatchMode="contains">
@@ -33,15 +34,22 @@
                                                             value="#{webUserRoleController.items}" 
                                                             var="i" 
                                                             itemLabel="#{i.name}" 
-                                                            itemValue="#{i}" ></f:selectItems>
-                                                    </p:selectOneMenu>
+                                                            itemValue="#{i}" >
+                                                        </f:selectItems>
+                                                        <p:ajax process="lstItems" update="gridDetails" ></p:ajax>
+                                                    </p:selectOneListbox>
                                                     <p:commandButton 
+                                                        id="btnAdd"
                                                         value="Add New" 
+                                                        process="btnAdd"
+                                                        update="gridDetails"
                                                         action="#{webUserRoleController.toAddNewUserRole}">
                                                     </p:commandButton>
                                                 </div>
                                                 <div class="col-6" >
-                                                    <p:panelGrid columns="2" class="w-100">
+                                                    <p:panelGrid 
+                                                        id="gridDetails"
+                                                        columns="2" class="w-100">
                                                         <p:outputLabel value="Role Name" for="txtRole" ></p:outputLabel>
                                                         <p:inputText
                                                             value="#{webUserRoleController.current.name}" 
@@ -49,7 +57,6 @@
                                                             required="true" 
                                                             requiredMessage="Please enter a Name" >
                                                         </p:inputText>
-                                                        
                                                         <p:outputLabel value="Description" for="txtComments" ></p:outputLabel>
                                                         <p:inputTextarea
                                                             value="#{webUserRoleController.current.description}" 
@@ -57,12 +64,13 @@
                                                             required="true" 
                                                             requiredMessage="Please enter a Name" >
                                                         </p:inputTextarea>
-                                                        
-                                                        
-                                                        
-                                                        
                                                     </p:panelGrid>
-                                                    <p:commandButton value="Save" action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
+                                                    <p:commandButton
+                                                        id="btnSave"
+                                                        process="gridDetails btnSave"
+                                                        update="lstItems"
+                                                        value="Save" 
+                                                        action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
                                                 </div>
                                             </div>
 

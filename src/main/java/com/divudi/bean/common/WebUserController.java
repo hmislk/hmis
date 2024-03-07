@@ -1007,7 +1007,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/index";
+        return "/admin/users/index?faces-redirect=true;";
     }
 
     public List<WebUserLight> getWebUseLights() {
