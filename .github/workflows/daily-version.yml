@@ -5,7 +5,7 @@ on:
     - cron: '0 0 * * *' # Runs at midnight UTC every day
   push:
     branches:
-      - master
+      - master # Make sure this matches your main development branch
 
 jobs:
   version-update:
@@ -29,14 +29,32 @@ jobs:
 
       - name: Update version in project
         run: |
-          # Example: Update version in a properties file or specific project files
+          # Update version in a properties file or specific project files
           # Replace with your project's version file path and mechanism
           echo "Version=${{ env.NEW_VERSION }}" > version.txt
+
+      - name: Update README with version number
+        run: |
+          sed -i "s/Current Version: .*/Current Version: ${{ env.NEW_VERSION }}/" README.md
+          git add README.md
+          git commit -m "Update README with new version ${{ env.NEW_VERSION }}"
+          git push
 
       - name: Commit and push if there are changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Update version to ${{ env.NEW_VERSION }}" || exit 0 
+          git commit -m "Update version to ${{ env.NEW_VERSION }}" || exit 0 # Exit gracefully if no changes
           git push
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          release_name: Release ${{ env.NEW_VERSION }}
+          draft: false
+          prerelease: false
+          body: "Description of changes for version ${{ env.NEW_VERSION }}"
