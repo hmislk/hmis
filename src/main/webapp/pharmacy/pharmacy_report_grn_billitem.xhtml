@@ -19,7 +19,7 @@
                     <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
-                    <p:outputLabel value="Dealer"></p:outputLabel>
+                    <p:outputLabel value="Supplier"></p:outputLabel>
                     <p:autoComplete value="#{pharmacySaleReport.searchKeyword.ins}" 
                                     completeMethod="#{institutionController.completeCompany}" 
                                     var="de" itemLabel="#{de.name}" itemValue="#{de}" >
@@ -111,9 +111,9 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Dealer Name">
+                        <p:column headerText="Supplier Name">
                             <f:facet name="header" >
-                                <p:outputLabel value="Dealer Name" />
+                                <p:outputLabel value="Supplier Name" />
                             </f:facet>
                             <h:outputLabel value="#{i.bill.fromInstitution.name}">
                                 <f:convertNumber pattern="#,##0.00" />

@@ -32,37 +32,39 @@
                     </f:facet>
                     <p:panel class="mb-2" id="po">
                         <div class="row">
-                            <div class="col-3">
-                                <p:outputLabel style="font-weight: bold" class="mx-3" value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
+                            <div class="d-flex align-items-center">
+                                <div class="col-3">
+                                    <p:outputLabel style="font-weight: bold" class="mx-3" value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
 
-                            </div>
-                            <div class="col-4">
-                                <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
-                            </div>
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-3">
-                                        <p:outputLabel style="font-weight: bold" value="Payment Method"></p:outputLabel>
-                                    </div>
-                                    <div class="col-4">
-                                        <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
-                                            <f:selectItem itemLabel="Select Payment method"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
-                                            <p:ajax process="@this" update="po" event="change"/>
-                                        </p:selectOneMenu>
-                                    </div>
-
-                                    <div class="col-4">
-                                        <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" >
-                                            <div class="ui-inputgroup">
-                                                <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}"/>
-                                                <div class="ui-inputgroup-addon">Days</div>
-                                            </div>
-                                        </h:panelGroup>
-                                    </div>
                                 </div>
+                                <div class="col-4">
+                                    <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
+                                </div>
+                                <div class="col-5">
+                                    <div class="row">
+                                        <div class="d-flex align-items-center">
+                                            <div class="col-3">
+                                                <p:outputLabel style="font-weight: bold" value="Payment Method"></p:outputLabel>
+                                            </div>
+                                            <div class="col-4">
+                                                <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
+                                                    <f:selectItem itemLabel="Select Payment method"/>
+                                                    <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                                                    <p:ajax process="@this" update="po" event="change"/>
+                                                    <p:ajax process="@this" update="duration" event="itemSelect" />
+                                                </p:selectOneMenu>
+                                            </div>
+
+                                            <div class="col-4">
+                                                <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
+                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" valueRequired="true"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
 
 
+                                </div>
                             </div>
                         </div>
                     </p:panel>

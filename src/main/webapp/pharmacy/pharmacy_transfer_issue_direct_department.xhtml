@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel rendered="#{!transferIssueController.printPreview}">
+
+                <f:facet name="header" >  
+                    <h:outputLabel value="Pharmacy Direct Issue" />
+                </f:facet>
+
+                <div class="row" >
+                    <div class="col-8" >
+                        <p:panel header="Add Items" class="">
+
+                            <f:facet name="header" >
+                                <h:outputText styleClass="fas fa-cube" />
+                                <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
+                            </f:facet>
+
+                            <h:panelGrid columns="6" >
+                                <h:panelGrid columns="1" class="w-100">
+                                    <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                    <p:autoComplete accesskey="i"    id="acStock" 
+                                                    value="#{transferIssueController.tmpStock}"
+                                                    completeMethod="#{stockController.completeAvailableStocks}" 
+                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
+                                                    >
+                                        <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
+                                                &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
+                                                                         commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                             severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" /> 
+                                            </h:outputText>  
+                                            <h:outputLabel value=" (" ></h:outputLabel>
+                                            <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                            <h:outputLabel value=") - " ></h:outputLabel>
+                                            <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Rate" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
+                                                                                  commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Stocks" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
+                                                                                    commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputLabel value="#{i.stock}" >
+                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Expiry" class="w-100" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
+                                                                                                  commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
+                                                           style="width: 100px!important;" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                    </p:autoComplete>
+                                </h:panelGrid>
+
+                                <h:panelGrid columns="1" class="w-100">
+                                    <p:outputLabel value="Quantity" ></p:outputLabel>
+                                    <p:inputText  
+                                        accesskey="q"  
+                                        autocomplete="off" 
+                                        id="txtQty" 
+                                        value="#{transferIssueController.qty}"
+                                        class="w-100">
+
+                                    </p:inputText>
+                                </h:panelGrid>
+
+                                <h:panelGrid columns="1" class="w-100">
+                                    <p:outputLabel value="" class="my-2"></p:outputLabel>
+                                    <p:commandButton  accesskey="a" 
+                                                      id="btnAdd"
+                                                      icon="fa fa-plus"
+                                                      value="Add" 
+                                                      class="ui-button-success"
+                                                      action="#{transferIssueController.addBillItemNew}"
+                                                      ajax="false"
+                                                      ></p:commandButton>
+                                </h:panelGrid>
+
+
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel >
+                            <f:facet name="header" >  
+                                <h:outputLabel styleClass="fas fa-list" />
+                                <h:outputLabel value="Items For Issue" class="mx-4" />
+                            </f:facet>
+                            <p:dataTable styleClass="noBorder" var="bItm" 
+                                         rowIndexVar="i" 
+                                         scrollable="false"
+                                         rowKey="#{bi.searialNo}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="6"
+                                         paginatorAlwaysVisible="false"
+                                         value="#{transferIssueController.billItems}" 
+                                         id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
+
+
+
+                                <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />  
+                                <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" /> 
+
+
+                                <p:column headerText="Item Name" style="width: 50px!important;"  >                     
+                                    <h:outputText id="item" value="#{bItm.item.name}" >    
+                                    </h:outputText>
+                                </p:column>  
+
+                                <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                                </p:column>
+
+                                <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>  
+                                
+                                <p:column headerText="DOE"  style="width:50px!important; text-align: center">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">                        
+                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </p:column> 
+
+
+                                <p:column headerText="Qty" style="width:25px!important; text-align: right;">
+
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.qty}">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+
+                                </p:column>              
+
+                                <p:column style="width: 10px!important;">
+                                    <p:commandButton icon="fas fa-trash" class="ui-button-danger" ajax="false" action="#{transferIssueController.removeBillItem(bItm)}">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>  
+                        </p:panel>
+                    </div>
+                    <div class="col-4" >
+                        <p:panel >
+                            <f:facet name="header" >                                  
+                                <h:outputText value="Issue Details" ></h:outputText>
+                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settleDirectIssue}" style="float: right;" ajax="false" class="ui-button-success mx-2" >
+                                </p:commandButton>  
+                            </f:facet>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Items will be issued from &nbsp;" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.fromDepartment}" disabled="true"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"/>
+
+                                <h:outputLabel value="Items will be issued to"/>
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete value="#{transferIssueController.issuedBill.toDepartment}" class="mb-1"
+                                                var="to" itemLabel="#{to.name}" itemValue="#{to}"
+                                                disabled="#{transferIssueController.issuedBill.toDepartment ne null}"
+                                                completeMethod="#{departmentController.completeDept}"/>
+
+
+
+
+                                <h:outputLabel value="Select Staff Name" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" 
+                                                 forceSelection="true" 
+                                                 var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                                 value="#{transferIssueController.issuedBill.toStaff}" ></p:autoComplete>
+
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+                </div>
+
+
+
+                <ph:history/>
+
+            </p:panel>
+            <p:panel rendered="#{transferIssueController.printPreview}">
+                <p:commandButton 
+                    ajax="false" 
+                    icon="fas fa-list"
+                    class="ui-button-warning"
+                    action="pharmacy_transfer_request_list" 
+                    actionListener="#{transferIssueController.makeNull()}" 
+                    value="Requested List"/>                    
+                <p:commandButton 
+                    value="Print" 
+                    icon="fas fa-print"
+                    class="ui-button-info mx-2 mb-2"
+                    ajax="false" 
+                    action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+
+                <h:panelGroup   id="gpBillPreview" >
+
+<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
+                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
+                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+
+                </h:panelGroup>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>  
+
+</ui:composition>
