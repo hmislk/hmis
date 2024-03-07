@@ -50,6 +50,15 @@
                                             <f:selectItem itemLabel="Please Select Paper Type" />
                                             <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
+                                        <h:outputLabel 
+                                            value="Partial Payment of Pharmacy Bills allowed"
+                                            class="form-label"></h:outputLabel>
+                                        <p:selectBooleanButton 
+                                            offIcon="fas fa-times" 
+                                            onIcon="fas fa-check"
+                                            class="form-control"                                              
+                                            value="#{sessionController.currentPreference.partialPaymentOfPharmacyBillsAllowed}" />
+
                                         <h:outputLabel value="GRN Detaied" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
 
@@ -238,6 +247,9 @@
                                     {date_of_admission}<br/>
                                     {date_of_discharge}<br/>
                                     {admission_type}<br/>
+                                    
+                                    {time_of_admission}<br/>
+                                    {time_of_discharge}<br/>
 
                                 </h:panelGroup>
                             </p:tab>
@@ -266,7 +278,7 @@
                                         <f:selectItem itemLabel="Please Select Paper Type" />
                                         <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
-                                    
+
                                     <h:outputLabel 
                                         value="Inward Deposit Payment Bill Paper" 
                                         class="form-label"></h:outputLabel>

@@ -315,6 +315,7 @@ public class InpatientClinicalDataController implements Serializable {
         String height = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
         String weight = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
+        String rr = encounter.getRespiratoryRate()+" bpm";
         String bp = encounter.getBp();
         String comments = encounter.getComments() != null ? encounter.getComments() : "";
         if (comments == null) {
@@ -527,6 +528,10 @@ public class InpatientClinicalDataController implements Serializable {
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
+        String pulseRate = e.getPr()+" bpm";
+        String rr = e.getRespiratoryRate()+" bpm";
+        String pfr = e.getPfr()+"";
+        String saturation = e.getSaturation()+"";
         if (comments == null) {
             comments = "";
         }
@@ -664,6 +669,7 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{medicines}", medicinesAsString)
                 .replace("{rx}", inpatientRx)
                 .replace("{drx}", drxString)
+                .replace("{rr}", rr)
                 .replace("{ix}", ixAsString)
                 .replace("{procedures}", ixAsString)
                 .replace("{past-dx}", pastDxAsString)
@@ -674,7 +680,10 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{weight}", weight)
                 .replace("{bmi}", bmi)
                 .replace("{dx}", currentDxAsString)
-                .replace("{bp}", bp);
+                .replace("{bp}", bp)
+                .replace("{pr}",pulseRate)
+                .replace("{pfr}",pfr)
+                .replace("{sat}", saturation);
         return output;
 
     }

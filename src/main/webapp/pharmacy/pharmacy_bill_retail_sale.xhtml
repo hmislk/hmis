@@ -42,26 +42,28 @@
                                         <h:panelGrid columns="6" >
                                             <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                                <p:autoComplete accesskey="i"    id="acStock" 
-                                                                value="#{pharmacySaleController.stock}"
-                                                                completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
-                                                                var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
-                                                                >
+                                                <p:autoComplete 
+                                                    accesskey="i"    
+                                                    id="acStock" 
+                                                    inputStyleClass="w-100"
+                                                    minQueryLength="3"
+                                                    maxResults="10"
+                                                    value="#{pharmacySaleController.stock}"
+                                                    completeMethod="#{stockController.completeAvailableStocks}" 
+                                                    var="i" 
+                                                    itemLabel="#{i.itemBatch.item.name}" 
+                                                    itemValue="#{i}" 
+                                                    >
                                                     <p:column headerText="Item" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
+                                                        <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                             &nbsp;<p:tag rendered="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ': 
                                                                                      commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
                                                                          severity="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" /> 
-                                                        </h:outputLabel>            
-                                                    </p:column>
-
-                                                    <p:column headerText="Code" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
-                                                                                              commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Generic" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
-                                                                                                 commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                                        </h:outputText>  
+                                                        <h:outputLabel value=" (" ></h:outputLabel>
+                                                        <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                                        <h:outputLabel value=") - " ></h:outputLabel>
+                                                        <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                                     </p:column>
                                                     <p:column headerText="Rate" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': 
                                                                                               commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -159,7 +161,7 @@
 
                                                 <p:dialog id="panDoc" header="Item Details" style="text-align: center;" widgetVar="dlg" resizable="false" modal="true" class="w-50">
                                                     <h:panelGroup style="text-align: left;">
-                                                             
+
                                                         <div class="row mx-1">
                                                             <div class="col-5" style="border: 1px solid black">
                                                                 <p:outputLabel id="lblCode" value="Code" for="txtCodeD" style="font-weight: bold;" />
@@ -361,22 +363,13 @@
                                                         <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
                                                     </f:facet>
                                                     <div class="row" >
-                                                        <div class="d-flex col">
+                                                        <div class="col-md-5" >
                                                             <p:selectOneMenu   id="pay"
-                                                                               class="mx-1" value="#{pharmacySaleController.paymentMethod}">    
+                                                                               value="#{pharmacySaleController.paymentMethod}">    
                                                                 <f:selectItems value="#{enumController.paymentMethods}" var="p" itemLabel="#{p.label}"
                                                                                itemValue="#{p}"/>
                                                                 <p:ajax process="@this cmbPs cmbPs2" 
                                                                         update="pBillDetails panelPaymentDetails pnlCreditDetails" 
-                                                                        event="change"  
-                                                                        listener="#{pharmacySaleController.changeListener()}"/>
-                                                            </p:selectOneMenu>
-
-                                                            <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}">   
-                                                                <f:selectItem itemLabel="Discount Scheme"/>
-                                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                <p:ajax process="@this pay " 
-                                                                        update="pBillDetails panelPaymentDetails" 
                                                                         event="change"  
                                                                         listener="#{pharmacySaleController.changeListener()}"/>
                                                             </p:selectOneMenu>
@@ -388,7 +381,8 @@
                                                                         event="change"  
                                                                         listener="#{pharmacySaleController.changeListener()}"/>
                                                             </p:selectOneMenu>
-
+                                                        </div>
+                                                        <div class="col-md-7">
                                                             <p:commandButton ajax="false" accesskey="s" value="Settle"
                                                                              icon="fa fa-check"
                                                                              class="ui-button-success mx-1"
@@ -407,10 +401,12 @@
                                                                              ajax="false" action="pharmacy_bill_retail_sale"
                                                                              class="mx-1 ui-button-warning"
                                                                              actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+
                                                         </div>
+
                                                     </div>
                                                     <div class="row" >
-                                                        <div class="my-2">
+                                                        <div class="my-1">
                                                             <h:panelGroup id="panelPaymentDetails" class="row">
                                                                 <div class="col" >
                                                                     <h:panelGroup id="creditCard" rendered="#{pharmacySaleController.paymentMethod eq 'Card'}">
@@ -482,10 +478,30 @@
                                                                         </h:panelGrid>
                                                                     </h:panelGroup>
 
+                                                                    <h:panelGroup
+                                                                        class="row my-1 w-100"
+                                                                        layout="block" 
+                                                                        id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                                        >
+                                                                        <pa:multiple_payment_methods paymentMethodData="#{pharmacySaleController.paymentMethodData}" class="w-100" controller="#{pharmacySaleController}"/>
+
+                                                                    </h:panelGroup>
+
                                                                 </div>
 
                                                             </h:panelGroup>
                                                         </div>
+                                                    </div>
+
+                                                    <div class="col-5">
+                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">   
+                                                            <f:selectItem itemLabel="Discount Scheme"/>
+                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                            <p:ajax process="@this pay " 
+                                                                    update="pBillDetails panelPaymentDetails" 
+                                                                    event="change"  
+                                                                    listener="#{pharmacySaleController.changeListener()}"/>
+                                                        </p:selectOneMenu>
                                                     </div>
 
                                                     <h:panelGrid columns="2" class="my-2">

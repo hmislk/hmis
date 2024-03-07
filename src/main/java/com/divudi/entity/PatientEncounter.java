@@ -153,7 +153,10 @@ public class PatientEncounter implements Serializable {
     private Long dbp = null;
     private Double bmi = null;
     private Long pr = null;
-    private Double height;
+    private Double height = null;
+    private Integer respiratoryRate = null;
+    private Integer pfr = null;
+    private Double saturation = null;
     @ManyToOne
     private Institution workplace;
     @ManyToOne
@@ -162,10 +165,7 @@ public class PatientEncounter implements Serializable {
     private Staff referringConsultant;
     @ManyToOne
     private Staff referringStaff;
-    
-    
-    
-    
+
     // Transient method for BP
     public String getBp() {
         if (getSbp() != null && getDbp() != null) {
@@ -173,11 +173,11 @@ public class PatientEncounter implements Serializable {
         }
         return ""; // or some default value
     }
-    
+
     public void setBp(Long sdp, Long dbp) {
         this.sbp = sdp;
         this.dbp = dbp;
-        
+
     }
 
     // Transient method for BMI
@@ -952,8 +952,6 @@ public class PatientEncounter implements Serializable {
         this.weight = weight;
         calculateBmi();
     }
-    
-    
 
     private void calculateBmi() {
         if (this.height == null || this.weight == null) {
@@ -996,6 +994,30 @@ public class PatientEncounter implements Serializable {
 
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
+    }
+
+    public Integer getRespiratoryRate() {
+        return respiratoryRate;
+    }
+
+    public void setRespiratoryRate(Integer respiratoryRate) {
+        this.respiratoryRate = respiratoryRate;
+    }
+
+    public Integer getPfr() {
+        return pfr;
+    }
+
+    public void setPfr(Integer pfr) {
+        this.pfr = pfr;
+    }
+
+    public Double getSaturation() {
+        return saturation;
+    }
+
+    public void setSaturation(Double saturation) {
+        this.saturation = saturation;
     }
 
 }

@@ -573,11 +573,42 @@
                     </p:submenu>
 
                     <p:submenu label="Disbursement" icon="fas fa-share-square">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  value="Request" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_request_list?faces-redirect=true"  value="Issue" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>                                           
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  value="Recieve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  value="Reports" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" ></p:menuitem>
-                    </p:submenu>                                   
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
+                                    value="Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
+                                    value="Issue for Requests" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
+                                    icon="fas fa-prescription-bottle-alt"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
+                                    value="Direct Issue" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
+                                    icon="fas fa-pills"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
+                                    value="Receive" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
+                                    icon="fas fa-truck-loading"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
+                                    value="Reports" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
+                                    icon="fas fa-file-alt"></p:menuitem>
+                    </p:submenu>
+
                     <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}">
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
@@ -870,16 +901,16 @@
                                 <p:menuitem  ajax="false"  action="/credit/credit_company_opd_due?faces-redirect=true" value="Due Search"  />
                                 <p:menuitem  ajax="false"  action="/credit/credit_company_opd_due_age?faces-redirect=true" value="Due Age"  />
                                 <p:submenu label="Payment">
-                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd?faces-redirect=true" value="By Opd Bill"  />
+                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd?faces-redirect=true" value="By OPD Bill"  />
                                     <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_opd_all?faces-redirect=true" value="By Credit Company"  />
                                 </p:submenu>     
 
                             </p:submenu>
                             <p:submenu label="Inward">
-                                <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due?faces-redirect=true" value="Due Search"  />
-                                <p:menuitem  ajax="false"  action="/credit/credit_company_inward_due_age?faces-redirect=true" value="Due Age"  />
+                                <p:menuitem  ajax="false"  action="/credit/inward_due_search_credit_company?faces-redirect=true" value="Due Search"  />
+                                <p:menuitem  ajax="false"  action="/credit/inward_due_age_credit_company?faces-redirect=true" value="Due Age"  />
                                 <p:submenu label="Payment">
-                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward?faces-redirect=true" value="By Bht Bill"  />
+                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward?faces-redirect=true" value="By BHT Bill"  />
                                     <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_inward_all?faces-redirect=true" value="By Credit Company"  />
                                 </p:submenu>     
                             </p:submenu>

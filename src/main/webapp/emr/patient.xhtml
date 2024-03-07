@@ -55,25 +55,25 @@
                                         <h:outputLabel value="Age :"  class="form-label" />
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="year" pt:placeholder="Years"
+                                                <p:inputText autocomplete="off" id="year" placeholder="Years"
                                                              value="#{patientController.ageYearComponant}" class="form-control" >
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="month" pt:placeholder="months" class="form-control" 
+                                                <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control" 
                                                              value="#{patientController.ageMonthComponant}">
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                             <div class="col-md-4">
-                                                <h:inputText autocomplete="off" id="day" pt:placeholder="days"
+                                                <p:inputText autocomplete="off" id="day" placeholder="days"
                                                              value="#{patientController.ageDateComponant}" class="form-control" >
                                                     <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                             listener="#{patientController.calculateDobFromAgeComponants(patientController.current)}" />
-                                                </h:inputText>
+                                                </p:inputText>
                                             </div>
                                         </div>
                                     </div>
@@ -122,39 +122,53 @@
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-md-6">
-                                        <h:outputLabel value="PHN Number:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.phn}" class="form-control" />
+                                        <p:outputLabel value="PHN Number:" class="form-label" />
+                                        <div class="input-group">
+                                            <p:inputText
+                                                id="txtPhn"
+                                                value="#{patientController.current.phn}" class="form-control" />
+
+                                            <span class="input-group-btn">
+                                                <p:commandButton
+                                                    id="btnPhn"
+                                                    value="Generate" 
+                                                    process="btnPhn" 
+                                                    update="txtPhn" 
+                                                    action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
+                                                    class="mx-1" />
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="MRN No"  />
-                                        <h:panelGroup>
-                                            <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
-                                        </h:panelGroup>
+                                        <div class="col-md-6">
+                                            <h:outputLabel class="form-label" value="MRN No"  />
+                                            <h:panelGroup>
+                                                <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Patient Account:"  class="form-label" />
+                                            <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
+                                                                   offLabel="No Account"
+                                                                   onLabel="Has an account" ></p:selectBooleanButton>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:outputLabel class="form-label" value="Credit Limit"  />
+                                            <h:panelGroup>
+                                                <p:inputText autocomplete="off" id="txtCreditLimit"
+                                                             value="#{patientController.current.creditLimit}"
+                                                             class="form-control" />
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group">
+                                        <div class="col-md-12">
+                                            <h:outputLabel value="Comments:"  class="form-label" />
+                                            <h:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row form-group">
-                                    <div class="col-md-6">
-                                        <p:outputLabel value="Patient Account:"  class="form-label" />
-                                        <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
-                                                               offLabel="No Account"
-                                                               onLabel="Has an account" ></p:selectBooleanButton>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h:outputLabel class="form-label" value="Credit Limit"  />
-                                        <h:panelGroup>
-                                            <p:inputText autocomplete="off" id="txtCreditLimit"
-                                                         value="#{patientController.current.creditLimit}"
-                                                         class="form-control" />
-                                        </h:panelGroup>
-                                    </div>
-                                </div>
-                                <div class="row form-group">
-                                    <div class="col-md-12">
-                                        <h:outputLabel value="Comments:"  class="form-label" />
-                                        <h:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
-                                    </div>
-                                </div>
-                            </div>
                         </p:panel>
 
                     </h:form>

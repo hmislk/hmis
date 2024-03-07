@@ -100,8 +100,15 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <p:commandButton value="Reprint" ajax="false" >
+                        <p:commandButton value="Reprint" ajax="false" class="ui-button-info m-1" icon="fas fa-print">
                             <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"  
+                                         value="Search Sale Bill" class="ui-button-warning m-1" icon="fas fa-arrow-left">
+                        </p:commandButton>
+                        <p:commandButton action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
+                                         class="ui-button-warning m-1" icon="fas fa-arrow-left"
+                                         value="Search Sale Pre Bill">
                         </p:commandButton>
 
 <!--                        <pharmacy:saleBill id="gpBillPreview" bill="#{pharmacyBillSearch.bill.cancelledBill}" />-->

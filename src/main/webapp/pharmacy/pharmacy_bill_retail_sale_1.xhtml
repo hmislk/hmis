@@ -46,7 +46,7 @@
                                                     <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                     <p:autoComplete accesskey="i"    id="acStock" class="w-100"
                                                                     value="#{pharmacySaleController1.stock}" 
-                                                                    completeMethod="#{pharmacySaleController1.completeAvailableStocksFromNameOrGeneric}" 
+                                                                    completeMethod="#{stockController.completeAvailableStocks}" 
                                                                     var="i" itemLabel="#{i.itemBatch.item.name}" 
                                                                     itemValue="#{i}" 
                                                                     maxResults="20"
@@ -368,22 +368,12 @@
                                             <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
                                         </f:facet>
                                         <div class="row" >
-                                            <div class="d-flex col">
+                                            <div class="col-5">
                                                 <p:selectOneMenu   id="pay"
-                                                                   class="mx-1"
                                                                    value="#{pharmacySaleController1.paymentMethod}">    
                                                     <f:selectItems value="#{enumController.paymentMethods}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                     <p:ajax process="@this cmbPs " 
                                                             update="pBillDetails pharmacypaymentDetails pnlCreditDetails1" 
-                                                            event="change"  
-                                                            listener="#{pharmacySaleController1.changeListener()}"/>
-                                                </p:selectOneMenu>
-
-                                                <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController1.paymentScheme}">   
-                                                    <f:selectItem itemLabel="Discount Scheme"/>
-                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                    <p:ajax process="@this pay " 
-                                                            update="pBillDetails creditCard cheque slip" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController1.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -395,6 +385,8 @@
                                                             event="change"  
                                                             listener="#{pharmacySaleController1.changeListener()}"/>
                                                 </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-7">
                                                 <p:commandButton ajax="false" accesskey="s" value="Settle"
                                                                  icon="fa fa-check"
                                                                  class="ui-button-success mx-1"
@@ -415,7 +407,7 @@
                                         </div>
 
                                         <div class="row" >
-                                            <div class="my-2">
+                                            <div class="my-1">
                                                 <h:panelGroup id="pharmacypaymentDetails" class="row">
                                                     <div class="row">
                                                         <h:panelGroup id="creditCard" rendered="#{pharmacySaleController1.paymentMethod eq 'Card'}">
@@ -437,6 +429,16 @@
                                                         <h:panelGroup id="ptdeposit" rendered="#{pharmacySaleController1.paymentMethod eq 'PatientDeposit'}">
                                                             <pa:patient_deposit paymentMethodData="#{pharmacySaleController1.paymentMethodData}"/>
                                                         </h:panelGroup>
+
+                                                        <h:panelGroup
+                                                            class="row my-1 w-100"
+                                                            layout="block" 
+                                                            id="multiplePaymentMethods"  rendered="#{pharmacySaleController1.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                            >
+                                                            <pa:multiple_payment_methods paymentMethodData="#{pharmacySaleController1.paymentMethodData}" class="w-100" controller="#{pharmacySaleController1}"/>
+
+                                                        </h:panelGroup>
+
 
 
                                                         <h:panelGroup id="pnlCreditDetails1" rendered="#{pharmacySaleController1.paymentMethod eq 'Credit' ? 'true':'false'}" >
@@ -494,7 +496,16 @@
                                             </div>
                                         </div>
 
-
+                                        <div class="col-5">
+                                            <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController1.paymentScheme}">   
+                                                <f:selectItem itemLabel="Discount Scheme"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                <p:ajax process="@this pay " 
+                                                        update="pBillDetails creditCard cheque slip" 
+                                                        event="change"  
+                                                        listener="#{pharmacySaleController1.changeListener()}"/>
+                                            </p:selectOneMenu>
+                                        </div>
 
                                         <h:panelGrid columns="2" class="my-2">
                                             <p:outputLabel value="Referring Doctor" ></p:outputLabel>

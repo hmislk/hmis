@@ -393,8 +393,16 @@ public enum Privileges {
     ClinicalPatientNameChange,
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
-    ClinicalPatientPhoneNumberEdit,;
-
+    ClinicalPatientPhoneNumberEdit,
+    
+    //Pharmacy Disbursement
+    
+    PharmacyDisbursementRequest,
+    PharmacyDisbursementIssurForRequest,
+    PharmacyDisbursementDirectIssue,
+    PharmacyDisbursementRecieve,
+    ;
+    
     public String getLabel() {
         switch (this) {
             case Opd:

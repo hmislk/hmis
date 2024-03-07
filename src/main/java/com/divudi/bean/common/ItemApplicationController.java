@@ -56,7 +56,7 @@ public class ItemApplicationController {
                 + "LEFT JOIN i.speciality s "
                 + "LEFT JOIN i.staff stf "
                 + "LEFT JOIN stf.person p "
-                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service) "
+                + "WHERE i.retired = :ret AND (TYPE(i) = Investigation OR TYPE(i) = Service OR TYPE(i) = Packege or TYPE(i) = MedicalPackage ) "
                 + "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
@@ -123,6 +123,7 @@ public class ItemApplicationController {
     
 
     private List<ItemLight> fillPackages() {
+        System.out.println("fillPackages");
         String jpql = "SELECT new com.divudi.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
@@ -140,7 +141,10 @@ public class ItemApplicationController {
                 + "ORDER BY i.name";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
+        System.out.println("parameters = " + parameters);
+        System.out.println("jpql = " + jpql);
         List<ItemLight> lst = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        System.out.println("lst = " + lst);
         return lst;
     }
 

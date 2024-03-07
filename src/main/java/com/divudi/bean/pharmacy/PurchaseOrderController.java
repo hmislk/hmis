@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -73,6 +74,8 @@ public class PurchaseOrderController implements Serializable {
     private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 
+    private PaymentMethodData paymentMethodData;
+
     public void removeSelected() {
         //  //System.err.println("1");
         if (selectedItems == null) {
@@ -100,7 +103,7 @@ public class PurchaseOrderController implements Serializable {
     public void clearList() {
         filteredValue = null;
         billsToApprove = null;
-        printPreview = false;
+        printPreview = true;
         billItems = null;
         aprovedBill = null;
         requestedBill = null;
@@ -119,8 +122,11 @@ public class PurchaseOrderController implements Serializable {
         }
         return fromDate;
     }
-    
-   
+
+    public String navigateToPurchaseOrderApproval() {
+        printPreview = false;
+        return "/pharmacy/pharmacy_purhcase_order_approving";
+    }
 
     public String approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
@@ -132,7 +138,7 @@ public class PurchaseOrderController implements Serializable {
 
         saveBill();
         saveBillComponent();
-    
+
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.PharmacyOrder, BillNumberSuffix.PO));
         billFacade.edit(getAprovedBill());
@@ -141,14 +147,11 @@ public class PurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-        clearList();
-
-        return viewRequestedList();
-        //   printPreview = true;
+//        clearList();
+        printPreview = true;
+        return "";
 
     }
-    
-    
 
     public String viewRequestedList() {
         clearList();
@@ -445,4 +448,16 @@ public class PurchaseOrderController implements Serializable {
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
     }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
 }
