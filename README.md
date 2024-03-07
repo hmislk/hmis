@@ -16,6 +16,11 @@ The system's architecture leans heavily on Object-Oriented Principles, consisten
 
 Developed using Java Enterprise Edition, the system offers both a web application and a RESTful server. While the choice of database management system rests with the implementing team, MySQL or MariaDB comes highly recommended. Complementing JavaEE are technologies like JSF, JPA, and PrimeFaces. The lab middleware is crafted in C#, and standalone applications, which leverage RESTful services, are built using JavaSE.
 
+## Current Version
+
+Current Version: 3.0.0.YYYYMMDD (This line will be automatically updated to reflect the latest version)
+
+
 ## History
 
 In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an Electronic Medical Record (EMR) System tailored for his general practice. Utilising Microsoft Visual Basic 6 and MS-Access, this system caught the attention of fellow doctors, leading to widespread adoption. As its user base grew, so did its features, evolving through collaborative discussions and feedback.
