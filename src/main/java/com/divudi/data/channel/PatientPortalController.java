@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
@@ -82,7 +84,6 @@ public class PatientPortalController {
 
     private List<BillSession> pastBookings;
     private List<Payment> pastPayments;
-
 
     ScheduleModel eventModel;
     Staff staff;
@@ -183,12 +184,12 @@ public class PatientPortalController {
         }
 
     }
-    
-    public void addNewPatientAction(){
+
+    public void addNewPatientAction() {
         addNewPatient = true;
     }
-    
-    public void GoBackfromPatientAddAction(){
+
+    public void GoBackfromPatientAddAction() {
         addNewPatient = false;
     }
 
@@ -309,10 +310,9 @@ public class PatientPortalController {
         bookingController.add();
         bookingController.sendSmsAfterBooking();
         bookingCompleted = true;
-        JsfUtil.addSuccessMessage("Your Booking Successfull");
+        
+        
     }
-    
-  
 
     public String getPatientphoneNumber() {
         return PatientphoneNumber;
@@ -568,7 +568,6 @@ public class PatientPortalController {
         this.addNewPatient = addNewPatient;
     }
 
-
     public boolean isBookingCompleted() {
         return bookingCompleted;
     }
@@ -592,6 +591,5 @@ public class PatientPortalController {
     public void setPastPayments(List<Payment> pastPayments) {
         this.pastPayments = pastPayments;
     }
-
 
 }
