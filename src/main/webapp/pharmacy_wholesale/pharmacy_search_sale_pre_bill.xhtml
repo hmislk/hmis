@@ -213,24 +213,25 @@
                                     </p:column>
 
                                     <p:column headerText="Comments" >
-                                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                        <h:outputLabel rendered="#{bill.referenceBill.refunded}" value="#{bill.referenceBill.comments}" >
                                         </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                        <h:outputLabel  rendered="#{bill.referenceBill.cancelled}" value="#{bill.referenceBill.comments}" >
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="View">
                                         <p:commandButton ajax="false" value="View Bill" disabled="#{bill.referenceBill eq null}"
-                                                         action="pharmacy_reprint_bill_sale">
+                                                         action="/pharmacy/pharmacy_reprint_bill_sale">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
                                         </p:commandButton>
                                     </p:column>
-                                    
+
                                 </p:dataTable>
                             </div>
+
                         </div>
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>
