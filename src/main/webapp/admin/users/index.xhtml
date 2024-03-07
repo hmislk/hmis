@@ -27,10 +27,17 @@
                                             action="#{loginController.navigateToViewLogins()}" />
                                         <p:commandButton 
                                             ajax="false" 
-                                            
+
                                             value="To Remove Multiple Users" 
                                             action="#{webUserController.navigateToRemoveMultipleUsers()}"
                                             />
+                                        <hr/>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="User Roles" 
+                                            action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
+                                        <hr/>
+
                                     </div>
                                 </p:tab>
                             </p:accordionPanel>

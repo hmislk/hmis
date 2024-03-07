@@ -88,6 +88,8 @@ public class WebUserController implements Serializable {
     private UserPrivilageController userPrivilageController;
     @Inject
     UserIconController userIconController;
+    @Inject
+    TriggerSubscriptionController triggerSubscriptionController;
     /**
      * Class Variables
      */
@@ -792,8 +794,8 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        userIconController.setUser(selected);
-        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        triggerSubscriptionController.setUser(selected);
+        triggerSubscriptionController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
         return "/admin/users/user_subscription";
     }
 
@@ -1007,7 +1009,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/index";
+        return "/admin/users/index?faces-redirect=true;";
     }
 
     public List<WebUserLight> getWebUseLights() {
