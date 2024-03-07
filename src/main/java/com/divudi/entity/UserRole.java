@@ -4,10 +4,12 @@
  */
 package com.divudi.entity;
 
+import java.io.Serializable;
+
 /**
  *
  * @author acer
  */
-public class UserRole {
+public class UserRole implements Serializable {
     
 }
