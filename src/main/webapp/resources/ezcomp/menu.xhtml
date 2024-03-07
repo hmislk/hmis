@@ -16,8 +16,12 @@
                     font-size: 18px !important;
                 }
             </style>
+            
+            <p:tooltip for="home" value="Home" ></p:tooltip>
+            
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem  
+                <p:menuitem 
+                    id="home"
                     ajax="false"
                     action="/home" 
                     icon="pi pi-home"
@@ -590,7 +594,7 @@
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
                                     value="Direct Issue" 
-                                    actionListener="#{searchController.makeListNull()}" 
+                                    actionListener="#{transferIssueController.makeNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
                                     icon="fas fa-pills"></p:menuitem>
 
