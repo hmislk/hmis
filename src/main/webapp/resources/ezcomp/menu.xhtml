@@ -478,27 +478,27 @@
                     <p:submenu label="Inpatient Medication Management" icon="fas fa-procedures">
                         <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
                                     value="Direct Issue to BHTs" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}" 
                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
                                      value="Direct Issue to Theatre Cases"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToTheaterCases')}" />
                         <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true" 
                                      value="BHT Issue Requests"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" />
+                                     rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
 
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}" 
-                                     value="Search Inpatient Direct Issues by Bill" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                     value="Search Inpatient Direct Issues by Bill" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyBill')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}"   
-                                     value="Search Inpatient Direct Issues by Item" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                     value="Search Inpatient Direct Issues by Item" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyItem')}" ></p:menuitem>                                        
                         <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
                                     value="Search Inpatient Direct Issue Returns by Bill" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                    rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssueReturnsbyBill')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" actionListener="#{searchController.makeListNull}" 
                                     value="Search Inpatient Direct Issue Returns by Item" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                                    rendered="#{webUserController.hasPrivilege('PharmacysSearchInpatientDirectIssueReturnsbyItem')}" ></p:menuitem>
 
 
                     </p:submenu>

@@ -96,7 +96,7 @@ public class UserPrivilageController implements Serializable {
 
     private TreeNode<PrivilegeHolder> createPrivilegeHolderTreeNodes() {
         TreeNode root = new DefaultTreeNode(new PrivilegeHolder(null, "Root"), null);
-        
+
         TreeNode allNode = new DefaultTreeNode(new PrivilegeHolder(null, "Privileges for All Sections"), root);
 
         TreeNode opdNode = new DefaultTreeNode(new PrivilegeHolder(null, "OPD"), allNode);
@@ -271,12 +271,6 @@ public class UserPrivilageController implements Serializable {
         TreeNode orderApprovalNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderApproval, "Order Approval"), orderNode);
         TreeNode orderCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Order Cancellation"), orderNode);
 
-        TreeNode disbursementNode = new DefaultTreeNode("Pharmacy Disbursement", pharmacyNode);
-        TreeNode disbursementRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequest, "Request"), disbursementNode);
-        TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
-        TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
-        TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
-        
         TreeNode saleNode = new DefaultTreeNode("Sale", pharmacyNode);
         TreeNode pharmacySaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), saleNode);
         TreeNode pharmacySaleWithoutStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale without Stock"), saleNode);
@@ -522,6 +516,71 @@ public class UserPrivilageController implements Serializable {
         TreeNode cashOutNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashOut, "Cash Out"), cashTransactionNode);
         TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
 
+        //Retail Transaction
+        TreeNode retailTransaction = new DefaultTreeNode("Pharmacy Retail Transaction", pharmacyNode);
+        TreeNode PharmacySale = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), retailTransaction);
+        TreeNode PharmacySaleForCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashier, "Pharmacy Sale For Cashier"), retailTransaction);
+        TreeNode PharmacySaleWithOutStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithOutStock, "Pharmacy Sale With Out Stock"), retailTransaction);
+        TreeNode PharmacySearchSaleBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBill, "Pharmacy Search Sale Bill"), retailTransaction);
+        TreeNode PharmacySearchSalePreBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSalePreBill, "Pharmacy Search Sale PreBill"), retailTransaction);
+        TreeNode PharmacySearchSaleBillItems = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBillItems, "Pharmacy Search Sale BillItems"), retailTransaction);
+        TreeNode PharmacyReturnItemsOnly = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsOnly, "Pharmacy Return Items Only"), retailTransaction);
+        TreeNode PharmacyReturnItemsAndPayments = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnItemsAndPayments, "Pharmacy Return Items And Payments"), retailTransaction);
+        TreeNode PharmacySearchReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchReturnBill, "Pharmacy Search ReturnBill"), retailTransaction);
+        TreeNode PharmacyAddToStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAddToStock, "Pharmacy Add To Stock"), retailTransaction);
+        
+        //Disburesement
+        TreeNode disbursementNode = new DefaultTreeNode("Pharmacy Disbursement", pharmacyNode);
+        TreeNode disbursementRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequest, "Request"), disbursementNode);
+        TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
+        TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
+        TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+
+        //Inpatient medication management
+        TreeNode InpatientMedicationManagement = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
+        TreeNode PharmacyDirectIssueToBht = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToBht, "Pharmacy Direct Issue To Bht"), InpatientMedicationManagement);
+        TreeNode PharmacyDirectIssueToTheaterCases = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDirectIssueToTheaterCases, "Pharmacy Direct Issue To Theater Cases"), InpatientMedicationManagement);
+        TreeNode PharmacyBhtIssueRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBhtIssueRequest, "Pharmacy Bht Issue Request"), InpatientMedicationManagement);
+        TreeNode PharmacySearchInpatientDirectIssuesbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssuesbyBill, "Pharmacy Search Inpatient Direct Issues by Bill"), InpatientMedicationManagement);
+        TreeNode PharmacySearchInpatientDirectIssuesbyItem = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssuesbyItem, "Pharmacy Search Inpatient Direct Issues by Item"), InpatientMedicationManagement);
+        TreeNode PharmacySearchInpatientDirectIssueReturnsbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssueReturnsbyBill, "Pharmacy Search Inpatient Direct Issue Returns by Bill"), InpatientMedicationManagement);
+        TreeNode PharmacysSearchInpatientDirectIssueReturnsbyItem = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacysSearchInpatientDirectIssueReturnsbyItem, "Pharmacy Search Inpatient Direct Issue Returns by Item"), InpatientMedicationManagement);
+
+        //Procurement
+        TreeNode procumentNode = new DefaultTreeNode("Pharmacy Procument", pharmacyNode);
+        TreeNode pharmacyCreatePurchaseOrder = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreatePurchaseOrder, "Create Purchase Order"), pharmacyNode);
+        TreeNode pharmacyAutoOrderPModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderPModel, "Auto Order (P Model)"), pharmacyNode);
+        TreeNode pharmacyAutoOrderQModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderQModal, "Auto Order (Q Model)"), pharmacyNode);
+        TreeNode pharmacyDirectPurchase = new DefaultTreeNode(new PrivilegeHolder(Privileges.DirectPurchase, "Direct Purchase"), pharmacyNode);
+        TreeNode pharmacyPurchaseOrderApprovel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrdersApprovel, "Purchase Orders Approvel"), pharmacyNode);
+        TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), pharmacyNode);
+        TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), pharmacyNode);
+        TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), pharmacyNode);
+        
+        TreeNode DealerPayment = new DefaultTreeNode("Pharmacy Dealer Payment", pharmacyNode);
+        TreeNode PharmacyDealerDueSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerDueSearch, "Pharmacy Dealer Due Search"), DealerPayment);
+        TreeNode PharmacyDealerDueByAge = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerDueByAge, "Pharmacy Dealer Due By Age"), DealerPayment);
+        TreeNode PharmacyPayment = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPayment, "Pharmacy Payment"), DealerPayment);
+        TreeNode PharmacyGRNPaymentApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGRNPaymentApprove, "Pharmacy GRN Payment Approve"), DealerPayment);
+        TreeNode PharmacyGRNPaymentDoneSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGRNPaymentDoneSearch, "Pharmacy GRN Payment Done Search"), DealerPayment);
+        TreeNode PharmacyCreditDueAndAccess = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyCreditDueAndAccess, "Pharmacy Credit Du eAnd Access"), DealerPayment);
+       
+        TreeNode PharmacyAdjustment = new DefaultTreeNode("Pharmacy Adjustment", pharmacyNode);
+        TreeNode PharmacyAdjustmentDepartmentStockQTY = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentDepartmentStockQTY, "Pharmacy Adjustment Department Stock QTY"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentDepartmentStockBySingleItemQTY = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentDepartmentStockBySingleItemQTY, "Pharmacy Adjustment Department Stock By Single Item QTY"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentStaffStockAdjustment = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentStaffStockAdjustment, "Pharmacy Adjustment Staff Stock Adjustment"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentPurchaseRate = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentPurchaseRate, "Pharmacy Adjustment Purchase Rate"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentSaleRate = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentSaleRate, "Pharmacy Adjustment Sale Rate"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentWholeSaleRate = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentWholeSaleRate, "Pharmacy Adjustment Expiry Date"), PharmacyAdjustment);
+        TreeNode PharmacyAdjustmentExpiryDate = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentSearchAdjustmentBills, "Pharmacy Adjustment Search Adjustment Bills"), PharmacyAdjustment);
+        
+        TreeNode PharmacyDisposal = new DefaultTreeNode("Pharmacy Disposal", pharmacyNode);
+        TreeNode PharmacyDisposalIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalIssue, "Pharmacy Disposal Issue"), PharmacyDisposal);
+        TreeNode PharmacyDisposalSearchIssueBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueBill, "Pharmacy Disposal Search Issue Bill"), PharmacyDisposal);
+        TreeNode PharmacyDisposalSearchIssueBillItems = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueBillItems, "Pharmacy Disposal Search Issue Return Bill"), PharmacyDisposal);
+        TreeNode PharmacyDisposalSearchIssueReturnBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalSearchIssueReturnBill, "Pharmacy Adjustment Purchase Rate"), PharmacyDisposal);
+        TreeNode PharmacyDisposalUnitIssueMargin = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisposalUnitIssueMargin, "Pharmacy Disposal Unit Issue Margin"), PharmacyDisposal);
+        
         
         return root;
     }
@@ -537,7 +596,7 @@ public class UserPrivilageController implements Serializable {
         }
         saveWebUserPrivileges();
     }
-    
+
     public void saveUserRolePrivileges() {
         if (webUserRole == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -606,14 +665,14 @@ public class UserPrivilageController implements Serializable {
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
-    
+
     public void saveWebUserRolePrivileges() {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
             wup.setRetired(true);
         }
-        
+
         getFacade().batchEdit(getCurrentWebUserPrivileges());
         if (selectedPrivileges == null) {
             return;
@@ -730,8 +789,7 @@ public class UserPrivilageController implements Serializable {
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
     }
-    
-    
+
     public void fillUserRolePrivileges() {
         List<WebUserPrivilege> wups;
         if (webUserRole == null) {
@@ -848,8 +906,6 @@ public class UserPrivilageController implements Serializable {
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
     }
-    
-    
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Converters">
