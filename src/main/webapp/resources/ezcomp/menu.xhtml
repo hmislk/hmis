@@ -590,7 +590,7 @@
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToDirectPharmacyIssue}"  
                                     value="Direct Issue" 
-                                    actionListener="#{searchController.makeListNull()}" 
+                                    actionListener="#{transferIssueController.makeNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
                                     icon="fas fa-pills"></p:menuitem>
 
