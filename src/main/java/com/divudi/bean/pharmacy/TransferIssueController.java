@@ -5,12 +5,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.StockQty;
+import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
@@ -59,6 +61,8 @@ public class TransferIssueController implements Serializable {
     private SessionController sessionController;
     @Inject
     BillController billController;
+    @Inject
+    CommonController commonController;
     ////
     @EJB
     private BillFacade billFacade;
@@ -76,6 +80,9 @@ public class TransferIssueController implements Serializable {
 
     private CommonFunctions commonFunctions;
     private List<BillItem> billItems;
+    private BillItem billItem;
+    private Double qty;
+    private Stock tmpStock;
     UserStockContainer userStockContainer;
 
     public String navigateToPharmacyIssueForRequests() {
@@ -87,16 +94,34 @@ public class TransferIssueController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issue";
     }
 
+    public String navigateToPharmacyDirectIssueForRequests() {
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        createRequestIssueBillItems(requestedBill);
+        return "/pharmacy/pharmacy_transfer_issue_direct_department";
+    }
+
+    public String navigateToPharmacyIssueFromGrn() {
+        if (requestedBill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        pharmacyController.clearItemHistory();
+        createGrnIssueBillItems(requestedBill);
+        return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
+    }
+
     public String navigateToListPharmacyIssueRequests() {
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
     public String navigateToDirectPharmacyIssue() {
-        if (requestedBill == null) {
-            JsfUtil.addErrorMessage("No Bill Selected");
-            return "";
-        }
-        return "/pharmacy/pharmacy_transfer_issue_direct";
+        createDirectIssueBillItems();
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+
+        return "/pharmacy/pharmacy_transfer_issue_direct_department";
     }
 
     public UserStockContainer getUserStockContainer() {
@@ -126,6 +151,15 @@ public class TransferIssueController implements Serializable {
         }
     }
 
+    public void removeBillItem(BillItem billItem) {
+        System.out.println("billItem = " + billItem.getSearialNo());
+        getBillItems().remove(billItem);
+        int serialNo = 0;
+        for (BillItem b : getBillItems()) {
+            b.setSearialNo(serialNo++);
+        }
+    }
+
     public void makeNull() {
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         requestedBill = null;
@@ -135,6 +169,7 @@ public class TransferIssueController implements Serializable {
         toDate = null;
         billItems = null;
         userStockContainer = null;
+        tmpStock = null;
     }
 
     public TransferIssueController() {
@@ -156,15 +191,31 @@ public class TransferIssueController implements Serializable {
         generateBillComponent();
     }
 
+    public void createGrnIssueBillItems(Bill grn) {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        makeNull();
+        requestedBill = grn;
+        issuedBill = null;
+        generateBillComponentsForIssueBillFromGrn(requestedBill);
+    }
+
+    public void createDirectIssueBillItems() {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        makeNull();
+    }
+
     public void generateBillComponent() {
 
         //User Stock Container Save if New Bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
         List<BillItem> bis = billController.billItemsOfBill(getRequestedBill());
+        getIssuedBill().setDepartment(requestedBill.getDepartment());
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+        getIssuedBill().setToDepartment(requestedBill.getDepartment());
 
         for (BillItem i : bis) {
-            
+
             boolean flagStockFound = false;
 
             double billedIssue = getPharmacyCalculation().getBilledIssuedByRequestedItem(i, BillType.PharmacyTransferIssue);
@@ -175,7 +226,7 @@ public class TransferIssueController implements Serializable {
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
-                
+
                 if (sq.getQty() == 0) {
                     continue;
                 }
@@ -212,11 +263,11 @@ public class TransferIssueController implements Serializable {
                 bItem.setTransUserStock(us);
 
                 getBillItems().add(bItem);
-                flagStockFound=true;
+                flagStockFound = true;
 
             }
 
-            if(!flagStockFound){
+            if (!flagStockFound) {
                 BillItem bItem = new BillItem();
                 bItem.setSearialNo(getBillItems().size());
                 bItem.setItem(i.getItem());
@@ -224,21 +275,80 @@ public class TransferIssueController implements Serializable {
                 bItem.setTmpQty(0);
                 getBillItems().add(bItem);
             }
-            
-        }
 
-        
+        }
 
     }
 
-    public void settle() {
+    public void generateBillComponentsForIssueBillFromGrn(Bill grn) {
+        UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+
+        List<BillItem> bis = billController.billItemsOfBill(grn);
+        getIssuedBill().setDepartment(null);
+        getIssuedBill().setFromDepartment(getSessionController().getDepartment());
+        getIssuedBill().setToDepartment(null);
+
+        for (BillItem oi : bis) {
+
+            BillItem ni = new BillItem();
+
+            if (oi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            PharmaceuticalBillItem npi = new PharmaceuticalBillItem();
+            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
+            npi.setItemBatch(oi.getPharmaceuticalBillItem().getItemBatch());
+            npi.setStockHistory(oi.getPharmaceuticalBillItem().getStockHistory());
+            npi.setBillItem(oi.getPharmaceuticalBillItem().getBillItem());
+            npi.setDoe(oi.getPharmaceuticalBillItem().getDoe());
+            npi.setStringValue(oi.getPharmaceuticalBillItem().getStringValue());
+            npi.setQty(oi.getPharmaceuticalBillItem().getQty());
+            npi.setFreeQty(oi.getPharmaceuticalBillItem().getFreeQty());
+            npi.setPurchaseRate(oi.getPharmaceuticalBillItem().getPurchaseRate());
+            npi.setLastPurchaseRate(oi.getPharmaceuticalBillItem().getLastPurchaseRate());
+            npi.setRetailRate(oi.getPharmaceuticalBillItem().getRetailRate());
+            npi.setWholesaleRate(oi.getPharmaceuticalBillItem().getWholesaleRate());
+            npi.setStock(oi.getPharmaceuticalBillItem().getStock());
+            npi.setStaffStock(oi.getPharmaceuticalBillItem().getStaffStock());
+
+            ni.setItem(oi.getItem());
+            ni.setItemId(oi.getItemId());
+            ni.setNetRate(oi.getNetRate());
+
+            ni.setQty(oi.getQty());
+
+            ni.setGrossValue(oi.getGrossValue());
+            ni.setNetValue(oi.getNetValue());
+
+            ni.setPharmaceuticalBillItem(npi);
+
+            ni.setSearialNo(getBillItems().size());
+            ni.setItem(oi.getItem());
+            ni.setReferanceBillItem(oi);
+            ni.setTmpQty(0);
+            getBillItems().add(ni);
+
+        }
+
+    }
+
+    public void settleDirectIssue() {
+        if (getIssuedBill().getToDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department to Issue");
+            return;
+        }
         if (getIssuedBill().getToStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
 
-        saveBill();
-
+        if (getIssuedBill().getId() == null) {
+            getBillFacade().create(getIssuedBill());
+        } else {
+            getBillFacade().edit(getIssuedBill());
+        }
+        System.out.println("1 = " + getIssuedBill().getToDepartment().getName());
         for (BillItem i : getBillItems()) {
 
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
@@ -295,6 +405,7 @@ public class TransferIssueController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
 
             getIssuedBill().getBillItems().add(i);
+            System.out.println("2 = " + getIssuedBill().getToDepartment().getName());
         }
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -305,9 +416,9 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
         }
 
-        getIssuedBill().setInstitution(getSessionController().getInstitution());
-        getIssuedBill().setDepartment(getSessionController().getDepartment());
-
+//        getIssuedBill().setInstitution(getSessionController().getInstitution());
+        getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
+//
         getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
 
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
@@ -325,7 +436,114 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(getRequestedBill());
 
         Bill b = getBillFacade().find(getIssuedBill().getId());
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
+        issuedBill = null;
+        issuedBill = b;
+
+        printPreview = true;
+
+    }
+
+    public void settle() {
+        if (getIssuedBill().getToDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department to Issue");
+            return;
+        }
+        if (getIssuedBill().getToStaff() == null) {
+            JsfUtil.addErrorMessage("Please Select Staff");
+            return;
+        }
+
+        saveBill();
+        System.out.println("1 = " + getIssuedBill().getToDepartment().getName());
+        for (BillItem i : getBillItems()) {
+
+            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
+
+            if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+                continue;
+            }
+
+            i.setBill(getIssuedBill());
+            i.setCreatedAt(Calendar.getInstance().getTime());
+            i.setCreater(getSessionController().getLoggedUser());
+            i.setPharmaceuticalBillItem(i.getPharmaceuticalBillItem());
+
+            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
+            i.setPharmaceuticalBillItem(null);
+
+            if (i.getId() == null) {
+                getBillItemFacade().create(i);
+            }
+
+            if (tmpPh.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(tmpPh);
+            }
+
+            i.setPharmaceuticalBillItem(tmpPh);
+            getBillItemFacade().edit(i);
+
+            //Checking User Stock Entity
+            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQtyInUnit(), getSessionController().getLoggedUser())) {
+                i.setTmpQty(0);
+                getBillItemFacade().edit(i);
+                getIssuedBill().getBillItems().add(i);
+                continue;
+            }
+
+            //Remove Department Stock
+            boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
+                    Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
+                    i.getPharmaceuticalBillItem(),
+                    getSessionController().getDepartment());
+            if (returnFlag) {
+
+                //Addinng Staff
+                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
+
+                i.getPharmaceuticalBillItem().setStaffStock(staffStock);
+
+            } else {
+                i.setTmpQty(0);
+                getBillItemFacade().edit(i);
+            }
+
+            getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+
+            getIssuedBill().getBillItems().add(i);
+            System.out.println("2 = " + getIssuedBill().getToDepartment().getName());
+        }
+
+        getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+
+        if (getSessionController().getLoggedPreference().isDepNumGenFromToDepartment()) {
+            getIssuedBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getIssuedBill().getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        } else {
+            getIssuedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+        }
+
+//        getIssuedBill().setInstitution(getSessionController().getInstitution());
+        getIssuedBill().setDepartment(getIssuedBill().getFromDepartment());
+//
+        getIssuedBill().setToInstitution(getIssuedBill().getToDepartment().getInstitution());
+
+        getIssuedBill().setCreater(getSessionController().getLoggedUser());
+        getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
+
+        getIssuedBill().setNetTotal(calTotal());
+
+        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
+
+        getBillFacade().edit(getIssuedBill());
+
+        //Update ReferenceBill
+        //     getRequestedBill().setReferenceBill(getIssuedBill());
+        getRequestedBill().getForwardReferenceBills().add(getIssuedBill());
+        getBillFacade().edit(getRequestedBill());
+
+        Bill b = getBillFacade().find(getIssuedBill().getId());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         issuedBill = null;
@@ -356,6 +574,66 @@ public class TransferIssueController implements Serializable {
 
     }
 
+    public void addBillItemNew() {
+
+        billItem = new BillItem();
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (getTmpStock() == null) {
+            JsfUtil.addErrorMessage("Item?");
+            return;
+        }
+        if (getTmpStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("Please not select Expired Items");
+            return;
+        }
+        if (getQty() == null) {
+            JsfUtil.addErrorMessage("Quantity?");
+            return;
+        }
+        if (getQty() == 0.0) {
+            JsfUtil.addErrorMessage("Quentity Zero?");
+            return;
+        }
+        if (getQty() > getTmpStock().getStock()) {
+            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
+
+//        if (checkItemBatch()) {
+//            errorMessage = "This batch is already there in the bill.";
+//            UtilityController.addErrorMessage("Already added this item batch");
+//            return;
+//        }
+//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+//            errorMessage = "This batch is Expire With in 31 Days.";
+//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            return;
+//        }
+        //Checking User Stock Entity
+        if (!userStockController.isStockAvailable(getTmpStock(), getQty(), getSessionController().getLoggedUser())) {
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return;
+        }
+        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (qty));
+        billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
+        billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
+
+//        calculateBillItem();
+        ////System.out.println("Rate*****" + billItem.getRate());
+//        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setItem(getTmpStock().getItemBatch().getItem());
+        billItem.setQty(qty);
+//        billItem.setBill(getPreBill());
+
+        billItem.setSearialNo(getBillItems().size() + 1);
+        getBillItems().add(billItem);
+
+        qty = null;
+        tmpStock = null;
+    }
+
     @Inject
     private PharmacyController pharmacyController;
 
@@ -382,10 +660,22 @@ public class TransferIssueController implements Serializable {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
+    public void removeAll() {
+        if (billItems == null) {
+            return;
+        }
+
+        for (BillItem b : billItems) {
+            getBillItems().remove(b);
+        }
+
+        billItems = null;
+    }
+
     private void saveBill() {
         getIssuedBill().setReferenceBill(getRequestedBill());
-        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
-        getIssuedBill().setToDepartment(getRequestedBill().getDepartment());
+//        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
+//        getIssuedBill().setToDepartment(getRequestedBill().getDepartment());
 
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
@@ -512,6 +802,30 @@ public class TransferIssueController implements Serializable {
 
     public void setRequestedBill(Bill requestedBill) {
         this.requestedBill = requestedBill;
+    }
+
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public Double getQty() {
+        return qty;
+    }
+
+    public void setQty(Double qty) {
+        this.qty = qty;
+    }
+
+    public Stock getTmpStock() {
+        return tmpStock;
+    }
+
+    public void setTmpStock(Stock tmpStock) {
+        this.tmpStock = tmpStock;
     }
 
 }

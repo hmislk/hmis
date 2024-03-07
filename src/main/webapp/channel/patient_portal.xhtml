@@ -18,23 +18,65 @@
 
         <style>
 
-/*            .bgImg{
-                height: 50vh;
-                width: auto;
-                background-image: url('https://img.freepik.com/premium-vector/medical-pattern-with-beakers-pipettes-as-well-as-crosses-with-hearts-pills_638892-315.jpg');
-                background-size: cover;
-                background-position: center;
+            .success-message {
+                display: inline-block;
+                background-color: #d4edda;
+                border-color: #c3e6cb;
+                color: #155724;
+                border: 1px solid transparent;
+                border-radius: .25rem;
+                position: absolute;
+                top: 10;
+                left: 50;
+                z-index: 9999;
+            }
 
-            }*/
+            .success-icon {
+                margin-left: 15px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background-color: #28a745;
+                position: absolute;
+                top: 50%;
+                left: -30px;
+                transform: translateY(-50%);
+                animation: slideIn 0.5s forwards;
+            }
+
+            .success-text {
+                margin-left: 20px;
+            }
+
+            @keyframes slideIn {
+                0% {
+                    left: -30px;
+                    opacity: 0;
+                }
+                100% {
+                    left: 0;
+                    opacity: 1;
+                }
+            }
+
+
+            /*            .bgImg{
+                            height: 50vh;
+                            width: auto;
+                            background-image: url('https://img.freepik.com/premium-vector/medical-pattern-with-beakers-pipettes-as-well-as-crosses-with-hearts-pills_638892-315.jpg');
+                            background-size: cover;
+                            background-position: center;
+            
+                        }*/
 
             /* Media query for screens smaller than 768px */
             @media (max-width: 767.98px) {
-/*
-                .bgImg{
-                    height: 25vh;
-                   
-
-                }*/
+                /*
+                                .bgImg{
+                                    height: 25vh;
+                                   
+                
+                                }*/
 
                 .card {
                     min-width: auto;
@@ -69,7 +111,7 @@
                     </div>
                 </nav>
             </div>
-            <h:panelGroup rendered="#{patientPortalController.patient.id ne null}">
+            <h:panelGroup rendered="#{patientPortalController.patient.id ne null}" >
                 <div class="bgImg">
                     <div class="mt-5">
                         <div class="card shadow-lg p-4">
@@ -130,8 +172,14 @@
 
                     </div>
                 </div>
-
-
+                <h:panelGroup rendered="#{patientPortalController.bookingCompleted}">
+                    <div  id="successPanel" class="d-flex justify-content-center align-items-center" style="z-index: 9999;" >
+                        <div class="success-message d-flex align-items-center justify-content-center" style="width: 300px;height: 150px">
+                            <div class="success-icon d-flex justify-content-center align-items-center"><h:outputText styleClass="fas fa-check text-white"/></div>
+                            <div class="success-text">Booking Successfully</div>
+                        </div>
+                    </div>
+                </h:panelGroup>
                 <div class="mt-4 container">
                     <ui:repeat rendered="#{patientPortalController.sessionInstances != null}" 
                                id="sessionDates" 
@@ -161,7 +209,7 @@
                                     <h3 class="mx-4">#{s.displayCount}</h3>
                                 </div>
                                 <div class="d-flex justify-content-end  p-2">
-                                    <p:commandButton value="Book Channel" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
+                                    <p:commandButton value="Book Channel" ajax="false" icon="fas fa-plus" class="ui-button-success" action="#{patientPortalController.addBooking}">
                                         <f:setPropertyActionListener value="#{s}" target="#{patientPortalController.selectedSessionInstance}"/>
                                     </p:commandButton>
                                 </div>
@@ -211,7 +259,7 @@
             <h:panelGroup rendered="#{patientPortalController.patient.id eq null and patientPortalController.otpVerify eq true}" >
                 <h:panelGroup rendered="#{!patientPortalController.addNewPatient}" class="w-100" >
 
-                    <div class="d-flex justify-content-center align-items-center" style="min-width: 25rem;">
+                    <div class="d-flex justify-content-center align-items-center hide" style="min-width: 25rem;">
                         <div class="card shadow-sm mt-4" style="min-width: 25rem;max-width: 50rem">
                             <div class="card-header text-center d-flex align-items-center justify-content-between">
                                 <h4>Select Your Profile</h4>
@@ -344,5 +392,12 @@
                 </h:panelGroup>
             </h:panelGroup>
         </h:form>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                setTimeout(function () {
+                    document.getElementById("successPanel").style.display = "none";
+                }, 5000); // 5000 milliseconds = 5 seconds
+            });
+        </script>
     </h:body>
 </html>
