@@ -25,12 +25,13 @@ public class PatientSessionInstanceActivity implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
-    @OneToMany
-    Patient patient;
-    boolean completed;
+    
+    @ManyToOne
+    private Patient patient;
+    private boolean completed;
       
     @ManyToOne
-    AppointmentActivity appointmentActivity;
+    private AppointmentActivity appointmentActivity;
 
     public Long getId() {
         return id;
@@ -64,5 +65,31 @@ public class PatientSessionInstanceActivity implements Serializable {
     public String toString() {
         return "com.divudi.entity.channel.PatientSessionInstanceActivity[ id=" + id + " ]";
     }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public AppointmentActivity getAppointmentActivity() {
+        return appointmentActivity;
+    }
+
+    public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
+        this.appointmentActivity = appointmentActivity;
+    }
+    
+    
     
 }

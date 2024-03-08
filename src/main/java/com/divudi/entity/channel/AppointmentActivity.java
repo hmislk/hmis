@@ -4,12 +4,16 @@
  */
 package com.divudi.entity.channel;
 
+import com.divudi.entity.WebUser;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -29,7 +33,18 @@ public class AppointmentActivity implements Serializable {
     @Lob
     private String imageLink;
     
-    
+    //Created Properties
+    @ManyToOne
+     private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+     private Date createdAt;
+    //Retairing properties
+     private boolean retired;
+    @ManyToOne
+     private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+     private Date retiredAt;
+     private String retireComments;
     
     
     
@@ -102,6 +117,54 @@ public class AppointmentActivity implements Serializable {
 
     public void setImageLink(String imageLink) {
         this.imageLink = imageLink;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
     
 }

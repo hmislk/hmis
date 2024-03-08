@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
@@ -24,9 +25,13 @@ public class SessionInstanceActivity implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
-    @OneToMany
-    SessionInstance sessionInstance;
     
+    @ManyToOne
+    private SessionInstance sessionInstance;
+    
+    
+    @ManyToOne
+    private AppointmentActivity appointmentActivity;
 
     public Long getId() {
         return id;
@@ -59,6 +64,24 @@ public class SessionInstanceActivity implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.channel.SessionInstanceActivity[ id=" + id + " ]";
+    }
+
+    
+    
+    public SessionInstance getSessionInstance() {
+        return sessionInstance;
+    }
+
+    public void setSessionInstance(SessionInstance sessionInstance) {
+        this.sessionInstance = sessionInstance;
+    }
+
+    public AppointmentActivity getAppointmentActivity() {
+        return appointmentActivity;
+    }
+
+    public void setAppointmentActivity(AppointmentActivity appointmentActivity) {
+        this.appointmentActivity = appointmentActivity;
     }
     
 }
