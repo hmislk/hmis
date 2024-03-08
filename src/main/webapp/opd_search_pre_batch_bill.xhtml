@@ -132,27 +132,30 @@
                                         <h:outputLabel value="#{bill.total - bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-
                                     </p:column>
 
                                     <p:column headerText="Accept">
-                                        #{bill.referenceBill.balance}
-                                        <p:commandButton ajax="false"  value="Accept Payment" 
-                                                         action="#{opdPreSettleController.toSettleBatch(bill)}" 
-                                                         disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            value="Accept Payment" 
+                                            action="#{opdPreSettleController.toSettleBatch(bill)}" 
+                                            disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <p:column headerText="Reprint">
-                                        <p:commandButton ajax="false"  
-                                                         value="Reprint" 
-                                                         action="bill_print" 
-                                                         disabled="#{bill.referenceBill.balance ge 0.0}" >
-                                            <f:setPropertyActionListener value="#{bill.referenceBill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
+                                        <p:commandButton 
+                                            ajax="false"  
+                                            value="Reprint" 
+                                            action="bill_print" 
+                                            disabled="#{bill.referenceBill.balance le 0.0}" >
+                                            <f:setPropertyActionListener value="#{bill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
                                         </p:commandButton>
                                     </p:column>
 
                                 </p:dataTable>
+
+
                             </div>
                         </div>
 
