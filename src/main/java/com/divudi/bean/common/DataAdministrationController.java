@@ -265,7 +265,7 @@ public class DataAdministrationController {
         }
 
     }
-    
+
     public String navigateToCheckMissingFields() {
         return "/dataAdmin/missing_database_fields";
     }
@@ -287,15 +287,20 @@ public class DataAdministrationController {
                 }
                 if (cause != null) {
                     String message = cause.getMessage();
-                    err.append("<br/>").append(message);
 
-                    // Attempt to extract the missing column from the error message
-                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'");
+                    // Attempt to extract the table name and missing column from the error message
+                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'.*?FROM (.*?) WHERE");
                     Matcher matcher = pattern.matcher(message);
+
                     if (matcher.find()) {
                         String missingColumn = matcher.group(1);
-                        // Generate a placeholder SQL statement with the missing column
-                        String alterTableSql = String.format("ALTER TABLE [TABLE_NAME] ADD %s VARCHAR(255);", missingColumn);
+                        String tableName = matcher.group(2);
+
+                        // Append simplified error message
+                        err.append(String.format("<br/>Missing column: '%s' in table: '%s'", missingColumn, tableName));
+
+                        // Suggest SQL for adding the missing column, assuming VARCHAR(255) as default type
+                        String alterTableSql = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255);", tableName, missingColumn);
                         sql.append("<br/>").append(alterTableSql);
                     }
                 } else {
@@ -305,6 +310,7 @@ public class DataAdministrationController {
                 err.append("<br/>General error: ").append(e.getMessage());
             }
         }
+
         errors = err.length() > 0 ? err.toString() : "No errors found.";
         suggestedSql = sql.length() > 0 ? sql.toString() : "No SQL suggestions found.";
     }
