@@ -8,6 +8,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -72,6 +73,8 @@ public class PurchaseOrderController implements Serializable {
 
     private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
+
+    private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -184,6 +187,9 @@ public class PurchaseOrderController implements Serializable {
 
     public void saveBill() {
 
+        if (getPaymentMethodData().getCredit().getCreditDuration() != null) {
+            getAprovedBill().setCreditDuration(getPaymentMethodData().getCredit().getCreditDuration());
+        }
         getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
         getAprovedBill().setFromDepartment(getRequestedBill().getDepartment());
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
@@ -445,4 +451,16 @@ public class PurchaseOrderController implements Serializable {
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
     }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
 }

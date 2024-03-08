@@ -16,7 +16,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
@@ -24,7 +23,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Consultant (Health Informatics)
  */
 @Entity
-@XmlRootElement
 public class WebUserRole implements Serializable {
 
     static final long serialVersionUID = 1L;

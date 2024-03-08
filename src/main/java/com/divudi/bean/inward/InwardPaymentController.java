@@ -173,6 +173,14 @@ public class InwardPaymentController implements Serializable {
         Person person = patient.getPerson();
 
         DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
+        
+        String finalBillInsId ="";
+        String finalBillDeptId = "";
+        
+        if(pe.getFinalBill()!=null){
+            finalBillInsId=pe.getFinalBill().getInsId();
+            finalBillDeptId=pe.getFinalBill().getDeptId();
+        }
 
         String output;
         output = template
@@ -188,6 +196,9 @@ public class InwardPaymentController implements Serializable {
                 .replace("{patient_nic}", person.getNic() != null ? person.getNic() : "")
                 .replace("{patient_phn_number}", patient.getPhn() != null ? patient.getPhn() : "")
                 .replace("{admission_number}", pe.getBhtNo() != null ? pe.getBhtNo() : "")
+                .replace("{fian_bill_number}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_dept_id}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_ins_id}", finalBillInsId != null ? finalBillInsId : "")
                 .replace("{admission_date}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
                 .replace("{date_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
                 .replace("{bht}", pe.getBhtNo() != null ? pe.getBhtNo() : "")
@@ -204,7 +215,9 @@ public class InwardPaymentController implements Serializable {
                 .replace("{to_department}", getDepartmentName(pe) != null ? getDepartmentName(pe) : "")
                 .replace("{payment_method}", pe.getPaymentMethod() != null && pe.getPaymentMethod().getLabel() != null ? pe.getPaymentMethod().getLabel() : "")
                 .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
-                .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "");
+                .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
+                .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
 
         return output;
     }

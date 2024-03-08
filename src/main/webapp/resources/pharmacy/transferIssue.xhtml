@@ -16,7 +16,7 @@
     <cc:implementation>
         
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
+        <div class="a4bill">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
@@ -134,7 +134,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>

@@ -32,11 +32,11 @@
                             
                             <div class="row">
                                 <div class="col-md-4 d-grid gap-2">
-                                    <p:panel header="Dealor Details">
+                                    <p:panel header="Supplier Details">
 
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <h:outputLabel value="Dealor ​Name" ></h:outputLabel>
+                                                <h:outputLabel value="Supplier ​Name" ></h:outputLabel>
                                             </div>
                                             <div class="col-md-8">
                                                 <h:outputLabel value="#{pharmacyBillSearch.bill.fromInstitution.name}" ></h:outputLabel>
@@ -144,7 +144,7 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between w-100">
                                 <h:outputLabel value="Cancel Bill Preview" class="mt-2"></h:outputLabel>
-
+                                
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         ajax="false" 
@@ -169,13 +169,12 @@
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
  <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                            <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                            
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+<!--                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                                 <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                            </h:panelGroup>-->
                         </h:panelGroup>
                         
                     </p:panel>

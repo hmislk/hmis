@@ -10,6 +10,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
+import com.divudi.data.CreditDuration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
@@ -506,7 +507,8 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
-            PaymentMethod.Slip};
+            PaymentMethod.Slip,
+            PaymentMethod.MultiplePaymentMethods};
 
         return p;
     }
@@ -515,6 +517,12 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit};
 
         return p;
+    }
+    
+    public CreditDuration[] getCreditDuration() {
+        CreditDuration[] c = {CreditDuration.D30, CreditDuration.D60, CreditDuration.D90};
+
+        return c;
     }
 
     public PaymentMethod[] getPaymentMethodsForChannel() {

@@ -21,13 +21,13 @@
                             <h:outputLabel value="To"/>
                             <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
-                            <h:outputLabel value="Distributor"/>
+                            <h:outputLabel value="Supplier"/>
                             <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" />
                             <h:outputLabel value="Requested User"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.creator}" />
                             <h:outputLabel value="Requested Department"/>
                             <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.department}" />
-                            <h:outputLabel value="Po Number"/>
+                            <h:outputLabel value="PO Number"/>
                             <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
                             <h:outputLabel value="Requsted Value"/>  
                             <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.total}"/>
@@ -35,9 +35,9 @@
                             <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                             <h:outputLabel value="Max Result"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.maxResult}"/>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search"  value="Search All Requests" action="#{searchController.createPoRequestedAndApprovedPharmacy()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search"  value="Search All Requests" action="#{searchController.createPoRequestedAndApprovedPharmacy()}" ajax="false" ></p:commandButton>
                             <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" value="Search Approved Requests" action="#{searchController.createApprovedPharmacy()}" ajax="false" ></p:commandButton>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" value="Search To Approve Requests" action="#{searchController.createNotApprovedPharmacy()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search" value="Search To Approve Requests" action="#{searchController.createNotApprovedPharmacy()}" ajax="false" ></p:commandButton>
                         </h:panelGrid>
                     </div>
                     <div class="col-10">
@@ -50,7 +50,7 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-                            <p:column headerText="Requested at"  >
+                            <p:column headerText="Requested At"  >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     <h:outputLabel value="#{b.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -59,7 +59,7 @@
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" value="Cancelled At " />
                                     <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                    value="#{b.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -67,7 +67,7 @@
                                 </h:panelGroup>                       
                             </p:column> 
 
-                            <p:column headerText="Requested by" >
+                            <p:column headerText="Requested By" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
@@ -75,14 +75,14 @@
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{b.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled by " />
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
                                     <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                    value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column headerText="Distributor" >
+                            <p:column headerText="Supplier" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>

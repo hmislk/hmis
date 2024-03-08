@@ -79,6 +79,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
+    private int numberOfDaysToMarkAsShortExpiary;
 
     @ManyToOne
     Category category;
@@ -1297,6 +1298,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setPrintFeesForBills(Boolean printFeesForBills) {
         this.printFeesForBills = printFeesForBills;
+    }
+
+    public int getNumberOfDaysToMarkAsShortExpiary() {
+        return numberOfDaysToMarkAsShortExpiary;
+    }
+
+    public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
+        this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
     }
     
     

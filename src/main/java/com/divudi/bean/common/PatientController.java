@@ -1860,6 +1860,11 @@ public class PatientController implements Serializable {
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true;";
     }
+    
+    public String navigateToEmrEditPatient() {
+        getCurrent();
+        return "/emr/patient?faces-redirect=true;";
+    }
 
     public String toViewPatient() {
         current = null;

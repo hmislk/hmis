@@ -104,6 +104,8 @@ public class Bill implements Serializable {
     // Bank Detail
     String creditCardRefNo;
     String chequeRefNo;
+    
+    private String creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution bank;
     @Temporal(javax.persistence.TemporalType.DATE)
@@ -2081,6 +2083,14 @@ public class Bill implements Serializable {
         }
 
         return ageAtBilledDate;
+    }
+
+    public String getCreditDuration() {
+        return creditDuration;
+    }
+
+    public void setCreditDuration(String creditDuration) {
+        this.creditDuration = creditDuration;
     }
 
 }
