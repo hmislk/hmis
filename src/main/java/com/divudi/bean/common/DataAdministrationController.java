@@ -265,7 +265,7 @@ public class DataAdministrationController {
         }
 
     }
-    
+
     public String navigateToCheckMissingFields() {
         return "/dataAdmin/missing_database_fields";
     }
@@ -273,8 +273,10 @@ public class DataAdministrationController {
     public void checkMissingFields() {
         suggestedSql = "";
         errors = "";
-        StringBuilder err = new StringBuilder();
+        StringBuilder allErrors = new StringBuilder();
         StringBuilder sql = new StringBuilder();
+
+        // Collect all error messages
         for (Class<?> entityClass : findEntityClassNames()) {
             String entityName = entityClass.getSimpleName();
             String jpql = "SELECT e FROM " + entityName + " e";
@@ -286,27 +288,27 @@ public class DataAdministrationController {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
-                    err.append("<br/>").append(message);
-
-                    // Attempt to extract the missing column from the error message
-                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        // Generate a placeholder SQL statement with the missing column
-                        String alterTableSql = String.format("ALTER TABLE [TABLE_NAME] ADD %s VARCHAR(255);", missingColumn);
-                        sql.append("<br/>").append(alterTableSql);
-                    }
-                } else {
-                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
+                    allErrors.append(cause.getMessage()).append("\n");
                 }
             } catch (Exception e) {
-                err.append("<br/>General error: ").append(e.getMessage());
+                allErrors.append(e.getMessage()).append("\n");
             }
         }
-        errors = err.length() > 0 ? err.toString() : "No errors found.";
-        suggestedSql = sql.length() > 0 ? sql.toString() : "No SQL suggestions found.";
+
+        // Define the regex pattern to extract missing column
+        String regex = "Unknown column '([^']+)' in 'field list'";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(allErrors.toString());
+
+        while (matcher.find()) {
+            String missingColumn = matcher.group(1);
+
+            // Now, instead of trying to generate SQL without table names, just collect missing fields
+            errors += String.format("Missing Column: %s\n", missingColumn);
+        }
+
+        // If necessary, adjust the logic for suggestedSql or leave it empty if not generating SQL
+        suggestedSql = ""; // Adjust or remove based on your need to generate SQL without table names
     }
 
     public List<Class<?>> findEntityClassNames() {
