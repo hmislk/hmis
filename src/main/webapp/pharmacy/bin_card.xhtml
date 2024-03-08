@@ -106,7 +106,7 @@
 
                     <p:column headerText="Date"  sortBy="#{pb.createdAt}" >
                         <h:outputLabel value="#{pb.createdAt}" >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </h:outputLabel>
                     </p:column>
 
@@ -116,7 +116,7 @@
                         filterBy="#{pb.pharmaceuticalBillItem.itemBatch.dateOfExpire}" 
                         filterMatchMode="contains" >
                         <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </h:outputLabel>
                     </p:column>
 
