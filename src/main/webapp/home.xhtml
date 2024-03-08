@@ -11,304 +11,461 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
-
-
-
-                <!-- Manage Token -->
-                <h:panelGroup id="panelManageToken" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Manage_Token'}">
+                
+                <!-- Patient Lookup -->
+                <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup'}" layout="block" class="col-1 m-4">
                     <h:form>
-                        <p:commandButton value="Manage Token" ajax="false" styleClass="m-1 ui-button-info" action="#{tokenManagementController.navigateToManageTokens()}" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Create Purchase Order -->
-                <h:panelGroup id="panelCreatePurchaseOrder" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Create_Purchase_Order'}">
-                    <h:form>
-                        <p:commandButton value="Create Purchase Order" icon="fas fa-plus-circle" ajax="false" action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Auto Order (P Model) -->
-                <h:panelGroup id="panelAutoOrderPModel" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_P_Model'}">
-                    <h:form>
-                        <p:commandButton value="Auto Order (P Model)" icon="fas fa-sync-alt" ajax="false" action="#{reorderController.autoOrderByDistributor()}" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Auto Order (Q Model) -->
-                <h:panelGroup id="panelAutoOrderQModel" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_Q_Model'}">
-                    <h:form>
-                        <p:commandButton value="Auto Order (Q Model)" icon="fas fa-retweet" ajax="false" action="#{reorderController.autoOrderByDistributor()}" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Direct Purchase -->
-                <h:panelGroup id="panelDirectPurchase" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Direct_Purchase'}">
-                    <h:form>
-                        <p:commandButton value="Direct Purchase" icon="fas fa-hand-holding-usd" ajax="false" action="/pharmacy/pharmacy_purchase" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Purchase Orders Approval -->
-                <h:panelGroup id="panelPurchaseOrdersApproval" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Purchase_Orders_Approval'}">
-                    <h:form>
-                        <p:commandButton value="Purchase Orders Approval" icon="fas fa-clipboard-check" ajax="false" action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Goods Receipt -->
-                <h:panelGroup id="panelGoodsReceipt" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Goods_Receipt'}">
-                    <h:form>
-                        <p:commandButton value="Goods Receipt" icon="fas fa-dolly-flatbed" ajax="false" action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Return Received Goods -->
-                <h:panelGroup id="panelReturnReceivedGoods" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Return_Received_Goods'}">
-                    <h:form>
-                        <p:commandButton value="Return Received Goods" icon="fas fa-undo-alt" ajax="false" action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <!-- Return without Receipt -->
-                <h:panelGroup id="panelReturnWithoutReceipt" layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Return_without_Receipt'}">
-                    <h:form>
-                        <p:commandButton value="Return without Receipt" icon="fas fa-exchange-alt" ajax="false" action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" style="width: 150px;height: 70px;font-size: 12pt">
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-
-
-                <h:panelGroup 
-                    id="panelScanToPay" 
-                    rendered="#{ui.icon eq 'Scan_to_Pay'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-
-                    >
-                    <h:form>
-                        <p:commandButton 
-                            value="Scan Bills"
-                            icon=""
+                        <p:tooltip for="Patient_Lookup" value="Patient Lookup"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Patient_Lookup"
+                            action="opd/patient_search.xhtml" 
                             ajax="false" 
-                            action="#{opdPreSettleController.navigateToScanBills()}" 
-                            >
-                        </p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-
-                <h:panelGroup 
-                    id="panelBillingForCashier" 
-                    rendered="#{ui.icon eq 'Billing_For_Cashier'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-
-                    >
-                    <h:form>
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
-                            actionListener="#{opdPreBillController.prepareNewBill}" 
-                            value="Billing For Cashier"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <h:panelGroup 
-                    rendered="#{ui.icon eq 'Patient_Lookup'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-                    <h:form>
-                        <p:commandLink action="opd/patient_search.xhtml" ajax="false" styleClass="svg-link">
-                            <p:graphicImage library="image" name="health_worker_form.svg" style="cursor: pointer;"/>
+                            styleClass="svg-link">
+                            <p:graphicImage library="image" name="home/health_worker_form.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Patient Lookup" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>
-
                 </h:panelGroup>
-
-                <h:panelGroup 
-                    rendered="#{ui.icon eq 'Manage_Shift_Fund_Bills'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
+                
+                <!-- Patient Add -->
+                <h:panelGroup rendered="#{ui.icon eq 'Patient_Add_New'}" layout="block" class="col-1 m-4">
                     <h:form>
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
+                        <p:tooltip for="Patient_Add_New" value="Add New Patient"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Patient_Add_New"
+                            action="opd/patient_edit.xhtml" 
                             ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"   
-                            value="Manage Shift Fund Bills"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
+                            styleClass="svg-link">
+                            <p:graphicImage library="image" name="home/addPatient.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add New Patient" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-
-                <h:panelGroup 
-                    rendered="#{ui.icon eq 'Manage_Token'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-                    <h:form>
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="#{tokenController.navigateToTokenIndex()}"   
-                            value="Token Management"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-
-
-                <h:panelGroup 
-                    rendered="#{ui.icon eq 'Patient_Add_New'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-                    <h:form>
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="opd/patient_edit.xhtml"   
-                            value="Add New Patient"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:commandButton>
-                    </h:form>
-                </h:panelGroup>
-
-                <h:panelGroup 
-                    id="panelOPDBilling" 
-                    rendered="#{ui.icon eq 'Opd_Billing'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
+                
+                <!-- OPD Billing -->
+                <h:panelGroup rendered="#{ui.icon eq 'Opd_Billing'}" layout="block" class="col-1 m-4">
                     <h:form >
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
+                        <p:tooltip for="panelOPDBilling" value="OPD Billing"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="panelOPDBilling"
+                            action="#{opdBillController.navigateToNewOpdBill()}" 
+                            actionListener="#{billController.prepareNewBill}" 
                             ajax="false" 
-                            class="m-1 ui-button-success"
-                            action="#{opdBillController.navigateToNewOpdBill()}" actionListener="#{billController.prepareNewBill}"
-                            value="OPD Billing"
+                            styleClass="svg-link" 
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
-                        </p:commandButton>
+                            <p:graphicImage library="image" name="home/invoice.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
                     </h:form>
                 </h:panelGroup>
 
-
-
-                <h:panelGroup 
-                    id="panelCollectingCentreBilling" 
-                    rendered="#{ui.icon eq 'Collecting_Centre_Billing'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-
+                <!-- Billing For Cashier -->
+                <h:panelGroup  rendered="#{ui.icon eq 'Billing_For_Cashier'}" layout="block" class="col-1 m-4">
+                    <h:form>
+                        <p:tooltip for="panelBillingForCashier" value="Billing For Cashier"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="panelBillingForCashier"
+                            ajax="false"
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}" 
+                            actionListener="#{opdPreBillController.prepareNewBill}" 
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Billing For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+                
+                <!-- Collecting center Billing -->
+                <h:panelGroup rendered="#{ui.icon eq 'Collecting_Centre_Billing'}" layout="block" class="col-1 m-3">
+                    <h:form>
+                        <p:tooltip for="Collecting_Centre_Billing" value="Collecting Centre Billing"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Collecting_Centre_Billing"
+                            ajax="false"
+                            action="collecting_centre/bill?faces-redirect=true"
+                            actionListener="#{collectingCentreBillController.prepareNewBill()}"
+                            rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Collecting Centre Billing"/>
+                        </p:commandLink>
+                    </h:form>
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    id="panelMedicalPackageBilling" 
-                    rendered="#{ui.icon eq 'Medical_Package_Billing'}"
-                    layout="block"
-                    class="col-md-1 m-2"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Medical Package Billing">
-
-                    </p:panel>
+                <h:panelGroup rendered="#{ui.icon eq 'Medical_Package_Billing'}" layout="block" class="col-1 m-3">
+                    <h:form>
+                        <p:tooltip for="Medical_Package_Billing" value="Package Billing"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Medical_Package_Billing"
+                            ajax="false"
+                            action="opd_bill_package?faces-redirect=true"
+                            rendered="#{webUserController.hasPrivilege('OpdBilling')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/OPD_Default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{ui.icon eq 'Scan_to_Pay'}" layout="block" class="col-1 m-3">
+                    <h:form>
+                        <p:tooltip for="Scan_to_Pay" value="Scan to Pay"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Scan_to_Pay"
+                            ajax="false"
+                            action="#{opdPreSettleController.navigateToScanBills()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/scan.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Scan Bills"/>
+                        </p:commandLink>
+                    </h:form>
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    id="panelAcceptPayments" 
-                    rendered="#{ui.icon eq 'Accept_Payments'}"
-                    layout="block"
-                    class="col-md-1  mx-4"
-                    >
-
-                </h:panelGroup>
-
-                <h:panelGroup 
-                    id="panelAcceptPaymentsForOPD_Bills" 
-                    rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Bills'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Bills'}" layout="block" class="col-1 m-3">
                     <h:form >
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
+                        <p:tooltip for="Accept_Payments_For_OPD_Bills" value="Accept Payment for OPD Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Accept_Payments_For_OPD_Bills"
+                            ajax="false"
                             action="opd_search_pre_bill?faces-redirect=true"
-                            value="Accept Payment For OPD Bill"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
-                        </p:commandButton>
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                        </p:commandLink>
                     </h:form>               
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    id="opdBilSearch" 
-                    rendered="#{ui.icon eq 'Search_Opd_Bill'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}" layout="block" class="col-1 m-3">
                     <h:form >
-                        <p:commandButton 
-                            style="width: 150px;height: 70px;font-size: 12pt"
-                            ajax="false" 
-                            class="m-1 ui-button-success"
+                        <p:tooltip for="Accept_Payments_For_OPD_Batch_Bills" value="Accept Payments For OPD Batch Bills"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Accept_Payments_For_OPD_Batch_Bills"
+                            ajax="false"
+                            action="opd_search_pre_batch_bill?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Payment for OPD Batch Bills"/>
+                        </p:commandLink>
+                    </h:form >
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Payments_For_Pharmacy_Bills'}" layout="block" class="col-1 m-3" >
+                    <h:form>
+                        <p:tooltip for="Accept_Payments_For_Pharmacy_Bills" value="Accept Payments for Pharmacy Bills"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Accept_Payments_For_Pharmacy_Bills"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_search_pre_bill?faces-redirect=true" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Payments for Pharmacy Bills" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup> 
+
+                <h:panelGroup rendered="#{ui.icon eq 'Refunds'}" layout="block" class="col-1 m-3" >
+                    <h:form>
+                        <p:tooltip for="Refunds" value="Refunds"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Refunds"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Refunds" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{ui.icon eq 'RefundsforOPDBills'}" layout="block" class="col-1 m-3" >
+                    <h:form>
+                        <p:tooltip for="RefundsforOPDBills" value="Refunds for OPD Bills"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="RefundsforOPDBills"
+                            ajax="false"
+                            action="/opd/opd_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Refunds for OPD Bills" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{ui.icon eq 'RefundsforPharmacyBills'}" layout="block" class="col-1 m-3" >
+                    <h:form>
+                        <p:tooltip for="RefundsforPharmacyBills" value="Refunds for Pharmacy Bills"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="RefundsforPharmacyBills"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Refunds for Pharmacy Bills" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!--OPD Bill Search-->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Opd_Bill'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Opd_Bill" value="OPD Bill Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Opd_Bill"
+                            ajax="false"
                             action="opd/opd_bill_search?faces-redirect=true"
-                            value="OPD Bill Search"
-                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
-                        </p:commandButton>
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="OPD Bill Search" />
+                        </p:commandLink>
                     </h:form>               
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    id="panelAcceptPaymentsForOPDBatchBills" 
-                    rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept Payments For OPD Batch Bills">
-
-                    </p:panel>
+                <!-- Search OPD Bill Item -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Opd_Bill_Item'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Opd_Bill_Item" value="OPD Bill Item Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Opd_Bill_Item"
+                            ajax="false"
+                            action="/opd_search_billitem_own?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="OPD Bill Item Search" />
+                        </p:commandLink>
+                    </h:form>               
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    id="panelAcceptPaymentsForPharmacyBills" 
-                    rendered="#{ui.icon eq 'Accept_Payments_For_Pharmacy_Bills'}"
-                    layout="block"
-                    class="col-md-1 m-3"
-                    >
-                    <p:panel
-                        class="m-1 w-100"
-                        header="Accept Payments For Pharmacy Bills">
+                <!-- Search OPD Payment -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Opd_Payment'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Opd_Payment" value="OPD Payment Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Opd_Payment"
+                            ajax="false"
+                            action="/opd_search_bill_fee_payment?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="OPD Payment Search" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
 
-                    </p:panel>
-                </h:panelGroup> 
+                <!-- Search Collecting Centre Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Collecting_Centre_Bill'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Collecting_Centre_Bill" value="Collecting Centre Bill Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Collecting_Centre_Bill"
+                            ajax="false"
+                            action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Collecting Centre Bill Search" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+                <!-- Search Bill to Pay -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Bill_to_Pay'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Bill_to_Pay" value="Bills To Pay Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Bill_to_Pay"
+                            ajax="false"
+                            action="/opd_search_bill_to_pay?faces-redirect=true" 
+                            actionListener="#{billController.clear()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Bills To Pay Search" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+                <!-- Search Credit Paid Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Credit_Paid_Bill'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Search_Credit_Paid_Bill" value="Credit paid Bill Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Search_Credit_Paid_Bill"
+                            ajax="false"
+                            action="/opd_search_bill_full_paid?faces-redirect=true" 
+                            actionListener="#{billController.clear()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Credit paid Bill Search" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+                <!-- Search Credit Paid Bill with OPD Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Credit_Paid_Bill_with_OPD_Bill'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="RefundsforPharmacyBills" value="Credit paid Bills with OPD Bill Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="RefundsforPharmacyBills"
+                            ajax="false"
+                            action="/opd_search_bill_full_paid_bills?faces-redirect=true" 
+                            actionListener="#{billController.clear()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Credit paid Bills with OPD Bill Search" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+
+                <!-- Doctor Mark in -->
+                <h:panelGroup rendered="#{ui.icon eq 'Doctor_Mark_in'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Doctor_Mark_in" value="Doctor Mark In"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Doctor_Mark_in"
+                            ajax="false"
+                            action="#{workingTimeController.navigateToMarkIn()}"
+                            rendered="#{webUserController.hasPrivilege('Opd')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/in.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Mark In" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+                <!-- Doctor Mark out -->
+                <h:panelGroup rendered="#{ui.icon eq 'Doctor_Mark_out'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Doctor_Mark_out" value="Doctor Mark Out"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Doctor_Mark_out"
+                            ajax="false"
+                            action="#{workingTimeController.navigateToListCurrentWorkTimes()}" 
+                            rendered="#{webUserController.hasPrivilege('Opd')}">
+                            <p:graphicImage library="image" name="home/out.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Mark Out" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+                <!-- Doctor Working Times -->
+                <h:panelGroup rendered="#{ui.icon eq 'Doctor_Working_Times'}" layout="block" class="col-1 m-3" >
+                    <h:form >
+                        <p:tooltip for="Doctor_Working_Times" value="Working Times"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Doctor_Working_Times"
+                            ajax="false"
+                            action="#{workingTimeController.navigateToListWorkTimes()}" 
+                            rendered="#{webUserController.hasPrivilege('Opd')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/times.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Working Times" />
+                        </p:commandLink>
+                    </h:form>               
+                </h:panelGroup>
+
+
+                <!-- Manage Token -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Manage_Token'}">
+                    <h:form>
+                        <p:tooltip for="Manage_Token" value="Manage Token"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Manage_Token"
+                            ajax="false"
+                            action="#{tokenController.navigateToTokenIndex()}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/token.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Manage Token" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+
+                <!-- Lab Report Print -->
+                <h:panelGroup  layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Lab_Report_Print'}">
+                    <h:form>
+                        <p:tooltip for="Lab_Report_Print" value="Lab Report print"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Lab_Report_Print"
+                            ajax="false"
+                            action="/lab/report_for_opd_print?faces-redirect=true" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/lab_report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Lab Report print" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+
+                <!-- OPD Summaries -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'OPD_Summaries'}">
+                    <h:form>
+                        <p:tooltip for="OPD_Summaries" value="Summaries"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="OPD_Summaries"
+                            ajax="false"
+                            action="#{cashierReportController.navigateToOpdSummeries()}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/summary_report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Summaries" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+
+                <!-- OPD Analytics -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'OPD_Analytics'}">
+                    <h:form>
+                        <p:tooltip for="OPD_Analytics" value="Analytics"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="OPD_Analytics"
+                            ajax="false"
+                            action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Analytics" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             </ui:repeat>
         </div>
-
-
-
     </ui:define>
-
 </ui:composition>

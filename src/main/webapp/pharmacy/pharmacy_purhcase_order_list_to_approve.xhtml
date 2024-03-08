@@ -21,7 +21,7 @@
                             <h:outputLabel value="To"/>
                             <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
-                            <h:outputLabel value="Distributor"/>
+                            <h:outputLabel value="Supplier"/>
                             <p:inputText class="w-100" autocomplete="off"  value="#{searchController.searchKeyword.toInstitution}" />
                             <h:outputLabel value="Requested User"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.creator}" />
@@ -82,7 +82,7 @@
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column headerText="Distributor" >
+                            <p:column headerText="Supplier" >
                                 <h:commandLink action="pharmacy_reprint_order_request" >
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
