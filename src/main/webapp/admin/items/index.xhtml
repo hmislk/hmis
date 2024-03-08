@@ -106,7 +106,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
                                 </div>
                             </p:tab>
-                            <p:tab title="Bulk Transactions">
+                            <p:tab title="Bulk Transactions*">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   
                                         class="w-100"  
@@ -118,7 +118,7 @@
                                         ajax="false" 
                                         value="Upload and Add Professional Fees" 
                                         action="#{dataUploadController.navigateToUploadAndAddProfessionalFees()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -139,6 +139,13 @@
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
+
+                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+
+                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
+
 
                                 </div>
                             </p:tab>
