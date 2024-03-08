@@ -87,11 +87,11 @@ public enum Icon {
     
     pharmacy_issue("Pharmacy - Issue"),
     pharmacy_search_issue_bill("Pharmacy - Search Issue Bill"),
-    pharmacy_search_issue_bill_items("Pharmacy - Search Issue Bill"),
-    pharmacy_search_issue_return_bill("Pharmacy - Search Issue Bill"),
+    pharmacy_search_issue_bill_items("Pharmacy - Search Issue Bill Items"),
+    pharmacy_search_issue_return_bill("Pharmacy - Search Issue Return Bill"),
     pharmacy_uint_issue_margin("Pharmacy - Uint Issue Margin"),
     
-    pharmacy_request("Pharmacy - Issue"),
+    pharmacy_request("Pharmacy - Request"),
     pharmacy_issue_for_request("Pharmacy - Issue for Request"),
     pharmacy_direct_issue("Pharmacy - Direct Issue"),
     pharmacy_receive("Pharmacy - Receive"),
@@ -103,6 +103,7 @@ public enum Icon {
     adjustments_sale_rate("Adjustments - Sale Rate"),
     adjustments_wholesale_rate("Adjustments - Wholesale Rate"),
     adjustments_expiry_date("Adjustments - Expiry Date"),
+    adjustments_search_adjustment_bill("Adjustments - Search Adjustment Bill"),
     adjustments_transfer_all_stock("Adjustments - Transfer All Stock"),
     
     supplier_due_search("Supplier Due Search"),
