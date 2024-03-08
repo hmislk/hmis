@@ -200,6 +200,14 @@ public class InwardSearch implements Serializable {
         Patient patient = pe.getPatient();
         Person person = patient.getPerson();
 
+        String finalBillInsId = "";
+        String finalBillDeptId = "";
+
+        if (pe.getFinalBill() != null) {
+            finalBillInsId = pe.getFinalBill().getInsId();
+            finalBillDeptId = pe.getFinalBill().getDeptId();
+        }
+
         String output = template
                 .replace("{dept_id}", String.valueOf(bill.getDeptId()))
                 .replace("{ins_id}", String.valueOf(bill.getInsId()))
@@ -228,7 +236,10 @@ public class InwardSearch implements Serializable {
                 .replace("{to_department}", getDepartmentName(pe))
                 .replace("{payment_method}", pe.getPaymentMethod().getLabel())
                 .replace("{bill_date}", formatDate(bill.getBillDate(), sessionController))
-                .replace("{bill_time}", formatTime(bill.getBillTime(), sessionController));
+                .replace("{bill_time}", formatTime(bill.getBillTime(), sessionController))
+                .replace("{fian_bill_number}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_dept_id}", finalBillDeptId != null ? finalBillDeptId : "")
+                .replace("{fian_bill_number_ins_id}", finalBillInsId != null ? finalBillInsId : "");
 
         return output;
     }
@@ -921,7 +932,7 @@ public class InwardSearch implements Serializable {
             return true;
         }
     }
-    
+
     public String getRowStyleClass(BillItem bip) {
         if (bip.getNetValue() != 0) {
             return "non-zero-value-row";
