@@ -11,7 +11,8 @@
     <h:body>
         <ui:composition template="index.xhtml">
             <ui:define name="subcontent">
-
+  
+                <p:panel></p:panel>
                 <p:selectOneListbox value="#{appointmentActivityController.current}" >
                     <f:selectItems value="#{appointmentActivityController.items}"
                                    var="i" itemLabel="#{i.name}" itemValue="#{i}">
