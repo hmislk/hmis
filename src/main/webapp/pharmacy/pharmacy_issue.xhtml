@@ -85,7 +85,7 @@
                                             </p:autoComplete>
                                         </div>
                                         <div class="col-2">
-                                            <p:outputLabel value="Quentity" ></p:outputLabel>
+                                            <p:outputLabel value="Quantity" ></p:outputLabel>
                                             <p:inputText 
                                                 autocomplete="off" 
                                                 accesskey="q"  
@@ -120,7 +120,7 @@
                                                 value="Add" 
                                                 action="#{pharmacyIssueController.addBillItem}"
                                                 process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" >
+                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty txtVal acStock focusItem tabI" >
                                             </p:commandButton>
 
                                             <p:defaultCommand  target="btnAdd" />  
@@ -275,7 +275,7 @@
                                     <p:column headerText="Item">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Quentity">
+                                    <p:column headerText="Quantity">
                                         <p:cellEditor>  
                                             <f:facet name="output">  
                                                 <h:outputText value="#{bi.qty}" >
