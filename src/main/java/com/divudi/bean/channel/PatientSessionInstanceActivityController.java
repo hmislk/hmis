@@ -11,6 +11,7 @@ import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Area;
 import com.divudi.entity.Institution;
+import com.divudi.entity.channel.PatientSessionInstanceActivity;
 import com.divudi.facade.AreaFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -187,8 +188,8 @@ public class PatientSessionInstanceActivityController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = Area.class)
-    public static class AreaConverter implements Converter {
+    @FacesConverter(forClass = PatientSessionInstanceActivity.class)
+    public static class PatientSessionInstanceActivityConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -196,7 +197,7 @@ public class PatientSessionInstanceActivityController implements Serializable {
                 return null;
             }
             PatientSessionInstanceActivityController controller = (PatientSessionInstanceActivityController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "areaController");
+                    getValue(facesContext.getELContext(), null, "patientSessionInstanceActivityController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
