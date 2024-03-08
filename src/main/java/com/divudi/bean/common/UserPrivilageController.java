@@ -254,47 +254,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), allNode);
         TreeNode pharmacyMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         TreeNode pharmacyAdministrationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
-        TreeNode pharmacyStockAdjustmentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockAdjustment, "Pharmacy Stock Adjustment"), pharmacyNode);
-        TreeNode pharmacyStockAdjustmentSingleItemNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockAdjustmentSingleItem, "Pharmacy Stock Adjustment By Single Item"), pharmacyNode);
-        TreeNode pharmacyReAddToStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReAddToStock, "Pharmacy Re Add To Stock"), pharmacyNode);
-        TreeNode pharmacyStockIssueNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockIssue, "Pharmacy Stock Issue"), pharmacyNode);
 
-        TreeNode grnNode = new DefaultTreeNode("GRN", pharmacyNode);
-        TreeNode grnNodeChild = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGoodReceive, "GRN"), grnNode);
-        TreeNode grnForWholesaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGoodReceiveWh, "GRN For Wholesale"), grnNode);
-        TreeNode grnCancellingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGoodReceiveCancel, "GRN Cancelling"), grnNode);
-        TreeNode grnReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGoodReceiveReturn, "GRN Return"), grnNode);
-        TreeNode grnEditNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGoodReceiveEdit, "GRN Edit"), grnNode);
-
-        TreeNode orderNode = new DefaultTreeNode("Order", pharmacyNode);
-        TreeNode orderCreationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCreation, "Order Creation"), orderNode);
-        TreeNode orderApprovalNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderApproval, "Order Approval"), orderNode);
-        TreeNode orderCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyOrderCancellation, "Order Cancellation"), orderNode);
-
-        TreeNode saleNode = new DefaultTreeNode("Sale", pharmacyNode);
-        TreeNode pharmacySaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySale, "Pharmacy Sale"), saleNode);
-        TreeNode pharmacySaleWithoutStockNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale without Stock"), saleNode);
-        TreeNode pharmacyWholesaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWh, "Pharmacy Wholesale"), saleNode);
-        TreeNode pharmacySaleCancelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleCancel, "Pharmacy Sale Cancel"), saleNode);
-        TreeNode pharmacyWholesaleCancelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleCancelWh, "Pharmacy Wholesale Cancel"), saleNode);
-        TreeNode pharmacySaleReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReturn, "Pharmacy Sale Return"), saleNode);
-        TreeNode pharmacyWholesaleReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReturnWh, "Pharmacy Wholesale Return"), saleNode);
-
-        TreeNode purchaseNode = new DefaultTreeNode("Purchase", pharmacyNode);
-        TreeNode pharmacyPurchaseNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPurchase, "Purchase"), purchaseNode);
-        TreeNode pharmacyPurchaseWholesaleNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPurchaseWh, "Purchase Wholesale"), purchaseNode);
-        TreeNode pharmacyPurchaseCancellationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPurchaseCancellation, "Purchase Cancel"), purchaseNode);
-        TreeNode pharmacyPurchaseReturnNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPurchaseReturn, "Purchase Return"), purchaseNode);
-        TreeNode pharmacyReturnWithoutTraisingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnWithoutTraising, "Pharmacy Return Without Traising"), purchaseNode);
-
-        TreeNode pharmacyDealerPaymentNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealorPayment, "Pharmacy Dealer Payment"), pharmacyNode);
-        TreeNode pharmacySearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearch, "Pharmacy Search"), pharmacyNode);
-        TreeNode pharmacyReportsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReports, "Pharmacy Reports"), pharmacyNode);
-        TreeNode pharmacySummaryNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummery, "Pharmacy Summary"), pharmacyNode);
-        TreeNode pharmacyTransferNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransfer, "Pharmacy Transfer"), pharmacyNode);
-        TreeNode pharmacySetReorderLevelNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySetReorderLevel, "Pharmacy Set Reorder Level"), pharmacyNode);
-        TreeNode pharmacyBHTIssueAcceptNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBHTIssueAccept, "Pharmacy Accept BHT Issue"), pharmacyNode);
-
+        
         TreeNode channellingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Channelling"), allNode);
         TreeNode channellingMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Channelling, "Channelling Menu"), channellingNode);
         TreeNode channelBookingNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channellingNode);
@@ -556,15 +517,15 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacySearchInpatientDirectIssueReturnsbyBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchInpatientDirectIssueReturnsbyBill, "Pharmacy Search Inpatient Direct Issue Returns by Bill"), InpatientMedicationManagement);
         TreeNode PharmacysSearchInpatientDirectIssueReturnsbyItem = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacysSearchInpatientDirectIssueReturnsbyItem, "Pharmacy Search Inpatient Direct Issue Returns by Item"), InpatientMedicationManagement);
 
-        TreeNode procumentNode = new DefaultTreeNode("Pharmacy Procument", pharmacyNode);
-        TreeNode pharmacyCreatePurchaseOrder = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreatePurchaseOrder, "Create Purchase Order"), pharmacyNode);
-        TreeNode pharmacyAutoOrderPModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderPModel, "Auto Order (P Model)"), pharmacyNode);
-        TreeNode pharmacyAutoOrderQModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderQModal, "Auto Order (Q Model)"), pharmacyNode);
-        TreeNode pharmacyDirectPurchase = new DefaultTreeNode(new PrivilegeHolder(Privileges.DirectPurchase, "Direct Purchase"), pharmacyNode);
-        TreeNode pharmacyPurchaseOrderApprovel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrdersApprovel, "Purchase Orders Approvel"), pharmacyNode);
-        TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), pharmacyNode);
-        TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), pharmacyNode);
-        TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), pharmacyNode);
+        TreeNode ProcumentNode = new DefaultTreeNode("Pharmacy Procument", pharmacyNode);
+        TreeNode pharmacyCreatePurchaseOrder = new DefaultTreeNode(new PrivilegeHolder(Privileges.CreatePurchaseOrder, "Create Purchase Order"), ProcumentNode);
+        TreeNode pharmacyAutoOrderPModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderPModel, "Auto Order (P Model)"), ProcumentNode);
+        TreeNode pharmacyAutoOrderQModel = new DefaultTreeNode(new PrivilegeHolder(Privileges.AutoOrderQModal, "Auto Order (Q Model)"), ProcumentNode);
+        TreeNode pharmacyDirectPurchase = new DefaultTreeNode(new PrivilegeHolder(Privileges.DirectPurchase, "Direct Purchase"), ProcumentNode);
+        TreeNode pharmacyPurchaseOrderApprovel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PurchaseOrdersApprovel, "Purchase Orders Approvel"), ProcumentNode);
+        TreeNode pharmacyGoodRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.GoodsRecipt, "Pharmacy Good Recipt"), ProcumentNode);
+        TreeNode pharmacyReturnReceviedGoods = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnReceviedGoods, "Pharmacy Return Recevied Goods"), ProcumentNode);
+        TreeNode pharmacyReturnWithoutRecipt = new DefaultTreeNode(new PrivilegeHolder(Privileges.ReturnWithoutRecipt, "Pharmacy Return WIthout Recipt"), ProcumentNode);
 
         TreeNode DealerPayment = new DefaultTreeNode("Pharmacy Dealer Payment", pharmacyNode);
         TreeNode PharmacyDealerDueSearch = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDealerDueSearch, "Pharmacy Dealer Due Search"), DealerPayment);

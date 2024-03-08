@@ -382,6 +382,7 @@ public enum Privileges {
     PharmacyDisbursementIssurForRequest,
     PharmacyDisbursementDirectIssue,
     PharmacyDisbursementRecieve,
+    PharmacyDisbursementReports,
     //Pharmacy Inpatient medication management
     PharmacyDirectIssueToBht,
     PharmacyDirectIssueToTheaterCases,
@@ -451,7 +452,7 @@ public enum Privileges {
     PharmacySetReorderLevel,
     PharmacyReturnWithoutTraising,
     PharmacyBHTIssueAccept,
-    //Procurement
+    //Pharmacy Procurement
     CreatePurchaseOrder,
     AutoOrderPModel,
     AutoOrderQModal,
@@ -635,6 +636,7 @@ public enum Privileges {
             case PharmacyDisbursementIssurForRequest:
             case PharmacyDisbursementDirectIssue:
             case PharmacyDisbursementRecieve:
+            case PharmacyDisbursementReports:
 
             //Retail Transactions
             case PharmacySale:
