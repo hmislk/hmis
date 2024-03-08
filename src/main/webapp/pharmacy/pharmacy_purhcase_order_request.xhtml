@@ -163,7 +163,15 @@
                                 </p:selectOneMenu>
 
                                 <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
-                                    <pa:credit_duration paymentMethodData="#{purchaseOrderRequestController.paymentMethodData}"/>
+                                    <div class="d-flex" >
+                                        <div class="ui-inputgroup mx-1 my-1">
+                                            <p:inputText  
+                                                value="#{purchaseOrderRequestController.currentBill.creditDuration}"
+                                                style="width: 10em;">
+                                            </p:inputText>
+                                            <div class="ui-inputgroup-addon">Days</div>
+                                        </div>
+                                    </div>
                                 </h:panelGroup>
 
                                 <p:outputLabel 

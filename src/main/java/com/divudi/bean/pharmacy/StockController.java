@@ -89,9 +89,7 @@ public class StockController implements Serializable {
         return storeBean;
     }
 
-    
-    
-     public List<Stock> completeAvailableStocks(String qry) {
+    public List<Stock> completeAvailableStocks(String qry) {
         Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
         List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
         if (initialStocks != null) {
@@ -146,7 +144,7 @@ public class StockController implements Serializable {
         //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
     }
-    
+
     public void removeStoreItemsWithoutStocks() {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
@@ -216,7 +214,7 @@ public class StockController implements Serializable {
     public double findExpiaringStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
-            return findStock(institution, amp);
+            return findExpiaringStock(institution, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             return findExpiaringStock(institution, amps);
@@ -261,10 +259,9 @@ public class StockController implements Serializable {
         }
 
         stock = billItemFacade.findDoubleByJpql(jpql, m);
-        if (stock != null) {
-            return stock;
-        }
-        return 0.0;
+
+        return stock;
+
     }
 
     public List<Stock> completeStock(String qry) {
@@ -398,8 +395,8 @@ public class StockController implements Serializable {
     public void setDepartmentFacade(DepartmentFacade departmentFacade) {
         this.departmentFacade = departmentFacade;
     }
-    
-    private StockFacade getStockFacade(){
+
+    private StockFacade getStockFacade() {
         return ejbFacade;
     }
 

@@ -26,6 +26,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +73,7 @@ public class PurchaseOrderRequestController implements Serializable {
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
+    private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -518,5 +520,15 @@ public class PurchaseOrderRequestController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public PaymentMethodData getPaymentMethodData() {
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+    
+    
 
 }
