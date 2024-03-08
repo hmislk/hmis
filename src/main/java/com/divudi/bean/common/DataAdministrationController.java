@@ -60,6 +60,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -265,48 +266,85 @@ public class DataAdministrationController {
         }
 
     }
-    
+
     public String navigateToCheckMissingFields() {
         return "/dataAdmin/missing_database_fields";
     }
 
-    public void checkMissingFields() {
+    public void checkMissingFields1() {
         suggestedSql = "";
         errors = "";
-        StringBuilder err = new StringBuilder();
-        StringBuilder sql = new StringBuilder();
+        StringBuilder allErrors = new StringBuilder();
+
         for (Class<?> entityClass : findEntityClassNames()) {
             String entityName = entityClass.getSimpleName();
-            String jpql = "SELECT e FROM " + entityName + " e";
             try {
-                Object result = itemFacade.executeQueryFirstResult(entityClass, jpql);
-            } catch (PersistenceException e) {
-                Throwable cause = e.getCause();
+                itemFacade.executeQueryFirstResult(entityClass, "SELECT e FROM " + entityName + " e");
+            } catch (PersistenceException pe) {
+                Throwable cause = pe.getCause();
                 while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
-                    err.append("<br/>").append(message);
-
-                    // Attempt to extract the missing column from the error message
-                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
+                    Matcher matcher = Pattern.compile("Unknown column '([^']+)' in 'field list'").matcher(cause.getMessage());
                     if (matcher.find()) {
                         String missingColumn = matcher.group(1);
-                        // Generate a placeholder SQL statement with the missing column
-                        String alterTableSql = String.format("ALTER TABLE [TABLE_NAME] ADD %s VARCHAR(255);", missingColumn);
-                        sql.append("<br/>").append(alterTableSql);
+                        errors += String.format("Entity: %s, Missing Column: %s\n", entityName, missingColumn);
                     }
-                } else {
-                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
                 }
             } catch (Exception e) {
-                err.append("<br/>General error: ").append(e.getMessage());
+                // Handle other exceptions as needed
             }
         }
-        errors = err.length() > 0 ? err.toString() : "No errors found.";
-        suggestedSql = sql.length() > 0 ? sql.toString() : "No SQL suggestions found.";
+    }
+
+    public void checkMissingFields() {
+        System.out.println("checkMissingFields");
+        suggestedSql = "";
+        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            System.out.println("entityName = " + entityName);
+            EntityFieldError entityFieldError = new EntityFieldError(entityName);
+            String jpql = "SELECT e FROM " + entityName + " e";
+            try {
+                itemFacade.executeQueryFirstResult(entityClass, jpql);
+                System.out.println("No Error");
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                System.out.println("cause = " + cause);
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                System.out.println("cause = " + cause);
+                if (cause != null) {
+                    String message = cause.getMessage();
+                    System.out.println("message = " + message);
+                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher matcher = pattern.matcher(message);
+                    while (matcher.find()) {
+                        String missingColumn = matcher.group(1);
+                        System.out.println("missingColumn = " + missingColumn);
+                        entityFieldError.addMissingField(missingColumn);
+                    }
+                    System.out.println("entityFieldError.missingFields = " + entityFieldError.missingFields);
+                    if (!entityFieldError.missingFields.isEmpty()) {
+                        entityFieldErrors.add(entityFieldError);
+                    }
+                }
+            } 
+        }
+
+        // Convert the list of EntityFieldError objects to a string
+        StringBuilder errorsBuilder = new StringBuilder();
+        System.out.println("entityFieldErrors = " + entityFieldErrors);
+        for (EntityFieldError error : entityFieldErrors) {
+            errorsBuilder.append(error.toString()).append("\n");
+        }
+
+        errors = errorsBuilder.toString();
+        System.out.println("errors = " + errors);
     }
 
     public List<Class<?>> findEntityClassNames() {
@@ -1607,6 +1645,42 @@ public class DataAdministrationController {
 
     public void setExecutionFeedback(String executionFeedback) {
         this.executionFeedback = executionFeedback;
+    }
+
+    public class EntityFieldError {
+
+        private String entityName;
+        private Set<String> missingFields = new HashSet<>();
+
+        public EntityFieldError(String entityName) {
+            this.entityName = entityName;
+        }
+
+        public void addMissingField(String fieldName) {
+            missingFields.add(fieldName);
+        }
+
+        @Override
+        public String toString() {
+            return "Entity: " + entityName + ", Missing Fields: " + String.join(", ", missingFields);
+        }
+
+        public String getEntityName() {
+            return entityName;
+        }
+
+        public void setEntityName(String entityName) {
+            this.entityName = entityName;
+        }
+
+        public Set<String> getMissingFields() {
+            return missingFields;
+        }
+
+        public void setMissingFields(Set<String> missingFields) {
+            this.missingFields = missingFields;
+        }
+
     }
 
 }
