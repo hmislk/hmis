@@ -11,7 +11,7 @@
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
-                
+
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup'}" layout="block" class="col-1 m-4">
                     <h:form>
@@ -26,7 +26,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Patient Add -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Add_New'}" layout="block" class="col-1 m-4">
                     <h:form>
@@ -41,7 +41,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- OPD Billing -->
                 <h:panelGroup rendered="#{ui.icon eq 'Opd_Billing'}" layout="block" class="col-1 m-4">
                     <h:form >
@@ -75,7 +75,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <!-- Collecting center Billing -->
                 <h:panelGroup rendered="#{ui.icon eq 'Collecting_Centre_Billing'}" layout="block" class="col-1 m-3">
                     <h:form>
@@ -107,7 +107,7 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{ui.icon eq 'Scan_to_Pay'}" layout="block" class="col-1 m-3">
                     <h:form>
                         <p:tooltip for="Scan_to_Pay" value="Scan to Pay"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -422,7 +422,6 @@
                     </h:form>
                 </h:panelGroup>
 
-
                 <!-- OPD Analytics -->
                 <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'OPD_Analytics'}">
                     <h:form>
@@ -438,19 +437,585 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!--    *****************************************Pharmacy Modile***************************************** -->
+
+                <!-- Pharmacy - Retail Sale -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_sale'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_sale" value="Retail Sale"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_sale"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Pharmacy - Retail Sale" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy -Retail Sale for cashier -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_sale_for_cashier'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_sale_for_cashier" value="Retail Sale for cashier"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_sale_for_cashier"
+                            styleClass="svg-link"
+                            ajax="false" 
+                            action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}" >
+                            <p:graphicImage library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Retail Sale for cashier"  />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Sale without Stocks -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_sale_without_stock'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_sale_without_stock" value="Sale without Stocks"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_sale_without_stock"
+                            ajax="false" 
+                            action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWithoutStock')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Sale without Stocks" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Search Sale Bill -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_Search_sale_bill'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_Search_sale_bill" value="Search Sale Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_Search_sale_bill"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Sale Bill" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Search Sale Pre Bill -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_search_sale_pre_bill'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_search_sale_pre_bill" value="Search Sale Pre Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_search_sale_pre_bill"
+                            ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Sale Pre Bill" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Search Sale Bill Items -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_search_sale_bill_item'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_search_sale_bill_item" value="Search Sale Bill Items"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_search_sale_bill_item"
+                            ajax="false" action="/pharmacy/pharmacy_search_sale_bill_item?faces-redirect=true"  
+                            actionListener="#{searchController.makeListNull}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Sale Bill Items" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Return - Items Only -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_return_items_only'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_return_items_only" value="Return - Items Only"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_return_items_only"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Return - Items Only" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Return - Items and Payments -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_return_items_and_payments'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_return_items_and_payments" value="Return - Items and Payments"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_return_items_and_payments"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Return - Items and Payments" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Search Return Bill (Item) -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_search_return_bill'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_search_return_bill" value="Search Return Bill (Item)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_search_return_bill"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Return Bill (Item)" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy - Add To Stock-->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'pharmacy_add_to_stock'}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_add_to_stock" value="Add To Stock"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="pharmacy_add_to_stock"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add To Stock" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
 
 
+                <!-- Wholesale -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_sale'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_sale" value="Wholesale"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_sale"
+                            ajax="false" 
+                            action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"  
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Wholesale" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Whole Sale for cashier-->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_sale_for_cashier'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_sale_for_cashier" value="Wholesale for cashier"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_sale_for_cashier"
+                            ajax="false" 
+                            action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            actionListener="#{pharmacySaleController.resetAll()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Wholesale for cashier" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Wholesale Bill -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_Search_sale_bill'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_Search_sale_bill" value="Search Wholesale Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_Search_sale_bill"
+                            ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"  
+
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Wholesale Bill" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Wholesale Bill to Pay -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_Search_sale_bill_to_pay'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_Search_sale_bill_to_pay" value="Search Wholesale Bill to Pay"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_Search_sale_bill_to_pay"
+                            ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_pre_bill?faces-redirect=true"  
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Wholesale Bill to Pay" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Wholesale Bill Items -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_search_sale_bill_item'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_search_sale_bill_item" value="Search Wholesale Bill Items"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_search_sale_bill_item"
+                            ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill_item?faces-redirect=true"  
+                            actionListener="#{searchController.makeListNull}" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Wholesale Bill Items" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Wholesale Return - Items Only -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_return_items_only'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_return_items_only" value="Wholesale Return - Items Only"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_return_items_only"
+                            ajax="false" 
+                            action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;"  value="Wholesale Return - Items Only" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Wholesale Return - Items and Payments -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_return_items_and_payments'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_return_items_and_payments" value="Wholesale Return - Items and Payments"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_return_items_and_payments"
+                            ajax="false" 
+                            action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Wholesale Return - Items and Payments" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Return Wholesale Bill (Item) -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_search_return_bill_item'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_search_return_bill_item" value="Search Return Wholesale Bill (Item)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_search_return_bill_item"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"  
+
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Return Wholesale Bill (Item)"  />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add To Stock -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_add_to_stock'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_add_to_stock" value="Add To Stock"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_add_to_stock"
+                            ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add To Stock" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Wholesale Purchase -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'wholesale_purchase'}">
+                    <h:form>
+                        <p:tooltip for="wholesale_purchase" value="Wholesale Purchase"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="wholesale_purchase"
+                            ajax="false" 
+                            action="/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true"  
+
+                            rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}" 
+                            actionListener="#{pharmacyPurchaseController.makeNull()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Wholesale Purchase" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!--    **************************************************************************************************** -->
+
+                <!-- Direct Issue to BHTs -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'direct_issue_to_BHTs'}">
+                    <h:form>
+                        <p:tooltip for="direct_issue_to_BHTs" value="Direct Issue to BHTs"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="direct_issue_to_BHTs"
+                            ajax="false" 
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true" 
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Issue to BHTs" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Direct Issue to Theatre Cases -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'direct_issue_to_theatre'}">
+                    <h:form>
+                        <p:tooltip for="direct_issue_to_theatre" value="Direct Issue to Theatre Cases"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="direct_issue_to_theatre"
+                            ajax="false" 
+                            action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Direct Issue to Theatre Cases -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'BHT_issue_requests'}">
+                    <h:form>
+                        <p:tooltip for="BHT_issue_requests" value="Direct Issue to Theatre Cases"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="BHT_issue_requests"
+                            ajax="false"  
+                            action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Inpatient Direct Issues by Bill -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'search_inpatint_direct_issue_by_bill'}">
+                    <h:form>
+                        <p:tooltip for="search_inpatint_direct_issue_by_bill" value="Search Inpatient Direct Issues by Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="search_inpatint_direct_issue_by_bill"
+                            ajax="false" action="/inward/pharmacy_search_sale_bill_bht" 
+                            actionListener="#{searchController.makeListNull}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Bill" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Inpatient Direct Issues by Item -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'search_inpatint_direct_issue_by_item'}">
+                    <h:form>
+                        <p:tooltip for="search_inpatint_direct_issue_by_item" value="Search Inpatient Direct Issues by Item"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="search_inpatint_direct_issue_by_item" 
+                            ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}"   
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Item" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Inpatient Direct Issue Returns by Bill -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'search_inpatint_direct_issue_returns_by_bill'}">
+                    <h:form>
+                        <p:tooltip for="search_inpatint_direct_issue_returns_by_bill" value="Search Inpatient Direct Issue Returns by Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="search_inpatint_direct_issue_returns_by_bill"
+                            ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Inpatient Direct Issue Returns by Bill" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Inpatient Direct Issue Returns by Item  -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'search_inpatint_direct_issue_returns_by_item'}">
+                    <h:form>
+                        <p:tooltip for="search_inpatint_direct_issue_returns_by_item"  value="Search Inpatient Direct Issue Returns by Item"   showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="search_inpatint_direct_issue_returns_by_item"
+                            ajax="false" 
+                            action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
+                            actionListener="#{searchController.makeListNull}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;"  value="Search Inpatient Direct Issue Returns by Item"  />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
 
+                <!-- Create Purchase Order -->
+                <h:panelGroup  layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Create_Purchase_Order'}">
+                    <h:form>
+                        <p:tooltip for="Create_Purchase_Order" value="Create Purchase Order"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Create_Purchase_Order"
+                            ajax="false" 
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Create Purchase Order"  />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Auto Order (P Model) -->
+                <h:panelGroup layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_P_Model'}">
+                    <h:form>
+                        <p:tooltip for="Auto_Order_P_Model" value="Auto Order (P Model)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Auto_Order_P_Model"
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Auto Order (P Model)" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Auto Order (Q Model) -->
+                <h:panelGroup layout="block" class="col-md-1 m-3" rendered="#{ui.icon eq 'Auto_Order_Q_Model'}">
+                    <h:form>
+                        <p:tooltip for="Auto_Order_Q_Model" value="Auto Order (Q Model)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Auto_Order_Q_Model"
+                            ajax="false" 
+                            action="#{reorderController.autoOrderByDistributor()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Auto Order (Q Model)" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Direct Purchase -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Direct_Purchase'}">
+                    <h:form>
+                        <p:tooltip for="Direct_Purchase" value="Direct Purchase"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Direct_Purchase"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Purchase" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Purchase Orders Approval -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Purchase_Orders_Approval'}">
+                    <h:form>
+                        <p:tooltip for="Purchase_Orders_Approval" value="Purchase Orders Approval"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Purchase_Orders_Approval"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Purchase Orders Approval" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Goods Receipt -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Goods_Receipt'}">
+                    <h:form>
+                        <p:tooltip for="Goods_Receipt" value="Goods Receipt"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Goods_Receipt"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Goods Receipt" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
+                <!-- Return Received Goods -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Return_Received_Goods'}">
+                    <h:form>
+                        <p:tooltip for="Return_Received_Goods" value="Return Received Goods"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Return_Received_Goods"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Return Received Goods" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
-
+                <!-- Return without Receipt -->
+                <h:panelGroup layout="block" class="col-1 m-3" rendered="#{ui.icon eq 'Return_without_Receipt'}">
+                    <h:form>
+                        <p:tooltip for="Return_without_Receipt" value="Return without Receipt"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink 
+                            id="Return_without_Receipt"
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Return without Receipt" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
 
 
