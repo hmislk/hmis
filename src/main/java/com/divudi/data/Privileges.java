@@ -410,6 +410,7 @@ public enum Privileges {
     PharmacyWholesaleReturnItemsOnly,
     PharmacyWholesaleWholeSaleAddToStock,
     PharmacyWholeSalePurchase,
+    PharmacySearchReturnBillItems,
     //Pharmacy Disposal
     PharmacyDisposalIssue,
     PharmacyDisposalSearchIssueBill,
