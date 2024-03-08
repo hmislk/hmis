@@ -8,7 +8,7 @@ package com.divudi.data;
  */
 public enum TriggerType {
     Order_Request("Order Request"),
-    Transfer_Issue("Trancefer Isuue"),
+    Transfer_Issue("Transfer Isuue"),
     Order_Approval("Order Aproval");
 
     private final String label;

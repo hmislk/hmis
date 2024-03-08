@@ -25,6 +25,16 @@
                                         <ui:insert name="users" >
                                             <div class="row" >
                                                 <div class="col-6" >
+                                                    <p:commandButton 
+                                                        id="btnAdd"
+                                                        icon="fas fa-add"
+                                                        class="ui-button-success my-2"
+                                                        value="Add New" 
+                                                        process="btnAdd"
+                                                        update="gpDetails"
+                                                        action="#{webUserRoleController.toAddNewUserRole}">
+                                                    </p:commandButton>
+                                                    
                                                     <p:selectOneListbox 
                                                         id="lstItems"
                                                         value="#{webUserRoleController.current}"
@@ -36,20 +46,13 @@
                                                             itemLabel="#{i.name}" 
                                                             itemValue="#{i}" >
                                                         </f:selectItems>
-                                                        <p:ajax process="lstItems" update="gridDetails" ></p:ajax>
+                                                        <p:ajax process="lstItems" update="gpDetails" ></p:ajax>
                                                     </p:selectOneListbox>
-                                                    <p:commandButton 
-                                                        id="btnAdd"
-                                                        value="Add New" 
-                                                        process="btnAdd"
-                                                        update="gridDetails"
-                                                        action="#{webUserRoleController.toAddNewUserRole}">
-                                                    </p:commandButton>
+                                                    
                                                 </div>
                                                 <div class="col-6" >
-                                                    <p:panelGrid 
-                                                        id="gridDetails"
-                                                        columns="2" class="w-100">
+                                                    <p:panel class="w-100" id="gpDetails" header="Details of the Role">
+                                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                                         <p:outputLabel value="Role Name" for="txtRole" ></p:outputLabel>
                                                         <p:inputText
                                                             value="#{webUserRoleController.current.name}" 
@@ -64,13 +67,16 @@
                                                             required="true" 
                                                             requiredMessage="Please enter a Name" >
                                                         </p:inputTextarea>
-                                                    </p:panelGrid>
+                                                    </h:panelGrid>
                                                     <p:commandButton
                                                         id="btnSave"
-                                                        process="gridDetails btnSave"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-warning my-2"
+                                                        process="gpDetails btnSave"
                                                         update="lstItems"
                                                         value="Save" 
                                                         action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
+                                                        </p:panel>
                                                 </div>
                                             </div>
 

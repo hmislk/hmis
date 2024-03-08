@@ -104,6 +104,7 @@ public class Bill implements Serializable {
     // Bank Detail
     String creditCardRefNo;
     String chequeRefNo;
+    
     private String creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     Institution bank;
