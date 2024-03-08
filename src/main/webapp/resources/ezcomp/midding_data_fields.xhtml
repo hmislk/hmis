@@ -23,6 +23,12 @@
                         value="Check Missing Fields"  
                         class="w-100"
                         />
+                     <p:commandButton
+                        ajax="false" 
+                        action="#{dataAdministrationController.checkMissingFields1()}" 
+                        value="Check Missing Fields"  
+                        class="w-100"
+                        />
                 </f:facet>
                 <p:outputLabel value="Errors" ></p:outputLabel>
                 <p:inputTextarea value="#{dataAdministrationController.errors}" 
