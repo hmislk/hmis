@@ -5,11 +5,17 @@
               version="2.0">
 
     <application>
-        <el-resolver>com.divudi.bean.common.util.JsfCrudELResolver</el-resolver>
         <resource-bundle>
             <base-name>/Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
+        <application>
+            <resource-bundle>
+                <base-name>placeholders</base-name>
+                <var>msg</var>
+            </resource-bundle>
+        </application>
+
     </application>
 
     <navigation-rule>

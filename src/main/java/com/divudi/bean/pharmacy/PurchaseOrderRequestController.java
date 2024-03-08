@@ -284,6 +284,44 @@ public class PurchaseOrderRequestController implements Serializable {
 
         }
     }
+    
+    public void finalizeBillComponent() {
+        for (BillItem b : getBillItems()) {
+            
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getCurrentBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+            
+            double qty = 0.0;
+            qty = Math.abs(b.getQty());
+            qty = Math.abs(b.getPharmaceuticalBillItem().getFreeQty());
+            
+            if(qty<=0.0){
+                b.setRetired(true);
+                b.setRetirer(sessionController.getLoggedUser());
+                b.setRetiredAt(new Date());
+                b.setRetireComments("Retired at Finalising PO");
+            }
+            
+
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+
+        }
+    }
 
     public void addAllSupplierItems() {
         if (getCurrentBill().getToInstitution() == null) {
