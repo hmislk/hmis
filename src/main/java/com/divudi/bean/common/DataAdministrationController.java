@@ -288,20 +288,19 @@ public class DataAdministrationController {
                 if (cause != null) {
                     String message = cause.getMessage();
 
-                    // Attempt to extract the table name and missing column from the error message
-                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'.*?FROM (.*?) WHERE");
-                    Matcher matcher = pattern.matcher(message);
-
+                    // Improved error message extraction logic
+                    Matcher matcher = Pattern.compile("Unknown column '(.*?)' in 'field list'.*?FROM `(.*?)`", Pattern.DOTALL).matcher(message);
                     if (matcher.find()) {
                         String missingColumn = matcher.group(1);
                         String tableName = matcher.group(2);
 
-                        // Append simplified error message
-                        err.append(String.format("<br/>Missing column: '%s' in table: '%s'", missingColumn, tableName));
+                        // Construct simplified error message
+                        err.append(String.format("<br/>Table: %s, Missing Column: %s", tableName, missingColumn));
 
                         // Suggest SQL for adding the missing column, assuming VARCHAR(255) as default type
-                        String alterTableSql = String.format("ALTER TABLE %s ADD COLUMN %s VARCHAR(255);", tableName, missingColumn);
-                        sql.append("<br/>").append(alterTableSql);
+                        sql.append(String.format("<br/>ALTER TABLE `%s` ADD COLUMN `%s` VARCHAR(255);", tableName, missingColumn));
+                    } else {
+                        err.append("<br/>Unable to parse error message: ").append(message);
                     }
                 } else {
                     err.append("<br/>Unhandled exception: ").append(e.getMessage());
@@ -311,8 +310,8 @@ public class DataAdministrationController {
             }
         }
 
-        errors = err.length() > 0 ? err.toString() : "No errors found.";
-        suggestedSql = sql.length() > 0 ? sql.toString() : "No SQL suggestions found.";
+        errors = err.toString();
+        suggestedSql = sql.toString();
     }
 
     public List<Class<?>> findEntityClassNames() {
