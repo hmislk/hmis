@@ -52,6 +52,7 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,10 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Entity;
+import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
+import org.reflections.Reflections;
 
 /**
  *
@@ -165,6 +169,7 @@ public class DataAdministrationController {
     private SearchKeyword searchKeyword;
     CommonController commonController;
     private int manageCheckEnteredDataIndex;
+    private String errors;
 
     Date fromDate;
     Date toDate;
@@ -255,6 +260,46 @@ public class DataAdministrationController {
 
         }
 
+    }
+
+    public String navigateToCheckMissingFields() {
+        System.out.println("navigateToCheckMissingFields");
+        errors = "";
+        errors = findMissingFieldErrors();
+        return "/dataAdmin/missing_database_fields";
+    }
+
+    private String findMissingFieldErrors() {
+        StringBuilder err = new StringBuilder();
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+            try {
+                // Attempt to execute the query for each entity class to get the first result
+                Object result = itemFacade.executeQueryFirstResult(entityClass, jpql);
+            } catch (PersistenceException e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    err.append("<br/>").append(cause.getMessage());
+                } else {
+                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
+                }
+            } catch (Exception e) {
+                err.append("<br/>General error: ").append(e.getMessage());
+            }
+        }
+        return err.length() > 0 ? err.toString() : "No errors found.";
+    }
+
+    public List<Class<?>> findEntityClassNames() {
+        List<Class<?>> lst = new ArrayList<>();
+        Reflections reflections = new Reflections("com.divudi.entity");
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
+        lst.addAll(annotated);
+        return lst;
     }
 
     public void addBillFeesToProfessionalCancelBills() {
@@ -925,7 +970,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -953,7 +997,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         int j = 1;
 
@@ -985,7 +1028,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -1011,7 +1053,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         for (Item i : items) {
 //            //System.out.println("i.getName() = " + i.getName());
@@ -1133,7 +1174,7 @@ public class DataAdministrationController {
 
         return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
-    
+
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -1505,9 +1546,17 @@ public class DataAdministrationController {
     public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
         this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
     }
-    
-    public String navigateToAdminDataAdministration(){
-        return "/dataAdmin/admin_data_administration";
+
+    public String navigateToAdminDataAdministration() {
+        return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public String getErrors() {
+        return errors;
+    }
+
+    public void setErrors(String errors) {
+        this.errors = errors;
     }
 
 }

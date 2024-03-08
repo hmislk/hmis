@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -44,6 +45,25 @@ public abstract class AbstractFacade<T> {
     public void flush() {
         getEntityManager().flush();
 
+    }
+
+    public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
+        return getEntityManager().createQuery(jpqlQuery, entityType).getResultList();
+    }
+
+    public <T> T executeQueryFirstResult(Class<T> entityType, String jpqlQuery) {
+        try {
+            return getEntityManager().createQuery(jpqlQuery, entityType)
+                    .setMaxResults(1)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null; // Handle the case where no entities are found
+        } catch (NonUniqueResultException e) {
+            // This exception won't be thrown since we're setting max results to 1
+            return null;
+        } catch (Exception e) {
+            throw e; // Rethrow any other exceptions
+        }
     }
 
     public T findFirstByJpql(String jpql) {
