@@ -6,17 +6,19 @@
  * (94) 71 5812399
  * (94) 71 5812399
  */
-package com.divudi.bean.pharmacy;
-
-import com.divudi.bean.common.SessionController;
+package com.divudi.bean.channel;
+import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
+import com.divudi.entity.Area;
 import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.entity.channel.SessionInstanceActivity;
+import com.divudi.facade.AreaFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -33,47 +35,79 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class ManufacturerController implements Serializable {
+public class SessionInstanceActivityController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private InstitutionFacade ejbFacade;
-    List<Institution> selectedItems;
-    private Institution current;
-    private List<Institution> items = null;
-    String selectText = "";
-    List<Institution> institutionList = null;
+    private AreaFacade ejbFacade;
+    private Area current;
+    private List<Area> items = null;
+    
+      public void save(Area area) {
+        if (area == null) {
+            return;
+        }
+        if (area.getId() != null) {
+            getFacade().edit(area);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            area.setCreatedAt(new Date());
+            area.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(area);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
+     public Area findAreaByName(String name) {
+         
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select a "
+                + " from Area a "
+                + " where a.retired=:ret "
+                + " and a.name=:n";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("n", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
-    public List<Institution> completeManu(String qry) {
-        if (qry != null) {
-            institutionList = getFacade().findByJpql("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+    public List<Area> completeArea(String qry) {
+        List<Area> list;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Area c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        list = getFacade().findByJpql(sql, hm);
+
+        if (list == null) {
+            list = new ArrayList<>();
         }
-        if (institutionList == null) {
-            institutionList = new ArrayList<>();
-        }
-        return institutionList;
+        return list;
     }
 
     public void prepareAdd() {
-        current = new Institution();
-        current.setInstitutionType(InstitutionType.Manufacturer);
+        current = new Area();
     }
 
-    public void setSelectedItems(List<Institution> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
-    }
-
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 
     public void saveSelected() {
+        if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
+            JsfUtil.addErrorMessage("Please enter Value");
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -88,15 +122,11 @@ public class ManufacturerController implements Serializable {
         getItems();
     }
 
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
-    }
-
-    public InstitutionFacade getEjbFacade() {
+    public AreaFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(InstitutionFacade ejbFacade) {
+    public void setEjbFacade(AreaFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -108,14 +138,17 @@ public class ManufacturerController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public ManufacturerController() {
+    public SessionInstanceActivityController() {
     }
 
-    public Institution getCurrent() {
+    public Area getCurrent() {
+        if (current == null) {
+            current = new Area();
+        }
         return current;
     }
 
-    public void setCurrent(Institution current) {
+    public void setCurrent(Area current) {
         this.current = current;
     }
 
@@ -136,14 +169,18 @@ public class ManufacturerController implements Serializable {
         getCurrent();
     }
 
-    private InstitutionFacade getFacade() {
+    private AreaFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<Institution> getItems() {
+    public List<Area> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Manufacturer order by i.name";
-            items = getEjbFacade().findByJpql(sql);
+            String j;
+            j = "select a "
+                    + " from Area a "
+                    + " where a.retired=false "
+                    + " order by a.name";
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -151,17 +188,16 @@ public class ManufacturerController implements Serializable {
     /**
      *
      */
-
-    @FacesConverter(forClass = Institution.class)
-    public static class ManufacturerConverter implements Converter {
+    @FacesConverter(forClass = SessionInstanceActivity.class)
+    public static class SessionInstanceActivityConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            ManufacturerController controller = (ManufacturerController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "manufacturerController");
+            SessionInstanceActivityController controller = (SessionInstanceActivityController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "sessionInstanceActivityController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -182,13 +218,14 @@ public class ManufacturerController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Institution) {
-                Institution o = (Institution) object;
+            if (object instanceof Area) {
+                Area o = (Area) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ManufacturerController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + SessionInstanceActivityController.class.getName());
             }
         }
     }
+
 }
