@@ -273,8 +273,10 @@ public class DataAdministrationController {
     public void checkMissingFields() {
         suggestedSql = "";
         errors = "";
-        StringBuilder err = new StringBuilder();
+        StringBuilder allErrors = new StringBuilder();
         StringBuilder sql = new StringBuilder();
+
+        // Collect all error messages
         for (Class<?> entityClass : findEntityClassNames()) {
             String entityName = entityClass.getSimpleName();
             String jpql = "SELECT e FROM " + entityName + " e";
@@ -286,31 +288,26 @@ public class DataAdministrationController {
                     cause = cause.getCause();
                 }
                 if (cause != null) {
-                    String message = cause.getMessage();
-
-                    // Improved error message extraction logic
-                    Matcher matcher = Pattern.compile("Unknown column '(.*?)' in 'field list'.*?FROM `(.*?)`", Pattern.DOTALL).matcher(message);
-                    if (matcher.find()) {
-                        String missingColumn = matcher.group(1);
-                        String tableName = matcher.group(2);
-
-                        // Construct simplified error message
-                        err.append(String.format("<br/>Table: %s, Missing Column: %s", tableName, missingColumn));
-
-                        // Suggest SQL for adding the missing column, assuming VARCHAR(255) as default type
-                        sql.append(String.format("<br/>ALTER TABLE `%s` ADD COLUMN `%s` VARCHAR(255);", tableName, missingColumn));
-                    } else {
-                        err.append("<br/>Unable to parse error message: ").append(message);
-                    }
-                } else {
-                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
+                    allErrors.append(cause.getMessage()).append("\n");
                 }
             } catch (Exception e) {
-                err.append("<br/>General error: ").append(e.getMessage());
+                allErrors.append(e.getMessage()).append("\n");
             }
         }
 
-        errors = err.toString();
+        // Define the regex pattern to extract table name and missing column
+        String regex = "Unknown column '([^']+)' in 'field list'.*?FROM `([^`]+)`";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(allErrors.toString());
+
+        while (matcher.find()) {
+            String missingColumn = matcher.group(1);
+            String tableName = matcher.group(2);
+
+            errors += String.format("Table: %s, Missing Column: %s\n", tableName, missingColumn);
+            sql.append(String.format("ALTER TABLE `%s` ADD COLUMN `%s` VARCHAR(255);\n", tableName, missingColumn));
+        }
+
         suggestedSql = sql.toString();
     }
 
