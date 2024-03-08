@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
@@ -17,13 +18,11 @@
                                     <div class="col-md-7">
                                         <h:outputLabel value="Final Payment Cancellation" class="mt-2"></h:outputLabel>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-5 d-flex justify-content-end gap-2">
                                         <p:inputText 
                                             placeholder="Enter Comments to Cancel Bill"
                                             value="#{inwardSearch.comment}" 
                                             class="w-100"/> 
-                                    </div>
-                                    <div class="col-md-1">
                                         <p:commandButton 
                                             class="ui-button-danger"
                                             icon="fa fa-cancel"
@@ -137,10 +136,16 @@
                                 </div>
                             </div>
 
+                            <style>
+                                .noDisplayRow {
+                                    display: none;
+                                }
+                            </style>
+
                             <p:panel header="Bill Item Details" class="mt-2">
                                 <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip"
-                                             rowStyleClass="#{bip.netValue !=0 ?'':'noDisplayRow' }">
-                                    <p:column>
+                                             rowStyleClass="#{(bip.grossValue ne 0) ? '' : 'noDisplayRow' }">
+                                    <p:column width="5em">
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>                                
                                     </p:column>
@@ -148,7 +153,7 @@
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip.inwardChargeType}"/>
                                     </p:column>
-                                    <p:column>
+                                    <p:column width="10em">
                                         <f:facet name="header">Fee</f:facet>
                                         <h:outputLabel value="#{bip.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -177,9 +182,15 @@
                                 </p:commandButton>
                             </f:facet>
 
-                            <div style="border: 1px solid;" >
-                                <h:panelGroup id="gpBillPreview" >
-                                    <div style="height:14cm; width:12cm; padding:0.5cm; overflow:hidden!important; page-break-after:always; font-family: sans-serif; font-size: 16px; position: relative; " >
+                            <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
+                                <bi:finalBill_cancel bill="#{inwardSearch.bill}" />
+                            </h:panelGroup>
+                            
+                            
+                            
+<!--                           <div style="border: 1px solid;" >
+                                <h:panelGroup id="gpBillP1review" >
+                                    <div style="height:100cm; width:12cm; padding:0.5cm; overflow:hidden!important; page-break-after:always; font-family: sans-serif; font-size: 16px; position: relative; " >
                                         <h:outputLabel value="#{inwardSearch.bill.cancelledBill.insId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
 
                                         <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billDate}"  style="position: absolute; left: 10.5cm; top:1.5cm;" >
@@ -234,7 +245,8 @@
                                     </div>
 
                                 </h:panelGroup>
-                            </div>
+                            </div>-->
+                            
                         </p:panel>
                     </h:panelGroup>
                 </h:form>                
