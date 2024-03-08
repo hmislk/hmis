@@ -494,7 +494,7 @@ public class SheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
-
+        
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -510,7 +510,7 @@ public class SheduleController implements Serializable {
 
         getCurrent().setTotal(calTot());
         getCurrent().setTotalFfee(calFTot());
-
+        
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
         prepareAdd();

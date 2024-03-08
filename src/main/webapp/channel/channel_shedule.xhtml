@@ -76,17 +76,6 @@
                                     </p:panelGrid>
 
                                 </p:panel>
-                                <p:panel class="my-1">
-                                    <f:facet name="header" >
-                                        Others
-                                    </f:facet>
-                                    <h:panelGrid columns="2" class="w-100">
-                                        <h:outputLabel value="Activities" />
-                                        <p:inputTextarea class="mx-2 w-100 my-1" rows="4" value="#{sheduleController.current.activities}" />
-                                        <h:outputLabel value="Actions" />
-                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{sheduleController.current.actions}"/>
-                                    </h:panelGrid>
-                                </p:panel>
                             </div>
                             <div class="col-6">
                                 <p:panel id="gpDetail" >  
@@ -189,7 +178,7 @@
 
                                                 <p:outputLabel value="Duration in Minutes"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.duration}"/>
-                                                
+
                                                 <p:outputLabel value="Room Number"/>
                                                 <p:inputText class="w-100" autocomplete="off" value="#{sheduleController.current.roomNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
 
@@ -222,7 +211,12 @@
                                                     <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                                                 </p:selectOneMenu>
 
-
+                                                <h:outputLabel value="Activities" />
+                                                <p:inputTextarea class="mx-2 w-100 my-1" rows="4" value="#{sheduleController.current.activities}" />
+                                                <h:outputLabel value="Actions" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{sheduleController.current.actions}"/>
+                                                <h:outputLabel value="Forms" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{sheduleController.current.dataEntryForms}"/>
 
 
                                             </h:panelGrid>
