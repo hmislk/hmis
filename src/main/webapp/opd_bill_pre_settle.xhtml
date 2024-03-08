@@ -58,7 +58,6 @@
                             </h:panelGroup>
                             
                             <h:panelGroup id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
-                                
                                 <pa:multiple_payment_methods paymentMethodData="#{opdPreSettleController.paymentMethodData}" controller="#{opdPreSettleController}" class="w-100"/>
                             </h:panelGroup>
 
