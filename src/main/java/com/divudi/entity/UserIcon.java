@@ -24,6 +24,8 @@ public class UserIcon implements Serializable {
     
     @ManyToOne
     private WebUser webUser;
+    @ManyToOne
+    private WebUserRole webUserRole;
     @Enumerated(EnumType.ORDINAL)
     private Icon icon;
     private boolean retired;
@@ -104,5 +106,15 @@ public class UserIcon implements Serializable {
     public void setOrderNumber(double orderNumber) {
         this.orderNumber = orderNumber;
     }
+
+    public WebUserRole getWebUserRole() {
+        return webUserRole;
+    }
+
+    public void setWebUserRole(WebUserRole webUserRole) {
+        this.webUserRole = webUserRole;
+    }
+    
+    
     
 }
