@@ -41,15 +41,15 @@
 
                     <h:panelGroup id="gpBillPreview" >
 <!--                        <ph:transferReceive bill="#{pharmacyBillSearch.bill}" />-->
+                        <center>
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                            <ph:transferReceive bill="#{pharmacyBillSearch.bill}"/>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                            <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
-                        </h:panelGroup>
-
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                <ph:transfeRecieve_detailed bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+                        </center>
                     </h:panelGroup>
 
 

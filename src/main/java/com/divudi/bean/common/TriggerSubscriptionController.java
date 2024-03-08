@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,13 +60,17 @@ public class TriggerSubscriptionController implements Serializable {
         }
         double newOrder = getTriggerSubscriptions().size() + 1;
         TriggerSubscription existingTS = findUserSubscriptionByOrder(newOrder);
-
+        
+        Date d = new Date();
+        
         if (existingTS == null) {
             TriggerSubscription ts = new TriggerSubscription();
             ts.setWebUser(user);
             ts.setTriggerType(triggerType);
             ts.setOrderNumber(newOrder);
             ts.setDepartment(department);
+            ts.setCreatedAt(d);
+            ts.setCreater(sessionController.loggedUser);
             save(ts);
             JsfUtil.addSuccessMessage("Save Success");
             fillDepartmentSubscription();
@@ -200,6 +205,9 @@ public class TriggerSubscriptionController implements Serializable {
     public void removeUserSubscription() {
         if (current != null) {
             current.setRetired(true);
+            Date d = new Date();
+            current.setRetiredAt(d);
+            current.setRetirer(sessionController.loggedUser);
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
@@ -305,7 +313,7 @@ public class TriggerSubscriptionController implements Serializable {
                 return null;
             }
             TriggerSubscriptionController controller = (TriggerSubscriptionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "userSubscriptionConverter");
+                    getValue(facesContext.getELContext(), null, "triggerSubscriptionController");
             return controller.getFacade().find(getKey(value));
         }
 
