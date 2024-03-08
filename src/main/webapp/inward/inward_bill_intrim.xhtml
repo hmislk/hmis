@@ -246,7 +246,7 @@
                                 <p:outputLabel value="Fees and Details" class="mx-2"/>
                             </f:facet>
                             <p:tabView  id="tvPt"  rendered="#{bhtSummeryController.patientEncounter ne null}" >                     
-                                <p:tab id="tabNewPt" title="Room Detail" >
+                                <p:tab id="tabNewPt" title="Room Details" >
 
                                     <p:dataTable  value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
                                         <p:column headerText="Room">
@@ -320,21 +320,21 @@
                                                 <p:commandButton ajax="false" 
                                                                  icon="fa fa-check-square" 
                                                                  title="Discharge"
-                                                                 class="ui-button-warning me-1" 
+                                                                 class="ui-button-warning" 
                                                                  action="#{roomChangeController.dischargeWithCurrentTime(rm)}" />
 
                                                 <!-- Cancel Discharge Button -->
                                                 <p:commandButton ajax="false" 
                                                                  icon="fa fa-times-circle" 
                                                                  title="Cancel Discharge"
-                                                                 class="ui-button-warning"
+                                                                 class="ui-button-warning mx-2"
                                                                  action="#{roomChangeController.dischargeCancel(rm)}" />
                                                 <!-- Update Charges Button -->
                                                 <p:commandButton ajax="false" 
                                                                  icon="fa fa-pencil-square" 
                                                                  title="Update Charges"
                                                                  action="#{bhtSummeryController.updatePatientRoom(rm)}" 
-                                                                 class="ui-button-info me-1" /> <!-- me-1 for margin-right -->
+                                                                 class="ui-button-info" /> <!-- me-1 for margin-right -->
 
 
                                             </div>
@@ -347,7 +347,7 @@
                                 </p:tab>
 
 
-                                <p:tab id="tabTimed" title="Timed Service Detail"  >  
+                                <p:tab id="tabTimed" title="Timed Service Details"  >  
                                     <p:dataTable  value="#{bhtSummeryController.patientItems}" var="pt">
                                         <p:column headerText="Service Name">
                                             <h:outputLabel value="#{pt.item.name}"/>
@@ -392,7 +392,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="tabSer" title="Service Detail"  >                            
+                                <p:tab id="tabSer" title="Service Details"  >                            
                                     <p:dataTable id="service" scrollable="true" scrollHeight="300" 
                                                  value="#{bhtSummeryController.departmentBillItems}" var="dep">
                                         <p:columnGroup type="header">
@@ -604,7 +604,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="tabAdd" title="Out Side Charge Detail"  >
+                                <p:tab id="tabAdd" title="Out Side Charge Details"  >
                                     <p:dataTable    scrollable="true" scrollHeight="300" 
                                                     value="#{bhtSummeryController.additionalChargeBill}" var="bil"
                                                     rowStyleClass="#{((bil.billClass eq 'class com.divudi.entity.BilledBill')
@@ -683,7 +683,7 @@
 
 
 
-                                <p:tab id="tabPro" title="Professional Fee"  >
+                                <p:tab id="tabPro" title="Professional Fees"  >
                                     <p:dataTable  scrollable="true" scrollHeight="300"  
                                                   value="#{bhtSummeryController.profesionallFee}" var="pf"
                                                   rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.entity.BilledBill' ? '':'noDisplayRow'}">
@@ -740,7 +740,7 @@
                                 </p:tab>
 
 
-                                <p:tab id="tabDoc" title="Assisting Fee"  >
+                                <p:tab id="tabDoc" title="Assisting Fees"  >
                                     <p:dataTable  scrollable="true" scrollHeight="300"  value="#{bhtSummeryController.doctorAndNurseFee}" var="pf"
                                                   rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.entity.BilledBill' ? '':'noDisplayRow'}">
                                         <p:column headerText="Name">

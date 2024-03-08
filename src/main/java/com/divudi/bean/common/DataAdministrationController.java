@@ -52,6 +52,7 @@ import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,11 +63,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Entity;
+import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
+import org.reflections.Reflections;
 
 /**
  *
@@ -165,6 +171,9 @@ public class DataAdministrationController {
     private SearchKeyword searchKeyword;
     CommonController commonController;
     private int manageCheckEnteredDataIndex;
+    private String errors;
+    private String suggestedSql;
+    private String executionFeedback;
 
     Date fromDate;
     Date toDate;
@@ -255,6 +264,76 @@ public class DataAdministrationController {
 
         }
 
+    }
+    
+    public String navigateToCheckMissingFields() {
+        return "/dataAdmin/missing_database_fields";
+    }
+
+    public void checkMissingFields() {
+        suggestedSql = "";
+        errors = "";
+        StringBuilder err = new StringBuilder();
+        StringBuilder sql = new StringBuilder();
+        for (Class<?> entityClass : findEntityClassNames()) {
+            String entityName = entityClass.getSimpleName();
+            String jpql = "SELECT e FROM " + entityName + " e";
+            try {
+                Object result = itemFacade.executeQueryFirstResult(entityClass, jpql);
+            } catch (PersistenceException e) {
+                Throwable cause = e.getCause();
+                while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    String message = cause.getMessage();
+                    err.append("<br/>").append(message);
+
+                    // Attempt to extract the missing column from the error message
+                    Pattern pattern = Pattern.compile("Unknown column '(.*?)' in 'field list'");
+                    Matcher matcher = pattern.matcher(message);
+                    if (matcher.find()) {
+                        String missingColumn = matcher.group(1);
+                        // Generate a placeholder SQL statement with the missing column
+                        String alterTableSql = String.format("ALTER TABLE [TABLE_NAME] ADD %s VARCHAR(255);", missingColumn);
+                        sql.append("<br/>").append(alterTableSql);
+                    }
+                } else {
+                    err.append("<br/>Unhandled exception: ").append(e.getMessage());
+                }
+            } catch (Exception e) {
+                err.append("<br/>General error: ").append(e.getMessage());
+            }
+        }
+        errors = err.length() > 0 ? err.toString() : "No errors found.";
+        suggestedSql = sql.length() > 0 ? sql.toString() : "No SQL suggestions found.";
+    }
+
+    public List<Class<?>> findEntityClassNames() {
+        List<Class<?>> lst = new ArrayList<>();
+        Reflections reflections = new Reflections("com.divudi.entity");
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
+        lst.addAll(annotated);
+        return lst;
+    }
+
+    public void runSqlToCreateFields() {
+        String[] sqlStatements = suggestedSql.split("<br/>");
+        StringBuilder executionResults = new StringBuilder();
+        for (String sql : sqlStatements) {
+            if (sql.trim().isEmpty()) {
+                continue; // Skip empty lines
+            }
+            int result = itemFacade.executeNativeSql(sql);
+            if (result >= 0) {
+                // Assuming a positive result indicates success. Adjust based on your logic.
+                executionResults.append("<br/>Successfully executed: ").append(sql);
+            } else {
+                // Handle failure case here. Adjust based on your logic.
+                executionResults.append("<br/>Failed to execute: ").append(sql);
+            }
+        }
+        executionFeedback = executionResults.toString();
     }
 
     public void addBillFeesToProfessionalCancelBills() {
@@ -925,7 +1004,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -953,7 +1031,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         int j = 1;
 
@@ -985,7 +1062,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findByJpql(sql, m);
 
-
         int j = 1;
 
         for (Item i : items) {
@@ -1011,7 +1087,6 @@ public class DataAdministrationController {
 //        m.put("cat", itemCategory);
 
         items = itemFacade.findByJpql(sql, m);
-
 
         for (Item i : items) {
 //            //System.out.println("i.getName() = " + i.getName());
@@ -1133,7 +1208,7 @@ public class DataAdministrationController {
 
         return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
-    
+
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -1505,9 +1580,33 @@ public class DataAdministrationController {
     public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
         this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
     }
-    
-    public String navigateToAdminDataAdministration(){
-        return "/dataAdmin/admin_data_administration";
+
+    public String navigateToAdminDataAdministration() {
+        return "/dataAdmin/admin_data_administration?faces-redirect=true";
+    }
+
+    public String getErrors() {
+        return errors;
+    }
+
+    public void setErrors(String errors) {
+        this.errors = errors;
+    }
+
+    public String getSuggestedSql() {
+        return suggestedSql;
+    }
+
+    public void setSuggestedSql(String suggestedSql) {
+        this.suggestedSql = suggestedSql;
+    }
+
+    public String getExecutionFeedback() {
+        return executionFeedback;
+    }
+
+    public void setExecutionFeedback(String executionFeedback) {
+        this.executionFeedback = executionFeedback;
     }
 
 }
