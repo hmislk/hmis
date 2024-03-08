@@ -295,20 +295,20 @@ public class DataAdministrationController {
             }
         }
 
-        // Define the regex pattern to extract table name and missing column
-        String regex = "Unknown column '([^']+)' in 'field list'.*?FROM `([^`]+)`";
+        // Define the regex pattern to extract missing column
+        String regex = "Unknown column '([^']+)' in 'field list'";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(allErrors.toString());
 
         while (matcher.find()) {
             String missingColumn = matcher.group(1);
-            String tableName = matcher.group(2);
 
-            errors += String.format("Table: %s, Missing Column: %s\n", tableName, missingColumn);
-            sql.append(String.format("ALTER TABLE `%s` ADD COLUMN `%s` VARCHAR(255);\n", tableName, missingColumn));
+            // Now, instead of trying to generate SQL without table names, just collect missing fields
+            errors += String.format("Missing Column: %s\n", missingColumn);
         }
 
-        suggestedSql = sql.toString();
+        // If necessary, adjust the logic for suggestedSql or leave it empty if not generating SQL
+        suggestedSql = ""; // Adjust or remove based on your need to generate SQL without table names
     }
 
     public List<Class<?>> findEntityClassNames() {
