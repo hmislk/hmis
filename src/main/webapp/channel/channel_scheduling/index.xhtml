@@ -15,8 +15,19 @@
                 <h:form>
                     <div class="row">
                         <div class="col-2">
-                            <p:commandButton value="Channel Schdule" action="/channel/channel_shedule?faces-redirect=true"/>
-                            <p:commandButton value="Channel Schdule" action="#{appointmentActivityController.navigateToManageAppointmentActivities()}"/>
+                            <div class="d-grid gap-2 m-1">
+                                <p:commandButton  
+                                    ajax="false" 
+                                    value="Channel Schedules" 
+                                    action="#{channelScheduleController.navigateToChannelSchedule}"/>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Channel Activities" 
+                                    action="#{appointmentActivityController.navigateToManageAppointmentActivities()}" />
+
+
+                            </div>
+
                         </div>
                         <div class="col-10">
                             <ui:insert name="subcontent">

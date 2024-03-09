@@ -15,7 +15,7 @@
                 <p:panel header="Session Detail Report" >
                     <p:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
-                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                        <p:autoComplete  forceSelection="true" value="#{channelScheduleController.speciality}" id="acSpeciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                          >
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
@@ -25,7 +25,7 @@
 
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                         <p:autoComplete   forceSelection="true" value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
-                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          completeMethod="#{channelScheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           >   
                         </p:autoComplete>  
                     </p:panelGrid>
