@@ -20,52 +20,32 @@
                         <i class="fa fa-icons" />
                         <h:outputLabel class="mx-2" value="Manage User Subscriptions"/>
                     </f:facet>
-                    
-                    
-                        <h:panelGrid  columns="3">    
-                        <p:outputLabel  value="User Role" ></p:outputLabel>
-                        <p:outputLabel  value=":" style="width: 50px; text-align: center" ></p:outputLabel>
-                        <p:outputLabel class="form-control w-100" value="#{userPrivilageController.webUserRole.name}"></p:outputLabel>
-                    </h:panelGrid> 
-                    
 
                     <p:panelGrid 
                         class="w-100 my-2"
                         columns="3">
-                        <p:outputLabel value="Department" ></p:outputLabel>
-                        <p:selectOneMenu 
-                            id="cmbDepartment"
-                            placeholder="Department"
-                            value="#{triggerSubscriptionController.department}" 
-                            class="w-100"
-                            filter="true">
-                            <f:selectItem itemLabel="All" ></f:selectItem>
-                            <f:selectItems 
-                                value="#{triggerSubscriptionController.departments}"
-                                var="d"
-                                itemLabel="#{d.name}"
-                                itemValue="#{d}" ></f:selectItems>
-                        </p:selectOneMenu>
-                        <p:commandButton 
+                        <p:outputLabel  value="User Role" ></p:outputLabel>
+                        <p:outputLabel class="form-control w-100" value="#{userRoleTriggerSubscriptionController.userRole.name}"></p:outputLabel>
+                        <p:commandButton
                             id="btnList"
-                            title="List Subscriptions for the Department"
-                            value="List Subscriptions"
+                            title="List Icon for the Department"
+                            value="List Subscription"
                             process="btnList cmbDepartment"
                             class="ui-button-warning w-100"
                             ajax="false"
                             icon="fa fa-list"
                             update="tbl"
-                            action="#{triggerSubscriptionController.fillDepartmentSubscription}"
+                            action="#{userRoleTriggerSubscriptionController.fillUserRoleSubscription}"
                             >
                         </p:commandButton>
 
                         <p:outputLabel value="Subscription to Add" ></p:outputLabel>
                         <p:selectOneMenu 
-                            value="#{triggerSubscriptionController.triggerType}" 
+                            value="#{userRoleTriggerSubscriptionController.triggerType}"
                             filter="true"
                             filterMatchMode="contains"
                             class="w-100">
-                            <f:selectItems value="#{triggerSubscriptionController.triggerTypes}" 
+                            <f:selectItems value="#{userRoleTriggerSubscriptionController.triggerTypes}"
                                            var="i"
                                            itemLabel="#{i.label}"
                                            itemValue="#{i}"/>
@@ -74,7 +54,7 @@
                             value="Add Subscription" 
                             icon="fa fa-plus" 
                             class="ui-button-success w-100"
-                            action="#{triggerSubscriptionController.addUserSubscription}" 
+                            action="#{userRoleTriggerSubscriptionController.addUserRoleSubscription}"
                             update="tbl" 
                             />
 
@@ -86,7 +66,7 @@
 
                 <p:dataTable 
                     var="sub" 
-                    value="#{triggerSubscriptionController.triggerSubscriptions}" 
+                    value="#{userRoleTriggerSubscriptionController.triggerSubscriptions}"
                     rowKey="#{sub.id}" 
                     id="tbl">
                     <p:column headerText="Subscription">
@@ -94,7 +74,7 @@
                     </p:column>
                     <p:column 
                         headerText="Department" 
-                        rendered="#{triggerSubscriptionController.department eq null}">
+                        rendered="#{userRoleTriggerSubscriptionController.department eq null}">
                         <h:outputText value="#{sub.department.name}" />
                     </p:column>
                     <p:column headerText="Order">
@@ -106,11 +86,11 @@
                                 id="up" 
                                 icon="fa fa-arrow-up"
                                 class="ui-button-warning"
-                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionUp}" 
+                                action="#{userRoleTriggerSubscriptionController.moveSelectedUserSubscriptionUp}"
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{sub}" 
-                                    target="#{triggerSubscriptionController.current}" >
+                                    target="#{userRoleTriggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
                                 <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
@@ -119,23 +99,23 @@
                                 id="down" 
                                 icon="fa fa-arrow-down"
                                 class="mx-2 ui-button-warning"
-                                action="#{triggerSubscriptionController.moveSelectedUserSubscriptionDown}" 
+                                action="#{userRoleTriggerSubscriptionController.moveSelectedUserSubscriptionDown}"
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{sub}" 
-                                    target="#{triggerSubscriptionController.current}" >
+                                    target="#{userRoleTriggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
                                 <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
                             <p:commandButton 
                                 id="remove" 
                                 icon="fa fa-trash"
-                                action="#{triggerSubscriptionController.removeUserSubscription()}" 
+                                action="#{userRoleTriggerSubscriptionController.removeUserSubscription()}"
                                 class="ui-button-danger"
                                 update="tbl" >
                                 <f:setPropertyActionListener 
                                     value="#{sub}" 
-                                    target="#{triggerSubscriptionController.current}" >
+                                    target="#{userRoleTriggerSubscriptionController.current}" >
                                 </f:setPropertyActionListener>
                                 <p:ajax process="@this" update="tbl"/>
                             </p:commandButton>
