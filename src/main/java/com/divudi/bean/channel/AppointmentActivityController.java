@@ -10,7 +10,6 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Area;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.facade.AppointmentActivityFacade;
 import java.io.Serializable;
@@ -44,13 +43,15 @@ public class AppointmentActivityController implements Serializable {
 
     private AppointmentActivity current;
     private List<AppointmentActivity> items;
+    private Date date;
 
     public String navigateToManageAppointmentActivities() {
-        return "/channel/channel_Shedule_Management";
+        return "/channel/channel_scheduling/appointment_activity_management?faces-redirect=true";
     }
 
     public void addAppointmentActivity() {
         current = new AppointmentActivity();
+        System.out.println("this = " + items.size());
     }
 
     public void save(AppointmentActivity aa) {
@@ -83,6 +84,11 @@ public class AppointmentActivityController implements Serializable {
         current.setRetired(true);
         current.setRetiredAt(new Date());
         current.setRetirer(sessionController.getLoggedUser());
+        getFacade().edit(current);
+        JsfUtil.addErrorMessage("Deleted");
+        getItems();
+        current = null;
+        getCurrent();
     }
 
     private AppointmentActivityFacade getFacade() {
@@ -92,7 +98,7 @@ public class AppointmentActivityController implements Serializable {
     public List<AppointmentActivity> fillAppointmentActivities() {
         String jpql = "select a "
                 + " from AppointmentActivity a"
-                + " where a.retired=:Ret"
+                + " where a.retired=:ret"
                 + " order by a.name";
         Map m = new HashMap();
         m.put("ret", false);
@@ -102,6 +108,7 @@ public class AppointmentActivityController implements Serializable {
     public List<AppointmentActivity> getItems() {
         if (items == null) {
             items = fillAppointmentActivities();
+
         }
         return items;
     }
@@ -111,6 +118,9 @@ public class AppointmentActivityController implements Serializable {
     }
 
     public AppointmentActivity getCurrent() {
+        if (current == null) {
+            current = new AppointmentActivity();
+        }
         return current;
     }
 
@@ -118,8 +128,14 @@ public class AppointmentActivityController implements Serializable {
         this.current = current;
     }
 
-    
-    
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
     @FacesConverter(forClass = AppointmentActivity.class)
     public static class AppointmentActivityConverter implements Converter {
 
@@ -150,8 +166,8 @@ public class AppointmentActivityController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Area) {
-                Area o = (Area) object;
+            if (object instanceof AppointmentActivity) {
+                AppointmentActivity o = (AppointmentActivity) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
