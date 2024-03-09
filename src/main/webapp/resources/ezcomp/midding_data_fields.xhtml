@@ -17,18 +17,14 @@
                 <f:facet name="header">
                     <i class="fa fa-search"/>
                     <h:outputLabel value="Missing Data Fields" class="mx-2"/>
+                    <p:spacer height="2" width="20" ></p:spacer>
                     <p:commandButton
                         ajax="false" 
                         action="#{dataAdministrationController.checkMissingFields()}" 
                         value="Check Missing Fields"  
-                        class="w-100"
+                        class="w-25"
                         />
-                     <p:commandButton
-                        ajax="false" 
-                        action="#{dataAdministrationController.checkMissingFields1()}" 
-                        value="Check Missing Fields"  
-                        class="w-100"
-                        />
+                    
                 </f:facet>
                 <p:outputLabel value="Errors" ></p:outputLabel>
                 <p:inputTextarea value="#{dataAdministrationController.errors}" 
