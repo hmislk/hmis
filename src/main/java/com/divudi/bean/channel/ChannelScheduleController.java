@@ -44,8 +44,8 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class SheduleController implements Serializable {
-
+public class ChannelScheduleController implements Serializable {
+//SheduleController
     @EJB
     private StaffFacade staffFacade;
     @EJB
@@ -86,6 +86,11 @@ public class SheduleController implements Serializable {
     @EJB
     ItemFeeFacade itemFeeFacade;
 
+    
+    public String navigateToChannelSchedule(){
+        return "/channel/channel_shedule?faces-redirect=true";
+    }
+    
     public void fillFees() {
         String sql;
         Map m = new HashMap();
@@ -232,7 +237,7 @@ public class SheduleController implements Serializable {
         this.lstSessionNumberGenerator = lstSessionNumberGenerator;
     }
 
-    public SheduleController() {
+    public ChannelScheduleController() {
     }
 
     public Speciality getSpeciality() {

@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<ui:composition template="/channel/channel_scheduling/index.xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="subcontent">
+        <h:form>
+            <p:panel header="Appointment Activity Management" class="w-100">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="w-100 mb-1">
+                            <p:commandButton 
+                                id="btnAdd" 
+                                ajax="false" 
+                                value="Add" 
+                                process="btnAdd"
+                                update="gpDetail lstSelect "
+                                icon="fas fa-plus"
+                                class="ui-button-success w-25"
+                                action="#{appointmentActivityController.addAppointmentActivity}">
+                            </p:commandButton>
+                            <p:commandButton 
+                                id="btnDelete"
+                                process="btnDelete"
+                                update="gpDetail lstSelect"
+                                class="ui-button-danger w-25 mx-1"
+                                icon="fas fa-trash"
+                                value="Delete"
+                                action="#{appointmentActivityController.deleteAppointMentActivity}">
+                            </p:commandButton>
+                        </div>
+                        <p:selectOneListbox id="lstSelect" filter="true" value="#{appointmentActivityController.current}" >
+                            <f:selectItems value="#{appointmentActivityController.items}"
+                                           var="i" itemLabel="#{i.name}" itemValue="#{i}">
+                            </f:selectItems>
+                            <f:ajax render="gpDetail" execute="lstSelect" >
+                            </f:ajax>
+                        </p:selectOneListbox>
+                    </div>
+                    <div class="col-6">
+                        <p:panel class="w-100">
+                            <h:panelGrid id="gpDetail" columns="1" class="w-100">
+                                <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                    <h:outputText  value="Name" ></h:outputText>
+                                    <p:inputText class="w-100 mx-2" value="#{appointmentActivityController.current.name}"  />
+                                    <p:outputLabel value="Code" />                        
+                                    <p:inputText class="w-100 mx-2"  value="#{appointmentActivityController.current.code}"/>
+                                    <h:outputLabel value="Discription" />  
+                                    <p:inputTextarea class="w-100 mx-2" value="#{appointmentActivityController.current.discription}" ></p:inputTextarea>
+                                    <h:outputLabel value="Image Link"/>  
+                                    <p:inputText class="w-100 mx-2"  value="#{appointmentActivityController.current.imageLink}"/>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                            <div class="d-flex justify-content-end ">
+
+                                <p:commandButton 
+                                    id="btnSave"
+                                    process="btnSave gpDetail"
+                                    update="lstSelect"
+                                    ajax="false" 
+                                    value="Save"
+                                    class="ui-button-warning w-25 my-2" 
+                                    action="#{appointmentActivityController.saveCurrent}" />
+                            </div>
+                        </p:panel>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
+
+

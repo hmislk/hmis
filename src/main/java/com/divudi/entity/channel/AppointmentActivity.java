@@ -32,27 +32,19 @@ public class AppointmentActivity implements Serializable {
     private String discription;
     @Lob
     private String imageLink;
-    
+
     //Created Properties
     @ManyToOne
-     private WebUser creater;
+    private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     private Date createdAt;
+    private Date createdAt;
     //Retairing properties
-     private boolean retired;
+    private boolean retired;
     @ManyToOne
-     private WebUser retirer;
+    private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-     private Date retiredAt;
-     private String retireComments;
-    
-    
-    
-    
-    
-    
-    
-    
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
@@ -166,5 +158,5 @@ public class AppointmentActivity implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
+
 }
