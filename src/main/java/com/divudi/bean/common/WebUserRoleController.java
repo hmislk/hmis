@@ -46,7 +46,7 @@ public class WebUserRoleController implements Serializable {
     
     public String navigateToManageWebUserRoles(){
         items = findAllItems();
-        return "/admin/users/user_roles";
+        return "/admin/users/user_roles?faces-redirect=true";
     }
     
     public String navigateToManageWebUserRolePrivileges(){
@@ -58,7 +58,7 @@ public class WebUserRoleController implements Serializable {
             JsfUtil.addErrorMessage("Save first");
             return null;
         }
-        return "/admin/users/user_role_privileges";
+        return "/admin/users/user_role_privileges?faces-redirect=true";
     }
     
     public String navigateToManageWebUserRoleIcons(){
@@ -70,7 +70,7 @@ public class WebUserRoleController implements Serializable {
             JsfUtil.addErrorMessage("Save first");
             return null;
         }
-        return "/admin/users/user_role_icons";
+        return "/admin/users/user_role_icons?faces-redirect=true";
     }
     
     public String navigateToManageWebUserTriggerSubscriptions(){
@@ -82,7 +82,7 @@ public class WebUserRoleController implements Serializable {
             JsfUtil.addErrorMessage("Save first");
             return null;
         }
-        return "/admin/users/user_role_subscription";
+        return "/admin/users/user_role_subscription?faces-redirect=true";
     }
     
     public void toAddNewUserRole(){
@@ -196,7 +196,7 @@ public class WebUserRoleController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + WebUserRoleController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + WebUserRole.class.getName());
             }
         }
     }

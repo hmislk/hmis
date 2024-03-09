@@ -70,10 +70,10 @@ public class PurchaseOrderRequestController implements Serializable {
     private List<BillItem> selectedBillItems;
     private List<BillItem> billItems;
     private boolean printPreview;
-    private PaymentMethodData paymentMethodData;
     //private List<PharmaceuticalBillItem> pharmaceuticalBillItems;   
     @Inject
     PharmacyCalculation pharmacyBillBean;
+    private PaymentMethodData paymentMethodData;
 
     public void removeSelected() {
         //  //System.err.println("1");
@@ -268,9 +268,44 @@ public class PurchaseOrderRequestController implements Serializable {
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
+//            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
+//            b.setPharmaceuticalBillItem(null);
+            if (b.getId() == null) {
+                getBillItemFacade().create(b);
+            } else {
+                getBillItemFacade().edit(b);
+            }
+
+            if (b.getPharmaceuticalBillItem().getId() == null) {
+                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
+            } else {
+                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
+            }
+
+        }
+    }
+    
+    public void finalizeBillComponent() {
+        for (BillItem b : getBillItems()) {
             
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setBill(getCurrentBill());
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
             
+            double qty = 0.0;
+            qty = Math.abs(b.getQty());
+            qty = Math.abs(b.getPharmaceuticalBillItem().getFreeQty());
             
+            if(qty<=0.0){
+                b.setRetired(true);
+                b.setRetirer(sessionController.getLoggedUser());
+                b.setRetiredAt(new Date());
+                b.setRetireComments("Retired at Finalising PO");
+            }
+            
+
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
             if (b.getId() == null) {
@@ -288,46 +323,6 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    
-    public void finalizeBillItems() {
-        for (BillItem b : getBillItems()) {
-            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            b.setBill(getCurrentBill());
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
-
-            double orderingQty = 0.0;
-            if(b.getQty()!=null){
-                orderingQty+=b.getQty();
-            }
-            if(b.getPharmaceuticalBillItem()!=null){
-                orderingQty+=b.getPharmaceuticalBillItem().getFreeQty();
-            }
-            if(orderingQty<=0){
-                b.setRetired(true);
-                b.setRetiredAt(new Date());
-                b.setRetirer(sessionController.getLoggedUser());
-                b.setRetireComments("With PO Finalizing");
-            }
-            
-            
-            if (b.getId() == null) {
-                getBillItemFacade().create(b);
-            } else {
-                getBillItemFacade().edit(b);
-            }
-
-            if (b.getPharmaceuticalBillItem().getId() == null) {
-                getPharmaceuticalBillItemFacade().create(b.getPharmaceuticalBillItem());
-            } else {
-                getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
-            }
-
-        }
-    }
-
-    
     public void addAllSupplierItems() {
         if (getCurrentBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Please Select Dealor");
@@ -363,21 +358,17 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public List<Item> getDealorItems() {
-        System.out.println("getDealorItems");
         List<Item> lst;
-        String jpql;
+        String sql;
         HashMap hm = new HashMap();
-        jpql = "select c.item "
+        sql = "select c.item "
                 + " from ItemsDistributors c"
                 + " where c.retired=false "
                 + " and c.item.retired=false "
                 + " and c.institution=:ins "
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
-        System.out.println("hm = " + hm);
-        System.out.println("jpql = " + jpql);
-        lst = itemFacade.findByJpql(jpql, hm, 200);
-        System.out.println("lst = " + lst.size());
+        lst = itemFacade.findByJpql(sql, hm, 200);
         return lst;
     }
 
@@ -397,9 +388,10 @@ public class PurchaseOrderRequestController implements Serializable {
 //        }
 
         finalizeBill();
-        finalizeBillItems();
-        JsfUtil.addSuccessMessage("Request Succesfully Completed.");
+        saveBillComponent();
+        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
     }
 
     public void calTotal() {
@@ -463,7 +455,6 @@ public class PurchaseOrderRequestController implements Serializable {
             currentBill.setBillType(BillType.PharmacyOrder);
             currentBill.setPaymentMethod(PaymentMethod.Credit);
         }
-        System.out.println("currentBill = " + currentBill);
         return currentBill;
     }
 
@@ -567,15 +558,15 @@ public class PurchaseOrderRequestController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-    
+
     public PaymentMethodData getPaymentMethodData() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
         return paymentMethodData;
     }
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
+    
+    
+
 }
