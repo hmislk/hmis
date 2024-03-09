@@ -777,7 +777,7 @@ public class PharmacyBillSearch implements Serializable {
                 + " b.referenceBill=:ref and b.referenceBill.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.PharmacyOrder);
         List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {

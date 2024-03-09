@@ -103,8 +103,10 @@
                             </p:column>
 
                             <p:column headerText="Approved Person"  >
-                                <h:commandLink action="pharmacy_reprint_order_request" 
-                                               value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" >                        
+                                <h:commandLink 
+                                    action="pharmacy_reprint_order_request" 
+                                               value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  
+                                               rendered="#{b.referenceBill.cancelled eq false}" >                        
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
