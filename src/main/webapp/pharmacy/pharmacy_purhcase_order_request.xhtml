@@ -155,7 +155,7 @@
                                                class="form-label"
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
-                                    <f:selectItem itemLabel="SelectPayment method"/>
+                                    <f:selectItem itemLabel="Select Payment method"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForPo}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
@@ -263,6 +263,7 @@
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
                                     forceSelection="true"
                                     class="w-75"
+                                    maxResults="10"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
@@ -276,7 +277,12 @@
                                                        rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:autoComplete>
-                                <p:commandButton class="mx-1 ui-button-success"  value="Add" action="#{purchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                                <p:commandButton 
+                                    class="mx-1 ui-button-success"  
+                                    value="Add" 
+                                    action="#{purchaseOrderRequestController.addItem}" 
+                                    process="exItem @this" 
+                                    update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
 
                             </p:panel>
                         </div>
