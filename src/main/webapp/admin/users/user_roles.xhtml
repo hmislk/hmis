@@ -102,7 +102,7 @@
                                         <p:commandButton 
                                             disabled="#{webUserRoleController.current.id == null}"
                                             icon="fa fa-icons" 
-                                            value="Manage User Icons" 
+                                            value="Manage User Role Icons"
                                             class="m-1" 
                                             action="#{webUserRoleController.navigateToManageWebUserRoleIcons()}" 
                                             ajax="false" >
@@ -113,10 +113,13 @@
                                         <p:commandButton 
                                             disabled="#{webUserRoleController.current.id == null}" 
                                             icon="fas fa-rss" 
-                                            value="Manage User Subscriptions" 
+                                            value="Manage User Role Subscriptions"
                                             class="m-1" 
                                             action="#{webUserRoleController.navigateToManageWebUserTriggerSubscriptions()}"
-                                            ajax="false" />
+                                            ajax="false" >
+                                            <f:setPropertyActionListener 
+                                                value="#{webUserRoleController.current}"
+                                                target="#{userRoleTriggerSubscriptionController.userRole}" ></f:setPropertyActionListener>                                        </p:commandButton>
                                     </h:panelGroup>
                                 </div>
                             </div>
