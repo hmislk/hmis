@@ -26,6 +26,13 @@
                             </div>
                             <div>
                                 <p:commandButton
+                                    ajax="false"
+                                    class="ui-button-secondary"
+                                    icon="fa-solid fa-arrow-left"
+                                    action="#{bookingController.navigateBackToBookings()}"
+                                    value="Back to Channel Booking" >
+                                </p:commandButton>
+                                <p:commandButton
                                     id="btnAdd"
                                     value="Add"
                                     ajax="false"
