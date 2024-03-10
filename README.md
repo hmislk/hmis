@@ -87,6 +87,11 @@ The features available to different roles of the users are stated in detail in t
 * Mr Gayan Malshan
 * Mr Isuru Pathum
 * Mr A R C Sanka
+* Mr Senula Nanayakkara
+* Mr Pavan Thiwanka Madhushan
+* Mr Pasindu Wathsara
+* Mr Damith Deshan
+* Mr Lawan Chaamindu Jayalath Samarasekara
 
 ## Business Analyst 
 * Miss Binuthi Nilakna Ariyaratne (Since 2024)
@@ -97,6 +102,8 @@ The features available to different roles of the users are stated in detail in t
 * Ms Nadeeka Darshani Wijesooriya
 * Mr Janith Liyanage
 * Ms D W C Piumini
+* Ms Irani Madushika
+* Ms Deshani Pubudu
 
 ## Credits 
 Our contributors and Open Source Community for their knowledge and time. Healthcare Institutions that provided financial supporters are listed below.
