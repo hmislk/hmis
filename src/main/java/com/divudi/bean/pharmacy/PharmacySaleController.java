@@ -2015,6 +2015,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private void clearBillItem() {
+        replaceableStocks = null;
         billItem = null;
 //        removingBillItem = null;
         editingBillItem = null;
