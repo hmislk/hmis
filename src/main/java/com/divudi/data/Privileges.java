@@ -378,12 +378,14 @@ public enum Privileges {
     ClinicalMembershipEdit,
     ClinicalPatientPhoneNumberEdit,
     //Pharmacy Disbursement
+    PharmacyDisburesementMenu,
     PharmacyDisbursementRequest,
     PharmacyDisbursementIssurForRequest,
     PharmacyDisbursementDirectIssue,
     PharmacyDisbursementRecieve,
     PharmacyDisbursementReports,
     //Pharmacy Inpatient medication management
+    InpatientMedicationManagementMenue,
     PharmacyDirectIssueToBht,
     PharmacyDirectIssueToTheaterCases,
     PharmacyBhtIssueRequest,
@@ -392,6 +394,8 @@ public enum Privileges {
     PharmacySearchInpatientDirectIssueReturnsbyBill,
     PharmacysSearchInpatientDirectIssueReturnsbyItem,
     //Pharmacy Retail Transactions
+    PharmacyRetailTransactionMenue,
+    PharmacyRetailTransaction,
     PharmacySale,
     PharmacySaleForCashier,
     PharmacySaleWithOutStock,
@@ -403,6 +407,8 @@ public enum Privileges {
     PharmacySearchReturnBill,
     PharmacyAddToStock,
     //Pharmacy Wholesale Transaction
+    PharmacyWholeSaleTransactionMenue,
+    PharmacyWholeSaleTransaction,
     PharmacyWholesaleSale,
     PharmacyWholesaleSaleForCashier,
     PharmacyWholesaleSearchSaleBill,
@@ -413,12 +419,14 @@ public enum Privileges {
     PharmacyWholeSalePurchase,
     PharmacySearchReturnBillItems,
     //Pharmacy Disposal
+    PharmacyDisposalMenue,
     PharmacyDisposalIssue,
     PharmacyDisposalSearchIssueBill,
     PharmacyDisposalSearchIssueBillItems,
     PharmacyDisposalSearchIssueReturnBill,
     PharmacyDisposalUnitIssueMargin,
     //Pharmacy Adjustment
+    PharmacyAdjustmentMenue,
     PharmacyAdjustmentDepartmentStockQTY,
     PharmacyAdjustmentDepartmentStockBySingleItemQTY,
     PharmacyAdjustmentStaffStockAdjustment,
@@ -429,6 +437,7 @@ public enum Privileges {
     PharmacyAdjustmentSearchAdjustmentBills,
     PharmacyAdjustmentTransferAllStock,
     //Pharmacy Dealer Payments
+    PharmacyDealerPaymentMenue,
     PharmacyDealerDueSearch,
     PharmacyDealerDueByAge,
     PharmacyPayment,
@@ -436,6 +445,7 @@ public enum Privileges {
     PharmacyGRNPaymentDoneSearch,
     PharmacyCreditDueAndAccess,
     //Whalesale
+    PharmacyWholesaleMenue,
     PharmacyPurchaseReprint,
     PharmacyPurchaseCancellation,
     PharmacyPurchaseReturn,
@@ -616,6 +626,7 @@ public enum Privileges {
             case PharmacyStockAdjustmentSingleItem:
             
             //Inpatient medication management 
+            case InpatientMedicationManagementMenue:
             case PharmacyDirectIssueToBht:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
@@ -624,6 +635,7 @@ public enum Privileges {
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
             case PharmacysSearchInpatientDirectIssueReturnsbyItem:
             //Procurement
+            case PharmacyProcurementMenu:
             case CreatePurchaseOrder:
             case AutoOrderPModel:
             case AutoOrderQModal:
@@ -633,6 +645,7 @@ public enum Privileges {
             case ReturnReceviedGoods:
             case ReturnWithoutRecipt:
             //Disburesement
+            case PharmacyDisburesementMenu:
             case PharmacyDisbursementRequest:
             case PharmacyDisbursementIssurForRequest:
             case PharmacyDisbursementDirectIssue:
@@ -640,6 +653,7 @@ public enum Privileges {
             case PharmacyDisbursementReports:
 
             //Retail Transactions
+            case PharmacyRetailTransaction:
             case PharmacySale:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
@@ -652,6 +666,7 @@ public enum Privileges {
             case PharmacyAddToStock:
 
             //Wholesale Transaction
+            case PharmacyWholeSaleTransaction:
             case PharmacyWholesaleSale:
             case PharmacyWholesaleSaleForCashier:
             case PharmacyWholesaleSearchSaleBill:
