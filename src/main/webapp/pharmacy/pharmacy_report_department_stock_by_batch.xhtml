@@ -36,15 +36,15 @@
                                 actionListener="#{reportsStock.fillDepartmentStocks()}" >
                             </p:commandButton>
                             <p:commandButton 
-                                class="mx-2 ui-button-secondary"
+                                class="mx-2 ui-button-danger"
                                 icon="fas fa-file-pdf"
                                 value="PDF" 
                                 ajax="false" >
                                 <p:dataExporter 
                                     type="pdf"
                                     target="tbl"
-                                    fileName="MessagesAndDetails"  
-                                             />  
+                                    fileName="stock_by_batch"
+                                    />  
                             </p:commandButton>
                             <p:commandButton 
                                 icon="fas fa-file-excel"
@@ -213,7 +213,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
@@ -221,7 +221,7 @@
                                         <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                                    <f:convertNumber parent="#,##0.00" />
+                                                    <f:convertNumber parent="#,###,###.00" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
