@@ -232,7 +232,7 @@ public class ReportsStock implements Serializable {
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
-        stockSaleValue += 0.0;
+        stockSaleValue = 0.0;
         for (PharmacyStockRow r : lsts) {
             stockPurchaseValue += r.getPurchaseValue();
             stockSaleValue += r.getSaleValue();
