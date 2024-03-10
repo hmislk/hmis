@@ -392,6 +392,7 @@ public enum Privileges {
     PharmacySearchInpatientDirectIssueReturnsbyBill,
     PharmacysSearchInpatientDirectIssueReturnsbyItem,
     //Pharmacy Retail Transactions
+    PharmacyRetailTransaction,
     PharmacySale,
     PharmacySaleForCashier,
     PharmacySaleWithOutStock,
@@ -403,6 +404,7 @@ public enum Privileges {
     PharmacySearchReturnBill,
     PharmacyAddToStock,
     //Pharmacy Wholesale Transaction
+    PharmacyWholeSaleTransaction,
     PharmacyWholesaleSale,
     PharmacyWholesaleSaleForCashier,
     PharmacyWholesaleSearchSaleBill,
@@ -639,6 +641,7 @@ public enum Privileges {
             case PharmacyDisbursementReports:
 
             //Retail Transactions
+            case PharmacyRetailTransaction:
             case PharmacySale:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
@@ -651,6 +654,7 @@ public enum Privileges {
             case PharmacyAddToStock:
 
             //Wholesale Transaction
+            case PharmacyWholeSaleTransaction:
             case PharmacyWholesaleSale:
             case PharmacyWholesaleSaleForCashier:
             case PharmacyWholesaleSearchSaleBill:
