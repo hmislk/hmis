@@ -45,6 +45,7 @@
                             id="tbl" 
                             value="#{searchController.bills}" 
                             var="b"
+                            rows="15"
                             paginator="true"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -103,11 +104,13 @@
                             </p:column>
 
                             <p:column headerText="Approved Person"  >
-                                <h:commandLink action="pharmacy_reprint_order_request" 
-                                               value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" >                        
+                                <h:commandLink 
+                                    action="pharmacy_reprint_order_request" 
+                                    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"
+                                    rendered="#{b.referenceBill.cancelled eq false}" >
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
-                            </p:column>
+                            </p:column> 
 
                             <p:column headerText="PO Number" >                       
                                 <h:outputLabel  value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill.cancelled eq false}"/>                         
@@ -116,34 +119,43 @@
                                 <h:outputLabel  value="#{b.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                            </p:column>
-                            
-                            <p:column headerText="Actions">
-                                <p:commandButton ajax="false" 
-                                                 value="Approve" 
-                                                 class="ui-button-success"
-                                                 action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
-                                                 disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true}">
-                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
-                                </p:commandButton>
-                                <p:commandButton ajax="false" 
-                                                 value="Edit" 
-                                                 class="ui-button-success"
-                                                 action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
-                                                 disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                            </p:column> 
+
+                            <p:column headerText="Actions" width="9em">
+                                <p:commandButton 
+                                    id="edit"
+                                    ajax="false"
+                                    icon="fas fa-edit"
+                                    class="ui-button-warning "
+                                    action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                    disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                     <f:setPropertyActionListener 
                                         target="#{purchaseOrderRequestController.currentBill}"
                                         value="#{b}"/>
                                 </p:commandButton>
 
                                 <p:commandButton 
-                                    ajax="false" 
-                                    value="View PO" 
-                                    class="ui-button-warning"
+                                    id="approve"
+                                    ajax="false"
+                                    icon="fas fa-check-circle"
+                                    class="ui-button-success mx-2"
+                                    action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
+                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    id="view"
+                                    ajax="false"
+                                    icon="fas fa-eye"
                                     action="pharmacy_reprint_po" 
                                     disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                 </p:commandButton>
+                                
+                                <p:tooltip for="approve" value="Approve PO"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="edit" value="Edit PO"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="view" value="View PO"  showDelay="0" hideDelay="0"></p:tooltip>
                             </p:column>
                         </p:dataTable>
                     </div>

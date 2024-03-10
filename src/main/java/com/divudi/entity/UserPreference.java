@@ -232,6 +232,9 @@ public class UserPreference implements Serializable {
     @Lob
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
+    
+    @Lob
+    private String smsTemplateForChannelBooking;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -1211,6 +1214,16 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfPharmacyBillsAllowed(boolean partialPaymentOfPharmacyBillsAllowed) {
         this.partialPaymentOfPharmacyBillsAllowed = partialPaymentOfPharmacyBillsAllowed;
     }
+
+    public String getSmsTemplateForChannelBooking() {
+        return smsTemplateForChannelBooking;
+    }
+
+    public void setSmsTemplateForChannelBooking(String smsTemplateForChannelBooking) {
+        this.smsTemplateForChannelBooking = smsTemplateForChannelBooking;
+    }
+    
+    
     
     
 
