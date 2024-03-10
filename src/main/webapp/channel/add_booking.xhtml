@@ -30,12 +30,15 @@
                                     value="Add"
                                     ajax="false"
                                     update="gpThisBookingDetails"
-                                    class="m-1"
+                                    class="ui-button-success mx-2"
+                                    icon="fas fa-plus"
                                     action="#{bookingController.add}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     action="#{bookingController.startNewChannelBooking}"
                                     value="New Booking"
+                                    class="ui-button-primary"
+                                    icon="fas fa-plus"
                                     ajax="false"/>
                             </div>
                         </div>
@@ -106,9 +109,10 @@
                         <div class="col-6" >
                             <p:panel>
                                 <f:facet name="header">
-
+                                    <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                    <h:outputText class="mx-4" value="Payment Details"/>
                                 </f:facet>
-                                <h:panelGroup id="gdManageBookings" class="row p-1" layout="block">
+                                <h:panelGroup id="gdManageBookings" class="row p-2 my-1" layout="block">
 
                                     <h:panelGrid id="pgNewBookingDetail" columns="2"  >
                                         <p:outputLabel value="Amount"/>
@@ -197,7 +201,7 @@
                                         </p:tooltip>
                                         <p:outputLabel />
 
-                                        <h:outputLabel id="ballance" value="Ballance"  style="display: #{bookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                        <h:outputLabel id="ballance" value="Balance"  style="display: #{bookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                         <h:outputLabel id="ballance2" value="#{bookingController.institution.ballance}"  style="display: #{bookingController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
                                         <h:outputLabel id="staff" value="Staff"  style="display: #{bookingController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
