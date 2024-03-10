@@ -453,6 +453,7 @@ public enum Privileges {
     PharmacyReturnWithoutTraising,
     PharmacyBHTIssueAccept,
     //Pharmacy Procurement
+    PharmacyProcurementMenu,
     CreatePurchaseOrder,
     AutoOrderPModel,
     AutoOrderQModal,
