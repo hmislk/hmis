@@ -9,10 +9,10 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
     <ui:define name="content">
         <h:form id="form">
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CreatePurchaseOrder')}" >
                 You are NOT authorized
             </h:panelGroup>
-            <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('PharmacyOrderCreation')}" >
+            <h:panelGroup id="gpOrder" rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" >
                 <p:defaultCommand target="btnSave" ></p:defaultCommand>
                 <h:panelGroup id="notPrintPreview"  rendered="#{not purchaseOrderRequestController.printPreview}" class="w-100 p-0 m-0">
 
@@ -22,14 +22,10 @@
                             <p:dataTable 
                                 styleClass="noBorder" 
                                 rowIndexVar="i" 
-
                                 var="bi" 
-                                scrollable="false"
+                                scrollable="true"
+                                scrollHeight="500px"
                                 rowKey="#{bi.searialNo}"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rows="6"
-                                paginatorAlwaysVisible="false"
                                 value="#{purchaseOrderRequestController.billItems}" 
                                 selection="#{purchaseOrderRequestController.selectedBillItems}"
                                 id="itemList" >  
