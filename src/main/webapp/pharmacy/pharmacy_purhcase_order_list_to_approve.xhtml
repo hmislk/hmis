@@ -45,6 +45,7 @@
                             id="tbl" 
                             value="#{searchController.bills}" 
                             var="b"
+                            rows="15"
                             paginator="true"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -103,8 +104,10 @@
                             </p:column>
 
                             <p:column headerText="Approved Person"  >
-                                <h:commandLink action="pharmacy_reprint_order_request" 
-                                               value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"  rendered="#{b.referenceBill.cancelled eq false}" >                        
+                                <h:commandLink 
+                                    action="pharmacy_reprint_order_request" 
+                                    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"
+                                    rendered="#{b.referenceBill.cancelled eq false}" >
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
@@ -120,24 +123,25 @@
 
                             <p:column headerText="Actions" width="9em">
                                 <p:commandButton 
-                                    id="approve"
-                                    ajax="false"
-                                    icon="fas fa-check-circle"
-                                    class="ui-button-success"
-                                    action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
-                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true}">
-                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
-                                </p:commandButton>
-                                <p:commandButton 
                                     id="edit"
                                     ajax="false"
                                     icon="fas fa-edit"
-                                    class="ui-button-warning mx-2"
+                                    class="ui-button-warning "
                                     action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
                                     disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
                                     <f:setPropertyActionListener 
                                         target="#{purchaseOrderRequestController.currentBill}"
                                         value="#{b}"/>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    id="approve"
+                                    ajax="false"
+                                    icon="fas fa-check-circle"
+                                    class="ui-button-success mx-2"
+                                    action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
+                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true}">
+                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
                                 </p:commandButton>
 
                                 <p:commandButton 

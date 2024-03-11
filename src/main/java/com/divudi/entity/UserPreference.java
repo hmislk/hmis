@@ -232,6 +232,9 @@ public class UserPreference implements Serializable {
     @Lob
     private String inpatientFinalBillPrintHeader;
     private String changeTextCasesPatientName;
+    
+    @Lob
+    private String smsTemplateForChannelBooking;
 
     @Lob
     private String smsTemplateForChannelBooking;
@@ -1220,5 +1223,10 @@ public class UserPreference implements Serializable {
     public void setSmsTemplateForChannelBooking(String smsTemplateForChannelBooking) {
         this.smsTemplateForChannelBooking = smsTemplateForChannelBooking;
     }
+
+    
+    
+    
+
 
 }
