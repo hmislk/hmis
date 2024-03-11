@@ -236,9 +236,6 @@ public class UserPreference implements Serializable {
     @Lob
     private String smsTemplateForChannelBooking;
 
-    @Lob
-    private String smsTemplateForChannelBooking;
-
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
