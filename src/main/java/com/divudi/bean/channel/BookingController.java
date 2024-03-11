@@ -518,7 +518,6 @@ public class BookingController implements Serializable, ControllerWithPatient {
         int no = b.getSingleBillSession().getSerialNo();
         String input = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         s = input.replace("{patient_name}", patientName)
-
                 .replace("{doctor}", doc)
                 .replace("{appointment_time}", time)
                 .replace("{appointment_date}", date)
