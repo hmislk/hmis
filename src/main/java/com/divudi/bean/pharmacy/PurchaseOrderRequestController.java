@@ -86,6 +86,9 @@ public class PurchaseOrderRequestController implements Serializable {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
             BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            tmp.setRetirer(sessionController.getLoggedUser());
+            tmp.setRetiredAt(new Date());
             //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
