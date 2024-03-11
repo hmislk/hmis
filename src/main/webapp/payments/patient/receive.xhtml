@@ -185,33 +185,36 @@
 
 
             <h:panelGroup rendered="#{patientController.printPreview}">
+                <h:form >
+                    <p:panel>
 
-                <p:panel>
+                    <f:facet name="header">
+                            <h:panelGrid columns="3" style="size: 0.5rem; float: right" >
+                                <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                                    <p:printer target="billPanel"></p:printer>
+                                </p:commandButton>
+                                <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-2 ui-button-warning"
+                                                 action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                                <p:commandButton
+                                    value="Profile"
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning  w-100"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    >
+                                    <f:setPropertyActionListener
+                                        value="#{patientController.bill.patient}"
+                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </f:facet>
+
+
                     <h:outputStylesheet library="css" name="/printing/fivefiveprinting.css" ></h:outputStylesheet>
 
 
-                    <h:form >
-                        <h:panelGrid columns="3" style="size: 0.5rem">
-                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
-                                <p:printer target="billPanel"></p:printer>
-                            </p:commandButton>
-                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-2 ui-button-warning"
-                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                            <p:commandButton
-                                value="Profile"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning  w-100"
-                                action="#{patientController.navigateToOpdPatientProfile()}"
-                                >
-                                <f:setPropertyActionListener
-                                    value="#{patientController.bill.patient}"
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </h:panelGrid>
 
-                    </h:form>
-                    <div class="container-fluid">
+                    <div class="container-fluid my-2">
                         <div class="row justify-content-center align-items-center">
                             <div class="col-md-6">
                                 <div class="align-items-center my-2" style="width: 50%">
@@ -308,7 +311,7 @@
                         </div>
                     </div>
                 </p:panel>
-
+                 </h:form>
 
             </h:panelGroup>
 
