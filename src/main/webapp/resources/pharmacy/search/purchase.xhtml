@@ -17,7 +17,7 @@
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
-            <h:outputLabel value="Dealor Name"/>
+            <h:outputLabel value="Supplier Name"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
@@ -99,7 +99,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
-            <p:column headerText="Dealor" >
+            <p:column headerText="Supplier" >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

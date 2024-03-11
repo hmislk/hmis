@@ -17,7 +17,7 @@
                             <p:panel header="Data Administration" >
                                 <p:accordionPanel>
                                     <p:tab title="System Administrator Functions"  >
-                                        
+
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 value="Search Any Bill" 
@@ -55,11 +55,19 @@
                                                 rendered="#{webUserController.hasPrivilege('Search')}">
                                             </p:commandButton>
                                         </div>
-                                        
+
                                     </p:tab>
-                                    
-                                    <p:tab title="System Administrator Functions" disabled="true" >
-                                        <p:panel >
+
+                                    <p:tab title="System Administrator Functions" disabled="false" >
+                                        <p:commandButton
+                                            ajax="false" 
+                                            action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
+                                            value="Check Missing Fields"  
+                                            class="w-100"
+                                            />
+                                        
+                                        
+                                        <p:panel rendered="false" >
                                             <h:outputLabel 
                                                 value="Very Dangerous Section." 
                                                 style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
@@ -69,9 +77,14 @@
                                                 style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
                                         </p:panel>
 
-                                        <p:panelGrid columns="2" >
+                                        <p:panelGrid columns="2" rendered="false">
 
-                                            <p:panelGrid columns="1"                     >
+                                            <p:panelGrid columns="1"  >
+
+
+
+
+
                                                 <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
                                                 <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))

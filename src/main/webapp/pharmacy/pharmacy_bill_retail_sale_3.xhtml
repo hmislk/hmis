@@ -45,7 +45,7 @@
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                 <p:autoComplete accesskey="i"    id="acStock" class="w-100"
                                                                 value="#{pharmacySaleController3.stock}" 
-                                                                completeMethod="#{pharmacySaleController3.completeAvailableStocksFromNameOrGeneric}" 
+                                                                completeMethod="#{stockController.completeAvailableStocks}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="30"
                                                                 >
                                                     <p:column headerText="Item" class="w-100" styleClass="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">

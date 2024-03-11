@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <ui:define name="content">
         <h:form>
@@ -31,38 +32,47 @@
                     </f:facet>
                     <p:panel class="mb-2" id="po">
                         <div class="row">
-                            <div class="col-3">
-                                <p:outputLabel style="font-weight: bold" class="mx-3" value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
+                            <div class="d-flex align-items-center">
+                                <div class="col-3">
+                                    <p:outputLabel style="font-weight: bold" class="mx-3" value="Suplier  :   #{purchaseOrderController.aprovedBill.toInstitution.name}"/>
 
-                            </div>
-                            <div class="col-4">
-                                <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
-                            </div>
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-3">
-                                        <p:outputLabel style="font-weight: bold" value="Payment Method"></p:outputLabel>
-                                    </div>
-                                    <div class="col-4">
-                                        <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
-                                            <f:selectItem itemLabel="Select Payment method"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
-                                            <p:ajax process="@this" update="po" event="change"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    
-                                    <div class="col-4">
-                                        <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" >
-                                            <p:selectOneMenu class="w-100"  value="#{purchaseOrderController.aprovedBill.creditDuration}">    
-                                                <f:selectItem itemLabel="Select Credit Duration"/>
-                                                <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
-                                                </f:selectItems>
-                                            </p:selectOneMenu>
-                                        </h:panelGroup>
-                                    </div>
                                 </div>
+                                <div class="col-4">
+                                    <p:outputLabel style="font-weight: bold"  value="Total :"/>  
+                                    <p:outputLabel style="font-weight: bold" id="tot" class="mx-2" value="#{purchaseOrderController.aprovedBill.netTotal}">
+                                        <f:convertNumber pattern="#,#00.00"/>
+                                    </p:outputLabel>
+                                </div>
+                                <div class="col-5">
+                                    <div class="row">
+                                        <div class="d-flex align-items-center">
+                                            <div class="col-3">
+                                                <p:outputLabel style="font-weight: bold" value="Payment Method"></p:outputLabel>
+                                            </div>
+                                            <div class="col-4">
+                                                <p:selectOneMenu   id="cmbPs" value="#{purchaseOrderController.aprovedBill.paymentMethod}">    
+                                                    <f:selectItem itemLabel="Select Payment method"/>
+                                                    <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                                                    <p:ajax process="@this" update="po" event="change"/>
+                                                    <p:ajax process="@this" update="duration" event="itemSelect" />
+                                                </p:selectOneMenu>
+                                            </div>
 
+                                            <div class="col-4">
+                                                <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
+                                                    <div class="ui-inputgroup mx-1 my-1">
+                                                        <p:inputText  
+                                                            value="#{purchaseOrderController.aprovedBill.creditDuration}" style="width: 10em;">
+                                                        </p:inputText>
+                                                        <div class="ui-inputgroup-addon">Days</div>
+                                                    </div>
+<!--                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" valueRequired="true"/>-->
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
 
+                                </div>
                             </div>
                         </div>
                     </p:panel>
@@ -102,14 +112,14 @@
 
                             <p:column headerText="Qty" styleClass="averageNumericColumn" >                         
                                 <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
-                                    <f:convertNumber pattern="#00.00"/>
+                                    <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
                             </p:column>  
                             <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
                                 <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
-                                    <f:convertNumber pattern="#00.00"/>
+                                    <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
@@ -141,7 +151,7 @@
                                 </h:panelGroup>
                             </p:column>  
 
-                            <p:column styleClass="averageNumericColumn" >
+                            <p:column styleClass="averageNumericColumn" width="3em" >
                                 <p:commandButton  ajax="false" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                             </p:column>
                         </p:dataTable> 

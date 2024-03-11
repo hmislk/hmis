@@ -25,7 +25,7 @@
                 <h:panelGroup >
 
                     <h:panelGrid columns="7" style="min-width: 100%;" class="my-2">
-                        <h:outputLabel value="DEALOR"/>
+                        <h:outputLabel value="Supplier"/>
 
                         <p:autoComplete converter="deal" value="#{grnController.grnBill.fromInstitution}"
                                         completeMethod="#{dealerController.completeDealor}" 
@@ -50,8 +50,12 @@
                         rowKey="#{bi.searialNo}"
                         selection="#{grnController.selectedBillItems}"
                         value="#{grnController.billItems}" 
-                        scrollable="true" 
-                        rows="8"
+                        class="w-100"
+                        rows="10"
+                        paginator="true" paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                        rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                         id="itemList" 
                         editable="true">  
 
@@ -151,7 +155,7 @@
                             </h:panelGroup>
                         </p:column>  
 
-                        <p:column headerText="Date of Expiry" >  
+                        <p:column headerText="Date Of Expiry" >  
                             <p:cellEditor >
                                 <f:facet name="output">
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
@@ -168,7 +172,7 @@
                         </p:column> 
 
 
-                        <p:column headerText="Bathch No" >  
+                        <p:column headerText="Batch No" >  
                             <p:cellEditor >
                                 <f:facet name="output">
                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
@@ -198,19 +202,19 @@
                                 class="ui-button-danger mx-1"
                                 action="#{grnController.duplicateItem(bi)}"/>
                             <p:rowEditor />  
-                            
+
                         </p:column>
 
                     </p:dataTable>  
                     <p:panel>
                         <p:panelGrid columns="3" style="min-width: 100%" id="tot">
 
-                            <h:panelGrid columns="2">
-                                <p:outputLabel value="Invoice No : "/>
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Invoice No "/>
                                 <p:inputText autocomplete="off" value="#{grnController.grnBill.invoiceNumber}" />
                                 <p:outputLabel value="Invoice Date"/>
                                 <p:calendar  value="#{grnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
-                            </h:panelGrid>                    
+                            </p:panelGrid>                    
 
                             <p:panelGrid columns="2" >
                                 <p:outputLabel value="Gross Total"/>
@@ -229,7 +233,7 @@
                             </p:panelGrid>
 
                             <p:panelGrid columns="2" id="ins">
-                                <p:outputLabel value="invoice Total"/>
+                                <p:outputLabel value="Invoice Total"/>
                                 <p:inputText id="insv"  value="#{grnController.insTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                     <p:ajax process="@this" update="diff" event="keyup"

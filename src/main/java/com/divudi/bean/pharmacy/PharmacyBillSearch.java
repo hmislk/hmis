@@ -479,6 +479,23 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    public String navigateToViewPurchaseOrder() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        double tmp = 0;
+        for (BillItem b : bill.getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            double tmp2 = (b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getRetailRate());
+            tmp += tmp2;
+        }
+        bill.setTransTotalSaleValue(tmp);
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
+    }
+
     public WebUser getUser() {
         return user;
     }
@@ -760,14 +777,14 @@ public class PharmacyBillSearch implements Serializable {
                 + " b.referenceBill=:ref and b.referenceBill.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
-        hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp", BillType.PharmacyOrder);
         List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private boolean checkGrnReturn() {
@@ -1166,7 +1183,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
@@ -1220,7 +1237,7 @@ public class PharmacyBillSearch implements Serializable {
             b.setPharmaceuticalBillItem(ph);
 
             if (b.getId() == null) {
-                getBillItemFacede().create(b);
+                getBillItemFacede().edit(b);
             }
 
             ph.setBillItem(b);
@@ -1700,7 +1717,6 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-
             if (checkDepartment(getBill())) {
                 return;
             }
@@ -1739,10 +1755,7 @@ public class PharmacyBillSearch implements Serializable {
                 //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
                 //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
                 //      updateRemainingQty(i);
-               
             }
-
-       
 
         }
 

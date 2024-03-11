@@ -15,7 +15,7 @@
             <h:panelGroup rendered="#{!storeGrnController.printPreview}">
 
                 <h:panelGrid columns="5" style="min-width: 100%;">
-                    <h:outputLabel value="DEALOR"/>
+                    <h:outputLabel value="Supplier"/>
                     <p:autoComplete converter="deal" value="#{storeGrnController.grnBill.fromInstitution}"
                                     completeMethod="#{dealerController.completeDealor}" 
                                     forceSelection="true"
@@ -162,7 +162,7 @@
                     </p:column> 
 
 
-                    <p:column headerText="Bathch No" >  
+                    <p:column headerText="Batch No" >  
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
@@ -321,7 +321,7 @@
                                 <p:calendar navigator="true" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}">
                                     <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.batchListener()}"/>
                                 </p:calendar> 
-                                <h:outputLabel value="Bathch No"/>
+                                <h:outputLabel value="Batch No"/>
                                 <p:inputText id="tmp" autocomplete="off"  styleClass="numericTxt" 
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
                                 <h:outputLabel value="Make"/>

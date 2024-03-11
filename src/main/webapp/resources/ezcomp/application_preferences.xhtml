@@ -154,6 +154,8 @@
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
+                
+
 
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" class="w-100" >
@@ -207,6 +209,8 @@
                             <h:inputText  class="form-control" id="imgName" value="#{sessionController.currentPreference.logoName}"/>
                             <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
+                            <h:outputLabel value="Length of OTP Indexes" ></h:outputLabel>
+                            <h:inputText value="#{sessionController.currentPreference.lengthOfOTPIndexes}" />
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>

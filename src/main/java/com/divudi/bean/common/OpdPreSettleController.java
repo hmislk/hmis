@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
@@ -118,6 +119,7 @@ public class OpdPreSettleController implements Serializable {
     /////////////////////////
     //   PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
+    private double total;
     PaymentMethod paymentMethod;
     double cashPaid;
     double reminingCashPaid;
@@ -376,6 +378,26 @@ public class OpdPreSettleController implements Serializable {
 //        makeNull();
         billPreview = true;
 
+    }
+    
+    public double calculatRemainForMultiplePaymentTotal() {
+        
+        total = getPreBill().getNetTotal();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+
+            }
+            return total - multiplePaymentMethodTotalValue;
+        }
+        return total;
     }
 
     public BilledBill createBilledBillForPreBill(Bill preBill) {
@@ -1077,6 +1099,15 @@ public class OpdPreSettleController implements Serializable {
     public void setBillID(Long billID) {
         this.billID = billID;
     }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+    
     
     
 

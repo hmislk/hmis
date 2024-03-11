@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
     <ui:define name="content">
         <h:form id="form">
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCreation')}" >
@@ -154,18 +155,23 @@
                                                class="form-label"
                                                for="cmbPs"></p:outputLabel>
                                 <p:selectOneMenu class="w-100"  id="cmbPs" value="#{purchaseOrderRequestController.currentBill.paymentMethod}">    
-                                    <f:selectItem itemLabel="SelectPayment method"/>
+                                    <f:selectItem itemLabel="Select Payment method"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForPo}">
                                     </f:selectItems>
                                     <p:ajax process="@this" update="po" event="change"/>
+                                    <p:ajax process="@this" update="duration" event="itemSelect" />
                                 </p:selectOneMenu>
 
                                 <h:panelGroup rendered="#{purchaseOrderRequestController.currentBill.paymentMethod eq 'Credit'}" id="duration" >
-                                   <p:selectOneMenu class="w-100"  value="#{purchaseOrderRequestController.currentBill.creditDuration}">    
-                                    <f:selectItem itemLabel="Select Credit Duration"/>
-                                    <f:selectItems value="#{enumController.creditDuration}" var="duration" itemLabel="#{duration.label}" itemValue="#{duration}">
-                                    </f:selectItems>
-                                </p:selectOneMenu>
+                                    <div class="d-flex" >
+                                        <div class="ui-inputgroup mx-1 my-1">
+                                            <p:inputText  
+                                                value="#{purchaseOrderRequestController.currentBill.creditDuration}"
+                                                style="width: 10em;">
+                                            </p:inputText>
+                                            <div class="ui-inputgroup-addon">Days</div>
+                                        </div>
+                                    </div>
                                 </h:panelGroup>
 
                                 <p:outputLabel 
@@ -257,6 +263,7 @@
                                     value="#{purchaseOrderRequestController.currentBillItem.item}"
                                     forceSelection="true"
                                     class="w-75"
+                                    maxResults="10"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
@@ -270,7 +277,12 @@
                                                        rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                                     </p:column>
                                 </p:autoComplete>
-                                <p:commandButton class="mx-1 ui-button-success"  value="Add" action="#{purchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
+                                <p:commandButton 
+                                    class="mx-1 ui-button-success"  
+                                    value="Add" 
+                                    action="#{purchaseOrderRequestController.addItem}" 
+                                    process="exItem @this" 
+                                    update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} tot" />
 
                             </p:panel>
                         </div>
@@ -287,101 +299,156 @@
                     styleClass="print-preview"
                     class="w-100">
                     <f:facet name="header">
-                        <h1>Purchase Order Request</h1>
-                        <div class="buttons">
-                            <p:commandButton ajax="false" value="Print Request" icon="pi pi-save" styleClass="ui-button-success mx-1">
-                                <p:printer target="printPaper" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="New Order" action="#{purchaseOrderRequestController.resetBillValues}" icon="pi pi-plus" styleClass="ui-button-info mx-1"/>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h:outputLabel value="Purchase Order Request" class="mt-2"/>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Print" 
+                                    icon="fas fa-print" 
+                                    class="ui-button-info">
+                                    <p:printer target="printPaper" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="New Order" 
+                                    action="#{purchaseOrderRequestController.resetBillValues}" 
+                                    icon="fas fa-plus" 
+                                    styleClass="ui-button-success"/>
+                            </div>
                         </div>
                     </f:facet>
 
-                    <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
+                    <div class="d-flex justify-content-center">
+                        <p:panel style="width: 212mm;" >
+                            <h:outputStylesheet library="css" name="printing/purchase_order_a4_bill.css" ></h:outputStylesheet>
+                            <h:panelGroup id="printPaper" >
 
-                    <h:panelGroup id="printPaper" >
+                                <div class="institutionName">
+                                    <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
+                                </div>
+                                <div class="institutionContact" >
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <h:outputLabel value="Telephone : "/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.phone}"/>
+                                        <h:outputLabel value="/" style="width: 15px; text-align: center" rendered="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
+                                    </div>
+                                    <!--                <div >
+                                                        <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.department.telephone1} "/>
+                                                    </div>-->
+                                    <div >
+                                        <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
+                                    </div>
+                                    <div >
+                                        <h:outputLabel value="Email : "/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
+                                    </div>
+                                </div>
 
-                        <div class="institutionName">
-                            <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.institution.name}"/>
-                        </div>
-                        <div class="institutionContact" >
-                            <div >
-                                <h:outputLabel value="Telephone : #{purchaseOrderRequestController.currentBill.creater.institution.phone} / #{purchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
+                                <div class="headingBill">
+                                    <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
+                                </div>
 
-                            </div>
-                            <!--                <div >
-                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.department.telephone1} "/>
-                                            </div>-->
-                            <div >
-                                <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{purchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
-                            </div>
-                            <div >
-                                <h:outputLabel value="Email : "/>
-                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
-                            </div>
-                        </div>
+                                <div class="purchase-order">
+                                    <h:panelGrid columns="3" class="my-2 w-50">
+                                        <h:outputLabel value="Order No" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.insId}" />
+                                        <h:outputLabel value="Supplier" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
+                                        <h:outputLabel value="Supplier Phone" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
+                                        <h:outputLabel value="Supplier Address" />
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
+                                    </h:panelGrid>
+                                </div>
 
-                        <div class="headingBill">
-                            <h:outputLabel value="Purchase Order Request" style="text-decoration: underline;"/>
-                        </div>
-                        
-                        <div class="purchase-order">
-                            <h:panelGrid columns="3" class="my-2 w-50">
-                                <h:outputLabel value="Order No" />
-                                <h:outputLabel value=":" />
-                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.insId}" />
-                                <h:outputLabel value="Supplier" />
-                                <h:outputLabel value=":" />
-                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}" />
-                                <h:outputLabel value="Supplier Phone" />
-                                <h:outputLabel value=":" />
-                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.phone}" />
-                                <h:outputLabel value="Supplier Address" />
-                                <h:outputLabel value=":" />
-                                <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
-                            </h:panelGrid>
-                        </div>
-
-                        <table class="order-table">
-                            <thead>
-                                <tr>
-                                    <th>Item Code</th>
-                                    <th>Item Name</th>
-                                    <th>Qty</th>
-                                    <th>Free Qty</th>
-                                    <th>Purchase Rate</th>
-                                    <th>Purchase Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <ui:repeat value="#{purchaseOrderRequestController.billItems}" var="bi">
-
-                                    <h:panelGroup rendered="#{not bi.retired}" >
-
+                                <table class="order-table">
+                                    <thead>
                                         <tr>
-                                            <td>#{bi.item.code}</td>
-                                            <td>#{bi.item.name}</td>
-                                            <td>#{bi.pharmaceuticalBillItem.qty}</td>
-                                            <td>#{bi.pharmaceuticalBillItem.freeQty}</td>
-                                            <td>#{bi.pharmaceuticalBillItem.purchaseRate}</td>
-                                            <td>#{bi.netValue}</td>
+                                            <th>Item Code</th>
+                                            <th>Item Name</th>
+                                            <th>Qty</th>
+                                            <th>Free Qty</th>
+                                            <th>Purchase Rate</th>
+                                            <th>Purchase Value</th>
                                         </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{purchaseOrderRequestController.billItems}" var="bi">
 
-                                    </h:panelGroup>
+                                            <h:panelGroup rendered="#{not bi.retired}" >
+
+                                                <tr>
+                                                    <td><h:outputLabel value="#{bi.item.code}"/></td>
+                                                    <td><h:outputLabel value="#{bi.item.name}"/></td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}">
+                                                            <f:convertNumber pattern="#,##0"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}">
+                                                            <f:convertNumber pattern="#,##0"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                    <td style="text-align: right;">
+                                                        <h:outputLabel value="#{bi.netValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputLabel>
+                                                    </td>
+                                                </tr>
+
+                                            </h:panelGroup>
 
 
-                                </ui:repeat>
-                            </tbody>
-                        </table>
-                        <br/>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                                <br/>
 
-                        <div class="purchase-order">
-                            <div>Order Initiated by: #{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}</div>
-                            <div>Order Finalized by: #{purchaseOrderRequestController.currentBill.checkedBy}</div>
-                            <div>Order Finalized at: #{purchaseOrderRequestController.currentBill.checkeAt}</div>
-                            <div>Total: #{purchaseOrderRequestController.currentBill.netTotal}</div>
-                        </div>
+                                <div class="purchase-order">
+                                    <div>
+                                        <h:outputLabel value="Order Initiated by"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.creater.webUserPerson.name}"/>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Order Finalized by"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        #{purchaseOrderRequestController.currentBill.checkedBy}
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Order Finalized At"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.checkeAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <h:outputLabel value="Total"/>
+                                        <h:outputLabel value=":" style="width: 15px; text-align: center"/>
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.netTotal}">
+                                             <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                         
+                                    </div>
+                                </div>
 
-                    </h:panelGroup>
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
                 </p:panel>
 
             </h:panelGroup>

@@ -150,10 +150,10 @@ public enum Privileges {
     ReportsSearchCashCardOther,
     ReportSearchCreditOther,
     ReportsItemOther,
+    
     PharmacyOrderCreation,
     PharmacyOrderApproval,
     PharmacyOrderCancellation,
-    PharmacySale,
     PharmacySaleWithoutStock,
     PharmacySaleReprint,
     PharmacySaleCancel,
@@ -177,23 +177,6 @@ public enum Privileges {
     PharmacyPurchase,
     //Wholesale
     PharmacyPurchaseWh,
-    //Whalesale
-    PharmacyPurchaseReprint,
-    PharmacyPurchaseCancellation,
-    PharmacyPurchaseReturn,
-    PharmacyStockAdjustment,
-    PharmacyStockAdjustmentSingleItem,
-    PharmacyReAddToStock,
-    PharmacyStockIssue,
-    PharmacyDealorPayment,
-    PharmacySearch,
-    PharmacyReports,
-    PharmacyTransfer,
-    PharmacySummery,
-    PharmacyAdministration,
-    PharmacySetReorderLevel,
-    PharmacyReturnWithoutTraising,
-    PharmacyBHTIssueAccept,
     //theater
     Theatre,
     TheatreAddSurgery,
@@ -394,15 +377,108 @@ public enum Privileges {
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
     ClinicalPatientPhoneNumberEdit,
-    
     //Pharmacy Disbursement
-    
+    PharmacyDisburesementMenu,
     PharmacyDisbursementRequest,
     PharmacyDisbursementIssurForRequest,
     PharmacyDisbursementDirectIssue,
     PharmacyDisbursementRecieve,
-    ;
+    PharmacyDisbursementReports,
+    //Pharmacy Inpatient medication management
+    InpatientMedicationManagementMenue,
+    PharmacyDirectIssueToBht,
+    PharmacyDirectIssueToTheaterCases,
+    PharmacyBhtIssueRequest,
+    PharmacySearchInpatientDirectIssuesbyBill,
+    PharmacySearchInpatientDirectIssuesbyItem,
+    PharmacySearchInpatientDirectIssueReturnsbyBill,
+    PharmacysSearchInpatientDirectIssueReturnsbyItem,
+    //Pharmacy Retail Transactions
+    PharmacyRetailTransactionMenue,
+    PharmacyRetailTransaction,
+    PharmacySale,
+    PharmacySaleForCashier,
+    PharmacySaleWithOutStock,
+    PharmacySearchSaleBill,
+    PharmacySearchSalePreBill,
+    PharmacySearchSaleBillItems,
+    PharmacyReturnItemsOnly,
+    PharmacyReturnItemsAndPayments,
+    PharmacySearchReturnBill,
+    PharmacyAddToStock,
+    //Pharmacy Wholesale Transaction
+    PharmacyWholeSaleTransactionMenue,
+    PharmacyWholeSaleTransaction,
+    PharmacyWholesaleSale,
+    PharmacyWholesaleSaleForCashier,
+    PharmacyWholesaleSearchSaleBill,
+    PharmacyWholesaleSearchSaleBillToPay,
+    PharmacyWholesaleSearchSaleBillItems,
+    PharmacyWholesaleReturnItemsOnly,
+    PharmacyWholesaleWholeSaleAddToStock,
+    PharmacyWholeSalePurchase,
+    PharmacySearchReturnBillItems,
+    //Pharmacy Disposal
+    PharmacyDisposalMenue,
+    PharmacyDisposalIssue,
+    PharmacyDisposalSearchIssueBill,
+    PharmacyDisposalSearchIssueBillItems,
+    PharmacyDisposalSearchIssueReturnBill,
+    PharmacyDisposalUnitIssueMargin,
+    //Pharmacy Adjustment
+    PharmacyAdjustmentMenue,
+    PharmacyAdjustmentDepartmentStockQTY,
+    PharmacyAdjustmentDepartmentStockBySingleItemQTY,
+    PharmacyAdjustmentStaffStockAdjustment,
+    PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentSaleRate,
+    PharmacyAdjustmentWholeSaleRate,
+    PharmacyAdjustmentExpiryDate,
+    PharmacyAdjustmentSearchAdjustmentBills,
+    PharmacyAdjustmentTransferAllStock,
+    //Pharmacy Dealer Payments
+    PharmacyDealerPaymentMenue,
+    PharmacyDealerDueSearch,
+    PharmacyDealerDueByAge,
+    PharmacyPayment,
+    PharmacyGRNPaymentApprove,
+    PharmacyGRNPaymentDoneSearch,
+    PharmacyCreditDueAndAccess,
+    //Whalesale
+    PharmacyWholesaleMenue,
+    PharmacyPurchaseReprint,
+    PharmacyPurchaseCancellation,
+    PharmacyPurchaseReturn,
+    PharmacyStockAdjustment,
+    PharmacyStockAdjustmentSingleItem,
+    PharmacyReAddToStock,
+    PharmacyStockIssue,
+    PharmacyDealorPayment,
+    PharmacySearch,
+    PharmacyReports,
+    PharmacyTransfer,
+    PharmacySummery,
+    PharmacyAdministration,
+    PharmacySetReorderLevel,
+    PharmacyReturnWithoutTraising,
+    PharmacyBHTIssueAccept,
+    //Pharmacy Procurement
+    PharmacyProcurementMenu,
+    CreatePurchaseOrder,
+    AutoOrderPModel,
+    AutoOrderQModal,
+    DirectPurchase,
+    PurchaseOrdersApprovel,
+    GoodsRecipt,
+    ReturnReceviedGoods,
+    ReturnWithoutRecipt,
+    //
+    PharmacyItemSearch,
+    PharmacyGenarateReports,
+    PharmacySummaryViews
     
+    ;
+
     public String getLabel() {
         switch (this) {
             case Opd:
@@ -434,7 +510,7 @@ public enum Privileges {
             case MemberShip:
             case Search:
             case User:
-                
+
                 return false;
             default:
                 return true;
@@ -512,7 +588,6 @@ public enum Privileges {
             case LabReportSearchByLoggedInstitution:
                 return "Lab";
             case Pharmacy:
-            case PharmacySale:
             case PharmacySaleWh:
             case PharmacySearch:
             case PharmacyReports:
@@ -549,6 +624,88 @@ public enum Privileges {
             case PharmacyPurchaseCancellation:
             case PharmacyReturnWithoutTraising:
             case PharmacyStockAdjustmentSingleItem:
+            
+            //Inpatient medication management 
+            case InpatientMedicationManagementMenue:
+            case PharmacyDirectIssueToBht:
+            case PharmacyDirectIssueToTheaterCases:
+            case PharmacyBhtIssueRequest:
+            case PharmacySearchInpatientDirectIssuesbyBill:
+            case PharmacySearchInpatientDirectIssuesbyItem:
+            case PharmacySearchInpatientDirectIssueReturnsbyBill:
+            case PharmacysSearchInpatientDirectIssueReturnsbyItem:
+            //Procurement
+            case PharmacyProcurementMenu:
+            case CreatePurchaseOrder:
+            case AutoOrderPModel:
+            case AutoOrderQModal:
+            case DirectPurchase:
+            case PurchaseOrdersApprovel:
+            case GoodsRecipt:
+            case ReturnReceviedGoods:
+            case ReturnWithoutRecipt:
+            //Disburesement
+            case PharmacyDisburesementMenu:
+            case PharmacyDisbursementRequest:
+            case PharmacyDisbursementIssurForRequest:
+            case PharmacyDisbursementDirectIssue:
+            case PharmacyDisbursementRecieve:
+            case PharmacyDisbursementReports:
+
+            //Retail Transactions
+            case PharmacyRetailTransaction:
+            case PharmacySale:
+            case PharmacySaleForCashier:
+            case PharmacySaleWithOutStock:
+            case PharmacySearchSaleBill:
+            case PharmacySearchSalePreBill:
+            case PharmacySearchSaleBillItems:
+            case PharmacyReturnItemsOnly:
+            case PharmacyReturnItemsAndPayments:
+            case PharmacySearchReturnBill:
+            case PharmacyAddToStock:
+
+            //Wholesale Transaction
+            case PharmacyWholeSaleTransaction:
+            case PharmacyWholesaleSale:
+            case PharmacyWholesaleSaleForCashier:
+            case PharmacyWholesaleSearchSaleBill:
+            case PharmacyWholesaleSearchSaleBillToPay:
+            case PharmacyWholesaleSearchSaleBillItems:
+            case PharmacyWholesaleReturnItemsOnly:
+            case PharmacyWholesaleWholeSaleAddToStock:
+            case PharmacyWholeSalePurchase:
+
+            //Disposal
+            case PharmacyDisposalIssue:
+            case PharmacyDisposalSearchIssueBill:
+            case PharmacyDisposalSearchIssueBillItems:
+            case PharmacyDisposalSearchIssueReturnBill:
+            case PharmacyDisposalUnitIssueMargin:
+                
+            //Pharmacy Adjustment
+            case PharmacyAdjustmentDepartmentStockQTY:
+            case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
+            case PharmacyAdjustmentStaffStockAdjustment:
+            case PharmacyAdjustmentPurchaseRate:
+            case PharmacyAdjustmentSaleRate:
+            case PharmacyAdjustmentWholeSaleRate:
+            case PharmacyAdjustmentExpiryDate:
+            case PharmacyAdjustmentSearchAdjustmentBills:
+            case PharmacyAdjustmentTransferAllStock:
+
+            //Pharmacy Dealer Payments
+            case PharmacyDealerDueSearch:
+            case PharmacyDealerDueByAge:
+            case PharmacyPayment:
+            case PharmacyGRNPaymentApprove:
+            case PharmacyGRNPaymentDoneSearch:
+            case PharmacyCreditDueAndAccess:
+                
+            case PharmacyItemSearch:
+            case PharmacyGenarateReports:
+            case PharmacySummaryViews:
+
                 return "Pharmacy";
             default:
                 return this.toString();
