@@ -217,7 +217,7 @@
                     <div class="container-fluid my-2">
                         <div class="row justify-content-center align-items-center">
                             <div class="col-md-6">
-                                <div class="align-items-center my-2" style="width: 50%">
+                                <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
                                             <div class="header">
@@ -282,7 +282,7 @@
                                                 <h:outputText value="#{patientController.bill.patient.person.address}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
                                             </p>
                                             <hr/>
-                                            <p:barcode type="code39" value="#{patientController.bill.idStr}" style="width: 35rem; height: 6rem;"></p:barcode>
+                                            <p:barcode type="code39" value="#{patientController.bill.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
                                             <hr/>
                                             <h4>Payment Details</h4>
                                             <p>
