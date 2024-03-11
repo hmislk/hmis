@@ -18,13 +18,25 @@
                     </h:panelGroup>
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                         <h:form  >
-
+                            <p:growl id="growl" ></p:growl>
                             <div class="container-fluid p-2" >
                                 <div class="row" >
                                     <div class="col-md-9" >
                                         <ui:insert name="users" >
                                             <div class="row" >
                                                 <div class="col-6" >
+                                                    <p:focus id="focusForName" for="txtRole" ></p:focus>
+                                                    <p:focus id="focusForList" for="lstItems" ></p:focus>
+                                                    <p:commandButton 
+                                                        id="btnAdd"
+                                                        icon="fas fa-add"
+                                                        class="ui-button-success my-2"
+                                                        value="Add New" 
+                                                        process="btnAdd"
+                                                        update="gpDetails focusForName actions"
+                                                        action="#{webUserRoleController.toAddNewUserRole}">
+                                                    </p:commandButton>
+
                                                     <p:selectOneListbox 
                                                         id="lstItems"
                                                         value="#{webUserRoleController.current}"
@@ -36,41 +48,39 @@
                                                             itemLabel="#{i.name}" 
                                                             itemValue="#{i}" >
                                                         </f:selectItems>
-                                                        <p:ajax process="lstItems" update="gridDetails" ></p:ajax>
+                                                        <p:ajax process="lstItems" update="gpDetails actions" ></p:ajax>
                                                     </p:selectOneListbox>
-                                                    <p:commandButton 
-                                                        id="btnAdd"
-                                                        value="Add New" 
-                                                        process="btnAdd"
-                                                        update="gridDetails"
-                                                        action="#{webUserRoleController.toAddNewUserRole}">
-                                                    </p:commandButton>
+
                                                 </div>
                                                 <div class="col-6" >
-                                                    <p:panelGrid 
-                                                        id="gridDetails"
-                                                        columns="2" class="w-100">
-                                                        <p:outputLabel value="Role Name" for="txtRole" ></p:outputLabel>
-                                                        <p:inputText
-                                                            value="#{webUserRoleController.current.name}" 
-                                                            id="txtRole" 
-                                                            required="true" 
-                                                            requiredMessage="Please enter a Name" >
-                                                        </p:inputText>
-                                                        <p:outputLabel value="Description" for="txtComments" ></p:outputLabel>
-                                                        <p:inputTextarea
-                                                            value="#{webUserRoleController.current.description}" 
-                                                            id="txtComments" 
-                                                            required="true" 
-                                                            requiredMessage="Please enter a Name" >
-                                                        </p:inputTextarea>
-                                                    </p:panelGrid>
-                                                    <p:commandButton
-                                                        id="btnSave"
-                                                        process="gridDetails btnSave"
-                                                        update="lstItems"
-                                                        value="Save" 
-                                                        action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
+                                                    <p:panel class="w-100" id="gpDetails" header="Details of the Role">
+                                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                                            <p:outputLabel value="Role Name" for="txtRole" ></p:outputLabel>
+                                                            <p:inputText
+                                                                value="#{webUserRoleController.current.name}" 
+                                                                id="txtRole" 
+                                                                class="w-100"
+                                                                required="true" 
+                                                                requiredMessage="Please enter a Name" >
+                                                            </p:inputText>
+                                                            <p:outputLabel value="Description" for="txtComments" ></p:outputLabel>
+                                                            <p:inputTextarea
+                                                                class="w-100"
+                                                                value="#{webUserRoleController.current.description}" 
+                                                                id="txtComments" 
+                                                                required="true" 
+                                                                requiredMessage="Please enter a Name" >
+                                                            </p:inputTextarea>
+                                                        </p:panelGrid>
+                                                        <p:commandButton
+                                                            id="btnSave"
+                                                            icon="fas fa-save"
+                                                            class="ui-button-warning my-2"
+                                                            process="txtRole txtComments btnSave"
+                                                            update="lstItems focusForList actions growl"
+                                                            value="Save" 
+                                                            action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
+                                                    </p:panel>
                                                 </div>
                                             </div>
 
@@ -92,17 +102,24 @@
                                         <p:commandButton 
                                             disabled="#{webUserRoleController.current.id == null}"
                                             icon="fa fa-icons" 
-                                            value="Manage User Icons" 
+                                            value="Manage User Role Icons"
                                             class="m-1" 
                                             action="#{webUserRoleController.navigateToManageWebUserRoleIcons()}" 
-                                            ajax="false" />
+                                            ajax="false" >
+                                            <f:setPropertyActionListener 
+                                                value="#{webUserRoleController.current}"
+                                                target="#{userRoleIconController.userRole}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
                                         <p:commandButton 
                                             disabled="#{webUserRoleController.current.id == null}" 
                                             icon="fas fa-rss" 
-                                            value="Manage User Subscriptions" 
+                                            value="Manage User Role Subscriptions"
                                             class="m-1" 
                                             action="#{webUserRoleController.navigateToManageWebUserTriggerSubscriptions()}"
-                                            ajax="false" />
+                                            ajax="false" >
+                                            <f:setPropertyActionListener 
+                                                value="#{webUserRoleController.current}"
+                                                target="#{userRoleTriggerSubscriptionController.userRole}" ></f:setPropertyActionListener>                                        </p:commandButton>
                                     </h:panelGroup>
                                 </div>
                             </div>

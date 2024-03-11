@@ -329,7 +329,7 @@
                             </p:tab>
                             <p:tab title="Channel" >
                                 <p:panel header="Channel" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
+                                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
 
                                         <h:outputLabel value="Send SMS on Booking"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-times" onIcon="fas fa-check" value="#{sessionController.currentPreference.channellingSendSmsOnBooking}"/>
@@ -362,6 +362,10 @@
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                                             <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
+                                        <h:outputLabel value="SMS Template For Channel Booking"></h:outputLabel>
+                                        <p:inputTextarea value="#{sessionController.currentPreference.smsTemplateForChannelBooking}" class="w-100">  
+                                                                                                           
+                                        </p:inputTextarea>
 
 
                                     </h:panelGrid>

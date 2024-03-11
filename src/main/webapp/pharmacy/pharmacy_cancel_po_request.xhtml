@@ -13,50 +13,76 @@
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethods}"/>
-                            </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                            </h:commandButton>                            
-                        </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Dealor Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Dealor ​Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name }" ></h:outputLabel>                                        
-                                </p:panelGrid>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Cancellation" />
+                                    </div>
+                                    <div class="d-flex align-items-center" style="width: 50%">
+                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{pharmacyBillSearch.bill.comments}"/>
+                                        <p:spacer width="20%"></p:spacer>
+                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{pharmacyBillSearch.pharmacyPoRequestCancel()}" disabled="#{pharmacyBillSearch.bill.cancelled}" >
+                                        </p:commandButton> 
+                                    </div>
+                                </div>
+                            </f:facet>            
+                            <h:panelGrid columns="3" class="my-2">
+                                <h:outputLabel value="Payment Method" />
+                                <h:outputLabel value="&emsp;" />
+                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
+                                    <f:selectItems value="#{enumController.paymentMethods}"/>
+                                </p:selectOneMenu>
+                            </h:panelGrid>                           
+                            <h:panelGrid columns="2" style="width: 100%;">
+                                <p:panel header="Supplier Details">
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Supplier ​Name" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Supplier Email" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.email}" ></h:outputLabel>
+                                        <h:outputLabel value="Supplier Phone" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.mobile}" ></h:outputLabel>
+                                        <h:outputLabel value="Supplier Address" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.address}" ></h:outputLabel>                                     
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel header="Bill Details">
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Bill No" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
+                                        <h:outputLabel value="Discount" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
+                                        <h:outputLabel value="Net Total" ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
+                            <p:panel header="Bill Item Details" class="my-2">
+                                <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                            #{rowIndex+1}
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                            #{bip.item.name}
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Value</f:facet>
+                                            #{bip.netValue}
+                                    </p:column>
+                                </p:dataTable>
                             </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
-                                    <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
-                                    <h:outputLabel value="Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
-                                    <h:outputLabel value="Discount :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
-                                    <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
-                                </p:panelGrid>
-                            </p:panel>
-                        </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                        #{rowIndex+1}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                        #{bip.item.name}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Value</f:facet>
-                                        #{bip.netValue}
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{pharmacyBillSearch.bill.comments}"/>                            
                         </p:panel>
                     </h:panelGroup>
 
@@ -64,19 +90,24 @@
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
                         <p:panel>
                             <f:facet name="header" >
-                                <h:outputLabel value="Print" ></h:outputLabel>
-                                <hr/>
-                                <p:commandButton value="Reprint" ajax="false" >
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Print" ></h:outputLabel>
+                                    </div>
+                                    <div>
+                                        <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton value="Back To Search" ajax="false" action="pharmacy_purhcase_order_list_to_approve" >
+                                        <p:commandButton icon="fas fa-arrow-left" class="ui-button-secondary" value="Back To Search" ajax="false" action="pharmacy_purhcase_order_list_to_approve" >
                                 </p:commandButton>
+                                    </div>
+                                </div>
                             </f:facet>
                             <h:panelGroup id="gpBillPreview" >
                                 <pharmacy:po_request bill="#{pharmacyBillSearch.bill.cancelledBill}" can="true"/>
                             </h:panelGroup>
                         </p:panel>
-                        
+
                     </h:panelGroup>
 
 

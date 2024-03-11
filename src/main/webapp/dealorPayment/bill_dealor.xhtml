@@ -48,7 +48,7 @@
                     </f:facet>
                     <h:panelGrid columns="2" style="min-width: 100%;">
                         <h:panelGrid columns="3">
-                            <h:outputLabel value="Type GRN No or Dealor Name"/>
+                            <h:outputLabel value="Type GRN No or Supplier Name"/>
                             <h:outputLabel value="Paying Amount"/>
                             <h:outputLabel/>
                             <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
@@ -56,7 +56,7 @@
                                             completeMethod="#{billController.completeBillFromDealor}" 
                                             var="ix" itemLabel="#{ix.deptId}"
                                             itemValue="#{ix}" size="30"  style="width: 400px;">                                  
-                                <p:column headerText="Dealor Name">
+                                <p:column headerText="Supplier Name">
                                     #{ix.fromInstitution.name}
                                 </p:column>
                                 <p:column headerText="Grn No">

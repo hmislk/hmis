@@ -19,7 +19,7 @@
                     
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"
                                  filteredValue="#{creditCompanyDueController.filteredList}">                       
-                        <p:column headerText="Dealor Name" filterBy="#{i.institution.name}" filterMatchMode="contains">       
+                        <p:column headerText="Supplier Name" filterBy="#{i.institution.name}" filterMatchMode="contains">       
                             <h:outputLabel  value="#{i.institution.name}"/>
                         </p:column>                               
                         <p:column headerText="0-30" style="text-align: right;">   

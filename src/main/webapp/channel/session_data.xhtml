@@ -14,97 +14,130 @@
     <ui:define name="content">
         <h:form id="form">
 
-            <div class="container-fluid row" >
-                <div class="col-4" >
-                    <p:panelGrid columns="2" class="w-100">
-                        <f:facet name="header" >
-                            <h:outputText value="Session Details" ></h:outputText>
-                        </f:facet>
-                        <p:outputLabel value="Speciality" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.speciality.name}" ></p:outputLabel>
-                        <p:outputLabel value="Consultant" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}" ></p:outputLabel>
-                        <p:outputLabel value="Session" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.selectedSessionInstance.name}" ></p:outputLabel>
-                        <p:outputLabel value="Date" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                        </p:outputLabel>
-                        <p:outputLabel value="Time" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.sessionTime}" >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
-                        </p:outputLabel>
-                        <p:outputLabel value="Consultant Fee" ></p:outputLabel>
-                        <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.channelStaffFee}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </p:outputLabel>
-                    </p:panelGrid> 
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h:outputText styleClass="fa-regular fa-calendar-minus"/>
+                            <h:outputText class="mx-4" value="View Session Data"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                ajax="false"
+                                class="ui-button-secondary"
+                                icon="fa-solid fa-arrow-left"
+                                action="#{bookingController.navigateBackToBookings()}"
+                                value="Back to Channel Booking" >
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+                        <div class="container-fluid row" >
+                    <div class="col-4" >
+                        <p:panelGrid columns="2" class="w-100">
+                            <f:facet name="header" >
+                                <h:outputText value="Session Details" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Speciality" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.speciality.name}" ></p:outputLabel>
+                            <p:outputLabel value="Consultant" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.staff.person.nameWithTitle}" ></p:outputLabel>
+                            <p:outputLabel value="Session" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.selectedSessionInstance.name}" ></p:outputLabel>
+                            <p:outputLabel value="Date" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.selectedSessionInstance.sessionDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </p:outputLabel>
+                            <p:outputLabel value="Time" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.sessionTime}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                            </p:outputLabel>
+                            <p:outputLabel value="Consultant Fee" ></p:outputLabel>
+                            <p:outputLabel value="#{bookingController.selectedSessionInstance.originatingSession.channelStaffFee}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid> 
+                    </div>
+                    <div class="col-4">
+                        <p:panel>
+                            <f:facet name="header" >
+                                <div style="text-align: center;">
+                                    <h:outputText value="Session"  ></h:outputText>
+                                </div>
+                            </f:facet>
+                            <h:panelGrid columns="1" class="w-100">
+
+                                <p:commandButton value="Nurse View"
+                                                 action="#{bookingController.navigateToNurseView}"
+                                                 icon="fa fa-user-nurse"
+                                                 styleClass="ui-button-success mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton value="Doctor View"
+                                                 action="#{bookingController.navigateToDoctorView}"
+                                                 ajax="false"
+                                                 icon="fa fa-user-md"
+                                                 styleClass="ui-button-info mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton value="Session View"
+                                                 action="#{bookingController.navigateToSessionView}"
+                                                 ajax="false"
+                                                 icon="pi pi-calendar"
+                                                 styleClass="ui-button-warning mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton value="Pay Selected Doctor"
+                                                 action="#{bookingController.paySelectedDoctor}"
+                                                 ajax="false"
+                                                 icon="pi pi-credit-card"
+                                                 styleClass="ui-button-danger mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton value="Phone View"
+                                                 action="#{bookingController.navigateToPhoneView}"
+                                                 ajax="false"
+                                                 icon="pi pi-mobile"
+                                                 styleClass="ui-button-text mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton value="User View"
+                                                 action="#{bookingController.navigateToUserView}"
+                                                 ajax="false"
+                                                 icon="pi pi-users"
+                                                 styleClass="ui-button-secondary w-100">
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+
+
+                    <div class="col-4" >
+
+                        <p:panel>
+                            <f:facet name="header" >
+                                <div style="text-align: center;">
+                                    <h:outputText value="Day" ></h:outputText>
+                                </div>
+                            </f:facet>
+                            <h:panelGrid columns="1" class="w-100">
+                                <p:commandButton
+                                    value="All Patient View"
+                                    action="#{bookingController.navigateToAllPatientView()}"
+                                    ajax="false"
+                                    icon="fas fa-user-group"
+                                    styleClass="ui-button-primary mb-2 w-100">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="All Doctor View"
+                                    action="#{bookingController.navigateToAllDoctorView()}"
+                                    ajax="false"
+                                    icon="fas fa-notes-medical"
+                                    styleClass="ui-button-primary mb-2 w-100">
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                    </div>
+
                 </div>
-                <div class="col-4">
-                    <p:panelGrid columns="1" class="w-100">
-                        <f:facet name="header">
-                            <h:outputText value="Session"></h:outputText>
-                        </f:facet>
-                        <p:commandButton value="Nurse View" 
-                                         action="#{bookingController.navigateToNurseView}" 
-                                         icon="fa fa-user-nurse" 
-                                         styleClass="ui-button-success mb-2 w-100">
-                        </p:commandButton>
-                        <p:commandButton value="Doctor View" 
-                                         action="#{bookingController.navigateToDoctorView}" 
-                                         ajax="false" 
-                                         icon="fa fa-user-md" 
-                                         styleClass="ui-button-info mb-2 w-100">
-                        </p:commandButton>
-                        <p:commandButton value="Session View" 
-                                         action="#{bookingController.navigateToSessionView}" 
-                                         ajax="false" 
-                                         icon="pi pi-calendar" 
-                                         styleClass="ui-button-warning mb-2 w-100">
-                        </p:commandButton>
-                        <p:commandButton value="Pay Selected Doctor" 
-                                         action="#{bookingController.paySelectedDoctor}" 
-                                         ajax="false" 
-                                         icon="pi pi-credit-card" 
-                                         styleClass="ui-button-danger mb-2 w-100">
-                        </p:commandButton>
-                        <p:commandButton value="Phone View" 
-                                         action="#{bookingController.navigateToPhoneView}" 
-                                         ajax="false" 
-                                         icon="pi pi-mobile" 
-                                         styleClass="ui-button-text mb-2 w-100">
-                        </p:commandButton>
-                        <p:commandButton value="User View" 
-                                         action="#{bookingController.navigateToUserView}" 
-                                         ajax="false" 
-                                         icon="pi pi-users" 
-                                         styleClass="ui-button-secondary w-100">
-                        </p:commandButton>
-                    </p:panelGrid>
-                </div>
+            </p:panel>
 
-
-                <div class="col-4" >
-
-                    <p:panelGrid columns="1" class="w-100">
-                        <f:facet name="header" >
-                            <h:outputText value="Day" ></h:outputText>
-                        </f:facet>
-                        <p:commandButton 
-                            value="All Patient View" 
-                            action="#{bookingController.navigateToAllPatientView()}" 
-                            ajax="false" >                                        
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="All Doctor View" 
-                            action="#{bookingController.navigateToAllDoctorView()}" 
-                            ajax="false" >                                        
-                        </p:commandButton>
-                    </p:panelGrid>                                    
-
-                </div>
-
-            </div>
 
 
 

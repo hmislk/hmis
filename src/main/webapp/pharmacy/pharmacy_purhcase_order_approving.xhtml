@@ -38,7 +38,10 @@
 
                                 </div>
                                 <div class="col-4">
-                                    <p:outputLabel style="font-weight: bold" id="tot"  value="Total :  #{purchaseOrderController.aprovedBill.netTotal}"/>  
+                                    <p:outputLabel style="font-weight: bold"  value="Total :"/>  
+                                    <p:outputLabel style="font-weight: bold" id="tot" class="mx-2" value="#{purchaseOrderController.aprovedBill.netTotal}">
+                                        <f:convertNumber pattern="#,#00.00"/>
+                                    </p:outputLabel>
                                 </div>
                                 <div class="col-5">
                                     <div class="row">
@@ -57,12 +60,17 @@
 
                                             <div class="col-4">
                                                 <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
-                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" input="true"/>
+                                                    <div class="ui-inputgroup mx-1 my-1">
+                                                        <p:inputText  
+                                                            value="#{purchaseOrderController.aprovedBill.creditDuration}" style="width: 10em;">
+                                                        </p:inputText>
+                                                        <div class="ui-inputgroup-addon">Days</div>
+                                                    </div>
+<!--                                                    <pa:credit_duration paymentMethodData="#{purchaseOrderController.paymentMethodData}" valueRequired="true"/>-->
                                                 </h:panelGroup>
                                             </div>
                                         </div>
                                     </div>
-
 
                                 </div>
                             </div>
@@ -104,14 +112,14 @@
 
                             <p:column headerText="Qty" styleClass="averageNumericColumn" >                         
                                 <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
-                                    <f:convertNumber pattern="#00.00"/>
+                                    <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
                             </p:column>  
                             <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
                                 <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%">
-                                    <f:convertNumber pattern="#00.00"/>
+                                    <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
@@ -143,7 +151,7 @@
                                 </h:panelGroup>
                             </p:column>  
 
-                            <p:column styleClass="averageNumericColumn" >
+                            <p:column styleClass="averageNumericColumn" width="3em" >
                                 <p:commandButton  ajax="false" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                             </p:column>
                         </p:dataTable> 
