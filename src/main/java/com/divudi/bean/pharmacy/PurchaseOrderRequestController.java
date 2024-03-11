@@ -86,6 +86,9 @@ public class PurchaseOrderRequestController implements Serializable {
             //System.err.println("SerialNO " + b.getSearialNo());
             //System.err.println("Item " + b.getItem().getName());
             BillItem tmp = getBillItems().remove(b.getSearialNo());
+            tmp.setRetired(true);
+            tmp.setRetirer(sessionController.getLoggedUser());
+            tmp.setRetiredAt(new Date());
             //System.err.println("Removed Item " + tmp.getItem().getName());
             calTotal();
         }
@@ -245,11 +248,11 @@ public class PurchaseOrderRequestController implements Serializable {
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
-            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
+//            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
             tmp.setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             tmp.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
 
-            bi.setTmpQty(tmp.getQty());
+//            bi.setTmpQty(tmp.getQty());
             bi.setPharmaceuticalBillItem(tmp);
 
             getBillItems().add(bi);
