@@ -521,7 +521,12 @@ public class BookingController implements Serializable, ControllerWithPatient {
                 .replace("{doctor}", doc)
                 .replace("{appointment_time}", time)
                 .replace("{appointment_date}", date)
-                .replace("{serial_no}", String.valueOf(no));
+                .replace("{serial_no}", String.valueOf(no))
+                .replace("{doc}", doc)
+                .replace("{time}", time)
+                .replace("{date}", date)
+                .replace("{No}", String.valueOf(no));
+
         return s;
     }
 
