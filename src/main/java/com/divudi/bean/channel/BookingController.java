@@ -64,6 +64,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -127,6 +128,8 @@ public class BookingController implements Serializable, ControllerWithPatient {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    SmsManagerEjb smsManager;
     /**
      * Controllers
      */
@@ -167,9 +170,9 @@ public class BookingController implements Serializable, ControllerWithPatient {
     private PaymentScheme paymentScheme;
     boolean settleSucessFully;
     Bill printingBill;
-
-    SmsFacade smsFacade;
-    SmsManagerEjb smsManagerEjb;
+    
+    @EJB
+    private SmsFacade smsFacade;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
@@ -424,22 +427,24 @@ public class BookingController implements Serializable, ControllerWithPatient {
     }
 
     public void sendSmsAfterBooking() {
-        try {
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(printingBill);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
-            e.setSendingMessage(chanellBookingSms(printingBill));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSmsType(MessageType.ChannelBooking);
-            smsFacade.create(e);
-            String suc = smsManagerEjb.sendSmsByApplicationPreferenceNoAuthenticationReturnString(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-        } catch (Exception e) {
-        }
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(printingBill);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
+        e.setSendingMessage(chanellBookingSms(printingBill));
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setPending(false);
+        e.setSmsType(MessageType.ChannelBooking);
+        getSmsFacade().create(e);
+        SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+        e.setSentSuccessfully(sent.isSentSuccefully());
+        e.setReceivedMessage(sent.getReceivedMessage());
+        getSmsFacade().edit(e);
+        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     private String chanellBookingSms(Bill b) {
@@ -513,10 +518,17 @@ public class BookingController implements Serializable, ControllerWithPatient {
         int no = b.getSingleBillSession().getSerialNo();
         String input = sessionController.getDepartmentPreference().getSmsTemplateForChannelBooking();
         s = input.replace("{patient_name}", patientName)
+
+                .replace("{doctor}", doc)
+                .replace("{appointment_time}", time)
+                .replace("{appointment_date}", date)
+                .replace("{serial_no}", String.valueOf(no));
+
                 .replace("{doc}", doc)
                 .replace("{time}", time)
                 .replace("{date}", date)
                 .replace("{No}", String.valueOf(no));
+
         return s;
     }
 
@@ -2197,6 +2209,14 @@ public class BookingController implements Serializable, ControllerWithPatient {
         }
         getSelectedSessionInstance().getOriginatingSession().setTotalFee(getSelectedSessionInstance().getOriginatingSession().getTotalFee() - d);
         getSelectedSessionInstance().getOriginatingSession().setTotalFfee(getSelectedSessionInstance().getOriginatingSession().getTotalFfee() - d);
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
     }
 
 }
