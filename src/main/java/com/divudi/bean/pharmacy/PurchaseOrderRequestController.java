@@ -284,27 +284,27 @@ public class PurchaseOrderRequestController implements Serializable {
 
         }
     }
-    
+
     public void finalizeBillComponent() {
         for (BillItem b : getBillItems()) {
-            
             b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             b.setBill(getCurrentBill());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
-            
+
             double qty = 0.0;
-            qty = Math.abs(b.getQty());
-            qty = Math.abs(b.getPharmaceuticalBillItem().getFreeQty());
-            
-            if(qty<=0.0){
+            qty = b.getQty();
+            qty = b.getPharmaceuticalBillItem().getFreeQty();
+
+
+            if (qty <= 0.0) {
                 b.setRetired(true);
                 b.setRetirer(sessionController.getLoggedUser());
                 b.setRetiredAt(new Date());
                 b.setRetireComments("Retired at Finalising PO");
+                
             }
-            
 
 //            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
 //            b.setPharmaceuticalBillItem(null);
@@ -319,6 +319,7 @@ public class PurchaseOrderRequestController implements Serializable {
             } else {
                 getPharmaceuticalBillItemFacade().edit(b.getPharmaceuticalBillItem());
             }
+
 
         }
     }
@@ -387,8 +388,9 @@ public class PurchaseOrderRequestController implements Serializable {
 //            return;
 //        }
 
+        
         finalizeBill();
-        saveBillComponent();
+        finalizeBillComponent();
         JsfUtil.addSuccessMessage("Request Succesfully Finalized");
         printPreview = true;
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
@@ -566,7 +568,5 @@ public class PurchaseOrderRequestController implements Serializable {
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
-    
 
 }
