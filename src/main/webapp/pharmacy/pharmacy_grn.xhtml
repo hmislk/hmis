@@ -51,9 +51,11 @@
                         selection="#{grnController.selectedBillItems}"
                         value="#{grnController.billItems}" 
                         class="w-100"
-                        style="padding: 0;"
-                        scrollable="true"
-                        scrollHeight="350px"
+                        rows="10"
+                        paginator="true" paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                        rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                         id="itemList" 
                         editable="true">  
 
@@ -71,41 +73,81 @@
                         <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
                         <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
-                        <p:column selectionMode="multiple" style="width: 20px; padding: 0;"/>
+                        <p:column selectionMode="multiple" style="width: 10px;"/>
 
-                        <p:column headerText="Item Name" style="width: 250px!important; padding: 0;"  > 
+                        <p:column headerText="Item Name" style="width: 250px!important;"  > 
 
                             <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
 
                         </p:column>  
-                        <p:column headerText="Code" style="padding: 0;"> 
+                        <p:column headerText="Code"> 
 
                             <h:outputText id="code" value="#{bi.item.code}" >                                   
                             </h:outputText>
 
                         </p:column> 
 
-                        <p:column headerText="Ordered Qty" style="padding: 0;">  
+                        <p:column headerText="Ordered Qty" >  
                             <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
                         </p:column>  
 
-                        <p:column headerText="Receiving Qty"  style="padding: 0;">
-                            <p:inputText value="#{bi.pharmaceuticalBillItem.qtyInUnit}" style="width: 5em; padding: 0;"/>
-
+                        <p:column headerText="Receiving Qty"  >
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                </f:facet>                        
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.tmpQty}" />
+                                </f:facet>
+                            </p:cellEditor>
                         </p:column>  
 
-                        <p:column headerText="Free" style="padding: 0;">   
-                            <p:inputText value="#{bi.pharmaceuticalBillItem.freeQty}" style="width: 5em; padding: 0;"/>                      
+                        <p:column headerText="Free">   
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                                </f:facet>                      
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.freeQty}" />
+                                </f:facet>
+                            </p:cellEditor>                        
                         </p:column> 
 
-                        <p:column headerText="Purchase Rate" style="padding: 0;">  
-                            <p:inputText value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="width: 5em; padding: 0;"/>                      
+                        <p:column headerText="Purchase Rate">  
+                            <p:cellEditor>  
+                                <f:facet name="output">  
+                                    <h:panelGroup id="purchase">
+                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" X #{bi.item.dblValue}" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="input">  
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>                       
                         </p:column>  
-                        <p:column headerText="Sale Price"  style="padding: 0;"> 
-                            <p:inputText value="#{bi.pharmaceuticalBillItem.retailRate}" style="width: 5em; padding: 0;"/>                   
+                        <p:column headerText="Sale Price"  > 
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:panelGroup id="retail">
+                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
+                                    </h:panelGroup>
+                                </f:facet>  
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>                      
                         </p:column>  
 
-                        <p:column headerText="Total"  style="padding: 0;">  
+                        <p:column headerText="Total"  >  
                             <h:panelGroup id="total">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
@@ -113,35 +155,38 @@
                             </h:panelGroup>
                         </p:column>  
 
-                        <p:column headerText="Date Of Expiry" style="padding: 0;">  
-                            <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
-                                         id="doeDateOnlyShort"
-                                         navigator="true" pattern="dd MM yy" 
-                                         onchange="#{grnController.onEdit(bi)}"
-                                         > 
-                                <p:ajax process="@this" update="txtBatch :#{p:resolveFirstComponentWithId('tot',view).clientId}"/>
-                            </p:calendar>          
+                        <p:column headerText="Date Of Expiry" >  
+                            <p:cellEditor >
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
+                                                 id="doeDateOnlyShort"
+                                                 navigator="true" pattern="dd MM yy"    > 
+                                    </p:calendar>  
+                                </f:facet>
+                            </p:cellEditor>                     
                         </p:column> 
 
-                        <p:column headerText="Short Expiry" style="width:7em; text-align: center; padding: 0;">
-                            <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
-                                           oncomplete="PF('expStockDetailsDialog').show();"
-                                           actionListener="#{stockController.listExpiaringStocks(bi.item)}">
-                            </p:commandLink>
-                        </p:column>
 
-
-                        <p:column headerText="Batch No" style="padding: 0;" >  
-                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch" style="width: 5em; padding: 0;"/>
+                        <p:column headerText="Batch No" >  
+                            <p:cellEditor >
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{bi.pharmaceuticalBillItem.stringValue}" id="txtBatch"/>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}">  
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>
                         </p:column>  
-                        <p:column headerText="Profit %" style="width:80px; text-align: left; padding: 0;">                    
+                        <p:column headerText="Profit %" style="width:80px; text-align: left;">                    
                             <h:outputText id="profMargin" value="#{((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate ) / bi.pharmaceuticalBillItem.purchaseRate)*100}" >
                                 <f:convertNumber pattern="0.0" ></f:convertNumber>
                             </h:outputText>
-                        </p:column>
-
-                        <p:column headerText="Usage" style="width:4em; text-align: right; padding: 0;">
-                            <p:outputLabel value="#{pharmacyController.findAllOutTransactions(bi.item)}" style="width:4em; text-align: right;"/>                            
                         </p:column>
                         <p:column width="6%">
                             <p:commandButton 
@@ -155,7 +200,8 @@
                                 style="float: right;"
                                 icon="fas fa-plus"
                                 class="ui-button-danger mx-1"
-                                action="#{grnController.duplicateItem(bi)}"/>  
+                                action="#{grnController.duplicateItem(bi)}"/>
+                            <p:rowEditor />  
 
                         </p:column>
 
@@ -241,84 +287,6 @@
                 </h:panelGroup>
             </p:panel>
         </h:form>
-
-        <p:dialog widgetVar="expStockDetailsDialog" modal="true" header="Expiring Stock Details" width="50%" height="auto">
-            <h:form id="expStockDetailsForm">
-
-                <p:dataTable id="expStockList" value="#{stockController.selectedItemExpiaringStocks}" var="s">
-
-                    <f:facet name="header">
-                        <h:outputText id="expItemName" value="#{stockController.selectedItem.name}" />
-                    </f:facet>
-
-                    <p:column headerText="Expiry Date">
-                        <h:outputText value="#{s.itemBatch.dateOfExpire}">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Department">
-                        <h:outputText value="#{s.department.name}">
-                        </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Stock">
-                        <h:outputText value="#{s.stock}" >
-                            <f:convertNumber pattern="#.#" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
-
-                    <f:facet name="footer">
-                        <h:outputText value="Total Expiaring Quentity by " />
-                        <h:outputText value="#{stockController.shortExpiaryDate}" >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                        </h:outputText>
-                        <h:outputText value=" : " />
-                        <h:outputText id="expQty" value="#{stockController.expiaringStockQty}" >
-                            <f:convertNumber pattern="#.#" ></f:convertNumber>
-                        </h:outputText>
-                    </f:facet>
-
-                </p:dataTable>
-
-            </h:form>
-        </p:dialog>
-
-        <p:dialog widgetVar="stockDetailsDialog" modal="true" header="Stock Details" width="50%" height="auto">
-            <h:form id="stockDetailsForm">
-
-                <p:dataTable id="stockList" value="#{stockController.selectedItemStocks}" var="s">
-
-                    <f:facet name="header">
-                        <h:outputText id="stockItemName" value="Item: #{stockController.selectedItem.name}" />
-                    </f:facet>
-
-                    <p:column headerText="Expiry Date">
-                        <h:outputText value="#{s.itemBatch.dateOfExpire}">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Department">
-                        <h:outputText value="#{s.department.name}" />
-                    </p:column>
-
-                    <p:column headerText="Stock">
-                        <h:outputText value="#{s.stock}">
-                            <f:convertNumber pattern="#.#" />
-                        </h:outputText>
-                    </p:column>
-
-                    <f:facet name="footer">
-                        <h:outputText value="Total Stock Quantity: " />
-                        <h:outputText id="stockQty" value="#{stockController.totalStockQty}">
-                            <f:convertNumber pattern="#.#" />
-                        </h:outputText>
-                    </f:facet>
-
-                </p:dataTable>
-            </h:form>
-        </p:dialog>
     </ui:define>  
 
 </ui:composition>
