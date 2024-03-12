@@ -39,6 +39,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -66,6 +67,15 @@ public class StockController implements Serializable {
     @Inject
     VmpController vmpController;
 
+    private Stock stock;
+
+    private List<Stock> selectedItemStocks;
+    private List<Stock> selectedItemExpiaringStocks;
+    private Item selectedItem;
+    private double totalStockQty;
+    private double expiaringStockQty;
+    private Date shortExpiaryDate;
+
     public List<Stock> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Stock c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -87,6 +97,70 @@ public class StockController implements Serializable {
 
     public StoreBean getStoreBean() {
         return storeBean;
+    }
+
+    public void listStocksOfSelectedItem(Item item) {
+        selectedItemStocks = null;
+        item = item;
+        if (item == null) {
+            return;
+        }
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("item", item);
+        sql = "select s "
+                + "from Stock s "
+                + "where s.stock > :s "
+                + "and s.itemBatch.item = :item "
+                + "order by s.itemBatch.dateOfExpire desc";
+        selectedItemStocks = ejbFacade.findByJpql(sql, m, 20);
+        totalStockQty = calculateStockQty(selectedItemStocks);
+    }
+
+    public void listExpiaringStocks(Item item) {
+        selectedItem = item;
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            List<Amp> amps = new ArrayList<>();
+            amps.add(amp);
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
+        } else {
+            //TO Do for Ampp, Vmpp,
+        }
+        expiaringStockQty = calculateStockQty(selectedItemExpiaringStocks);
+    }
+
+    public void relistExpiaringStocks() {
+        System.out.println("relistExpiaringStocks");
+        System.out.println("selectedItem = " + selectedItem);
+        if (selectedItem instanceof Amp) {
+            Amp amp = (Amp) selectedItem;
+            List<Amp> amps = new ArrayList<>();
+            amps.add(amp);
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, shortExpiaryDate);
+        } else if (selectedItem instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(selectedItem);
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, shortExpiaryDate);
+        } else {
+            //TO Do for Ampp, Vmpp,
+        }
+        expiaringStockQty = calculateStockQty(selectedItemExpiaringStocks);
+    }
+
+    private double calculateStockQty(List<Stock> stks) {
+        if (stks == null) {
+            return 0.0;
+        }
+        double d = 0.0;
+        for (Stock s : stks) {
+            d += s.getStock();
+        }
+        return d;
     }
 
     public List<Stock> completeAvailableStocks(String qry) {
@@ -264,6 +338,42 @@ public class StockController implements Serializable {
 
     }
 
+    public List<Stock> fillExpiaringStock(Institution institution, List<Amp> amps, Date inputShortExpiaryDate) {
+        if (amps == null) {
+            return null;
+        }
+        if (amps.isEmpty()) {
+            return null;
+        }
+        String jpql;
+        Map m = new HashMap();
+        Vmp tvmp = amps.get(0).getVmp();
+        int daysToMarkAsExpiaring = tvmp.getNumberOfDaysToMarkAsShortExpiary();
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DATE, daysToMarkAsExpiaring);
+        Date doe = c.getTime();
+        m.put("amps", amps);
+
+        if (inputShortExpiaryDate == null) {
+            inputShortExpiaryDate = doe;
+        }
+        m.put("doe", inputShortExpiaryDate);
+        jpql = "select i "
+                + " from Stock i ";
+        if (institution == null) {
+            jpql += " where i.itemBatch.item in :amps "
+                    + " and i.itemBatch.dateOfExpire < :doe ";
+        } else {
+            m.put("ins", institution);
+            jpql += " where i.department.institution=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+        jpql += " and i.stock > :sqty ";
+        m.put("sqty", 0.0);
+
+        return billItemFacade.findByJpql(jpql, m);
+    }
+
     public List<Stock> completeStock(String qry) {
         List<Stock> a = null;
         if (qry != null) {
@@ -400,6 +510,62 @@ public class StockController implements Serializable {
         return ejbFacade;
     }
 
+    public Stock getStock() {
+        return stock;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+
+    public List<Stock> getSelectedItemStocks() {
+        return selectedItemStocks;
+    }
+
+    public void setSelectedItemStocks(List<Stock> selectedItemStocks) {
+        this.selectedItemStocks = selectedItemStocks;
+    }
+
+    public Item getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelectedItem(Item selectedItem) {
+        this.selectedItem = selectedItem;
+    }
+
+    public double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(double totalStockQty) {
+        this.totalStockQty = totalStockQty;
+    }
+
+    public double getExpiaringStockQty() {
+        return expiaringStockQty;
+    }
+
+    public void setExpiaringStockQty(double expiaringStockQty) {
+        this.expiaringStockQty = expiaringStockQty;
+    }
+
+    public Date getShortExpiaryDate() {
+        return shortExpiaryDate;
+    }
+
+    public void setShortExpiaryDate(Date shortExpiaryDate) {
+        this.shortExpiaryDate = shortExpiaryDate;
+    }
+
+    public List<Stock> getSelectedItemExpiaringStocks() {
+        return selectedItemExpiaringStocks;
+    }
+
+    public void setSelectedItemExpiaringStocks(List<Stock> selectedItemExpiaringStocks) {
+        this.selectedItemExpiaringStocks = selectedItemExpiaringStocks;
+    }
+
     /**
      *
      */
@@ -438,7 +604,7 @@ public class StockController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StockController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Stock.class.getName());
             }
         }
     }
