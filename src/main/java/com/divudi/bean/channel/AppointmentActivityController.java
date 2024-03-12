@@ -13,6 +13,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.channel.AppointmentActivity;
 import com.divudi.facade.AppointmentActivityFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ public class AppointmentActivityController implements Serializable {
 
     public void addAppointmentActivity() {
         current = new AppointmentActivity();
-        System.out.println("this = " + items.size());
+        
     }
 
     public void save(AppointmentActivity aa) {
@@ -74,6 +75,7 @@ public class AppointmentActivityController implements Serializable {
         }
         save(current);
         JsfUtil.addSuccessMessage("Saved");
+        fillAppointmentActivities();
     }
 
     public void deleteAppointMentActivity() {
@@ -95,21 +97,18 @@ public class AppointmentActivityController implements Serializable {
         return appointmentActivityFacade;
     }
 
-    public List<AppointmentActivity> fillAppointmentActivities() {
+    public void fillAppointmentActivities() {
+        List<AppointmentActivity> items=new ArrayList<>();
         String jpql = "select a "
                 + " from AppointmentActivity a"
                 + " where a.retired=:ret"
                 + " order by a.name";
         Map m = new HashMap();
         m.put("ret", false);
-        return getFacade().findByJpql(jpql, m);
+        items= getFacade().findByJpql(jpql, m);
     }
 
     public List<AppointmentActivity> getItems() {
-        if (items == null) {
-            items = fillAppointmentActivities();
-
-        }
         return items;
     }
 
