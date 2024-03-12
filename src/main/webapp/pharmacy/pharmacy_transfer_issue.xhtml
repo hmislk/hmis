@@ -63,7 +63,7 @@
                                           ">                   
                                     <p:cellEditor>  
                                         <f:facet name="output">  
-                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qty}" />                               
                                         </f:facet>                        
                                         <f:facet name="input">  
                                             <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
@@ -71,7 +71,21 @@
                                             </p:inputText>
                                         </f:facet>
                                     </p:cellEditor>
-                                </p:column>              
+                                </p:column> 
+                                
+                                <p:column headerText="Free" style="width:25px!important; text-align: right;
+                                          ">                   
+                                    <p:cellEditor>  
+                                        <f:facet name="output">  
+                                            <h:outputLabel value="#{bItm.pharmaceuticalBillItem.freeQty}" />                               
+                                        </f:facet>                        
+                                        <f:facet name="input">  
+                                            <p:inputText autocomplete="off" id="fqty" value="#{bItm.tmpQty}" >
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                            </p:inputText>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column> 
 
                                 <p:column style="width: 10px!important;">
                                     <p:commandButton value="Remove" ajax="false" action="#{transferIssueController.remove(bItm)}">
